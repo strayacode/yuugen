@@ -1,0 +1,8 @@
+/bios
+/build
+/firmware
+/roms
+.*
+!/.gitignore
+TODO.txt
+PLANS.txt
