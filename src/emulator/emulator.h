@@ -7,11 +7,12 @@
 class Emulator {
 public:
     Emulator();
+    void reset();
     ARM9 arm9;
     ARM7 arm7;
     Memory memory;
 
-    
+    bool running;
 
     
 

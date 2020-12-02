@@ -40,7 +40,12 @@ public:
     u32 arm7_read_word(u32 addr);
     u32 arm7_read_io(u32 addr);
 
+    void load_arm9_bios();
+    void load_arm7_bios();
+
     Memory(Emulator *emulator);
 private:
     Emulator *emulator;
+
+    
 };

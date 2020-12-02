@@ -67,19 +67,27 @@ class ARM9 : public ARM {
 public:
     ARM9(Emulator *emulator);
 
+    void step();
+
 private:
     Emulator *emulator;
     
-    void read_opcode();
+    void read_instruction();
+    void execute_instruction();
 };
 
 class ARM7 : public ARM {
 public:
     ARM7(Emulator *emulator);
+
+    void step();
+
 private:
     Emulator *emulator;
 
-    void read_opcode();
+    void read_instruction();
+    void execute_instruction();
+
     
 
 };
