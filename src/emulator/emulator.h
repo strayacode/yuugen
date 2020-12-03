@@ -1,5 +1,6 @@
 #pragma once
-#include <emulator/core/arm.h>
+#include <emulator/core/arm9.h>
+#include <emulator/core/arm7.h>
 #include <emulator/common/types.h>
 #include <emulator/core/memory.h>
 
