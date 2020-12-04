@@ -120,5 +120,32 @@ void ARM7::direct_boot() {
     regs.cpsr = 0x0000005F;
     cpu_mode = SYS;
 
-    
+    printf("[ARM7] successfully initialised direct boot state\n");
+}
+
+void ARM7::firmware_boot() {
+
+}
+
+void ARM7::reset() {
+    #ifdef DIRECT_BOOT
+        direct_boot();
+    #else
+        firmware_boot();
+    #endif
+}
+
+void ARM7::execute_instruction() {
+    // implement proper code
+    switch (opcode) {
+    default:
+        printf("[ARM7] undefined instruction 0x%04x\n", opcode);
+        emulator->running = false;
+        break;
+    }
+}
+
+void ARM7::step() {
+    read_instruction();
+    execute_instruction();
 }

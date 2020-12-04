@@ -101,6 +101,16 @@ void ARM9::read_instruction() {
     opcode = emulator->memory.arm9_read_word(get_reg(15));
 }
 
+void ARM9::execute_instruction() {
+    // implement proper code
+    switch (opcode) {
+    default:
+        printf("[ARM9] undefined instruction 0x%04x\n", opcode);
+        emulator->running = false;
+        break;
+    }
+}
+
 void ARM9::direct_boot() {
     // common between arm7 and arm9
     regs.r0 = regs.r1 = regs.r2 = regs.r3 = regs.r4 = regs.r5 = regs.r6 = regs.r7 = regs.r8 = regs.r9 = regs.r10 = regs.r11 = regs.r12 = regs.r14 = 0;
@@ -118,4 +128,19 @@ void ARM9::direct_boot() {
     regs.cpsr = 0x0000005F;
     regs.r15 = 0;
     cpu_mode = SYS;
+
+    printf("[ARM9] successfully initialised direct boot state\n");
+}
+
+void ARM9::reset() {
+    #ifdef DIRECT_BOOT
+        direct_boot();
+    #else
+        firmware_boot();
+    #endif
+}
+
+void ARM9::step() {
+    read_instruction();
+    execute_instruction();
 }

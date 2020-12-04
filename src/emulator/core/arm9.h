@@ -7,6 +7,9 @@ class ARM9 {
 public:
     ARM9(Emulator *emulator);
 
+    void reset();
+    void step();
+
 private:
     Emulator *emulator;
 
@@ -94,6 +97,7 @@ private:
     void set_reg(u32 reg, u32 value);
 
     void read_instruction();
+    void execute_instruction();
 
     // TODO: work on firware boot later
     void firmware_boot();
