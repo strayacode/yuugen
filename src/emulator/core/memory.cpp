@@ -4,6 +4,7 @@
 
 static const int ARM9_BIOS_SIZE = 32 * 1024;
 static const int ARM7_BIOS_SIZE = 16 * 1024;
+static const int FIRMWARE_SIZE = 256 * 1024;
 
 Memory::Memory(Emulator *emulator) : emulator(emulator) {
 
@@ -115,4 +116,17 @@ void Memory::load_arm7_bios() {
     fread(arm7_bios, ARM7_BIOS_SIZE, 1, file_buffer);
     fclose(file_buffer);  
     printf("[Memory] arm7 bios loaded successfully!\n");
+}
+
+void Memory::load_firmware() {
+    FILE *file_buffer = fopen("../firmware/firmware.bin", "rb");
+    if (file_buffer == NULL) {
+        printf("[Memory] error when opening firmware! make sure the file firmware.bin exists in the firmware folder\n");
+        emulator->running = false;
+    }
+    fseek(file_buffer, 0, SEEK_END);
+    fseek(file_buffer, 0, SEEK_SET);
+    fread(firmware, FIRMWARE_SIZE, 1, file_buffer);
+    fclose(file_buffer);  
+    printf("[Memory] firmware loaded successfully!\n");
 }

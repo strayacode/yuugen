@@ -30,6 +30,9 @@ public:
     // TODO: add wireless communications
     u8 arm7_vram[256 * 1024]; // vram allocated as wram to arm7 max 256kb
 
+    // external to the arm7/arm9 bus
+    u8 firmware[256 * 1024]; // built-in serial flash memory
+
     u8 arm9_read_byte(u32 addr);
     u16 arm9_read_halfword(u32 addr);
     u32 arm9_read_word(u32 addr);
@@ -42,6 +45,7 @@ public:
 
     void load_arm9_bios();
     void load_arm7_bios();
+    void load_firmware();
 
     Memory(Emulator *emulator);
 private:
