@@ -1,12 +1,14 @@
 #include <emulator/core/arm9.h>
 #include <emulator/emulator.h>
 #include <stdio.h>
+#include <emulator/common/arithmetic.h>
 
 ARM9::ARM9(Emulator *emulator) : emulator(emulator) {
     
 }
 
 u32 ARM9::get_reg(u32 reg) {
+    u32 cpu_mode = get_bit_range(0, 4, regs.cpsr);
     switch (reg) {
     case 0:
         return regs.r0;
@@ -127,9 +129,12 @@ void ARM9::direct_boot() {
     regs.r13_irq = 0x03003F80;
     regs.cpsr = 0x0000005F;
     regs.r15 = 0;
-    cpu_mode = SYS;
 
     printf("[ARM9] successfully initialised direct boot state\n");
+}
+
+void ARM9::firmware_boot() {
+    regs.r15 = 0xFFFF0000;
 }
 
 void ARM9::reset() {
@@ -143,4 +148,8 @@ void ARM9::reset() {
 void ARM9::step() {
     read_instruction();
     execute_instruction();
+}
+
+bool ARM9::is_arm() {
+    return (get_bit(5, regs.cpsr) == 0);
 }

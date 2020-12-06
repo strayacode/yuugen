@@ -8,7 +8,6 @@ public:
 
 
 private:
-    u32 cache_type; // specifies cache type and size
     u32 tcm_size;
     u32 control_register;
 

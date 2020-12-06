@@ -6,10 +6,12 @@ add_library(emulator
     core/arm9_arm_instrs.cpp core/arm9_thumb_instrs.cpp
     core/memory.cpp core/memory.h
     core/cp15.cpp core/cp15.h
+    common/types.h common/arithmetic.h
+    common/arithmetic.cpp
 )
 
-set (DIRECT_BOOT ON)
-set (FIRMWARE_BOOT OFF)
+set (DIRECT_BOOT OFF)
+set (FIRMWARE_BOOT ON)
  
 if (DIRECT_BOOT)
     target_compile_definitions(emulator PRIVATE DIRECT_BOOT)

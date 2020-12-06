@@ -44,8 +44,8 @@ u32 Memory::arm7_read_word(u32 addr) {
 
 u8 Memory::arm9_read_byte(u32 addr) {
     switch (addr & 0xFF000000) {
-        // case 0x00000000:
-        //     // deal with tcm later lol
+        case 0x00000000:
+            // deal with tcm later lol
         // case 0x02000000:
         //     return main_ram[addr - 0x02000000];
         // case 0x03000000:

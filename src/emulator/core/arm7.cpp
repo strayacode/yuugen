@@ -1,6 +1,7 @@
 #include <emulator/core/arm7.h>
 #include <emulator/emulator.h>
 #include <stdio.h>
+#include <emulator/common/arithmetic.h>
 
 
 ARM7::ARM7(Emulator *emulator) : emulator(emulator) {
@@ -12,6 +13,7 @@ void ARM7::read_instruction() {
 }
 
 u32 ARM7::get_reg(u32 reg) {
+    u32 cpu_mode = get_bit_range(0, 4, regs.cpsr);
     switch (reg) {
     case 0:
         return regs.r0;
@@ -118,13 +120,12 @@ void ARM7::direct_boot() {
     regs.r13_irq = 0x0380FF80;
     regs.r15 = 0x08000000;
     regs.cpsr = 0x0000005F;
-    cpu_mode = SYS;
 
     printf("[ARM7] successfully initialised direct boot state\n");
 }
 
 void ARM7::firmware_boot() {
-
+    regs.r15 = 0x00000000;
 }
 
 void ARM7::reset() {
@@ -148,4 +149,8 @@ void ARM7::execute_instruction() {
 void ARM7::step() {
     read_instruction();
     execute_instruction();
+}
+
+bool ARM7::is_arm() {
+    return (get_bit(5, regs.cpsr) == 0);
 }

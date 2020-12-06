@@ -14,16 +14,19 @@ private:
     Emulator *emulator;
 
     enum cpu_modes {
-        USR,
-        SYS,
-        FIQ,
-        SVC,
-        ABT,
-        IRQ,
-        UND,
+        USR = 0x10,
+        SYS = 0x1F,
+        FIQ = 0x11,
+        SVC = 0x13,
+        ABT = 0x17,
+        IRQ = 0x12,
+        UND = 0x1B,
     };
 
-    cpu_modes cpu_mode;
+    enum instruction_modes {
+        ARM,
+        THUMB,
+    };
 
     struct registers {
         u32 r0;
@@ -93,6 +96,12 @@ private:
 
     u32 pipeline[2]; // store the addresses of the 2 instructions after the current opcode
 
+    typedef void (*arm_instr_t)();
+    arm_instr_t arm_instrs[4095];
+
+    typedef void (*thumb_instr_t)();
+    thumb_instr_t thumb_instrs[255];
+
     u32 get_reg(u32 reg);
     void set_reg(u32 reg, u32 value);
 
@@ -104,4 +113,8 @@ private:
 
     // work on direct boot to quickly test arm processors for feedback lol
     void direct_boot();
+
+    void fill_pipeline();
+
+    bool is_arm();
 };
