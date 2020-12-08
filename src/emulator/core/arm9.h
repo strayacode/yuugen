@@ -23,6 +23,14 @@ private:
         UND = 0x1B,
     };
 
+    enum condition_codes {
+        // each number specifies the bit to access in cpsr
+        N_FLAG = 31,
+        Z_FLAG = 30,
+        C_FLAG = 29,
+        V_FLAG = 28,
+    };
+
     enum instruction_modes {
         ARM,
         THUMB,
@@ -108,13 +116,16 @@ private:
     void read_instruction();
     void execute_instruction();
 
-    // TODO: work on firware boot later
+    
     void firmware_boot();
 
-    // work on direct boot to quickly test arm processors for feedback lol
     void direct_boot();
 
     void fill_pipeline();
 
+    // some helper functions
     bool is_arm();
+    bool get_condition_flag(int condition_flag);
+
+    bool evaluate_condition();
 };

@@ -154,3 +154,49 @@ void ARM7::step() {
 bool ARM7::is_arm() {
     return (get_bit(5, regs.cpsr) == 0);
 }
+
+bool ARM7::get_condition_flag(int condition_flag) {
+    return (regs.cpsr & (1 << condition_flag) != 0);
+}
+
+bool ARM7::evaluate_condition() {
+    bool n_flag = get_condition_flag(N_FLAG);
+    bool z_flag = get_condition_flag(Z_FLAG);
+    bool c_flag = get_condition_flag(C_FLAG);
+    bool v_flag = get_condition_flag(V_FLAG);
+    switch (opcode >> 28) {
+        case 0:
+            return z_flag;
+        case 1:
+            return !z_flag;
+        case 2:
+            return c_flag;
+        case 3:
+            return !c_flag;
+        case 4:
+            return n_flag;
+        case 5:
+            return !n_flag;
+        case 6:
+            return v_flag;
+        case 7:
+            return !v_flag;
+        case 8:
+            return (c_flag && !z_flag);
+        case 9:
+            return (!c_flag && z_flag);
+        case 10:
+            return (n_flag == v_flag);
+        case 11:
+            return (n_flag != v_flag);
+        case 12:
+            return (!z_flag && (n_flag == v_flag));
+        case 13:
+            return (z_flag && (n_flag != v_flag));
+        case 14:
+            return true;
+        default:
+            printf("[ARM7] condition code %d is not valid!\n", opcode >> 28);
+            emulator->running = false;
+    }
+}

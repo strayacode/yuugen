@@ -15,12 +15,20 @@ private:
 
     enum cpu_modes {
         USR = 0x10,
-        SYS,
-        FIQ,
-        SVC,
-        ABT,
-        IRQ,
-        UND,
+        SYS = 0x1F,
+        FIQ = 0x11,
+        SVC = 0x13,
+        ABT = 0x17,
+        IRQ = 0x12,
+        UND = 0x1B,
+    };
+
+    enum condition_codes {
+        // each number specifies the bit to access in cpsr
+        N_FLAG = 31,
+        Z_FLAG = 30,
+        C_FLAG = 29,
+        V_FLAG = 28,
     };
 
     enum instruction_modes {
@@ -110,12 +118,15 @@ private:
     void read_instruction();
     void execute_instruction();
 
-    // TODO: work on firmware boot later
     void firmware_boot();
     
-    // work on direct boot first
     void direct_boot();
 
+    // some helper functions
     bool is_arm();
+    bool get_condition_flag(int condition_flag);
+
+    bool evaluate_condition();
+
     
 };
