@@ -100,22 +100,13 @@ private:
 
     } regs;
 
-    u32 opcode;
+    u32 opcode; // used for storing the first instruction in the pipeline
 
-    u32 pipeline[2]; // store the addresses of the 2 instructions after the current opcode
-
-    typedef void (*arm_instr_t)();
-    arm_instr_t arm_instrs[4095];
-
-    typedef void (*thumb_instr_t)();
-    thumb_instr_t thumb_instrs[255];
+    u32 pipeline[2]; // store the addresses of the 2 instructions. first is the current executing instruction and the second is the instruction being decoded
 
     u32 get_reg(u32 reg);
     void set_reg(u32 reg, u32 value);
-
     
-
-    void read_instruction();
     void execute_instruction();
 
     void firmware_boot();
@@ -127,6 +118,9 @@ private:
     bool get_condition_flag(int condition_flag);
 
     bool evaluate_condition();
+
+    // arm instructions
+    void b();
 
     
 };
