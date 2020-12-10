@@ -1,5 +1,5 @@
 #pragma once
-#include <emulator/common/types.h>
+#include <nds/common/types.h>
 
 class CP15 {
 public:

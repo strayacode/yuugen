@@ -1,5 +1,5 @@
 #pragma once
-#include <emulator/common/types.h>
+#include <nds/common/types.h>
 
 u32 get_bit(u32 index, u32 data);
 

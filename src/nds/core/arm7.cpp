@@ -1,13 +1,14 @@
-#include <emulator/core/arm9.h>
-#include <emulator/emulator.h>
+#include <nds/core/arm7.h>
+#include <nds/nds.h>
 #include <stdio.h>
-#include <emulator/common/arithmetic.h>
+#include <nds/common/arithmetic.h>
 
-ARM9::ARM9(Emulator *emulator) : emulator(emulator) {
+
+ARM7::ARM7(NDS *nds) : nds(nds) {
     
 }
 
-u32 ARM9::get_reg(u32 reg) {
+u32 ARM7::get_reg(u32 reg) {
     u32 cpu_mode = get_bit_range(0, 4, regs.cpsr);
     switch (reg) {
     case 0:
@@ -99,7 +100,40 @@ u32 ARM9::get_reg(u32 reg) {
     }
 }
 
-void ARM9::execute_instruction() {
+void ARM7::direct_boot() {
+    // common between arm7 and arm9
+    regs.r0 = regs.r1 = regs.r2 = regs.r3 = regs.r4 = regs.r5 = regs.r6 = regs.r7 = regs.r8 = regs.r9 = regs.r10 = regs.r11 = regs.r12 = regs.r14 = 0;
+
+    regs.r8_fiq = regs.r9_fiq = regs.r10_fiq = regs.r11_fiq = regs.r12_fiq = regs.r14_fiq = regs.spsr_fiq = 0;
+	regs.r14_svc = regs.spsr_svc = 0;
+	regs.r14_abt = regs.spsr_abt = 0;
+	regs.r14_irq = regs.spsr_irq = 0;
+	regs.r14_und = regs.spsr_und = 0;
+
+    // arm7 specific
+    regs.r13 = regs.r13_fiq = regs.r13_abt = regs.r13_und = 0x0380FD80;
+    regs.r13_svc = 0x0380FFC0;
+    regs.r13_irq = 0x0380FF80;
+    regs.r15 = 0x08000000;
+    regs.cpsr = 0x0000005F;
+
+    printf("[ARM7] successfully initialised direct boot state\n");
+}
+
+void ARM7::firmware_boot() {
+    regs.r15 = 0x00000000;
+}
+
+void ARM7::reset() {
+    #ifdef DIRECT_BOOT
+        direct_boot();
+    #else
+        firmware_boot();
+    #endif
+    flush_pipeline();
+}
+
+void ARM7::execute_instruction() {
     // using http://imrannazar.com/ARM-Opcode-Map
     u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
     if (is_arm()) {
@@ -174,8 +208,8 @@ void ARM9::execute_instruction() {
                 b(); break;
         
         default:
-            printf("[ARM9] undefined arm instruction 0x%04x with identifier 0x%03x\n", opcode, index);
-            emulator->running = false;
+            printf("[ARM7] undefined arm instruction 0x%04x with identifier 0x%03x\n", opcode, index);
+            nds->running = false;
             break;
         }
         // no need to use get_reg() and set_reg() since pc is not a banked register
@@ -188,66 +222,33 @@ void ARM9::execute_instruction() {
     
 }
 
-void ARM9::direct_boot() {
-    // common between arm7 and arm9
-    regs.r0 = regs.r1 = regs.r2 = regs.r3 = regs.r4 = regs.r5 = regs.r6 = regs.r7 = regs.r8 = regs.r9 = regs.r10 = regs.r11 = regs.r12 = regs.r14 = 0;
-
-    regs.r8_fiq = regs.r9_fiq = regs.r10_fiq = regs.r11_fiq = regs.r12_fiq = regs.r14_fiq = regs.spsr_fiq = 0;
-	regs.r14_svc = regs.spsr_svc = 0;
-	regs.r14_abt = regs.spsr_abt = 0;
-	regs.r14_irq = regs.spsr_irq = 0;
-	regs.r14_und = regs.spsr_und = 0;
-
-    // specific to arm9
-    regs.r13 = regs.r13_fiq = regs.r13_abt = regs.r13_und = 0x03002F7C;
-    regs.r13_svc = 0x03003FC0;
-    regs.r13_irq = 0x03003F80;
-    regs.cpsr = 0x0000005F;
-    regs.r15 = 0;
-
-    printf("[ARM9] successfully initialised direct boot state\n");
-}
-
-void ARM9::firmware_boot() {
-    regs.r15 = 0xFFFF0000;
-}
-
-void ARM9::reset() {
-    #ifdef DIRECT_BOOT
-        direct_boot();
-    #else
-        firmware_boot();
-    #endif
-    flush_pipeline();
-}
-
-void ARM9::step() {
+void ARM7::step() {
     // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
     opcode = pipeline[0]; // store the current executing instruction 
     pipeline[0] = pipeline[1];
     if (is_arm()) {
-        pipeline[1] = emulator->memory.arm9_read_word(regs.r15);
+        pipeline[1] = nds->memory.arm9_read_word(regs.r15);
     } else {
-        pipeline[1] = emulator->memory.arm9_read_halfword(regs.r15);
+        pipeline[1] = nds->memory.arm9_read_halfword(regs.r15);
     }
     
     execute_instruction();
 }
 
-bool ARM9::is_arm() {
+bool ARM7::is_arm() {
     return (get_bit(5, regs.cpsr) == 0);
 }
 
-bool ARM9::get_condition_flag(int condition_flag) {
+bool ARM7::get_condition_flag(int condition_flag) {
     return ((regs.cpsr & (1 << condition_flag)) != 0);
 }
 
-bool ARM9::evaluate_condition() {
+bool ARM7::evaluate_condition() {
     bool n_flag = get_condition_flag(N_FLAG);
     bool z_flag = get_condition_flag(Z_FLAG);
     bool c_flag = get_condition_flag(C_FLAG);
     bool v_flag = get_condition_flag(V_FLAG);
-    switch (pipeline[0] >> 28) {
+    switch (opcode >> 28) {
         case 0:
             return z_flag;
         case 1:
@@ -279,19 +280,19 @@ bool ARM9::evaluate_condition() {
         case 14:
             return true;
         default:
-            printf("[ARM9] condition code %d is not valid!\n", pipeline[0] >> 28);
-            emulator->running = false;
+            printf("[ARM7] condition code %d is not valid!\n", opcode >> 28);
+            nds->running = false;
             return false;
     }
 }
 
-void ARM9::flush_pipeline() {
+void ARM7::flush_pipeline() {
     for (int i = 0; i < 2; i++) {
         if (is_arm()) {
-            pipeline[i] = emulator->memory.arm9_read_word(regs.r15);
+            pipeline[i] = nds->memory.arm7_read_word(regs.r15);
             regs.r15 += 4;
         } else {
-            pipeline[i] = emulator->memory.arm9_read_halfword(regs.r15);
+            pipeline[i] = nds->memory.arm7_read_halfword(regs.r15);
             regs.r15 += 2;
         }
     }

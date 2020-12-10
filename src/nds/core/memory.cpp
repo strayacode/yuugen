@@ -1,12 +1,12 @@
-#include <emulator/core/memory.h>
-#include <emulator/emulator.h>
+#include <nds/core/memory.h>
+#include <nds/nds.h>
 #include <stdio.h>
 
 static const int ARM9_BIOS_SIZE = 32 * 1024;
 static const int ARM7_BIOS_SIZE = 16 * 1024;
 static const int FIRMWARE_SIZE = 256 * 1024;
 
-Memory::Memory(Emulator *emulator) : emulator(emulator) {
+Memory::Memory(NDS *nds) : nds(nds) {
 
 }
 
@@ -96,7 +96,7 @@ void Memory::load_arm9_bios() {
     FILE *file_buffer = fopen("../bios/bios9.bin", "rb");
     if (file_buffer == NULL) {
         printf("[Memory] error when opening arm9 bios! make sure the file bios9.bin exists in the bios folder\n");
-        emulator->running = false;
+        nds->running = false;
     }
     fseek(file_buffer, 0, SEEK_END);
     fseek(file_buffer, 0, SEEK_SET);
@@ -109,7 +109,7 @@ void Memory::load_arm7_bios() {
     FILE *file_buffer = fopen("../bios/bios7.bin", "rb");
     if (file_buffer == NULL) {
         printf("[Memory] error when opening arm7 bios! make sure the file bios7.bin exists in the bios folder\n");
-        emulator->running = false;
+        nds->running = false;
     }
     fseek(file_buffer, 0, SEEK_END);
     fseek(file_buffer, 0, SEEK_SET);
@@ -122,7 +122,7 @@ void Memory::load_firmware() {
     FILE *file_buffer = fopen("../firmware/firmware.bin", "rb");
     if (file_buffer == NULL) {
         printf("[Memory] error when opening firmware! make sure the file firmware.bin exists in the firmware folder\n");
-        emulator->running = false;
+        nds->running = false;
     }
     fseek(file_buffer, 0, SEEK_END);
     fseek(file_buffer, 0, SEEK_SET);

@@ -1,8 +1,8 @@
-#include <emulator/core/arm7.h>
+#include <nds/core/arm9.h>
 #include <stdio.h>
-#include <emulator/common/arithmetic.h>
+#include <nds/common/arithmetic.h>
 
-void ARM7::b() {
+void ARM9::b() {
     if (evaluate_condition()) {
         // execute branch
         // offset is shifted left by 2 and sign extended to 32 bits
@@ -10,4 +10,9 @@ void ARM7::b() {
         regs.r15 += offset;
         flush_pipeline();
     }
+}
+
+void ARM9::cmp(u32 op2) {
+    u32 rn = get_bit_range(16, 19, opcode);
+    printf("%d\n", rn);
 }

@@ -1,17 +1,17 @@
 #pragma once
-#include <emulator/common/types.h>
+#include <nds/common/types.h>
 
-class Emulator;
+class NDS;
 
-class ARM9 {
+class ARM7 {
 public:
-    ARM9(Emulator *emulator);
+    ARM7(NDS *nds);
 
     void reset();
     void step();
 
 private:
-    Emulator *emulator;
+    NDS *nds;
 
     enum cpu_modes {
         USR = 0x10,
@@ -100,19 +100,17 @@ private:
 
     } regs;
 
-    u32 opcode; // used for storing the first instruction in the pipeline 
+    u32 opcode; // used for storing the first instruction in the pipeline
 
     u32 pipeline[2]; // store the addresses of the 2 instructions. first is the current executing instruction and the second is the instruction being decoded
 
     u32 get_reg(u32 reg);
     void set_reg(u32 reg, u32 value);
 
-    void read_instruction();
     void execute_instruction();
 
-    
     void firmware_boot();
-
+    
     void direct_boot();
 
     void flush_pipeline();
@@ -120,12 +118,11 @@ private:
     // some helper functions
     bool is_arm();
     bool get_condition_flag(int condition_flag);
-    void generate_arm_lut();
 
     bool evaluate_condition();
 
     // arm instructions
     void b();
 
-
+    
 };

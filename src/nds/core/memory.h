@@ -1,7 +1,7 @@
 #pragma once
-#include <emulator/common/types.h>
+#include <nds/common/types.h>
 
-class Emulator;
+class NDS;
 
 class Memory {
 public:
@@ -47,9 +47,9 @@ public:
     void load_arm7_bios();
     void load_firmware();
 
-    Memory(Emulator *emulator);
+    Memory(NDS *nds);
 private:
-    Emulator *emulator;
+    NDS *nds;
 
     
 };
