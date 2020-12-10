@@ -1,6 +1,13 @@
 #include <emulator/core/arm7.h>
 #include <stdio.h>
+#include <emulator/common/arithmetic.h>
 
 void ARM7::b() {
-    printf("arm 7 branch\n");
+    if (evaluate_condition()) {
+        // execute branch
+        // offset is shifted left by 2 and sign extended to 32 bits
+        u32 offset = (get_bit(23, opcode) ? 0xFF000000 : 0) | ((opcode & 0xFFFFFF) << 2);
+        regs.r15 += offset;
+        flush_pipeline();
+    }
 }

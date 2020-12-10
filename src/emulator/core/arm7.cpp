@@ -130,6 +130,7 @@ void ARM7::reset() {
     #else
         firmware_boot();
     #endif
+    flush_pipeline();
 }
 
 void ARM7::execute_instruction() {
@@ -283,4 +284,17 @@ bool ARM7::evaluate_condition() {
             emulator->running = false;
             return false;
     }
+}
+
+void ARM7::flush_pipeline() {
+    for (int i = 0; i < 2; i++) {
+        if (is_arm()) {
+            pipeline[i] = emulator->memory.arm7_read_word(regs.r15);
+            regs.r15 += 4;
+        } else {
+            pipeline[i] = emulator->memory.arm7_read_halfword(regs.r15);
+            regs.r15 += 2;
+        }
+    }
+    printf("instruction to execute: %04x, instruction to decode: %04x\n", pipeline[0], pipeline[1]);
 }

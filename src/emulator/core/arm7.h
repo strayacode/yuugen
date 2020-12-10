@@ -106,12 +106,14 @@ private:
 
     u32 get_reg(u32 reg);
     void set_reg(u32 reg, u32 value);
-    
+
     void execute_instruction();
 
     void firmware_boot();
     
     void direct_boot();
+
+    void flush_pipeline();
 
     // some helper functions
     bool is_arm();

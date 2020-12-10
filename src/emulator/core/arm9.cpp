@@ -101,7 +101,7 @@ u32 ARM9::get_reg(u32 reg) {
 
 void ARM9::execute_instruction() {
     // using http://imrannazar.com/ARM-Opcode-Map
-    u32 index = ((pipeline[0] >> 16) & 0xFF0) | ((pipeline[0] >> 4) & 0xF);
+    u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
     if (is_arm()) {
         // execute arm instruction
         switch (index) {
