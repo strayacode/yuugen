@@ -13,7 +13,7 @@ public:
     void run();
     ARM9 arm9;
     ARM7 arm7;
-    Memory memory;
+    NDSMemory memory;
     CP15 cp15;
 
     bool running;

@@ -6,11 +6,11 @@ static const int ARM9_BIOS_SIZE = 32 * 1024;
 static const int ARM7_BIOS_SIZE = 16 * 1024;
 static const int FIRMWARE_SIZE = 256 * 1024;
 
-Memory::Memory(NDS *nds) : nds(nds) {
+NDSMemory::NDSMemory(NDS *nds) : nds(nds) {
 
 }
 
-u8 Memory::arm7_read_byte(u32 addr) {
+u8 NDSMemory::arm7_read_byte(u32 addr) {
     switch (addr & 0xFF000000) {
     case 0x00000000:
         return arm7_bios[addr];
@@ -35,15 +35,15 @@ u8 Memory::arm7_read_byte(u32 addr) {
     }
 }
 
-u16 Memory::arm7_read_halfword(u32 addr) {
+u16 NDSMemory::arm7_read_halfword(u32 addr) {
     return (arm7_read_byte(addr + 1) << 8 | arm7_read_byte(addr));
 }
 
-u32 Memory::arm7_read_word(u32 addr) {
+u32 NDSMemory::arm7_read_word(u32 addr) {
     return (arm7_read_halfword(addr + 2) << 16 | arm7_read_halfword(addr));
 }
 
-u8 Memory::arm9_read_byte(u32 addr) {
+u8 NDSMemory::arm9_read_byte(u32 addr) {
     switch (addr & 0xFF000000) {
         case 0x00000000:
             // deal with tcm later lol
@@ -68,15 +68,15 @@ u8 Memory::arm9_read_byte(u32 addr) {
     }
 }
 
-u16 Memory::arm9_read_halfword(u32 addr) {
+u16 NDSMemory::arm9_read_halfword(u32 addr) {
     return (arm9_read_byte(addr + 1) << 8 | arm9_read_byte(addr));
 }
 
-u32 Memory::arm9_read_word(u32 addr) {
+u32 NDSMemory::arm9_read_word(u32 addr) {
     return (arm9_read_halfword(addr + 2) << 16 | arm9_read_halfword(addr));
 }
 
-u32 Memory::arm7_read_io(u32 addr) {
+u32 NDSMemory::arm7_read_io(u32 addr) {
     switch (addr) {
     default:
         printf("[Memory] io read by arm7 at address 0x%04x is unimplemented!\n", addr);
@@ -84,7 +84,7 @@ u32 Memory::arm7_read_io(u32 addr) {
     }
 }
 
-u32 Memory::arm9_read_io(u32 addr) {
+u32 NDSMemory::arm9_read_io(u32 addr) {
     switch (addr) {
     default:
         printf("[Memory] io read by arm9 at address 0x%04x is unimplemented!\n", addr);
@@ -92,7 +92,7 @@ u32 Memory::arm9_read_io(u32 addr) {
     }
 }
 
-void Memory::load_arm9_bios() {
+void NDSMemory::load_arm9_bios() {
     FILE *file_buffer = fopen("../bios/bios9.bin", "rb");
     if (file_buffer == NULL) {
         printf("[Memory] error when opening arm9 bios! make sure the file bios9.bin exists in the bios folder\n");
@@ -105,7 +105,7 @@ void Memory::load_arm9_bios() {
     printf("[Memory] arm9 bios loaded successfully!\n");
 }
 
-void Memory::load_arm7_bios() {
+void NDSMemory::load_arm7_bios() {
     FILE *file_buffer = fopen("../bios/bios7.bin", "rb");
     if (file_buffer == NULL) {
         printf("[Memory] error when opening arm7 bios! make sure the file bios7.bin exists in the bios folder\n");
@@ -118,7 +118,7 @@ void Memory::load_arm7_bios() {
     printf("[Memory] arm7 bios loaded successfully!\n");
 }
 
-void Memory::load_firmware() {
+void NDSMemory::load_firmware() {
     FILE *file_buffer = fopen("../firmware/firmware.bin", "rb");
     if (file_buffer == NULL) {
         printf("[Memory] error when opening firmware! make sure the file firmware.bin exists in the firmware folder\n");

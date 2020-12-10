@@ -2,6 +2,7 @@
 /build
 /firmware
 /roms
+/bootrom
 .*
 !/.gitignore
 TODO.txt

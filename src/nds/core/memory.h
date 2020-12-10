@@ -3,7 +3,7 @@
 
 class NDS;
 
-class Memory {
+class NDSMemory {
 public:
     // common between arm9 and arm7
     u8 main_ram[4 * 1024 * 1024]; // 4mb
@@ -47,7 +47,7 @@ public:
     void load_arm7_bios();
     void load_firmware();
 
-    Memory(NDS *nds);
+    NDSMemory(NDS *nds);
 private:
     NDS *nds;
 
