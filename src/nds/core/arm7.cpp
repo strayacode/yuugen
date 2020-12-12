@@ -102,8 +102,10 @@ u32 ARM7::get_reg(u32 reg) {
 
 void ARM7::direct_boot() {
     // common between arm7 and arm9
-    regs.r0 = regs.r1 = regs.r2 = regs.r3 = regs.r4 = regs.r5 = regs.r6 = regs.r7 = regs.r8 = regs.r9 = regs.r10 = regs.r11 = regs.r12 = regs.r14 = 0;
-
+    regs.r0 = regs.r1 = regs.r2 = regs.r3 = regs.r4 = regs.r5 = regs.r6 = regs.r7 = regs.r8 = regs.r9 = regs.r10 = regs.r11 = 0;
+    
+    // changed by entrypoint
+    regs.r12 = regs.r14 = regs.r15 = 0;
     regs.r8_fiq = regs.r9_fiq = regs.r10_fiq = regs.r11_fiq = regs.r12_fiq = regs.r14_fiq = regs.spsr_fiq = 0;
 	regs.r14_svc = regs.spsr_svc = 0;
 	regs.r14_abt = regs.spsr_abt = 0;

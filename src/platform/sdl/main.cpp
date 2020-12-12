@@ -1,16 +1,18 @@
 #include <nds/nds.h>
-#include <dmg/dmg.h>
+#include <stdio.h>
 
 int main(int argc, char *argv[]) {
-    // hardcode for now
-    DMG dmg;
-
-    dmg.run();
-
-
-    // NDS nds;
+    NDS nds;
+    if (argc < 2) {
+        printf("no rom argument or other arguments were specified!\n");
+        return 0;
+    }
+    int i;
+    for (i = 1; i < argc - 1; i++) {
+        printf("%s\n", argv[i]);
+    }
     
-    // nds.run();
+    nds.run(argv[i]);
     
     return 0;
 }

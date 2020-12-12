@@ -101,15 +101,16 @@ u32 ARM9::get_reg(u32 reg) {
 
 void ARM9::execute_instruction() {
     // using http://imrannazar.com/ARM-Opcode-Map
+    printf("%04x\n", regs.r15);
     if (is_arm()) {
         u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
         // execute arm instruction
         switch (index) {
-            case 0x350: case 0x351: case 0x352: case 0x353:
-            case 0x354: case 0x355: case 0x356: case 0x357:
-            case 0x358: case 0x359: case 0x35A: case 0x35B:
-            case 0x35C: case 0x35D: case 0x35E: case 0x35F:
-                // cmp(); break;
+            // case 0x350: case 0x351: case 0x352: case 0x353:
+            // case 0x354: case 0x355: case 0x356: case 0x357:
+            // case 0x358: case 0x359: case 0x35A: case 0x35B:
+            // case 0x35C: case 0x35D: case 0x35E: case 0x35F:
+            //     // cmp(); break;
 
             // execute arm instruction
             case 0xA00: case 0xA01: case 0xA02: case 0xA03:
@@ -195,7 +196,10 @@ void ARM9::execute_instruction() {
 
 void ARM9::direct_boot() {
     // common between arm7 and arm9
-    regs.r0 = regs.r1 = regs.r2 = regs.r3 = regs.r4 = regs.r5 = regs.r6 = regs.r7 = regs.r8 = regs.r9 = regs.r10 = regs.r11 = regs.r12 = regs.r14 = 0;
+    regs.r0 = regs.r1 = regs.r2 = regs.r3 = regs.r4 = regs.r5 = regs.r6 = regs.r7 = regs.r8 = regs.r9 = regs.r10 = regs.r11 = 0;
+
+    // are changed to entry point
+    regs.r12 = regs.r14 = regs.r15 = 0;
 
     regs.r8_fiq = regs.r9_fiq = regs.r10_fiq = regs.r11_fiq = regs.r12_fiq = regs.r14_fiq = regs.spsr_fiq = 0;
 	regs.r14_svc = regs.spsr_svc = 0;
@@ -208,7 +212,6 @@ void ARM9::direct_boot() {
     regs.r13_svc = 0x03003FC0;
     regs.r13_irq = 0x03003F80;
     regs.cpsr = 0x0000005F;
-    regs.r15 = 0;
 
     printf("[ARM9] successfully initialised direct boot state\n");
 }

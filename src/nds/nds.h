@@ -4,16 +4,16 @@
 #include <nds/common/types.h>
 #include <nds/core/memory.h>
 #include <nds/core/cp15.h>
-
+#include <string>
 
 class NDS {
 public:
     NDS();
     void reset();
-    void run();
+    void run(std::string rom_path);
     ARM9 arm9;
     ARM7 arm7;
-    NDSMemory memory;
+    Memory memory;
     CP15 cp15;
 
     bool running;

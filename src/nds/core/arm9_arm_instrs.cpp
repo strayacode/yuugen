@@ -12,7 +12,7 @@ void ARM9::b() {
     }
 }
 
-void ARM9::cmp(u32 op2) {
-    u32 rn = get_bit_range(16, 19, opcode);
-    printf("%d\n", rn);
-}
+// void ARM9::cmp(u32 op2) {
+//     u32 rn = get_bit_range(16, 19, opcode);
+//     printf("%d\n", rn);
+// }

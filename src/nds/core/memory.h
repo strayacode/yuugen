@@ -1,9 +1,10 @@
 #pragma once
 #include <nds/common/types.h>
+#include <string>
 
 class NDS;
 
-class NDSMemory {
+class Memory {
 public:
     // common between arm9 and arm7
     u8 main_ram[4 * 1024 * 1024]; // 4mb
@@ -46,8 +47,9 @@ public:
     void load_arm9_bios();
     void load_arm7_bios();
     void load_firmware();
+    void load_cartridge(std::string rom_path);
 
-    NDSMemory(NDS *nds);
+    Memory(NDS *nds);
 private:
     NDS *nds;
 

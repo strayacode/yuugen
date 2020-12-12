@@ -1,5 +1,6 @@
 #include <nds/nds.h>
 #include <stdio.h>
+#include <string>
 
 NDS::NDS() : arm9(this), arm7(this), memory(this) {
     
@@ -14,7 +15,8 @@ void NDS::reset() {
     arm7.reset();
 }
 
-void NDS::run() {
+void NDS::run(std::string rom_path) {
+    memory.load_cartridge(rom_path);
     reset();
 
     while (running) {
