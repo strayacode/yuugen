@@ -1,6 +1,6 @@
 set(PLATFORM_SDL ON)
 
-add_subdirectory(nds)
+add_subdirectory(emulator)
 
 if(PLATFORM_SDL)
     add_subdirectory(platform/sdl)

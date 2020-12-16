@@ -1,17 +1,19 @@
 #pragma once
-#include <nds/common/types.h>
+#include <emulator/common/types.h>
 
-class NDS;
+class Emulator;
 
-class ARM7 {
+class ARM {
 public:
-    ARM7(NDS *nds);
+    ARM(Emulator *emulator, int cpu_id);
 
     void reset();
     void step();
-
 private:
-    NDS *nds;
+    Emulator *emulator;
+
+    // 1 = arm9, 0 = arm7
+    int cpu_id;
 
     enum cpu_modes {
         USR = 0x10,
@@ -29,11 +31,6 @@ private:
         Z_FLAG = 30,
         C_FLAG = 29,
         V_FLAG = 28,
-    };
-
-    enum instruction_modes {
-        ARM,
-        THUMB,
     };
 
     struct registers {
@@ -101,28 +98,32 @@ private:
     } regs;
 
     u32 opcode; // used for storing the first instruction in the pipeline
-
     u32 pipeline[2]; // store the addresses of the 2 instructions. first is the current executing instruction and the second is the instruction being decoded
 
-    u32 get_reg(u32 reg);
-    void set_reg(u32 reg, u32 value);
+    u8 read_byte(u32 addr);
+    u16 read_halfword(u32 addr);
+    u32 read_word(u32 addr);
+
+    // implement these later
+    void write_byte(u32 addr, u8 data);
+    void write_halfword(u32 addr, u16 data);
+    void write_word(u32 addr, u32 data);
+
+    u32 get_reg(u8 reg);
+    void set_reg(u8 reg, u32 value);
 
     void execute_instruction();
+    void flush_pipeline();
 
     void firmware_boot();
-    
     void direct_boot();
-
-    void flush_pipeline();
 
     // some helper functions
     bool is_arm();
     bool get_condition_flag(int condition_flag);
-
     bool evaluate_condition();
 
     // arm instructions
     void b();
 
-    
 };

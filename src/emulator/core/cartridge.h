@@ -1,15 +1,24 @@
 #pragma once
-#include <nds/common/types.h>
+#include <emulator/common/types.h>
+#include <string>
 
-class NDS;
+class Emulator;
 
 class Cartridge {
 public:
-    Cartridge(NDS *nds);
-
+    Cartridge(Emulator *emulator);
+    ~Cartridge();
     void load_header_data();
+    void load_cartridge(std::string rom_path);
+
+    std::string nds_rom_name;
+
 private:
-    NDS *nds;
+    Emulator *emulator;
+
+    // allocate dynamically using malloc() to not use 4gb :joy:
+    u8 *rom;
+
 
     struct cartridge_header {
         char game_title[12];

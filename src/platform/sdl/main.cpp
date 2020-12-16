@@ -1,8 +1,8 @@
-#include <nds/nds.h>
+#include <emulator/emulator.h>
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
-    NDS nds;
+    Emulator emulator;
     if (argc < 2) {
         printf("no rom argument or other arguments were specified!\n");
         return 0;
@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
         printf("%s\n", argv[i]);
     }
     
-    nds.run(argv[i]);
+    emulator.run(argv[i]);
     
     return 0;
 }

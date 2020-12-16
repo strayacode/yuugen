@@ -1,4 +1,4 @@
-#include <nds/common/types.h>
+#include <emulator/common/types.h>
 
 u32 get_bit(u32 index, u32 data) {
     return ((data & (1 << index)) >> index);

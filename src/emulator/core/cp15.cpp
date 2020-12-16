@@ -1,4 +1,4 @@
-#include <nds/core/cp15.h>
+#include <emulator/core/cp15.h>
 #include <stdio.h>
 
 u32 CP15::read_reg(u32 cn, u32 cm, u32 cp) {

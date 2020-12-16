@@ -1,8 +1,8 @@
 #pragma once
-#include <nds/common/types.h>
+#include <emulator/common/types.h>
 #include <string>
 
-class NDS;
+class Emulator;
 
 class Memory {
 public:
@@ -49,9 +49,9 @@ public:
     void load_firmware();
     void load_cartridge(std::string rom_path);
 
-    Memory(NDS *nds);
+    Memory(Emulator *emulator);
 private:
-    NDS *nds;
+    Emulator *emulator;
 
     
 };

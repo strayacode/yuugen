@@ -1,8 +1,7 @@
-#include <nds/core/arm7.h>
-#include <stdio.h>
-#include <nds/common/arithmetic.h>
+#include <emulator/core/arm.h>
+#include <emulator/common/arithmetic.h>
 
-void ARM7::b() {
+void ARM::b() {
     if (evaluate_condition()) {
         // execute branch
         // offset is shifted left by 2 and sign extended to 32 bits
