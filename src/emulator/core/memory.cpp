@@ -13,10 +13,10 @@ Memory::Memory(Emulator *emulator) : emulator(emulator) {
 
 u8 Memory::arm7_read_byte(u32 addr) {
     switch (addr & 0xFF000000) {
-    case 0x00000000:
-        return arm7_bios[addr];
-    // case 0x02000000:
-    //     return main_ram[addr - 0x02000000];
+    // case 0x00000000:
+    //     return arm7_bios[addr];
+    case 0x02000000:
+        return main_ram[addr & 0x3FFFFF];
     // case 0x03000000:
     //     if (addr >= 0x03800000) {
     //         return arm7_wram[addr - 0x03800000];
@@ -32,6 +32,7 @@ u8 Memory::arm7_read_byte(u32 addr) {
     //     return arm7_vram[addr - 0x07000000];
     default:
         printf("[Memory] byte read from arm7 at address 0x%04x is unimplemented!\n", addr);
+        emulator->running = false;
         return 0;
     }
 }
@@ -46,10 +47,10 @@ u32 Memory::arm7_read_word(u32 addr) {
 
 u8 Memory::arm9_read_byte(u32 addr) {
     switch (addr & 0xFF000000) {
-        case 0x00000000:
+        // case 0x00000000:
             // deal with tcm later lol
-        // case 0x02000000:
-        //     return main_ram[addr - 0x02000000];
+    case 0x02000000:
+            return main_ram[addr & 0x3FFFFF];
         // case 0x03000000:
         //     return shared_wram[addr - 0x03000000];
         // case 0x04000000:
@@ -60,11 +61,12 @@ u8 Memory::arm9_read_byte(u32 addr) {
         //     // deal with later lol
         // case 0x07000000:
         //     return oam[addr - 0x07000000];
-        case 0xFF000000:
-            return arm9_bios[addr - 0xFFFF0000];
-        default:
-            printf("[Memory] byte read from arm9 at address 0x%04x is unimplemented!\n", addr);
-            return 0;
+    case 0xFF000000:
+        return arm9_bios[addr - 0xFFFF0000];
+    default:
+        printf("[Memory] byte read from arm9 at address 0x%04x is unimplemented!\n", addr);
+        emulator->running = false;
+        return 0;
 
     }
 }
@@ -81,6 +83,7 @@ u32 Memory::arm7_read_io(u32 addr) {
     switch (addr) {
     default:
         printf("[Memory] io read by arm7 at address 0x%04x is unimplemented!\n", addr);
+        emulator->running = false;
         return 0;
     }
 }
@@ -89,7 +92,32 @@ u32 Memory::arm9_read_io(u32 addr) {
     switch (addr) {
     default:
         printf("[Memory] io read by arm9 at address 0x%04x is unimplemented!\n", addr);
+        emulator->running = false;
         return 0;
+    }
+}
+
+void Memory::arm7_write_byte(u32 addr, u8 data) {
+    switch (addr & 0xFF000000) {
+    case 0x02000000:
+        main_ram[addr & 0x3FFFFF] = data;
+        break;
+    default:
+        printf("[Memory] byte read from arm7 at address 0x%04x\n is unimplemented!\n", addr);
+        emulator->running = false;
+        break;
+    }
+}
+
+void Memory::arm9_write_byte(u32 addr, u8 data) {
+    switch (addr & 0xFF000000) {
+    case 0x02000000:
+        main_ram[addr & 0x3FFFFF] = data;
+        break;
+    default:
+        printf("[Memory] byte read from arm9 at address 0x%04x\n is unimplemented!\n", addr);
+        emulator->running = false;
+        break;
     }
 }
 

@@ -223,7 +223,7 @@ void ARM::direct_boot() {
     regs.r0 = regs.r1 = regs.r2 = regs.r3 = regs.r4 = regs.r5 = regs.r6 = regs.r7 = regs.r8 = regs.r9 = regs.r10 = regs.r11 = 0;
 
     // are changed to entry point later through cartridge header
-    regs.r12 = regs.r14 = regs.r15 = 0;
+    regs.r12 = regs.r14 = 0;
 
     regs.r8_fiq = regs.r9_fiq = regs.r10_fiq = regs.r11_fiq = regs.r12_fiq = regs.r14_fiq = regs.spsr_fiq = 0;
 	regs.r14_svc = regs.spsr_svc = 0;
@@ -236,7 +236,7 @@ void ARM::direct_boot() {
         regs.r13 = regs.r13_fiq = regs.r13_abt = regs.r13_und = 0x0380FD80;
         regs.r13_svc = 0x0380FFC0;
         regs.r13_irq = 0x0380FF80;
-        regs.r15 = 0x08000000;
+        regs.r15 = emulator->cartridge.header.arm7_entry_address;
         regs.cpsr = 0x0000005F;
 
     } else {
@@ -244,6 +244,7 @@ void ARM::direct_boot() {
         regs.r13 = regs.r13_fiq = regs.r13_abt = regs.r13_und = 0x03002F7C;
         regs.r13_svc = 0x03003FC0;
         regs.r13_irq = 0x03003F80;
+        regs.r15 = emulator->cartridge.header.arm9_entry_address;
         regs.cpsr = 0x0000005F;
     }
     
@@ -256,11 +257,10 @@ void ARM::firmware_boot() {
 }
 
 void ARM::reset() {
-    #ifdef DIRECT_BOOT
-        direct_boot();
-    #else
-        firmware_boot();
-    #endif
+    // for now we will just direct boot
+    // do cartridge part first so we can change r15 to entry_address accordingly
+    emulator->cartridge.direct_boot();
+    direct_boot();
     flush_pipeline();
 }
 

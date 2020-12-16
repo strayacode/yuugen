@@ -15,7 +15,46 @@ Cartridge::~Cartridge() {
 }
 
 void Cartridge::load_header_data() {
+    // load the game title
+    for (int i = 0; i < 12; i++) {
+        header.game_title[i] = rom[i];
+    }
+
+    // load gamecode and makercode
+    header.gamecode = (rom[0xC] << 24 | rom[0xD] << 16 | rom[0xE] << 8 | rom[0xF]);
+    header.makercode = (rom[0x10] << 8 | rom[0x11]);
+
+    // load arm9 stuff
+    header.arm9_rom_offset = (rom[0x23] << 24 | rom[0x22] << 16 | rom[0x21] << 8 | rom[0x20]);
+    header.arm9_entry_address = (rom[0x27] << 24 | rom[0x26] << 16 | rom[0x25] << 8 | rom[0x24]);
+    header.arm9_ram_address = (rom[0x2B] << 24 | rom[0x2A] << 16 | rom[0x2F] << 8 | rom[0x2E]);
+    header.arm9_size = (rom[0x2F] << 24 | rom[0x2E] << 16 | rom[0x2D] << 8 | rom[0x2C]);
+
+    header.arm7_rom_offset = (rom[0x33] << 24 | rom[0x32] << 16 | rom[0x31] << 8 | rom[0x30]);
+    header.arm7_entry_address = (rom[0x37] << 24 | rom[0x36] << 16 | rom[0x35] << 8 | rom[0x34]);
+    header.arm7_ram_address = (rom[0x3B] << 24 | rom[0x3A] << 16 | rom[0x3F] << 8 | rom[0x3E]);
+    header.arm7_size = (rom[0x3F] << 24 | rom[0x3E] << 16 | rom[0x3D] << 8 | rom[0x3C]);
+    printf("arm9 offset: 0x%08x arm9 entry address: 0x%08x arm9 ram address: 0x%08x arm9 size: 0x%08x\n", header.arm9_rom_offset, header.arm9_entry_address, header.arm9_ram_address, header.arm9_size);
+
+    printf("[Cartridge] header data loaded successfully!\n");
+}
+
+void Cartridge::direct_boot() {
+    // first transfer header data to main memory
     
+    for (u32 i = 0; i < 0x170; i++) {
+        emulator->memory.arm9_write_byte(0x027FFE00 + i, rom[i]);
+    }
+    
+    // transfer arm9 code
+    for (u32 i = 0; i < header.arm9_size; i++) {
+        emulator->memory.arm9_write_byte(header.arm9_entry_address + i, rom[header.arm9_rom_offset + i]);
+    }
+
+    // transfer arm7 code
+    for (u32 i = 0; i < header.arm7_size; i++) {
+        emulator->memory.arm9_write_byte(header.arm9_entry_address + i, rom[header.arm9_rom_offset + i]);
+    }
 }
 
 void Cartridge::load_cartridge(std::string rom_path) {
@@ -31,4 +70,5 @@ void Cartridge::load_cartridge(std::string rom_path) {
     fread(rom, 1, cartridge_size, file_buffer);
     fclose(file_buffer);  
     printf("[Cartridge] cartridge loaded successfully!\n");
+    load_header_data();
 }
