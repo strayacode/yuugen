@@ -7,10 +7,7 @@ void ARM::b() {
         // execute branch
         // offset is shifted left by 2 and sign extended to 32 bits
         u32 offset = (get_bit(23, opcode) ? 0xFF000000 : 0) | ((opcode & 0xFFFFFF) << 2);
-        printf("%04x\n", regs.r15);
-        printf("%d\n", offset);
         regs.r15 += offset;
-        printf("%04x\n", regs.r15);
         flush_pipeline();
     } 
 }
@@ -23,4 +20,5 @@ void ARM::mov_imm() {
         u32 op2 = rotate_right(immediate, shift * 2);
         set_reg(rd, op2);    
     }
+    regs.r15 += 4;
 }

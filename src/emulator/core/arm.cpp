@@ -312,12 +312,8 @@ void ARM::execute_instruction() {
             emulator->running = false;
             break;
         }
-        // no need to use get_reg() and set_reg() since pc is not a banked register
-        regs.r15 += 4;
     } else {
         // execute thumb instruction
-        // no need to use get_reg() and set_reg() since pc is not a banked register
-        regs.r15 += 2;
     }
     
 }
@@ -442,6 +438,6 @@ void ARM::flush_pipeline() {
             regs.r15 += 2;
         }
     }
-    printf("[ARM] instruction to execute: %04x, instruction to decode: %04x\n", pipeline[0], pipeline[1]);
+    // printf("[ARM] instruction to execute: %04x, instruction to decode: %04x\n", pipeline[0], pipeline[1]);
 }
 
