@@ -2,6 +2,7 @@
 #include <emulator/emulator.h>
 #include <emulator/common/arithmetic.h>
 #include <emulator/common/types.h>
+#include <emulator/core/disassembler.h>
 
 ARM::ARM(Emulator *emulator, int cpu_id): emulator(emulator), cpu_id(cpu_id) {
 
@@ -237,7 +238,7 @@ void ARM::execute_instruction() {
             case 0x3A4: case 0x3A5: case 0x3A6: case 0x3A7:
             case 0x3A8: case 0x3A9: case 0x3AA: case 0x3AB:
             case 0x3AC: case 0x3AD: case 0x3AE: case 0x3AF:
-                mov_imm();
+                mov_imm(); break;
 
             // execute arm instruction
             case 0xA00: case 0xA01: case 0xA02: case 0xA03:
@@ -376,7 +377,7 @@ void ARM::step() {
     } else {
         // pipeline[1] = read_halfword(regs.r15);
     }
-    
+    disassemble_instruction(opcode);
     execute_instruction();
 }
 
@@ -393,7 +394,7 @@ bool ARM::evaluate_condition() {
     bool z_flag = get_condition_flag(Z_FLAG);
     bool c_flag = get_condition_flag(C_FLAG);
     bool v_flag = get_condition_flag(V_FLAG);
-    switch (pipeline[0] >> 28) {
+    switch (opcode >> 28) {
         case 0:
             return z_flag;
         case 1:
