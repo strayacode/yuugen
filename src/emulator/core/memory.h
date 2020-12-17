@@ -26,8 +26,8 @@ public:
 
 
     // arm7 specific
-    u8 arm7_bios[16 * 1024]; // 16kb
-    u8 arm7_wram[64 * 1024]; // 64 kb
+    u8 arm7_bios[0x4000]; // 16kb
+    u8 arm7_wram[0x10000]; // 64 kb
     // TODO: add wireless communications
     u8 arm7_vram[256 * 1024]; // vram allocated as wram to arm7 max 256kb
 

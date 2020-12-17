@@ -23,9 +23,7 @@ u16 ARM::read_halfword(u32 addr) {
 }
 
 u32 ARM::read_word(u32 addr) {
-    printf("init pipeline %d\n", cpu_id);
     if (!cpu_id) {
-        printf("not good\n");
         return emulator->memory.arm7_read_word(addr);
     }
     return emulator->memory.arm9_read_word(addr);
@@ -118,23 +116,128 @@ u32 ARM::get_reg(u8 reg) {
     case 15:
         return regs.r15;
     default:
-        printf("[ARM] undefined registers access r%d\n", reg);
+        printf("[ARM] undefined register read r%d\n", reg);
+        emulator->running = false;
         return 0;
+    }
+}
+
+void ARM::set_reg(u8 reg, u32 data) {
+    u32 cpu_mode = get_bit_range(0, 4, regs.cpsr);
+    switch (reg) {
+    case 0:
+        regs.r0 = data; break;
+    case 1: 
+        regs.r1 = data; break;
+    case 2:
+        regs.r2 = data; break;
+    case 3:
+        regs.r3 = data; break;
+    case 4:
+        regs.r4 = data; break;
+    case 5:
+        regs.r5 = data; break;
+    case 6:
+        regs.r6 = data; break;
+    case 7:
+        regs.r7 = data; break;
+    case 8:
+        switch (cpu_mode) {
+        case FIQ:
+            regs.r8_fiq = data; break;
+        default:
+            regs.r8 = data; break;
+        }
+        break;
+    case 9:
+        switch (cpu_mode) {
+        case FIQ:
+            regs.r9_fiq = data; break;
+        default:
+            regs.r9 = data; break;
+        }
+        break;
+    case 10:
+        switch (cpu_mode) {
+        case FIQ:
+            regs.r10_fiq = data; break;
+        default:
+            regs.r10 = data; break;
+        }
+        break;
+    case 11:
+        switch (cpu_mode) {
+        case FIQ:
+            regs.r11_fiq = data; break;
+        default:
+            regs.r11 = data; break;
+        }
+        break;
+    case 12:
+        switch (cpu_mode) {
+        case FIQ:
+            regs.r12_fiq = data; break;
+        default:
+            regs.r12 = data; break;
+        }
+        break;
+    case 13:
+        switch (cpu_mode) {
+        case FIQ:
+            regs.r13_fiq = data; break;
+        case SVC:
+            regs.r13_svc = data; break;
+        case ABT:
+            regs.r13_abt = data; break;
+        case IRQ:
+            regs.r13_irq = data; break;
+        case UND:
+            regs.r13_und = data; break;
+        default:
+            regs.r13 = data; break;
+        }
+        break;
+    case 14:
+        switch (cpu_mode) {
+        case FIQ:
+            regs.r14_fiq = data; break;
+        case SVC:
+            regs.r14_svc = data; break;
+        case ABT:
+            regs.r14_abt = data; break;
+        case IRQ:
+            regs.r14_irq = data; break;
+        case UND:
+            regs.r14_und = data; break;
+        default:
+            regs.r14 = data; break;
+        }
+        break;
+    case 15:
+        regs.r15 = data; break;
+    default:
+        printf("[ARM] undefined register write r%d\n", reg);
+        emulator->running = false;
     }
 }
 
 void ARM::execute_instruction() {
     // using http://imrannazar.com/ARM-Opcode-Map
-    printf("%04x\n", regs.r15);
     if (is_arm()) {
         u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
         // execute arm instruction
         switch (index) {
+            
             // case 0x350: case 0x351: case 0x352: case 0x353:
             // case 0x354: case 0x355: case 0x356: case 0x357:
             // case 0x358: case 0x359: case 0x35A: case 0x35B:
             // case 0x35C: case 0x35D: case 0x35E: case 0x35F:
             //     // cmp(); break;
+            case 0x3A0: case 0x3A1: case 0x3A2: case 0x3A3:
+            case 0x3A4: case 0x3A5: case 0x3A6: case 0x3A7:
+            case 0x3A8: case 0x3A9: case 0x3AA: case 0x3AB:
+            case 0x3AC: case 0x3AD: case 0x3AE: case 0x3AF:
+                mov_imm();
 
             // execute arm instruction
             case 0xA00: case 0xA01: case 0xA02: case 0xA03:
@@ -258,8 +361,6 @@ void ARM::firmware_boot() {
 
 void ARM::reset() {
     // for now we will just direct boot
-    // do cartridge part first so we can change r15 to entry_address accordingly
-    emulator->cartridge.direct_boot();
     direct_boot();
     flush_pipeline();
 }

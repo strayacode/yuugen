@@ -12,13 +12,12 @@ void Emulator::reset() {
     memory.load_arm7_bios();
     memory.load_firmware();
     arm9.reset();
-    printf("arm9 reset\n");
     arm7.reset();
-    printf("arm7 reset\n");
 }
 
 void Emulator::run(std::string rom_path) {
     cartridge.load_cartridge(rom_path);
+    cartridge.direct_boot();
     reset();
 
     while (running) {

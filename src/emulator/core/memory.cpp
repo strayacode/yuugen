@@ -13,23 +13,15 @@ Memory::Memory(Emulator *emulator) : emulator(emulator) {
 
 u8 Memory::arm7_read_byte(u32 addr) {
     switch (addr & 0xFF000000) {
-    // case 0x00000000:
-    //     return arm7_bios[addr];
+    // main memory
     case 0x02000000:
         return main_ram[addr & 0x3FFFFF];
-    // case 0x03000000:
-    //     if (addr >= 0x03800000) {
-    //         return arm7_wram[addr - 0x03800000];
-    //     } else {
-    //         return shared_wram[addr - 0x03000000];
-    //     }
-    // // TODO: add wireless communications
-    // case 0x04000000:
-    //     arm7_read_io(addr);
-    // case 0x06000000:
-    //     return arm7_vram[addr - 0x06000000];
-    // case 0x07000000:
-    //     return arm7_vram[addr - 0x07000000];
+    // shared wram
+    case 0x03000000:
+        // arm7 wram
+        if (addr >= 0x03800000) {
+            return arm7_wram[addr & 0xFFFF];
+        }
     default:
         printf("[Memory] byte read from arm7 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
@@ -102,20 +94,26 @@ void Memory::arm7_write_byte(u32 addr, u8 data) {
     case 0x02000000:
         main_ram[addr & 0x3FFFFF] = data;
         break;
+    case 0x03000000:
+        if (addr >= 0x03800000) {
+            arm7_wram[addr & 0xFFFF] = data;
+        }
+        break;
     default:
-        printf("[Memory] byte read from arm7 at address 0x%04x\n is unimplemented!\n", addr);
+        printf("[Memory] byte write from arm7 to address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
         break;
     }
 }
 
 void Memory::arm9_write_byte(u32 addr, u8 data) {
+    // printf("ok\n");
     switch (addr & 0xFF000000) {
     case 0x02000000:
         main_ram[addr & 0x3FFFFF] = data;
         break;
     default:
-        printf("[Memory] byte read from arm9 at address 0x%04x\n is unimplemented!\n", addr);
+        printf("[Memory] byte read from arm9 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
         break;
     }

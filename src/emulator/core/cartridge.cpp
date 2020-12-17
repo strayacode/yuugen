@@ -35,6 +35,7 @@ void Cartridge::load_header_data() {
     header.arm7_ram_address = (rom[0x3B] << 24 | rom[0x3A] << 16 | rom[0x3F] << 8 | rom[0x3E]);
     header.arm7_size = (rom[0x3F] << 24 | rom[0x3E] << 16 | rom[0x3D] << 8 | rom[0x3C]);
     printf("arm9 offset: 0x%08x arm9 entry address: 0x%08x arm9 ram address: 0x%08x arm9 size: 0x%08x\n", header.arm9_rom_offset, header.arm9_entry_address, header.arm9_ram_address, header.arm9_size);
+    printf("arm7 offset: 0x%08x arm7 entry address: 0x%08x arm7 ram address: 0x%08x arm7 size: 0x%08x\n", header.arm7_rom_offset, header.arm7_entry_address, header.arm7_ram_address, header.arm7_size);
 
     printf("[Cartridge] header data loaded successfully!\n");
 }
@@ -53,7 +54,7 @@ void Cartridge::direct_boot() {
 
     // transfer arm7 code
     for (u32 i = 0; i < header.arm7_size; i++) {
-        emulator->memory.arm9_write_byte(header.arm9_entry_address + i, rom[header.arm9_rom_offset + i]);
+        emulator->memory.arm7_write_byte(header.arm7_entry_address + i, rom[header.arm7_rom_offset + i]);
     }
 }
 

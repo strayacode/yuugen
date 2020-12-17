@@ -110,7 +110,7 @@ private:
     void write_word(u32 addr, u32 data);
 
     u32 get_reg(u8 reg);
-    void set_reg(u8 reg, u32 value);
+    void set_reg(u8 reg, u32 data);
 
     void execute_instruction();
     void flush_pipeline();
@@ -125,5 +125,6 @@ private:
 
     // arm instructions
     void b();
+    void mov_imm();
 
 };
