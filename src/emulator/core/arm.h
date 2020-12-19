@@ -100,6 +100,16 @@ private:
     u32 opcode; // used for storing the first instruction in the pipeline
     u32 pipeline[2]; // store the addresses of the 2 instructions. first is the current executing instruction and the second is the instruction being decoded
 
+    // lut table
+    using arm_function_pointer = void (ARM::*)();
+    arm_function_pointer arm_lut_table[4096] = {};
+
+    using thumb_function_pointer = void (ARM::*)();
+    thumb_function_pointer thumb_lut_table[256] = {};
+
+    void fill_arm_lut_table();
+    void fill_thumb_lut_table();
+
     u8 read_byte(u32 addr);
     u16 read_halfword(u32 addr);
     u32 read_word(u32 addr);
@@ -123,8 +133,24 @@ private:
     bool get_condition_flag(int condition_flag);
     bool evaluate_condition();
 
-    // arm instructions
-    void b();
-    void mov_imm();
+    // arm instruction handlers
+    void arm_branch();
+    void arm_undefined();
+
+
+    // void b();
+    // void mov_imm();
+    // void and_word(u32 op2);
+    // void str();
+
+    // shift stuff
+    u32 lli(); // LSL #i
+    u32 llr(); // LSL rm
+    u32 lri(); // LSR #i
+    u32 lrr(); // LSR rm
+    u32 ari(); // ASR #i
+    u32 arr(); // ASR rm
+    
+
 
 };

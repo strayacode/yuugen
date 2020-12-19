@@ -5,7 +5,7 @@ add_library(emulator
     core/memory.cpp core/memory.h
     core/cp15.cpp core/cp15.h
     core/cartridge.cpp core/cartridge.h
-    core/disassembler.cpp
+    core/disassembler.cpp core/barrel_shifter.cpp
     common/types.h common/arithmetic.h
     common/arithmetic.cpp
 )
