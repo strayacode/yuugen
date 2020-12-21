@@ -7,6 +7,8 @@ add_library(emulator
     core/cartridge.cpp core/cartridge.h
     core/disassembler.cpp core/barrel_shifter.cpp
     common/types.h common/arithmetic.h
+    core/gpu.cpp core/gpu.h
+    core/gpu_2d.cpp core/gpu_2d.h
     common/arithmetic.cpp
 )
 

@@ -79,7 +79,6 @@ T Memory::arm9_read(u32 addr) {
 
 }
 
-// need to change this to a template
 template <typename T>
 T Memory::arm7_read_io(u32 addr) {
     switch (addr) {
@@ -93,14 +92,37 @@ T Memory::arm7_read_io(u32 addr) {
 template <typename T>
 T Memory::arm9_read_io(u32 addr) {
     switch (addr) {
-    case 0x04000304: case 0x04000305:
-        // POWCNT1
     default:
         printf("[Memory] io read by arm9 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
         return 0;
     }
 }
+
+template <typename T>
+void Memory::arm7_write_io(u32 addr, T data) {
+    switch (addr) {
+    default:
+        printf("[Memory] io write by arm7 at address 0x%04x is unimplemented!\n", addr);
+    }
+}
+
+template <typename T> 
+void Memory::arm9_write_io(u32 addr, T data) {
+    switch (addr) {
+    case 0x04000000:
+        emulator->gpu.engine_a.dispcnt.raw = data;
+    case 0x04000240:
+        emulator->gpu.engine_a.vramcnt_a.raw = data;
+    case 0x04000304:
+        emulator->gpu.powcnt1.raw = data;
+        break;
+    default:
+        printf("[Memory] io write by arm9 at address 0x%04x is unimplemented!\n", addr);
+    }
+}
+
+
 
 template <typename T>
 void Memory::arm7_write(u32 addr, T data) {
@@ -115,7 +137,7 @@ void Memory::arm7_write(u32 addr, T data) {
         }
         break;
     default:
-        printf("[Memory] byte write from arm7 to address 0x%04x is unimplemented!\n", addr);
+        printf("[Memory] write from arm7 to address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
         return;
     }
@@ -132,8 +154,11 @@ void Memory::arm9_write(u32 addr, T data) {
     case 0x02000000:
         data_addr = &main_ram[addr & 0x3FFFFF];
         break;
+    case 0x04000000:
+        arm9_write_io<T>(addr, data);
+        return; // since write is already done
     default:
-        printf("[Memory] byte read from arm9 at address 0x%04x is unimplemented!\n", addr);
+        printf("[Memory] write from arm9 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
         return;
     }

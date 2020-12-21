@@ -275,7 +275,7 @@ void ARM::fill_arm_lut_table() {
             arm_lut_table[i] = &ARM::arm_single_data_transfer;
         } else if ((i & 0b111001001001) == 0b000001001001) {
             // halfword data transfer: immediate offset still need to implement
-            arm_lut_table[i] = &ARM::arm_undefined;
+            arm_lut_table[i] = &ARM::arm_halfword_data_transfer_immediate;
         } else if ((i & 0b111001001001) == 0b000000001001) {
             // halfword data transfer: register offset still need to implement
             arm_lut_table[i] = &ARM::arm_undefined;

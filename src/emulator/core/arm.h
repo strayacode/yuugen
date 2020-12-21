@@ -138,6 +138,8 @@ private:
     void arm_undefined();
     void arm_data_processing();
     void arm_single_data_transfer(); // for ldr and str
+    void arm_halfword_data_transfer_immediate();
+    void arm_halfword_data_transfer_register();
 
 
     // void b();

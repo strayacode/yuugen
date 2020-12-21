@@ -4,11 +4,14 @@
 #include <emulator/core/memory.h>
 #include <emulator/core/cartridge.h>
 #include <emulator/core/cp15.h>
+#include <emulator/core/gpu.h>
 #include <string>
+#include <SDL2/SDL.h>
 
 class Emulator {
 public:
     Emulator();
+    ~Emulator();
     void reset();
     void run(std::string rom_path);
     ARM arm9;
@@ -16,6 +19,7 @@ public:
     Memory memory;
     Cartridge cartridge;
     CP15 cp15;
+    GPU gpu;
 
     bool running;
 
@@ -23,5 +27,17 @@ public:
 
 
 private:
-    
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    SDL_Texture *top_texture;
+    SDL_Texture *bottom_texture;
+    SDL_Rect top_texture_dimensions;
+    SDL_Rect bottom_texture_dimensions;
+
+    // Event handler
+    SDL_Event e;
+
+    int window_size_multiplier;
+
+    void sdl_init(); // initialises sdl stuff
 };
