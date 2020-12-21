@@ -32,6 +32,30 @@ u32 ARM::read_word(u32 addr) {
     return emulator->memory.arm9_read_word(addr);
 }
 
+void ARM::write_byte(u32 addr, u8 data) {
+    if (!cpu_id) {
+        emulator->memory.arm7_write_byte(addr, data);
+    } else {
+        emulator->memory.arm9_write_byte(addr, data);
+    }
+}
+
+void ARM::write_halfword(u32 addr, u16 data) {
+    if (!cpu_id) {
+        emulator->memory.arm7_write_halfword(addr, data);
+    } else {
+        emulator->memory.arm9_write_halfword(addr, data);
+    }
+}
+
+void ARM::write_word(u32 addr, u32 data) {
+    if (!cpu_id) {
+        emulator->memory.arm7_write_word(addr, data);
+    } else {
+        emulator->memory.arm9_write_word(addr, data);
+    }
+}
+
 u32 ARM::get_reg(u8 reg) {
     u32 cpu_mode = get_bit_range(0, 4, regs.cpsr);
     switch (reg) {
@@ -226,23 +250,50 @@ void ARM::set_reg(u8 reg, u32 data) {
 
 void ARM::fill_arm_lut_table() {
     for (int i = 0; i < 4096; i++) {
-        if (i & 0b111100000000 == 0b111100000000) {
+        if ((i & 0b111100000000) == 0b111100000000) {
             // software interrupt still need to implement
             arm_lut_table[i] = &ARM::arm_undefined;
-        } else if (i & 0b111000000000 == 0b111000000001) {
+        } else if ((i & 0b111000000001) == 0b111000000001) {
             // coprocessor register transfer (on arm9 only i think)
             arm_lut_table[i] = &ARM::arm_undefined;
-        } else if (i & 0b111000000000 == 0b111000000000) {
+        } else if ((i & 0b111000000001) == 0b111000000000) {
             // coprocessor data operation (on arm9 only i think)
             arm_lut_table[i] = &ARM::arm_undefined;
-        } else if (i & 0b110000000000 == 0b110000000000) {
+        } else if ((i & 0b110000000000) == 0b110000000000) {
             // coprocessor data transfer (on arm9 only i think)
+            arm_lut_table[i] = &ARM::arm_undefined;
+        } else if ((i & 0b111000000000) == 0b101000000000) {
+            arm_lut_table[i] = &ARM::arm_branch;
+        } else if ((i & 0b111000000000) == 0b100000000000) {
+            // block data transfer still need to implement
+            arm_lut_table[i] = &ARM::arm_undefined;
+        } else if ((i & 0b111000000001) == 0b011000000001) {
+            // undefined instruction
+            arm_lut_table[i] = &ARM::arm_undefined;
+        } else if ((i & 0b110000000000) == 0b010000000000) {
+            // single data transfer still need to implement
+            arm_lut_table[i] = &ARM::arm_single_data_transfer;
+        } else if ((i & 0b111001001001) == 0b000001001001) {
+            // halfword data transfer: immediate offset still need to implement
+            arm_lut_table[i] = &ARM::arm_undefined;
+        } else if ((i & 0b111001001001) == 0b000000001001) {
+            // halfword data transfer: register offset still need to implement
             arm_lut_table[i] = &ARM::arm_undefined;
         } else if (i == 0b000100100001) {
             // branch with exchange still need to implement
             arm_lut_table[i] = &ARM::arm_undefined;
-        } else if (i & 0b111000000000 == 0b101000000000) {
-            arm_lut_table[i] = &ARM::arm_branch;
+        } else if ((i & 0b111110111111) == 0b000100001001) {
+            // single data swap still need to implement
+            arm_lut_table[i] = &ARM::arm_undefined;
+        } else if ((i & 0b111110001111) == 0b000010001001) {
+            // multiply long still need to implement
+            arm_lut_table[i] = &ARM::arm_undefined;
+        } else if ((i & 0b111111001111) == 0b000000001001) {
+            // multiply still need to implement
+            arm_lut_table[i] = &ARM::arm_undefined;
+        } else if ((i & 0b110000000000) == 0b000000000000) {
+            // data processing / psr transfer still need to implement
+            arm_lut_table[i] = &ARM::arm_data_processing;
         } else {
             arm_lut_table[i] = &ARM::arm_undefined;
         }
@@ -314,7 +365,7 @@ void ARM::step() {
     } else {
         // pipeline[1] = read_halfword(regs.r15);
     }
-    disassemble_instruction(opcode);
+    // disassemble_instruction(opcode);
     execute_instruction();
 }
 

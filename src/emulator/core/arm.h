@@ -136,6 +136,8 @@ private:
     // arm instruction handlers
     void arm_branch();
     void arm_undefined();
+    void arm_data_processing();
+    void arm_single_data_transfer(); // for ldr and str
 
 
     // void b();

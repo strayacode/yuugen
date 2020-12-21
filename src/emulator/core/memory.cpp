@@ -11,38 +11,44 @@ Memory::Memory(Emulator *emulator) : emulator(emulator) {
 
 }
 
-u8 Memory::arm7_read_byte(u32 addr) {
+template <typename T>
+T Memory::arm7_read(u32 addr) {
+    u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
     // main memory
     case 0x02000000:
-        return main_ram[addr & 0x3FFFFF];
+        data_addr = &main_ram[addr & 0x3FFFFF];
+        break;
     // shared wram
     case 0x03000000:
         // arm7 wram
         if (addr >= 0x03800000) {
-            return arm7_wram[addr & 0xFFFF];
+            data_addr = &arm7_wram[addr & 0xFFFF];
+            
         }
+        break;
     default:
-        printf("[Memory] byte read from arm7 at address 0x%04x is unimplemented!\n", addr);
+        printf("[Memory] read from arm7 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
         return 0;
     }
+
+    T return_value = 0;
+    for (u32 i = 0; i < sizeof(T); i++) {
+        return_value |= (data_addr[i] << (i * 8));
+    }
+    return return_value;
 }
 
-u16 Memory::arm7_read_halfword(u32 addr) {
-    return (arm7_read_byte(addr + 1) << 8 | arm7_read_byte(addr));
-}
-
-u32 Memory::arm7_read_word(u32 addr) {
-    return (arm7_read_halfword(addr + 2) << 16 | arm7_read_halfword(addr));
-}
-
-u8 Memory::arm9_read_byte(u32 addr) {
+template <typename T>
+T Memory::arm9_read(u32 addr) {
+    u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
-        // case 0x00000000:
-            // deal with tcm later lol
+    // case 0x00000000:
+    //     // for now just read from instruction tcm whatever
     case 0x02000000:
-            return main_ram[addr & 0x3FFFFF];
+        data_addr = &main_ram[addr & 0x3FFFFF];
+        break;
         // case 0x03000000:
         //     return shared_wram[addr - 0x03000000];
         // case 0x04000000:
@@ -53,25 +59,29 @@ u8 Memory::arm9_read_byte(u32 addr) {
         //     // deal with later lol
         // case 0x07000000:
         //     return oam[addr - 0x07000000];
+    case 0x04000000:
+
     case 0xFF000000:
-        return arm9_bios[addr - 0xFFFF0000];
+        data_addr = &arm9_bios[addr & 0x7FFF];
+        break;
     default:
-        printf("[Memory] byte read from arm9 at address 0x%04x is unimplemented!\n", addr);
+        printf("[Memory] read from arm9 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
         return 0;
-
     }
+    
+    T return_value = 0;
+    for (u32 i = 0; i < sizeof(T); i++) {
+        return_value |= (data_addr[i] << (i * 8));
+    }
+
+    return return_value;
+
 }
 
-u16 Memory::arm9_read_halfword(u32 addr) {
-    return (arm9_read_byte(addr + 1) << 8 | arm9_read_byte(addr));
-}
-
-u32 Memory::arm9_read_word(u32 addr) {
-    return (arm9_read_halfword(addr + 2) << 16 | arm9_read_halfword(addr));
-}
-
-u32 Memory::arm7_read_io(u32 addr) {
+// need to change this to a template
+template <typename T>
+T Memory::arm7_read_io(u32 addr) {
     switch (addr) {
     default:
         printf("[Memory] io read by arm7 at address 0x%04x is unimplemented!\n", addr);
@@ -80,8 +90,11 @@ u32 Memory::arm7_read_io(u32 addr) {
     }
 }
 
-u32 Memory::arm9_read_io(u32 addr) {
+template <typename T>
+T Memory::arm9_read_io(u32 addr) {
     switch (addr) {
+    case 0x04000304: case 0x04000305:
+        // POWCNT1
     default:
         printf("[Memory] io read by arm9 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
@@ -89,33 +102,43 @@ u32 Memory::arm9_read_io(u32 addr) {
     }
 }
 
-void Memory::arm7_write_byte(u32 addr, u8 data) {
+template <typename T>
+void Memory::arm7_write(u32 addr, T data) {
+    u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
     case 0x02000000:
-        main_ram[addr & 0x3FFFFF] = data;
+        data_addr = &main_ram[addr & 0x3FFFFF];
         break;
     case 0x03000000:
         if (addr >= 0x03800000) {
-            arm7_wram[addr & 0xFFFF] = data;
+            data_addr = &arm7_wram[addr & 0xFFFF];
         }
         break;
     default:
         printf("[Memory] byte write from arm7 to address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
-        break;
+        return;
     }
+    for (u32 i = 0; i < sizeof(T); i++) {
+        data_addr[i] = (data >> (i * 8));
+    }
+
 }
 
-void Memory::arm9_write_byte(u32 addr, u8 data) {
-    // printf("ok\n");
+template <typename T>
+void Memory::arm9_write(u32 addr, T data) {
+    u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
     case 0x02000000:
-        main_ram[addr & 0x3FFFFF] = data;
+        data_addr = &main_ram[addr & 0x3FFFFF];
         break;
     default:
         printf("[Memory] byte read from arm9 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
-        break;
+        return;
+    }
+    for (u32 i = 0; i < sizeof(T); i++) {
+        data_addr[i] = (data >> (i * 8));
     }
 }
 
@@ -156,5 +179,53 @@ void Memory::load_firmware() {
     fread(firmware, FIRMWARE_SIZE, 1, file_buffer);
     fclose(file_buffer);  
     printf("[Memory] firmware loaded successfully!\n");
+}
+
+u8 Memory::arm7_read_byte(u32 addr) {
+    return arm7_read<u8>(addr);
+}
+
+u16 Memory::arm7_read_halfword(u32 addr) {
+    return arm7_read<u16>(addr);
+}
+
+u32 Memory::arm7_read_word(u32 addr) {
+    return arm7_read<u32>(addr);
+}
+
+u8 Memory::arm9_read_byte(u32 addr) {
+    return arm9_read<u8>(addr);
+}
+
+u16 Memory::arm9_read_halfword(u32 addr) {
+    return arm9_read<u16>(addr);
+}
+
+u32 Memory::arm9_read_word(u32 addr) {
+    return arm9_read<u32>(addr);
+}
+
+void Memory::arm7_write_byte(u32 addr, u8 data) {
+    arm7_write<u8>(addr, data);
+}
+
+void Memory::arm7_write_halfword(u32 addr, u16 data) {
+    arm7_write<u16>(addr, data);
+}
+
+void Memory::arm7_write_word(u32 addr, u32 data) {
+    arm7_write<u32>(addr, data);
+}
+
+void Memory::arm9_write_byte(u32 addr, u8 data) {
+    arm9_write<u8>(addr, data);
+}
+
+void Memory::arm9_write_halfword(u32 addr, u16 data) {
+    arm9_write<u16>(addr, data);
+}
+
+void Memory::arm9_write_word(u32 addr, u32 data) {
+    arm9_write<u32>(addr, data);
 }
 

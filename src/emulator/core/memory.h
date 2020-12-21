@@ -35,20 +35,39 @@ public:
     u8 firmware[256 * 1024]; // built-in serial flash memory
 
     // memory read handlers
-    u8 arm9_read_byte(u32 addr);
-    u16 arm9_read_halfword(u32 addr);
-    u32 arm9_read_word(u32 addr);
-    u32 arm9_read_io(u32 addr);
+    template <typename T>
+    T arm7_read(u32 addr);
 
     u8 arm7_read_byte(u32 addr);
     u16 arm7_read_halfword(u32 addr);
     u32 arm7_read_word(u32 addr);
-    u32 arm7_read_io(u32 addr);
+
+  
+
+    template <typename T>
+    T arm9_read(u32 addr);
+
+    u8 arm9_read_byte(u32 addr);
+    u16 arm9_read_halfword(u32 addr);
+    u32 arm9_read_word(u32 addr);
+
+    template <typename T>
+    T arm9_read_io(u32 addr);
+
+    template <typename T>
+    T arm7_read_io(u32 addr);
 
     // memory write handlers
+    template <typename T>
+    void arm9_write(u32 addr, T data);
+
     void arm9_write_byte(u32 addr, u8 data);
     void arm9_write_halfword(u32 addr, u16 data);
     void arm9_write_word(u32 addr, u32 data);
+
+
+    template <typename T>
+    void arm7_write(u32 addr, T data);
 
     void arm7_write_byte(u32 addr, u8 data);
     void arm7_write_halfword(u32 addr, u16 data);
