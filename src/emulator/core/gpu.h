@@ -24,6 +24,7 @@ public:
     powcnt1_t powcnt1;
     GPU(Emulator *emulator);
     GPU2D engine_a, engine_b;
+    void fill_framebuffer();
 private:
     Emulator *emulator;
 

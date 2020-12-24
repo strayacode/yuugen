@@ -2,6 +2,7 @@
 #include <emulator/emulator.h>
 #include <stdio.h>
 #include <string>
+#include <emulator/common/arithmetic.h>
 
 static const int ARM9_BIOS_SIZE = 32 * 1024;
 static const int ARM7_BIOS_SIZE = 16 * 1024;
@@ -59,8 +60,7 @@ T Memory::arm9_read(u32 addr) {
         //     // deal with later lol
         // case 0x07000000:
         //     return oam[addr - 0x07000000];
-    case 0x04000000:
-
+    
     case 0xFF000000:
         data_addr = &arm9_bios[addr & 0x7FFF];
         break;
@@ -100,31 +100,6 @@ T Memory::arm9_read_io(u32 addr) {
 }
 
 template <typename T>
-void Memory::arm7_write_io(u32 addr, T data) {
-    switch (addr) {
-    default:
-        printf("[Memory] io write by arm7 at address 0x%04x is unimplemented!\n", addr);
-    }
-}
-
-template <typename T> 
-void Memory::arm9_write_io(u32 addr, T data) {
-    switch (addr) {
-    case 0x04000000:
-        emulator->gpu.engine_a.dispcnt.raw = data;
-    case 0x04000240:
-        emulator->gpu.engine_a.vramcnt_a.raw = data;
-    case 0x04000304:
-        emulator->gpu.powcnt1.raw = data;
-        break;
-    default:
-        printf("[Memory] io write by arm9 at address 0x%04x is unimplemented!\n", addr);
-    }
-}
-
-
-
-template <typename T>
 void Memory::arm7_write(u32 addr, T data) {
     u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
@@ -149,6 +124,7 @@ void Memory::arm7_write(u32 addr, T data) {
 
 template <typename T>
 void Memory::arm9_write(u32 addr, T data) {
+    // printf("arm9 write address: 0x%04x\n", addr);
     u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
     case 0x02000000:
@@ -157,6 +133,14 @@ void Memory::arm9_write(u32 addr, T data) {
     case 0x04000000:
         arm9_write_io<T>(addr, data);
         return; // since write is already done
+    case 0x06000000:
+        if (addr >= 0x06800000) {
+            data_addr = &lcdc_vram[addr - 0x06800000];
+            // lets do some debugging
+            // printf("vram:\n");
+            
+        }
+        break;
     default:
         printf("[Memory] write from arm9 at address 0x%04x is unimplemented!\n", addr);
         emulator->running = false;
@@ -164,6 +148,30 @@ void Memory::arm9_write(u32 addr, T data) {
     }
     for (u32 i = 0; i < sizeof(T); i++) {
         data_addr[i] = (data >> (i * 8));
+    }
+}
+
+template <typename T>
+void Memory::arm7_write_io(u32 addr, T data) {
+    switch (addr) {
+    default:
+        printf("[Memory] io write by arm7 at address 0x%04x is unimplemented!\n", addr);
+    }
+}
+
+template <typename T> 
+void Memory::arm9_write_io(u32 addr, T data) {
+    switch (addr) {
+    case 0x04000000:
+        emulator->gpu.engine_a.dispcnt.raw = data;
+        // printf("bitmap from block selected: %d\n", get_bit_range(18, 19, data));
+    case 0x04000240:
+        emulator->gpu.engine_a.vramcnt_a.raw = data;
+    case 0x04000304:
+        emulator->gpu.powcnt1.raw = data;
+        break;
+    default:
+        printf("[Memory] io write by arm9 at address 0x%04x is unimplemented!\n", addr);
     }
 }
 

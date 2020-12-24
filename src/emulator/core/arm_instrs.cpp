@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 void ARM::arm_branch() {
-	printf("branch\n");
+	// printf("branch\n");
     if (evaluate_condition()) {
         // execute branch
         u8 link_bit = get_bit(24, opcode);
@@ -55,7 +55,7 @@ void ARM::arm_data_processing() {
 }
 
 void ARM::arm_single_data_transfer() {
-	printf("single data transfer\n");
+	// printf("single data transfer\n");
 	if (evaluate_condition()) {
 		u8 i_bit = get_bit(25, opcode);
 		u8 pre_post_bit = get_bit(24, opcode);
@@ -117,8 +117,45 @@ void ARM::arm_single_data_transfer() {
 }
 
 void ARM::arm_halfword_data_transfer_immediate() {
+	// printf("strh or ldrh\n");
 	if (evaluate_condition()) {
-		
+		u8 pre_post_bit = get_bit(24, opcode);
+		u8 up_down_bit = get_bit(23, opcode);
+		u8 write_back_bit = get_bit(21, opcode);
+		u8 load_store_bit = get_bit(20, opcode);
+		u8 rn = get_bit_range(16, 19, opcode);
+		u8 rd = get_bit_range(12, 15, opcode);
+		u8 sh = get_bit_range(5, 6, opcode);
+		u16 offset = (get_bit_range(8, 11, opcode) << 4 | get_bit_range(0, 3, opcode));
+		switch (sh) {
+		case 0b01:
+			// unsigned halfword doesnt do anything
+			break;
+		default:
+			printf("sh %d not implemented yet!\n", sh);
+			break;
+		}
+		u32 result;
+		if (up_down_bit) {
+			result = get_reg(rn) + offset;
+		} else {
+			result = get_reg(rn) - offset;
+		}
+		if (write_back_bit) {
+			set_reg(rn, result);
+		}
+		if (load_store_bit) {
+			printf("load from memory not implemented yet!\n");
+			exit(1);
+		} else {
+			if (pre_post_bit) {
+				write_halfword(result, get_reg(rd));
+			} else {
+				write_halfword(get_reg(rn), get_reg(rd));
+				// write back to base register
+				set_reg(rn, result);
+			}
+		}
 	}
 	regs.r15 += 4;
 }

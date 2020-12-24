@@ -1,6 +1,8 @@
 #pragma once
 #include <emulator/common/types.h>
 
+// class GPU;
+
 typedef union vramcnt_a_reg {
     u8 raw;
     struct {
@@ -23,9 +25,12 @@ class GPU2D {
 public:
     dispcnt_t dispcnt;
     vramcnt_a_t vramcnt_a;
-
+    // GPU2D(GPU *gpu);
     const u32* get_framebuffer();
-
+    u32 convert_15_to_24(u32 colour);
+    
+    u32 framebuffer[256 * 192] = {};
 private:
-    u32 framebuffer[256 * 192];
+    // GPU *gpu;
+    
 };
