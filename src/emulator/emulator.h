@@ -5,6 +5,7 @@
 #include <emulator/core/cartridge.h>
 #include <emulator/core/cp15.h>
 #include <emulator/core/gpu.h>
+#include <emulator/core/dma.h>
 #include <string>
 #include <SDL2/SDL.h>
 
@@ -20,6 +21,7 @@ public:
     Cartridge cartridge;
     CP15 cp15;
     GPU gpu;
+    DMA dma[2];
 
     bool running;
 

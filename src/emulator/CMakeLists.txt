@@ -9,6 +9,7 @@ add_library(emulator
     common/types.h common/arithmetic.h
     core/gpu.cpp core/gpu.h
     core/gpu_2d.cpp core/gpu_2d.h
+    core/dma.cpp core/dma.h
     common/arithmetic.cpp
 )
 

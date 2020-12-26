@@ -148,12 +148,9 @@ private:
     // void str();
 
     // shift stuff
-    u32 lli(); // LSL #i
-    u32 llr(); // LSL rm
-    u32 lri(); // LSR #i
-    u32 lrr(); // LSR rm
-    u32 ari(); // ASR #i
-    u32 arr(); // ASR rm
+    u32 lsl(u32 op2, u8 shift_amount); 
+    u32 lsr(u32 op2, u8 shift_amount); 
+   
     
 
 

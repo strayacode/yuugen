@@ -3,7 +3,7 @@
 #include <string>
 #include <SDL2/SDL.h>
 
-Emulator::Emulator() : arm9(this, 1), arm7(this, 0), memory(this), cartridge(this), gpu(this) {
+Emulator::Emulator() : arm9(this, 1), arm7(this, 0), memory(this), cartridge(this), gpu(this), dma {DMA(this, 0), DMA(this, 1)} {
     // set to regular size
     window_size_multiplier = 2;
     sdl_init();

@@ -301,6 +301,7 @@ void ARM::fill_arm_lut_table() {
 }
 
 void ARM::execute_instruction() {
+    printf("opcode: 0x%04x\n", opcode);
     if (is_arm()) {
         u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
         std::invoke(arm_lut_table[index], this);

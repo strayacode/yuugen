@@ -164,14 +164,18 @@ void Memory::arm9_write_io(u32 addr, T data) {
     switch (addr) {
     case 0x04000000:
         emulator->gpu.engine_a.dispcnt.raw = data;
-        // printf("bitmap from block selected: %d\n", get_bit_range(18, 19, data));
+        break;
+    case 0x040000D0:
+        emulator->dma->chan[2].word_count = data;
+        break;
     case 0x04000240:
         emulator->gpu.engine_a.vramcnt_a.raw = data;
+        break;
     case 0x04000304:
         emulator->gpu.powcnt1.raw = data;
         break;
     default:
-        printf("[Memory] io write by arm9 at address 0x%04x is unimplemented!\n", addr);
+        printf("[Memory] io write by arm9 at address 0x%04x with data 0x%04x is unimplemented!\n", addr, data);
     }
 }
 

@@ -35,14 +35,34 @@ void ARM::arm_data_processing() {
 			u8 shift = get_bit_range(8, 11, opcode);
 			op2 = rotate_right(immediate, shift * 2);
 		} else {
-			printf("uhh not implement i=0 yet\n");
-			exit(1);
+			u8 shift_type = get_bit_range(5, 6, opcode);
+			u8 shift_amount;
+			op2 = get_reg(opcode & 0xF);
+			// decoding depends on bit 4
+			if ((opcode & 0x10) == 0) {
+				// bits 7..11 specify the shift amount
+				shift_amount = get_bit_range(7, 11, opcode);
+			} else {
+				// bits 8..11 specify rs and the bottom byte is used for the shift amount
+				shift_amount = get_reg(get_bit_range(8, 11, opcode)) & 0xFF;
+			}
+			switch (shift_type) {
+			default:
+				printf("[ARM] in data processing shift type %d is not implemented yet\n", shift_type);
+				exit(1);
+			}
 		}
 		switch (instruction_type) {
 		case 0b0010:
+			// SUB: rd = op1 - op2
 			set_reg(rd, get_reg(rn) - op2);
 			break;
+		case 0b0100:
+			// ADD: rd = op1 + op2
+			set_reg(rd, get_reg(rn) + op2);
+			break;
 		case 0b1101:
+			// MOV: rd = op2
 			set_reg(rd, op2);
 			break;
 		default:
