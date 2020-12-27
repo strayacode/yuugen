@@ -3,6 +3,7 @@
 #include <emulator/emulator.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <emulator/common/log.h>
 
 void ARM::arm_branch() {
 	// printf("branch\n");
@@ -22,8 +23,13 @@ void ARM::arm_branch() {
 }
 
 void ARM::arm_data_processing() {
+	// printf("arm data processing\n");
 	if (evaluate_condition()) {
 		u8 i_bit = get_bit(25, opcode);
+		u8 s_bit = get_bit(20, opcode);
+		if (s_bit) {
+			log_fatal("really need to implement this\n");
+		}
 		u8 instruction_type = get_bit_range(21, 24, opcode);
 		// TODO: implement condition code changing
 		u32 rn = get_bit_range(16, 19, opcode);
@@ -37,7 +43,7 @@ void ARM::arm_data_processing() {
 		} else {
 			u8 shift_type = get_bit_range(5, 6, opcode);
 			u8 shift_amount;
-			op2 = get_reg(opcode & 0xF);
+			u32 rm = get_reg(opcode & 0xF);
 			// decoding depends on bit 4
 			if ((opcode & 0x10) == 0) {
 				// bits 7..11 specify the shift amount
@@ -47,15 +53,17 @@ void ARM::arm_data_processing() {
 				shift_amount = get_reg(get_bit_range(8, 11, opcode)) & 0xFF;
 			}
 			switch (shift_type) {
+			case 0:
+				op2 = lsl(rm, shift_amount);
+				break;
 			default:
-				printf("[ARM] in data processing shift type %d is not implemented yet\n", shift_type);
-				exit(1);
+				log_fatal("[ARM] in data processing shift type %d is not implemented yet\n", shift_type);
 			}
 		}
 		switch (instruction_type) {
 		case 0b0010:
 			// SUB: rd = op1 - op2
-			set_reg(rd, get_reg(rn) - op2);
+			
 			break;
 		case 0b0100:
 			// ADD: rd = op1 + op2
@@ -66,8 +74,7 @@ void ARM::arm_data_processing() {
 			set_reg(rd, op2);
 			break;
 		default:
-			printf("[ARM] instruction type %d not implemented yet in data processsing\n", instruction_type);
-			emulator->running = false;
+			log_fatal("[ARM] instruction type %d not implemented yet in data processsing\n", instruction_type);
 			break;
 		}
 	}
@@ -137,13 +144,13 @@ void ARM::arm_single_data_transfer() {
 }
 
 void ARM::arm_halfword_data_transfer_immediate() {
-	// printf("strh or ldrh\n");
 	if (evaluate_condition()) {
 		u8 pre_post_bit = get_bit(24, opcode);
 		u8 up_down_bit = get_bit(23, opcode);
 		u8 write_back_bit = get_bit(21, opcode);
 		u8 load_store_bit = get_bit(20, opcode);
 		u8 rn = get_bit_range(16, 19, opcode);
+		// printf("rn: %d\n", rn);
 		u8 rd = get_bit_range(12, 15, opcode);
 		u8 sh = get_bit_range(5, 6, opcode);
 		u16 offset = (get_bit_range(8, 11, opcode) << 4 | get_bit_range(0, 3, opcode));
@@ -183,5 +190,13 @@ void ARM::arm_halfword_data_transfer_immediate() {
 void ARM::arm_undefined() {
     printf("[ARM] arm instruction 0x%08x is undefined!\n", opcode);
     emulator->running = false;
+}
+
+u32 ARM::sub(u32 op1, u32 op2, u8 rd, bool set_flags) {
+	u32 result = op1 - op2;
+	if (set_flags) {
+		
+	}
+	set_reg(rd, op1 - op2);
 }
 

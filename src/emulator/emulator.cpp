@@ -9,14 +9,6 @@ Emulator::Emulator() : arm9(this, 1), arm7(this, 0), memory(this), cartridge(thi
     sdl_init();
 }
 
-Emulator::~Emulator() {
-    SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyTexture(top_texture);
-    SDL_DestroyTexture(bottom_texture);
-    SDL_Quit();
-}
-
 void Emulator::reset() {
     running = true;
     memory.load_arm9_bios();
@@ -26,27 +18,36 @@ void Emulator::reset() {
     arm7.reset();
 }
 
+void Emulator::run_nds_frame() {
+    // quick sidenote
+    // in 1 frame of the nds executing
+    // there are 263 scanlines with 192 visible and 71 for vblank
+    // in each scanline there are 355 dots in total with 256 visible and 99 for hblank
+    // 3 cycles of the arm7 occurs per dot and 6 cycles of the arm9 occurs per dat
+    for (int i = 0; i < 263; i++) {
+        for (int j = 0; j < 355 * 3; j++) {
+            // run arm9 and arm7 stuff
+            // since arm9 runs at the twice the clock speed of arm7 we run it 2 times instead of 1
+            arm9.step();
+            // printf("arm 9 pc: %04x\n", arm7.get_reg(15));
+            // arm9.step();
+            // arm7.step();
+        }
+        
+        // printf("arm 7 pc: %04x\n", arm7.get_reg(15));
+
+        // gpu.draw_scanline(i);
+    }
+}
+
 void Emulator::run(std::string rom_path) {
     cartridge.load_cartridge(rom_path);
     cartridge.direct_boot();
     reset();
     while (running) {
-        // this is temporary lol
-        
-        // check for events
-        while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) {
-                running = false;
-            }
-        }
-        // step the arm9 and arm7 (timing doesnt rlly matter rn lol)
-        for (int i = 0; i < 100; i++) {
-            arm9.step();
-            arm7.step();
-            // SDL_Delay(10);
-        }
-        
-        
+        // call run nds frame
+        // run_nds_frame();
+        run_nds_frame();
         // update textures
         SDL_UpdateTexture(top_texture, nullptr, gpu.engine_a.get_framebuffer(), sizeof(u32) * 256);
         SDL_UpdateTexture(bottom_texture, nullptr, gpu.engine_b.get_framebuffer(), sizeof(u32) * 256);
@@ -55,10 +56,24 @@ void Emulator::run(std::string rom_path) {
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_dimensions);
         SDL_RenderCopy(renderer, bottom_texture, nullptr, &bottom_texture_dimensions);
         SDL_RenderPresent(renderer);
-        gpu.fill_framebuffer();
         SDL_Delay(1000 / 60);
+
+        // check for events
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) {
+                // cool use of goto lol
+                goto cleanup;
+            }
+        }
         
     }
+
+    cleanup:
+        SDL_DestroyWindow(window);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyTexture(top_texture);
+        SDL_DestroyTexture(bottom_texture);
+        SDL_Quit();
 }
 
 void Emulator::sdl_init() {

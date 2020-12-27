@@ -3,6 +3,7 @@
 #include <emulator/common/arithmetic.h>
 #include <emulator/common/types.h>
 #include <emulator/core/disassembler.h>
+#include <emulator/common/log.h>
 #include <functional>
 
 ARM::ARM(Emulator *emulator, int cpu_id): emulator(emulator), cpu_id(cpu_id) {
@@ -143,7 +144,7 @@ u32 ARM::get_reg(u8 reg) {
     case 15:
         return regs.r15;
     default:
-        printf("[ARM] undefined register read r%d\n", reg);
+        log_fatal("[ARM] undefined register read r%d", reg);
         emulator->running = false;
         return 0;
     }
@@ -243,7 +244,7 @@ void ARM::set_reg(u8 reg, u32 data) {
     case 15:
         regs.r15 = data; break;
     default:
-        printf("[ARM] undefined register write r%d\n", reg);
+        log_fatal("[ARM] undefined register write r%d", reg);
         emulator->running = false;
     }
 }
@@ -301,13 +302,14 @@ void ARM::fill_arm_lut_table() {
 }
 
 void ARM::execute_instruction() {
-    printf("opcode: 0x%04x\n", opcode);
+    // log_debug("opcode: 0x%04x", opcode);
     if (is_arm()) {
         u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
         std::invoke(arm_lut_table[index], this);
     } else {
         // execute thumb instruction
     }
+    // printf("r0: 0x%04x\n", regs.r0);
     
 }
 
@@ -340,9 +342,7 @@ void ARM::direct_boot() {
         regs.r15 = emulator->cartridge.header.arm9_entry_address;
         regs.cpsr = 0x0000005F;
     }
-    
-    printf("[ARM] successfully initialised direct boot state\n");
-    
+    log_debug("[ARM] successfully initialised direct boot state");
 }
 
 void ARM::firmware_boot() {
@@ -367,7 +367,9 @@ void ARM::step() {
         // pipeline[1] = read_halfword(regs.r15);
     }
     // disassemble_instruction(opcode);
+    // printf("execute arm9 instruction lol\n");
     execute_instruction();
+    // printf("arm9 pc: %04x\n", regs.r15);
 }
 
 bool ARM::is_arm() {
@@ -378,11 +380,20 @@ bool ARM::get_condition_flag(int condition_flag) {
     return ((regs.cpsr & (1 << condition_flag)) != 0);
 }
 
+void ARM::set_condition_flag(int condition_flag, bool data) {
+    if (data) {
+        regs.cpsr |= (1 << condition_flag);
+    } else {
+        regs.cpsr &= ~(1 << condition_flag);
+    }
+}
+
 bool ARM::evaluate_condition() {
     bool n_flag = get_condition_flag(N_FLAG);
     bool z_flag = get_condition_flag(Z_FLAG);
     bool c_flag = get_condition_flag(C_FLAG);
     bool v_flag = get_condition_flag(V_FLAG);
+    // printf("%d\n", opcode >> 28);
     switch (opcode >> 28) {
         case 0:
             return z_flag;
@@ -433,4 +444,6 @@ void ARM::flush_pipeline() {
     }
     // printf("[ARM] instruction to execute: %04x, instruction to decode: %04x\n", pipeline[0], pipeline[1]);
 }
+
+
 

@@ -11,12 +11,14 @@ const u32* GPU2D::get_framebuffer() {
 
 // converts rgb555 to rgb888 for sdl
 u32 GPU2D::convert_15_to_24(u32 colour) {
-    // printf("%04x\n", colour);
     u8 b = ((colour & 0x1F) * 255) / 31;
     u8 g = (((colour >> 5) & 0x1F) * 255) / 31;
     u8 r = (((colour >> 10) & 0x1F) * 255) / 31;
-    
     return (b << 16) | (g << 8) | r;
+}
+
+void GPU2D::draw_scanline(int line) {
+    // we have only done mode 0 and 2 of display mode so for 
 }
 
 

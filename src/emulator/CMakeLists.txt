@@ -10,7 +10,7 @@ add_library(emulator
     core/gpu.cpp core/gpu.h
     core/gpu_2d.cpp core/gpu_2d.h
     core/dma.cpp core/dma.h
-    common/arithmetic.cpp
+    common/arithmetic.cpp common/log.h
 )
 
 set (DIRECT_BOOT ON)

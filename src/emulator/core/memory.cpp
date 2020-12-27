@@ -163,13 +163,13 @@ template <typename T>
 void Memory::arm9_write_io(u32 addr, T data) {
     switch (addr) {
     case 0x04000000:
-        emulator->gpu.engine_a.dispcnt.raw = data;
+        emulator->gpu.engine_a.dispcnt = data;
         break;
     case 0x040000D0:
         emulator->dma->chan[2].word_count = data;
         break;
     case 0x04000240:
-        emulator->gpu.engine_a.vramcnt_a.raw = data;
+        emulator->gpu.engine_a.vramcnt_a = data;
         break;
     case 0x04000304:
         emulator->gpu.powcnt1.raw = data;
@@ -247,6 +247,7 @@ void Memory::arm7_write_byte(u32 addr, u8 data) {
 }
 
 void Memory::arm7_write_halfword(u32 addr, u16 data) {
+    
     arm7_write<u16>(addr, data);
 }
 
@@ -258,7 +259,7 @@ void Memory::arm9_write_byte(u32 addr, u8 data) {
     arm9_write<u8>(addr, data);
 }
 
-void Memory::arm9_write_halfword(u32 addr, u16 data) {
+void Memory::arm9_write_halfword(u32 addr, u16 data) { 
     arm9_write<u16>(addr, data);
 }
 

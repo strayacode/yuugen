@@ -12,7 +12,7 @@
 class Emulator {
 public:
     Emulator();
-    ~Emulator();
+    void run_nds_frame();
     void reset();
     void run(std::string rom_path);
     ARM arm9;

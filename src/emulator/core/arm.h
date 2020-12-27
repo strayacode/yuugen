@@ -9,6 +9,7 @@ public:
 
     void reset();
     void step();
+    
 private:
     Emulator *emulator;
 
@@ -131,7 +132,9 @@ private:
     // some helper functions
     bool is_arm();
     bool get_condition_flag(int condition_flag);
+    void set_condition_flag(int condition_flag, bool data);
     bool evaluate_condition();
+
 
     // arm instruction handlers
     void arm_branch();
@@ -142,10 +145,10 @@ private:
     void arm_halfword_data_transfer_register();
 
 
-    // void b();
-    // void mov_imm();
-    // void and_word(u32 op2);
-    // void str();
+    // data processing helpers
+    u32 sub(u32 op1, u32 op2, u8 rd, bool set_flags);
+    u32 add(u32 op1, u32 op2, u8 rd, bool set_flags);
+    u32 mov(u32 op1, u32 op2, u8 rd, bool set_flags);
 
     // shift stuff
     u32 lsl(u32 op2, u8 shift_amount); 
