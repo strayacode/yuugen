@@ -29,14 +29,10 @@ void Emulator::run_nds_frame() {
             // run arm9 and arm7 stuff
             // since arm9 runs at the twice the clock speed of arm7 we run it 2 times instead of 1
             arm9.step();
-            // printf("arm 9 pc: %04x\n", arm7.get_reg(15));
-            // arm9.step();
-            // arm7.step();
+            arm9.step();
+            arm7.step();
         }
-        
-        // printf("arm 7 pc: %04x\n", arm7.get_reg(15));
-
-        // gpu.draw_scanline(i);
+        gpu.draw_scanline(i);
     }
 }
 

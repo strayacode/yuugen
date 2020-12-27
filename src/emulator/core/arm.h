@@ -146,9 +146,9 @@ private:
 
 
     // data processing helpers
-    u32 sub(u32 op1, u32 op2, u8 rd, bool set_flags);
-    u32 add(u32 op1, u32 op2, u8 rd, bool set_flags);
-    u32 mov(u32 op1, u32 op2, u8 rd, bool set_flags);
+    u32 sub(u32 op1, u32 op2, bool set_flags);
+    u32 add(u32 op1, u32 op2, bool set_flags);
+    u32 mov(u32 op2, bool set_flags);
 
     // shift stuff
     u32 lsl(u32 op2, u8 shift_amount); 

@@ -27,9 +27,6 @@ void ARM::arm_data_processing() {
 	if (evaluate_condition()) {
 		u8 i_bit = get_bit(25, opcode);
 		u8 s_bit = get_bit(20, opcode);
-		if (s_bit) {
-			log_fatal("really need to implement this\n");
-		}
 		u8 instruction_type = get_bit_range(21, 24, opcode);
 		// TODO: implement condition code changing
 		u32 rn = get_bit_range(16, 19, opcode);
@@ -63,15 +60,19 @@ void ARM::arm_data_processing() {
 		switch (instruction_type) {
 		case 0b0010:
 			// SUB: rd = op1 - op2
-			
+			set_reg(rd, sub(get_reg(rn), op2, s_bit));
 			break;
 		case 0b0100:
 			// ADD: rd = op1 + op2
-			set_reg(rd, get_reg(rn) + op2);
+			set_reg(rd, add(get_reg(rn), op2, s_bit));
+			break;
+		case 0b1010:
+			// CMP: set condition codes on op1 - op2
+			sub(get_reg(rn), op2, s_bit);
 			break;
 		case 0b1101:
 			// MOV: rd = op2
-			set_reg(rd, op2);
+			set_reg(rd, mov(op2, s_bit));
 			break;
 		default:
 			log_fatal("[ARM] instruction type %d not implemented yet in data processsing\n", instruction_type);
@@ -79,6 +80,40 @@ void ARM::arm_data_processing() {
 		}
 	}
 	regs.r15 += 4;
+}
+
+u32 ARM::sub(u32 op1, u32 op2, bool set_flags) {
+	u32 result = op1 - op2;
+	if (set_flags) {
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 31);
+		// understanding: for signed overflow either both ops positive and result negative or both ops negative result positive
+		set_condition_flag(V_FLAG, ((op1 ^ op2) & (op1 ^ result)) >> 31);
+		set_condition_flag(C_FLAG, op1 >= op2);
+	}	
+	return result;
+}
+
+u32 ARM::add(u32 op1, u32 op2, bool set_flags) {
+	u64 result = (u64)op1 + (u64)op2;
+	u32 result32 = (u32)result;
+	if (set_flags) {
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 31);
+		// understanding: for signed overflow either both ops positive and result negative or both ops negative result positive
+		set_condition_flag(V_FLAG, (~(op1 ^ op2) & (op2 ^ result32)) >> 31);
+	}	
+	return result32;
+}
+
+u32 ARM::mov(u32 op2, bool set_flags) {
+	// op1 is ignored in mov
+	if (set_flags) {
+		set_condition_flag(Z_FLAG, op2 == 0);
+		set_condition_flag(N_FLAG, op2 >> 31);
+	}
+	// sorta useless lol
+	return op2;
 }
 
 void ARM::arm_single_data_transfer() {
@@ -192,11 +227,5 @@ void ARM::arm_undefined() {
     emulator->running = false;
 }
 
-u32 ARM::sub(u32 op1, u32 op2, u8 rd, bool set_flags) {
-	u32 result = op1 - op2;
-	if (set_flags) {
-		
-	}
-	set_reg(rd, op1 - op2);
-}
+
 

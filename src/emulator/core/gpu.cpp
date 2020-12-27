@@ -15,5 +15,6 @@ void GPU::fill_framebuffer() {
 }
 
 void GPU::draw_scanline(int line) {
-    log_debug("%d", line);
+    engine_a.draw_scanline(line);
+    engine_b.draw_scanline(line);
 }
