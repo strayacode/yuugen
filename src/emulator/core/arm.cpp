@@ -282,7 +282,7 @@ void ARM::fill_arm_lut_table() {
             arm_lut_table[i] = &ARM::arm_undefined;
         } else if (i == 0b000100100001) {
             // branch with exchange still need to implement
-            arm_lut_table[i] = &ARM::arm_undefined;
+            arm_lut_table[i] = &ARM::arm_branch_exchange;
         } else if ((i & 0b111110111111) == 0b000100001001) {
             // single data swap still need to implement
             arm_lut_table[i] = &ARM::arm_undefined;
@@ -302,14 +302,18 @@ void ARM::fill_arm_lut_table() {
 }
 
 void ARM::execute_instruction() {
-    // log_debug("opcode: 0x%04x", opcode);
+    debug_regs();
     if (is_arm()) {
-        u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
-        std::invoke(arm_lut_table[index], this);
+        if (condition_evaluate()) {
+            u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
+            std::invoke(arm_lut_table[index], this);
+        } else {
+            regs.r15 += 4;
+        }
     } else {
         // execute thumb instruction
+        log_fatal("i have not implemented thumb yet for anything lol");
     }
-    // printf("r0: 0x%04x\n", regs.r0);
     
 }
 
@@ -364,6 +368,7 @@ void ARM::step() {
     if (is_arm()) {
         pipeline[1] = read_word(regs.r15);
     } else {
+        log_fatal("still need to implement thumb");
         // pipeline[1] = read_halfword(regs.r15);
     }
     // disassemble_instruction(opcode);
@@ -388,7 +393,7 @@ void ARM::set_condition_flag(int condition_flag, bool data) {
     }
 }
 
-bool ARM::evaluate_condition() {
+bool ARM::condition_evaluate() {
     bool n_flag = get_condition_flag(N_FLAG);
     bool z_flag = get_condition_flag(Z_FLAG);
     bool c_flag = get_condition_flag(C_FLAG);
@@ -443,6 +448,10 @@ void ARM::flush_pipeline() {
         }
     }
     // printf("[ARM] instruction to execute: %04x, instruction to decode: %04x\n", pipeline[0], pipeline[1]);
+}
+
+void ARM::debug_regs() {
+    log_debug("[ARM] r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x", regs.r0, regs.r1, regs.r2, regs.r3, regs.r4, regs.r5, regs.r6, regs.r7, regs.r8, regs.r9, regs.r10, regs.r11, regs.r12, regs.r13, regs.r14, regs.r15);
 }
 
 

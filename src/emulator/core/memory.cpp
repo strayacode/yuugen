@@ -172,7 +172,7 @@ void Memory::arm9_write_io(u32 addr, T data) {
         emulator->gpu.engine_a.vramcnt_a = data;
         break;
     case 0x04000304:
-        emulator->gpu.powcnt1.raw = data;
+        emulator->gpu.powcnt1 = data;
         break;
     default:
         printf("[Memory] io write by arm9 at address 0x%04x with data 0x%04x is unimplemented!\n", addr, data);

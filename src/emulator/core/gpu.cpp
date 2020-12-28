@@ -2,7 +2,7 @@
 #include <emulator/core/gpu.h>
 #include <emulator/common/log.h>
 
-GPU::GPU(Emulator *emulator) : emulator(emulator) {
+GPU::GPU(Emulator *emulator) : emulator(emulator), engine_a(emulator, 1), engine_b(emulator, 0) {
     // printf("24 bit value: 0x%04x\n", engine_a.sdljew(0x1F));
 }
 
@@ -14,7 +14,9 @@ void GPU::fill_framebuffer() {
     }
 }
 
-void GPU::draw_scanline(int line) {
-    engine_a.draw_scanline(line);
-    engine_b.draw_scanline(line);
+void GPU::render_scanline(int line) {
+    if (line < 192) {
+        engine_a.render_scanline(line);
+        engine_b.render_scanline(line);
+    }
 }

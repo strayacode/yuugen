@@ -32,7 +32,7 @@ void Emulator::run_nds_frame() {
             arm9.step();
             arm7.step();
         }
-        gpu.draw_scanline(i);
+        gpu.render_scanline(i);
     }
 }
 
