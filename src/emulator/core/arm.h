@@ -145,6 +145,7 @@ private:
     void arm_halfword_data_transfer_immediate();
     void arm_halfword_data_transfer_register();
     void arm_branch_exchange();
+    void arm_block_data_transfer();
 
     // data processing helpers
     u32 sub(u32 op1, u32 op2, bool set_flags);

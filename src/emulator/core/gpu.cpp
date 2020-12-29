@@ -1,16 +1,18 @@
 #include <emulator/emulator.h>
 #include <emulator/core/gpu.h>
 #include <emulator/common/log.h>
+#include <emulator/common/arithmetic.h>
 
 GPU::GPU(Emulator *emulator) : emulator(emulator), engine_a(emulator, 1), engine_b(emulator, 0) {
     // printf("24 bit value: 0x%04x\n", engine_a.sdljew(0x1F));
 }
 
-// for just mode 2 lol
-// move to gpu_2d later
-void GPU::fill_framebuffer() {
-    for (int i = 0; i < (256 * 192); i++) { 
-        engine_a.framebuffer[i] = engine_a.convert_15_to_24(emulator->memory.lcdc_vram[(i * 2) + 1] << 8 | emulator->memory.lcdc_vram[i * 2]); 
+const u32* GPU::get_framebuffer(int screen) {
+    switch (screen) {
+    case top_screen:
+        return (get_bit(15, powcnt1) ? engine_a.get_framebuffer() : engine_b.get_framebuffer());
+    case bottom_screen:
+        return (get_bit(15, powcnt1) ? engine_b.get_framebuffer() : engine_a.get_framebuffer());
     }
 }
 

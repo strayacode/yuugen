@@ -267,7 +267,7 @@ void ARM::fill_arm_lut_table() {
             arm_lut_table[i] = &ARM::arm_branch;
         } else if ((i & 0b111000000000) == 0b100000000000) {
             // block data transfer still need to implement
-            arm_lut_table[i] = &ARM::arm_undefined;
+            arm_lut_table[i] = &ARM::arm_block_data_transfer;
         } else if ((i & 0b111000000001) == 0b011000000001) {
             // undefined instruction
             arm_lut_table[i] = &ARM::arm_undefined;
@@ -302,7 +302,7 @@ void ARM::fill_arm_lut_table() {
 }
 
 void ARM::execute_instruction() {
-    debug_regs();
+    // debug_regs();
     if (is_arm()) {
         if (condition_evaluate()) {
             u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);

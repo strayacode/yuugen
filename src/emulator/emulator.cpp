@@ -45,8 +45,8 @@ void Emulator::run(std::string rom_path) {
         // run_nds_frame();
         run_nds_frame();
         // update textures
-        SDL_UpdateTexture(top_texture, nullptr, gpu.engine_a.get_framebuffer(), sizeof(u32) * 256);
-        SDL_UpdateTexture(bottom_texture, nullptr, gpu.engine_b.get_framebuffer(), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_texture, nullptr, gpu.get_framebuffer(gpu.top_screen), sizeof(u32) * 256);
+        SDL_UpdateTexture(bottom_texture, nullptr, gpu.get_framebuffer(gpu.bottom_screen), sizeof(u32) * 256);
         // clear and copy texture into renderer
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_dimensions);

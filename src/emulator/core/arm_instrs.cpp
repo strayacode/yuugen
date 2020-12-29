@@ -254,9 +254,55 @@ void ARM::arm_halfword_data_transfer_immediate() {
 
 void ARM::arm_branch_exchange() {
 	u32 rn = get_reg(opcode & 0xF);
-	printf("%d\n", opcode & 0xF);
 	regs.r15 = rn;
 	flush_pipeline();
+}
+
+void ARM::arm_block_data_transfer() {
+	u8 rn = get_bit_range(16, 19, opcode);
+	u8 pre_post_bit = get_bit(24, opcode);
+	u8 up_down_bit = get_bit(23, opcode);
+	u8 psr_force_user_bit = get_bit(22, opcode);
+	u8 writeback_bit = get_bit(21, opcode);
+	u8 load_store_bit = get_bit(20, opcode);
+	u16 register_list = opcode & 0xFFFF;
+	u32 addr = get_reg(rn);
+	if (load_store_bit) {
+		log_debug("load from memory not implemented in block transfer");
+	} else {
+		log_debug("store into memory");
+		if (pre_post_bit) {
+			// pre indexing
+			log_fatal("pre indexing not implemented in block transfer");
+			// automatically add or subtract 4 bytes from addr
+		} else {
+			// post indexing
+			log_debug("post indexing");
+			log_debug("%08x", addr);
+			if (up_down_bit) {
+				log_debug("add offset to base");
+				for (int i = 0; i < 16; i++) {
+					if (get_bit(i, register_list)) {
+						log_debug("%d", i);
+						// write register to address
+						write_word(addr, get_reg(i));
+						// increment address after
+						addr += 4;
+					}
+				}
+			} else {
+				log_fatal("subtract offset from base not implemented in block transfer");
+			}
+		}
+		if (writeback_bit) {
+			// write the address back into rn
+			set_reg(rn, addr);
+		}
+		
+	}
+	
+	
+	log_fatal("block data transfer not implemented yet");
 }
 
 void ARM::arm_undefined() {
