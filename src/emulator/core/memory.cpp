@@ -1,5 +1,6 @@
 #include <emulator/core/memory.h>
 #include <emulator/emulator.h>
+#include <emulator/core/gpu.h>
 #include <stdio.h>
 #include <string>
 #include <emulator/common/arithmetic.h>
@@ -134,11 +135,14 @@ void Memory::arm9_write(u32 addr, T data) {
         arm9_write_io<T>(addr, data);
         return; // since write is already done
     case 0x06000000:
+        // ignore 8 bit writes
+        if (sizeof(T) == 1) {
+            break;
+        }
         if (addr >= 0x06800000) {
-            data_addr = &lcdc_vram[addr - 0x06800000];
-            // lets do some debugging
-            // printf("vram:\n");
-            
+            // undefined reference
+            emulator->gpu.write_lcdc<T>(addr, data);
+            return; // since write is already done
         }
         break;
     default:
@@ -169,7 +173,7 @@ void Memory::arm9_write_io(u32 addr, T data) {
         emulator->dma->chan[2].word_count = data;
         break;
     case 0x04000240:
-        emulator->gpu.engine_a.vramcnt_a = data;
+        emulator->gpu.vramcnt_a = data;
         break;
     case 0x04000304:
         emulator->gpu.powcnt1 = data;

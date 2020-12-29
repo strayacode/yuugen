@@ -14,13 +14,7 @@ public:
     // arm9 specific
     u8 instruction_tcm[0x8000] = {}; // 0x00000000-0x00008000 (non-movable 32kb) (mirrorable to 0x01000000)
     u8 data_tcm[0x4000] = {}; // 16kb movable
-    u8 palette_ram[0x800] = {}; // 2kb for engine A obj/bg and engine B obj/bg
-    u8 bg_a_vram[0x80000] = {}; // 512kb max
-    u8 bg_b_vram[0x20000] = {}; // 128kb max
-    u8 obj_a_vram[0x40000] = {}; // 256kb max
-    u8 obj_b_vram[0x20000] = {}; // 128kb max
-    u8 lcdc_vram[0xA4000] = {}; // 656kb max lcdc allocated vram
-    u8 oam[0x800] = {}; // 2kb oam for both engine A and B
+    
     
     u8 arm9_bios[0x8000] = {}; // 32kb arm9 bios only 3kb used
 
@@ -85,6 +79,7 @@ public:
     void load_cartridge(std::string rom_path);
 
     Memory(Emulator *emulator);
+    
 private:
     Emulator *emulator;
 

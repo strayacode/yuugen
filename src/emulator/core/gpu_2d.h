@@ -1,13 +1,13 @@
 #pragma once
 #include <emulator/common/types.h>
 
-class Emulator;
+class GPU;
 
 class GPU2D {
 public:
     u32 dispcnt;
-    u8 vramcnt_a;
-    GPU2D(Emulator *emulator, int engine_id);
+    
+    GPU2D(GPU *gpu, int engine_id);
     const u32* get_framebuffer();
     u32 convert_15_to_24(u32 colour);
     // draws a scanline for either engine a or b
@@ -18,8 +18,11 @@ public:
     void render_vram_display(int line);
     u32 framebuffer[256 * 192] = {};
 private:
-    Emulator *emulator;
+    GPU *gpu;
     // 1 = engine a, 0 = engine b
     int engine_id;
+
+    // primarily for use with vram display mode 2 graphics by getting the vram bank from dispcnt 18..19
+    u8 get_vram_bank();
     
 };

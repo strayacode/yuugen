@@ -1,12 +1,12 @@
 #include <emulator/core/gpu_2d.h>
 #include <emulator/common/types.h>
-// #include <emulator/core/gpu.h>
+#include <emulator/core/gpu.h>
+#include <emulator/common/arithmetic.h>
 #include <emulator/common/log.h>
 #include <stdio.h>
 #include <string.h>
-#include <emulator/emulator.h>
 
-GPU2D::GPU2D(Emulator *emulator, int engine_id) : emulator(emulator), engine_id(engine_id) {
+GPU2D::GPU2D(GPU *gpu, int engine_id) : gpu(gpu), engine_id(engine_id) {
 
 }
 
@@ -47,8 +47,28 @@ void GPU2D::render_blank_screen(int line) {
 
 void GPU2D::render_vram_display(int line) {
     for (int i = 0; i < 256; i++) {
-        framebuffer[(256 * line) + i] = convert_15_to_24(emulator->memory.lcdc_vram[(i * 2) + 1] << 8 | emulator->memory.lcdc_vram[i * 2]);
+        u16 data;
+        switch (get_vram_bank()) {
+        case 0:
+            data = (gpu->vram_a[(i * 2) + 1] << 8 | gpu->vram_a[i * 2]);
+            break;
+        case 1:
+            data = (gpu->vram_b[(i * 2) + 1] << 8 | gpu->vram_b[i * 2]);
+            break;
+        case 2:
+            data = (gpu->vram_c[(i * 2) + 1] << 8 | gpu->vram_c[i * 2]);
+            break;
+        case 3:
+            data = (gpu->vram_d[(i * 2) + 1] << 8 | gpu->vram_d[i * 2]);
+            break;
+        }
+
+        framebuffer[(256 * line) + i] = convert_15_to_24(data);
     }
+}
+
+u8 GPU2D::get_vram_bank() {
+    return get_bit_range(18, 19, dispcnt);
 }
 
 
