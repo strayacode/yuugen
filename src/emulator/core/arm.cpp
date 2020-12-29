@@ -304,6 +304,7 @@ void ARM::fill_arm_lut_table() {
 void ARM::execute_instruction() {
     // debug_regs();
     // log_debug("opcode: 0x%04x", opcode);
+    // printf("cpsr: %d\n", regs.cpsr);
     if (is_arm()) {
         if (condition_evaluate()) {
             u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
@@ -337,7 +338,7 @@ void ARM::direct_boot() {
         regs.r13_svc = 0x0380FFC0;
         regs.r13_irq = 0x0380FF80;
         regs.r15 = emulator->cartridge.header.arm7_entry_address;
-        regs.cpsr = 0x0000005F;
+        regs.cpsr = 0x0000001F;
 
     } else {
         // specific to arm9
@@ -345,7 +346,7 @@ void ARM::direct_boot() {
         regs.r13_svc = 0x03003FC0;
         regs.r13_irq = 0x03003F80;
         regs.r15 = emulator->cartridge.header.arm9_entry_address;
-        regs.cpsr = 0x0000005F;
+        regs.cpsr = 0x0000001F;
     }
     log_debug("[ARM] successfully initialised direct boot state");
 }

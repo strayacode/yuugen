@@ -119,19 +119,21 @@ u32 ARM::mov(u32 op2, bool set_flags) {
 }
 
 u32 ARM::_xor(u32 op1, u32 op2, bool set_flags) {
+	u32 result = op1 ^ op2;
 	if (set_flags) {
-		set_condition_flag(Z_FLAG, op2 == 0);
-		set_condition_flag(N_FLAG, op2 >> 31);
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 31);
 	}
-	return (op1 ^ op2);
+	return result;
 }
 
 u32 ARM::bic(u32 op1, u32 op2, bool set_flags) {
+	u32 result = op1 & ~op2;
 	if (set_flags) {
-		set_condition_flag(Z_FLAG, op2 == 0);
-		set_condition_flag(N_FLAG, op2 >> 31);
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 31);
 	}
-	return (op1 & ~op2);
+	return result;
 }
 
 void ARM::arm_single_data_transfer() {
@@ -268,13 +270,36 @@ void ARM::arm_block_data_transfer() {
 	u16 register_list = opcode & 0xFFFF;
 	u32 addr = get_reg(rn);
 	if (load_store_bit) {
-		log_debug("load from memory not implemented in block transfer");
+		log_fatal("load from memory not implemented in block transfer");
 	} else {
 		log_debug("store into memory");
 		if (pre_post_bit) {
 			// pre indexing
-			log_fatal("pre indexing not implemented in block transfer");
+			log_debug("pre indexing not implemented in block transfer");
 			// automatically add or subtract 4 bytes from addr
+			if (up_down_bit) {
+				log_debug("add offset to base");
+				for (int i = 15; i >= 0; i--) {
+					if (get_bit(i, register_list)) {
+						// pre increment the address
+						addr += 4;
+						// write register to address
+						write_word(addr, get_reg(i));
+
+					}
+				}
+			} else {
+				for (int i = 15; i >= 0; i--) {
+					if (get_bit(i, register_list)) {
+						// pre decrement the address
+						addr -= 4;
+						// write register to address
+						write_word(addr, get_reg(i));
+
+					}
+				}
+				log_debug("subtract offset from base not implemented in block transfer");
+			}
 		} else {
 			// post indexing
 			log_debug("post indexing");

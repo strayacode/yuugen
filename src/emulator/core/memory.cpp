@@ -2,7 +2,9 @@
 #include <emulator/emulator.h>
 #include <emulator/core/gpu.h>
 #include <stdio.h>
+#include <emulator/common/log.h>
 #include <string>
+#include <string.h>
 #include <emulator/common/arithmetic.h>
 
 static const int ARM9_BIOS_SIZE = 32 * 1024;
@@ -30,9 +32,7 @@ T Memory::arm7_read(u32 addr) {
         }
         break;
     default:
-        printf("[Memory] read from arm7 at address 0x%04x is unimplemented!\n", addr);
-        emulator->running = false;
-        return 0;
+        log_fatal("[Memory] read from arm7 at address 0x%04x is unimplemented!\n", addr);
     }
 
     T return_value = 0;
@@ -50,6 +50,7 @@ T Memory::arm9_read(u32 addr) {
     //     // for now just read from instruction tcm whatever
     case 0x02000000:
         data_addr = &main_ram[addr & 0x3FFFFF];
+        main_ram[addr & 0x3FFFFF + 3] << 24 | 
         break;
         // case 0x03000000:
         //     return shared_wram[addr - 0x03000000];
@@ -66,9 +67,7 @@ T Memory::arm9_read(u32 addr) {
         data_addr = &arm9_bios[addr & 0x7FFF];
         break;
     default:
-        printf("[Memory] read from arm9 at address 0x%04x is unimplemented!\n", addr);
-        emulator->running = false;
-        return 0;
+        log_fatal("[Memory] read from arm9 at address 0x%04x is unimplemented!\n", addr);
     }
     
     T return_value = 0;
@@ -84,9 +83,7 @@ template <typename T>
 T Memory::arm7_read_io(u32 addr) {
     switch (addr) {
     default:
-        printf("[Memory] io read by arm7 at address 0x%04x is unimplemented!\n", addr);
-        emulator->running = false;
-        return 0;
+        log_fatal("[Memory] io read by arm7 at address 0x%04x is unimplemented!\n", addr);
     }
 }
 
@@ -94,9 +91,7 @@ template <typename T>
 T Memory::arm9_read_io(u32 addr) {
     switch (addr) {
     default:
-        printf("[Memory] io read by arm9 at address 0x%04x is unimplemented!\n", addr);
-        emulator->running = false;
-        return 0;
+        log_fatal("[Memory] io read by arm9 at address 0x%04x is unimplemented!\n", addr);
     }
 }
 
@@ -113,9 +108,7 @@ void Memory::arm7_write(u32 addr, T data) {
         }
         break;
     default:
-        printf("[Memory] write from arm7 to address 0x%04x is unimplemented!\n", addr);
-        emulator->running = false;
-        return;
+        log_fatal("[Memory] write from arm7 to address 0x%04x is unimplemented!\n", addr);
     }
     for (u32 i = 0; i < sizeof(T); i++) {
         data_addr[i] = (data >> (i * 8));
@@ -125,10 +118,14 @@ void Memory::arm7_write(u32 addr, T data) {
 
 template <typename T>
 void Memory::arm9_write(u32 addr, T data) {
+    // printf("%04x\n", addr);
     u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
     case 0x02000000:
         data_addr = &main_ram[addr & 0x3FFFFF];
+        break;
+    case 0x03000000:
+        printf("shared wram\n");
         break;
     case 0x04000000:
         arm9_write_io<T>(addr, data);
@@ -145,9 +142,7 @@ void Memory::arm9_write(u32 addr, T data) {
         }
         break;
     default:
-        printf("[Memory] write from arm9 at address 0x%04x is unimplemented!\n", addr);
-        emulator->running = false;
-        return;
+        log_fatal("[Memory] write from arm9 at address 0x%04x is unimplemented!\n", addr);
     }
     for (u32 i = 0; i < sizeof(T); i++) {
         data_addr[i] = (data >> (i * 8));
@@ -158,7 +153,7 @@ template <typename T>
 void Memory::arm7_write_io(u32 addr, T data) {
     switch (addr) {
     default:
-        printf("[Memory] io write by arm7 at address 0x%04x is unimplemented!\n", addr);
+        log_fatal("[Memory] io write by arm7 at address 0x%04x is unimplemented!\n", addr);
     }
 }
 
@@ -174,51 +169,51 @@ void Memory::arm9_write_io(u32 addr, T data) {
     case 0x04000240:
         emulator->gpu.vramcnt_a = data;
         break;
+    case 0x04000241:
+        emulator->gpu.vramcnt_b = data;
+        break;
     case 0x04000304:
         emulator->gpu.powcnt1 = data;
         break;
     default:
-        printf("[Memory] io write by arm9 at address 0x%04x with data 0x%04x is unimplemented!\n", addr, data);
+        log_fatal("[Memory] io write by arm9 at address 0x%04x with data 0x%04x is unimplemented!", addr, data);
     }
 }
 
 void Memory::load_arm9_bios() {
     FILE *file_buffer = fopen("../bios/bios9.bin", "rb");
     if (file_buffer == NULL) {
-        printf("[Memory] error when opening arm9 bios! make sure the file bios9.bin exists in the bios folder\n");
-        emulator->running = false;
+        log_fatal("[Memory] error when opening arm9 bios! make sure the file bios9.bin exists in the bios folder");
     }
     fseek(file_buffer, 0, SEEK_END);
     fseek(file_buffer, 0, SEEK_SET);
     fread(arm9_bios, ARM9_BIOS_SIZE, 1, file_buffer);
     fclose(file_buffer);  
-    printf("[Memory] arm9 bios loaded successfully!\n");
+    log_debug("[Memory] arm9 bios loaded successfully!");
 }
 
 void Memory::load_arm7_bios() {
     FILE *file_buffer = fopen("../bios/bios7.bin", "rb");
     if (file_buffer == NULL) {
-        printf("[Memory] error when opening arm7 bios! make sure the file bios7.bin exists in the bios folder\n");
-        emulator->running = false;
+        log_fatal("[Memory] error when opening arm7 bios! make sure the file bios7.bin exists in the bios folder\n");
     }
     fseek(file_buffer, 0, SEEK_END);
     fseek(file_buffer, 0, SEEK_SET);
     fread(arm7_bios, ARM7_BIOS_SIZE, 1, file_buffer);
     fclose(file_buffer);  
-    printf("[Memory] arm7 bios loaded successfully!\n");
+    log_debug("[Memory] arm7 bios loaded successfully!");
 }
 
 void Memory::load_firmware() {
     FILE *file_buffer = fopen("../firmware/firmware.bin", "rb");
     if (file_buffer == NULL) {
-        printf("[Memory] error when opening firmware! make sure the file firmware.bin exists in the firmware folder\n");
-        emulator->running = false;
+        log_fatal("[Memory] error when opening firmware! make sure the file firmware.bin exists in the firmware folder\n");
     }
     fseek(file_buffer, 0, SEEK_END);
     fseek(file_buffer, 0, SEEK_SET);
     fread(firmware, FIRMWARE_SIZE, 1, file_buffer);
     fclose(file_buffer);  
-    printf("[Memory] firmware loaded successfully!\n");
+    log_debug("[Memory] firmware loaded successfully!");
 }
 
 u8 Memory::arm7_read_byte(u32 addr) {

@@ -41,9 +41,9 @@ void Emulator::run_nds_frame() {
 void Emulator::run(std::string rom_path) {
     
     cartridge.load_cartridge(rom_path);
-    
-    cartridge.direct_boot();
     printf("ok\n");
+    cartridge.direct_boot();
+    
     reset();
     
     while (running) {
@@ -58,7 +58,7 @@ void Emulator::run(std::string rom_path) {
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_dimensions);
         SDL_RenderCopy(renderer, bottom_texture, nullptr, &bottom_texture_dimensions);
         SDL_RenderPresent(renderer);
-        SDL_Delay(1000 / 60);
+        SDL_Delay(16);
 
         // check for events
         while (SDL_PollEvent(&e) != 0) {
