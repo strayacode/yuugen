@@ -303,6 +303,7 @@ void ARM::fill_arm_lut_table() {
 
 void ARM::execute_instruction() {
     // debug_regs();
+    // log_debug("opcode: 0x%04x", opcode);
     if (is_arm()) {
         if (condition_evaluate()) {
             u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);

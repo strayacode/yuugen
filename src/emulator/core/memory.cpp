@@ -125,7 +125,6 @@ void Memory::arm7_write(u32 addr, T data) {
 
 template <typename T>
 void Memory::arm9_write(u32 addr, T data) {
-    // printf("arm9 write address: 0x%04x\n", addr);
     u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
     case 0x02000000:

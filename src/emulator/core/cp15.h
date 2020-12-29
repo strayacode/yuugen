@@ -1,6 +1,8 @@
 #pragma once
 #include <emulator/common/types.h>
 
+// TODO: handle dtcm and itcm virtual sizes
+
 class CP15 {
 public:
     u32 read_reg(u32 cn, u32 cm, u32 cp);

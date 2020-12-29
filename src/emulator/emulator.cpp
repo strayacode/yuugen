@@ -23,23 +23,29 @@ void Emulator::run_nds_frame() {
     // in 1 frame of the nds executing
     // there are 263 scanlines with 192 visible and 71 for vblank
     // in each scanline there are 355 dots in total with 256 visible and 99 for hblank
-    // 3 cycles of the arm7 occurs per dot and 6 cycles of the arm9 occurs per dat
+    // 3 cycles of the arm7 occurs per dot and 6 cycles of the arm9 occurs per dot
     for (int i = 0; i < 263; i++) {
         for (int j = 0; j < 355 * 3; j++) {
             // run arm9 and arm7 stuff
             // since arm9 runs at the twice the clock speed of arm7 we run it 2 times instead of 1
+            
             arm9.step();
             arm9.step();
             arm7.step();
+            
         }
         gpu.render_scanline(i);
     }
 }
 
 void Emulator::run(std::string rom_path) {
+    
     cartridge.load_cartridge(rom_path);
+    
     cartridge.direct_boot();
+    printf("ok\n");
     reset();
+    
     while (running) {
         // call run nds frame
         // run_nds_frame();

@@ -47,11 +47,37 @@ void GPU::write_lcdc(u32 addr, T data) {
         }
     } else if (in_range(0x06820000, 0x0683FFFF, addr) && get_vram_bank_mst(vramcnt_b) == 0) {
         if (get_vram_bank_enabled(vramcnt_b)) {
-            data_addr = &vram_b[addr - 0x1FFFF];
+            data_addr = &vram_b[addr & 0x1FFFF];
         }
-    } else {
-        log_fatal("address not implemented! 0x%04x", addr);
-    }
+    } else if (in_range(0x06840000, 0x0685FFFF, addr) && get_vram_bank_mst(vramcnt_c) == 0) {
+        if (get_vram_bank_enabled(vramcnt_c)) {
+            data_addr = &vram_c[addr & 0x1FFFF];
+        }
+    } else if (in_range(0x06860000, 0x0687FFFF, addr) && get_vram_bank_mst(vramcnt_d) == 0) {
+        if (get_vram_bank_enabled(vramcnt_d)) {
+            data_addr = &vram_d[addr & 0x1FFFF];
+        }
+    } else if (in_range(0x06880000, 0x0688FFFF, addr) && get_vram_bank_mst(vramcnt_e) == 0) {
+        if (get_vram_bank_enabled(vramcnt_e)) {
+            data_addr = &vram_e[addr & 0xFFFF];
+        }
+    } else if (in_range(0x06890000, 0x06893FFF, addr) && get_vram_bank_mst(vramcnt_f) == 0) {
+        if (get_vram_bank_enabled(vramcnt_f)) {
+            data_addr = &vram_f[addr & 0x3FFF];
+        }
+    } else if (in_range(0x06894000, 0x06897FFF, addr) && get_vram_bank_mst(vramcnt_g) == 0) {
+        if (get_vram_bank_enabled(vramcnt_g)) {
+            data_addr = &vram_g[addr & 0x3FFF];
+        }
+    } else if (in_range(0x06898000, 0x0689FFFF, addr) && get_vram_bank_mst(vramcnt_h) == 0) {
+        if (get_vram_bank_enabled(vramcnt_h)) {
+            data_addr = &vram_h[addr & 0x7FFF];
+        }
+    } else if (in_range(0x068A0000, 0x068A3FFF, addr) && get_vram_bank_mst(vramcnt_i) == 0) {
+        if (get_vram_bank_enabled(vramcnt_i)) {
+            data_addr = &vram_i[addr & 0x3FFF];
+        }
+    } 
     // implement other banks later
     for (u32 i = 0; i < sizeof(T); i++) {
         data_addr[i] = (data >> (i * 8));
