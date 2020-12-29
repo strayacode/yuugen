@@ -39,9 +39,7 @@ void Emulator::run_nds_frame() {
 }
 
 void Emulator::run(std::string rom_path) {
-    
     cartridge.load_cartridge(rom_path);
-    printf("ok\n");
     cartridge.direct_boot();
     
     reset();

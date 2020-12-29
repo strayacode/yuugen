@@ -42,28 +42,19 @@ void Cartridge::load_header_data() {
 
 void Cartridge::direct_boot() {
     // first transfer header data to main memory
-    
     for (u32 i = 0; i < 0x170; i++) {
         emulator->memory.arm9_write_byte(0x027FFE00 + i, rom[i]);
     }
     
     // transfer arm9 code
-    for (u32 i = 0; i < header.arm9_size; i++) {
-        
-        
+    for (u32 i = 0; i < header.arm9_size; i++) { 
         emulator->memory.arm9_write_byte(header.arm9_entry_address + i, rom[header.arm9_rom_offset + i]);
     }
     
-    
     // transfer arm7 code
-    printf("transfer arm7 code now\n");
     for (u32 i = 0; i < header.arm7_size; i++) {
-        // printf("%d %d\n", i , header.arm7_size);
-        // printf("%04x %04x\n", header.arm7_size, header.arm7_entry_address);
-        // printf("%04x %04x\n", rom[header.arm7_rom_offset + i], header.arm7_rom_offset + i);
         emulator->memory.arm7_write_byte(header.arm7_entry_address + i, rom[header.arm7_rom_offset + i]);
     }
-    
 }
 
 void Cartridge::load_cartridge(std::string rom_path) {

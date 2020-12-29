@@ -6,6 +6,7 @@
 #include <emulator/core/cp15.h>
 #include <emulator/core/gpu.h>
 #include <emulator/core/dma.h>
+#include <emulator/core/interrupt.h>
 #include <string>
 #include <SDL2/SDL.h>
 
@@ -22,6 +23,7 @@ public:
     CP15 cp15;
     GPU gpu;
     DMA dma[2];
+    Interrupt interrupt;
 
     bool running;
 

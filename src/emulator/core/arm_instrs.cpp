@@ -48,6 +48,9 @@ void ARM::arm_data_processing() {
 		case 0:
 			op2 = lsl(rm, shift_amount);
 			break;
+		case 1:
+			op2 = lsr(rm, shift_amount);
+			break;
 		default:
 			log_fatal("[ARM] in data processing shift type %d is not implemented yet\n", shift_type);
 		}

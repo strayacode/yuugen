@@ -12,6 +12,7 @@ add_library(emulator
     core/dma.cpp core/dma.h
     common/arithmetic.cpp common/log.h
     common/mem_helpers.h
+    core/interrupt.h
 )
 
 set (DIRECT_BOOT ON)

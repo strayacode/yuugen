@@ -17,40 +17,33 @@ Memory::Memory(Emulator *emulator) : emulator(emulator) {
 
 template <typename T>
 T Memory::arm7_read(u32 addr) {
-    u8 *data_addr = nullptr;
+    T return_value = 0;
     switch (addr & 0xFF000000) {
     // main memory
     case 0x02000000:
-        data_addr = &main_ram[addr & 0x3FFFFF];
+        memcpy(&return_value, &main_ram[addr & 0x3FFFFF], sizeof(T));
         break;
     // shared wram
     case 0x03000000:
         // arm7 wram
         if (addr >= 0x03800000) {
-            data_addr = &arm7_wram[addr & 0xFFFF];
-            
+            memcpy(&return_value, &arm7_wram[addr & 0xFFFF], sizeof(T));
         }
         break;
     default:
         log_fatal("[Memory] read from arm7 at address 0x%04x is unimplemented!\n", addr);
-    }
-
-    T return_value = 0;
-    for (u32 i = 0; i < sizeof(T); i++) {
-        return_value |= (data_addr[i] << (i * 8));
     }
     return return_value;
 }
 
 template <typename T>
 T Memory::arm9_read(u32 addr) {
-    u8 *data_addr = nullptr;
+    T return_value = 0;
     switch (addr & 0xFF000000) {
     // case 0x00000000:
     //     // for now just read from instruction tcm whatever
     case 0x02000000:
-        data_addr = &main_ram[addr & 0x3FFFFF];
-        main_ram[addr & 0x3FFFFF + 3] << 24 | 
+        memcpy(&return_value, &main_ram[addr & 0x3FFFFF], sizeof(T));
         break;
         // case 0x03000000:
         //     return shared_wram[addr - 0x03000000];
@@ -63,18 +56,10 @@ T Memory::arm9_read(u32 addr) {
         // case 0x07000000:
         //     return oam[addr - 0x07000000];
     
-    case 0xFF000000:
-        data_addr = &arm9_bios[addr & 0x7FFF];
-        break;
     default:
         log_fatal("[Memory] read from arm9 at address 0x%04x is unimplemented!\n", addr);
     }
     
-    T return_value = 0;
-    for (u32 i = 0; i < sizeof(T); i++) {
-        return_value |= (data_addr[i] << (i * 8));
-    }
-
     return return_value;
 
 }
@@ -97,32 +82,26 @@ T Memory::arm9_read_io(u32 addr) {
 
 template <typename T>
 void Memory::arm7_write(u32 addr, T data) {
-    u8 *data_addr = nullptr;
+    
     switch (addr & 0xFF000000) {
     case 0x02000000:
-        data_addr = &main_ram[addr & 0x3FFFFF];
+        memcpy(&main_ram[addr & 0x3FFFFF], &data, sizeof(T));
         break;
     case 0x03000000:
         if (addr >= 0x03800000) {
-            data_addr = &arm7_wram[addr & 0xFFFF];
+            memcpy(&arm7_wram[addr & 0xFFFF], &data, sizeof(T));
         }
         break;
     default:
         log_fatal("[Memory] write from arm7 to address 0x%04x is unimplemented!\n", addr);
     }
-    for (u32 i = 0; i < sizeof(T); i++) {
-        data_addr[i] = (data >> (i * 8));
-    }
-
 }
 
 template <typename T>
 void Memory::arm9_write(u32 addr, T data) {
-    // printf("%04x\n", addr);
-    u8 *data_addr = nullptr;
     switch (addr & 0xFF000000) {
     case 0x02000000:
-        data_addr = &main_ram[addr & 0x3FFFFF];
+        memcpy(&main_ram[addr & 0x3FFFFF], &data, sizeof(T));
         break;
     case 0x03000000:
         printf("shared wram\n");
@@ -144,9 +123,6 @@ void Memory::arm9_write(u32 addr, T data) {
     default:
         log_fatal("[Memory] write from arm9 at address 0x%04x is unimplemented!\n", addr);
     }
-    for (u32 i = 0; i < sizeof(T); i++) {
-        data_addr[i] = (data >> (i * 8));
-    }
 }
 
 template <typename T>
@@ -157,6 +133,8 @@ void Memory::arm7_write_io(u32 addr, T data) {
     }
 }
 
+
+// TODO: look at this more carefully later \../
 template <typename T> 
 void Memory::arm9_write_io(u32 addr, T data) {
     switch (addr) {
@@ -165,6 +143,9 @@ void Memory::arm9_write_io(u32 addr, T data) {
         break;
     case 0x040000D0:
         emulator->dma->chan[2].word_count = data;
+        break;
+    case 0x04000208:
+        emulator->interrupt.ime = data;
         break;
     case 0x04000240:
         emulator->gpu.vramcnt_a = data;
