@@ -39,10 +39,13 @@ T Memory::arm7_read(u32 addr) {
 
 template <typename T>
 T Memory::arm9_read(u32 addr) {
+    // log_warn("addr: 0x%04x", addr);
     T return_value = 0;
-    if ((emulator->cp15.get_itcm_enabled()) && (addr <= emulator->cp15.get_itcm_size())) {
+    if ((emulator->cp15.get_itcm_enabled()) && (addr < emulator->cp15.get_itcm_size())) {
         memcpy(&return_value, &instruction_tcm[addr & 0x7FFF], sizeof(T));
+        // log_fatal("i cant believe youve done this");
     } else if ((emulator->cp15.get_dtcm_enabled()) && (in_range(emulator->cp15.get_dtcm_addr(), emulator->cp15.get_dtcm_addr() + emulator->cp15.get_dtcm_size(), addr))) {
+        // log_fatal("i cant believe youve done this");
         memcpy(&return_value, &data_tcm[(addr - emulator->cp15.get_dtcm_addr()) & 0x3FFF], sizeof(T));
     } else {
         switch (addr & 0xFF000000) {
@@ -66,6 +69,7 @@ T Memory::arm9_read(u32 addr) {
             log_fatal("[Memory] read from arm9 at address 0x%04x is unimplemented!\n", addr);
         }
     }
+    // log_debug("returnvalue : 0x%04x", return_value);
     return return_value;
 
 }
@@ -112,7 +116,7 @@ template <typename T>
 void Memory::arm9_write(u32 addr, T data) {
     // tcm writes are specific to arm9
     // also check itcm as it has priority if itcm and dtcm overlap
-    if ((emulator->cp15.get_itcm_enabled()) && (addr <= emulator->cp15.get_itcm_size())) {
+    if ((emulator->cp15.get_itcm_enabled()) && (addr < emulator->cp15.get_itcm_size())) {
         memcpy(&instruction_tcm[addr & 0x7FFF], &data, sizeof(T));
     } else if ((emulator->cp15.get_dtcm_enabled()) && (in_range(emulator->cp15.get_dtcm_addr(), emulator->cp15.get_dtcm_addr() + emulator->cp15.get_dtcm_size(), addr))) {
         memcpy(&data_tcm[(addr - emulator->cp15.get_dtcm_addr()) & 0x3FFF], &data, sizeof(T));
@@ -139,7 +143,7 @@ void Memory::arm9_write(u32 addr, T data) {
             }
             break;
         default:
-            log_fatal("[Memory] write from arm9 at address 0x%04x is unimplemented!\n", addr);
+            log_fatal("[Memory] write from arm9 at address 0x%04x is unimplemented!", addr);
         }
     }
     
@@ -234,6 +238,7 @@ u32 Memory::arm7_read_word(u32 addr) {
 }
 
 u8 Memory::arm9_read_byte(u32 addr) {
+    
     return arm9_read<u8>(addr);
 }
 
@@ -259,6 +264,7 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 }
 
 void Memory::arm9_write_byte(u32 addr, u8 data) {
+    log_warn("addr: 0x%04x data: 0x%04x", addr, data);
     arm9_write<u8>(addr, data);
 }
 

@@ -31,11 +31,13 @@ public:
         u32 arm7_size;
     } header;
 
+    // allocate dynamically using malloc() to not use 4gb :joy:
+    u8 *rom;
+
 private:
     Emulator *emulator;
 
-    // allocate dynamically using malloc() to not use 4gb :joy:
-    u8 *rom;
+    
 
 
     

@@ -133,6 +133,7 @@ u32 ARM::add(u32 op1, u32 op2, bool set_flags) {
 }
 
 u32 ARM::mov(u32 op2, bool set_flags) {
+	// log_fatal("op2: 0x%04x", op2);
 	// op1 is ignored in mov
 	if (set_flags) {
 		set_condition_flag(Z_FLAG, op2 == 0);
@@ -201,6 +202,9 @@ void ARM::arm_single_data_transfer() {
 
 	if (load_store_bit) {
 		// pre indexing
+		// if (rd == 15) {
+		// 	log_fatal("handle");
+		// }
 		if (pre_post_bit) {
 			if (byte_word_bit) {
 				// byte transfer

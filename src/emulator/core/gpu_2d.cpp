@@ -24,6 +24,7 @@ u32 GPU2D::convert_15_to_24(u32 colour) {
 }
 
 void GPU2D::render_scanline(int line) {
+    
     // we have only done mode 0 and 2 of display mode so for 
     u8 display_mode = (dispcnt >> 16) & 0x3;
     render_blank_screen(line);
@@ -33,6 +34,7 @@ void GPU2D::render_scanline(int line) {
         render_blank_screen(line);
         break;
     case 2:
+        
         // use vram display
         render_vram_display(line);
         break;

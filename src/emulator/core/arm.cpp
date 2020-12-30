@@ -37,6 +37,7 @@ u32 ARM::read_word(u32 addr) {
 }
 
 void ARM::write_byte(u32 addr, u8 data) {
+    
     if (!cpu_id) {
         emulator->memory.arm7_write_byte(addr, data);
     } else {
@@ -331,6 +332,9 @@ void ARM::execute_instruction() {
     // fprintf(file, "%d [ARM] r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x\n", counter, regs.r0, regs.r1, regs.r2, regs.r3, regs.r4, regs.r5, regs.r6, regs.r7, regs.r8, regs.r9, regs.r10, regs.r11, regs.r12, regs.r13, regs.r14, regs.r15);
     counter++;
     #endif
+    // debug_regs();
+    // printf("ok: 0x%08x\n", read_word(0x02000000));
+    // printf("%08x\n", opcode);
     if (is_arm()) {
         if (condition_evaluate()) {
             u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);

@@ -40,9 +40,9 @@ void Emulator::run_nds_frame() {
 
 void Emulator::run(std::string rom_path) {
     cartridge.load_cartridge(rom_path);
-    cp15.direct_boot();
-    cartridge.direct_boot();
     
+    cartridge.direct_boot();
+    cp15.direct_boot();
     
     reset();
     
