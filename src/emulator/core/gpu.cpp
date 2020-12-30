@@ -20,7 +20,7 @@ const u32* GPU::get_framebuffer(int screen) {
 
 void GPU::render_scanline(int line) {
     vcount++;
-    printf("vcount %d dispstat thing %d", vcount, dispstat >> 8);
+    // printf("vcount %d dispstat thing %d", vcount, dispstat >> 8);
     if (line < 192) {
         engine_a.render_scanline(line);
         engine_b.render_scanline(line);
@@ -54,6 +54,7 @@ template void GPU::write_lcdc(u32 addr, u16 data);
 template void GPU::write_lcdc(u32 addr, u32 data);
 template <typename T>
 void GPU::write_lcdc(u32 addr, T data) {
+    // log_debug("YOOOOOO");
     if (in_range(0x06800000, 0x0681FFFF, addr) && get_vram_bank_mst(vramcnt_a) == 0) {
         if (get_vram_bank_enabled(vramcnt_a)) {
             memcpy(&vram_a[addr & 0x1FFFF], &data, sizeof(T));

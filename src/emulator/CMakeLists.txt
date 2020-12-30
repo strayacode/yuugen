@@ -17,6 +17,7 @@ add_library(emulator
 
 set (DIRECT_BOOT ON)
 set (FIRMWARE_BOOT OFF)
+set (FILE_LOG OFF)
  
 if (DIRECT_BOOT)
     target_compile_definitions(emulator PRIVATE DIRECT_BOOT)
@@ -24,6 +25,10 @@ endif()
 
 if (FIRMWARE_BOOT)
     target_compile_definitions(emulator PRIVATE FIRMWARE_BOOT)
+endif()
+
+if (FILE_LOG)
+    target_compile_definitions(emulator PRIVATE FILE_LOG)
 endif()
 
 

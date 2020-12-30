@@ -82,7 +82,6 @@ template <typename T>
 T Memory::arm9_read_io(u32 addr) {
     switch (addr) {
     case 0x04000004:
-        log_warn("dispstat: 0x%04x", emulator->gpu.dispstat);
         return emulator->gpu.dispstat;
     default:
         log_fatal("[Memory] io read by arm9 at address 0x%04x is unimplemented!", addr);
@@ -161,6 +160,7 @@ void Memory::arm7_write_io(u32 addr, T data) {
 // TODO: look at this more carefully later \../
 template <typename T> 
 void Memory::arm9_write_io(u32 addr, T data) {
+    printf("arm9 writing to addr 0x%04x with data 0x%04x\n", addr, data);
     switch (addr) {
     case 0x04000000:
         emulator->gpu.engine_a.dispcnt = data;

@@ -144,6 +144,7 @@ u32 ARM::bic(u32 op1, u32 op2, bool set_flags) {
 }
 
 u32 ARM::_and(u32 op1, u32 op2, bool set_flags) {
+	// #ifdef counter
 	u32 result = op1 & op2;
 	if (set_flags) {
 		set_condition_flag(Z_FLAG, result == 0);
@@ -229,6 +230,7 @@ void ARM::arm_single_data_transfer() {
 }
 
 void ARM::arm_halfword_data_transfer_immediate() {
+	
 	u8 pre_post_bit = get_bit(24, opcode);
 	u8 up_down_bit = get_bit(23, opcode);
 	u8 write_back_bit = get_bit(21, opcode);
@@ -239,8 +241,6 @@ void ARM::arm_halfword_data_transfer_immediate() {
 	u8 sh = get_bit_range(5, 6, opcode);
 	u16 offset = (get_bit_range(8, 11, opcode) << 4 | get_bit_range(0, 3, opcode));
 	u32 address = get_reg(rn);
-	printf("offset: %d\n", offset);
-	printf("address: %04x\n", address);
 	if (pre_post_bit) {
 		address += up_down_bit ? offset : -offset;
 	}
@@ -250,6 +250,11 @@ void ARM::arm_halfword_data_transfer_immediate() {
 		if (load_store_bit) {
 			// load from memory
 			set_reg(rd, read_halfword(address)); 
+			#ifdef FILE_LOG
+			if (counter == 844805 || counter == 844804) {
+				printf("r%d: 0x%04x\n", rd, address);
+			}
+			#endif
 		} else {
 			// store into memory
 			write_halfword(address, get_reg(rd));
@@ -261,11 +266,9 @@ void ARM::arm_halfword_data_transfer_immediate() {
 	
 	// post indexing always writes back to rn
 	if (!pre_post_bit) {
-		printf("OK\n");
 		set_reg(rn, get_reg(rn) + (up_down_bit ? offset : -offset));
 	} else if (write_back_bit) {
 		// however writeback can also occur for pre indexing
-		printf("OK\n");
 		set_reg(rn, address);
 	}
 	regs.r15 += 4;

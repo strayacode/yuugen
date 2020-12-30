@@ -160,8 +160,10 @@ private:
     u32 lsl(u32 op2, u8 shift_amount); 
     u32 lsr(u32 op2, u8 shift_amount); 
    
+    #ifdef FILE_LOG
     int counter = 0;
     FILE *file;
+    #endif
 
 
 };
