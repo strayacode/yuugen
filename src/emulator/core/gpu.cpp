@@ -21,6 +21,18 @@ const u32* GPU::get_framebuffer(int screen) {
 void GPU::render_scanline(int line) {
     vcount++;
     // printf("vcount %d dispstat thing %d", vcount, dispstat >> 8);
+    switch (vcount) {
+    case 160:
+        // set vblank flag in dispstat
+        dispstat |= 1;
+        break;
+    case 263:
+        // clear vblank flag in dispstat at end of blank 
+        dispstat &= ~1;
+        // reset vcount
+        vcount = 0;
+        break;
+    }
     if (line < 192) {
         engine_a.render_scanline(line);
         engine_b.render_scanline(line);
@@ -31,11 +43,6 @@ void GPU::render_scanline(int line) {
         // set the v counter flag
         dispstat |= (1 << 2);
     }
-    if (vcount == 263) {
-        // reset vcount
-        vcount = 0;
-    }
-    
 }
 
 bool GPU::get_vram_bank_enabled(u8 vramcnt) {

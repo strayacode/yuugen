@@ -123,6 +123,7 @@ private:
 
     u32 get_reg(u8 reg);
     void set_reg(u8 reg, u32 data);
+    u32 get_spsr();
 
     void execute_instruction();
     void flush_pipeline();

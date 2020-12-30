@@ -9,7 +9,7 @@
 ARM::ARM(Emulator *emulator, int cpu_id): emulator(emulator), cpu_id(cpu_id) {
     fill_arm_lut_table();
     #ifdef FILE_LOG
-    // file = fopen("armwrestler2.log", "w");
+    file = fopen("armwrestler2.log", "w");
     #endif
     // do thumb later lol
 }
@@ -148,8 +148,24 @@ u32 ARM::get_reg(u8 reg) {
         return regs.r15;
     default:
         log_fatal("[ARM] undefined register read r%d", reg);
-        emulator->running = false;
-        return 0;
+    }
+}
+
+u32 ARM::get_spsr() {
+    u32 cpu_mode = get_bit_range(0, 4, regs.cpsr);
+    switch (cpu_mode) {
+    case FIQ:
+        return regs.spsr_fiq;
+    case SVC:
+        return regs.spsr_svc;
+    case ABT:
+        return regs.spsr_abt;
+    case IRQ:
+        return regs.spsr_irq;
+    case UND:
+        return regs.spsr_und;
+    default:
+        log_fatal("[ARM] undefined cpsr read");
     }
 }
 
@@ -248,7 +264,6 @@ void ARM::set_reg(u8 reg, u32 data) {
         regs.r15 = data; break;
     default:
         log_fatal("[ARM] undefined register write r%d", reg);
-        emulator->running = false;
     }
 }
 
@@ -306,9 +321,13 @@ void ARM::fill_arm_lut_table() {
 
 void ARM::execute_instruction() {
     #ifdef FILE_LOG
-    if (counter == 1000000) {
+    if (counter == 5000) {
         exit(1);
     }
+    if (cpu_id == 1) {
+        fprintf(file, "%08x\n", opcode);
+    }
+    
     // fprintf(file, "%d [ARM] r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x\n", counter, regs.r0, regs.r1, regs.r2, regs.r3, regs.r4, regs.r5, regs.r6, regs.r7, regs.r8, regs.r9, regs.r10, regs.r11, regs.r12, regs.r13, regs.r14, regs.r15);
     counter++;
     #endif

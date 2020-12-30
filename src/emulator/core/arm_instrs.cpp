@@ -25,7 +25,9 @@ void ARM::arm_data_processing() {
 	u8 instruction_type = get_bit_range(21, 24, opcode);
 	// TODO: implement condition code changing
 	u32 rn = get_bit_range(16, 19, opcode);
+	u32 op1 = get_reg(rn);
 	u8 rd = get_bit_range(12, 15, opcode);
+	
 	u32 op2;
 	if (i_bit) {
 		// shift the unsigned 8 bit immediate
@@ -54,27 +56,33 @@ void ARM::arm_data_processing() {
 		default:
 			log_fatal("[ARM] in data processing shift type %d is not implemented yet\n", shift_type);
 		}
+		if (rn == regs.r15) {
+			op1 += 4;
+		}
+		if (rm == regs.r15) {
+			op2 += 4;
+		}
 	}
 	switch (instruction_type) {
 	case 0b0000:
 		// AND: rd = op1 & op2
-		set_reg(rd, _and(get_reg(rn), op2, s_bit));
+		set_reg(rd, _and(op1, op2, s_bit));
 		break;
 	case 0b0010:
 		// SUB: rd = op1 - op2
-		set_reg(rd, sub(get_reg(rn), op2, s_bit));
+		set_reg(rd, sub(op1, op2, s_bit));
 		break;
 	case 0b0100:
 		// ADD: rd = op1 + op2
-		set_reg(rd, add(get_reg(rn), op2, s_bit));
+		set_reg(rd, add(op1, op2, s_bit));
 		break;
 	case 0b1001:
 		// TEQ: set condition codes on op1 ^ op2
-		_xor(get_reg(rn), op2, s_bit);
+		_xor(op1, op2, s_bit);
 		break;
 	case 0b1010:
 		// CMP: set condition codes on op1 - op2
-		sub(get_reg(rn), op2, s_bit);
+		sub(op1, op2, s_bit);
 		break;
 	case 0b1101:
 		// MOV: rd = op2
@@ -82,13 +90,22 @@ void ARM::arm_data_processing() {
 		break;
 	case 0b1110:
 		// BIC: rd = op1 & ~op2
-		set_reg(rd, bic(get_reg(rn), op2, s_bit));
+		set_reg(rd, bic(op1, op2, s_bit));
 		break;
 	default:
 		log_fatal("[ARM] instruction type %d not implemented yet in data processsing\n", instruction_type);
 		break;
 	}
-	regs.r15 += 4;
+	if (rd == 15) {
+		if (s_bit) {
+			// load the spsr according to the current mode into cpsr
+			regs.cpsr = get_spsr();
+			flush_pipeline();
+		}
+	} else {
+		regs.r15 += 4;
+	}
+	
 }
 
 u32 ARM::sub(u32 op1, u32 op2, bool set_flags) {
@@ -145,6 +162,7 @@ u32 ARM::bic(u32 op1, u32 op2, bool set_flags) {
 
 u32 ARM::_and(u32 op1, u32 op2, bool set_flags) {
 	// #ifdef counter
+	// printf("z flag: %d", get_condition_flag(Z_FLAG));
 	u32 result = op1 & op2;
 	if (set_flags) {
 		set_condition_flag(Z_FLAG, result == 0);
@@ -250,11 +268,6 @@ void ARM::arm_halfword_data_transfer_immediate() {
 		if (load_store_bit) {
 			// load from memory
 			set_reg(rd, read_halfword(address)); 
-			#ifdef FILE_LOG
-			if (counter == 844805 || counter == 844804) {
-				printf("r%d: 0x%04x\n", rd, address);
-			}
-			#endif
 		} else {
 			// store into memory
 			write_halfword(address, get_reg(rd));
@@ -275,7 +288,13 @@ void ARM::arm_halfword_data_transfer_immediate() {
 }
 
 void ARM::arm_branch_exchange() {
+	// if ((opcode & 1) == 1) {
+	// 	log_fatal("oh no thumb");
+	// }
 	u32 rn = get_reg(opcode & 0xF);
+	// if ((rn & 1) == 1) {
+	// 	log_fatal("oh no thumb");
+	// }
 	regs.r15 = rn;
 	flush_pipeline();
 }
