@@ -302,8 +302,6 @@ void ARM::fill_arm_lut_table() {
 }
 
 void ARM::execute_instruction() {
-    // debug_regs();
-    // log_debug("opcode: 0x%04x", opcode);
     // printf("cpsr: %d\n", regs.cpsr);
     if (is_arm()) {
         if (condition_evaluate()) {

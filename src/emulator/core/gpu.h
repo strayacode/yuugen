@@ -19,6 +19,9 @@ public:
     u8 vramcnt_g;
     u8 vramcnt_h;
     u8 vramcnt_i;
+
+    // display status and interrupt control register. is applied for both engine A and B
+    u16 dispstat; 
     
     // 0 = bottom, 1 = top
     const u32* get_framebuffer(int screen);

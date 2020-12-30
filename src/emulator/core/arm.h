@@ -153,6 +153,7 @@ private:
     u32 mov(u32 op2, bool set_flags);
     u32 _xor(u32 op1, u32 op2, bool set_flags);
     u32 bic(u32 op1, u32 op2, bool set_flags);
+    u32 _and(u32 op1, u32 op2, bool set_flags);
 
     // shift stuff
     u32 lsl(u32 op2, u8 shift_amount); 

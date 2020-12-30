@@ -56,6 +56,10 @@ void ARM::arm_data_processing() {
 		}
 	}
 	switch (instruction_type) {
+	case 0b0000:
+		// AND: rd = op1 & op2
+		set_reg(rd, _and(get_reg(rn), op2, s_bit));
+		break;
 	case 0b0010:
 		// SUB: rd = op1 - op2
 		set_reg(rd, sub(get_reg(rn), op2, s_bit));
@@ -132,6 +136,15 @@ u32 ARM::_xor(u32 op1, u32 op2, bool set_flags) {
 
 u32 ARM::bic(u32 op1, u32 op2, bool set_flags) {
 	u32 result = op1 & ~op2;
+	if (set_flags) {
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 31);
+	}
+	return result;
+}
+
+u32 ARM::_and(u32 op1, u32 op2, bool set_flags) {
+	u32 result = op1 & op2;
 	if (set_flags) {
 		set_condition_flag(Z_FLAG, result == 0);
 		set_condition_flag(N_FLAG, result >> 31);
@@ -230,8 +243,7 @@ void ARM::arm_halfword_data_transfer_immediate() {
 		// unsigned halfword doesnt do anything
 		break;
 	default:
-		printf("sh %d not implemented yet!\n", sh);
-		break;
+		log_fatal("sh %d not implemented yet!\n", sh);
 	}
 	u32 result;
 	if (up_down_bit) {
@@ -243,8 +255,13 @@ void ARM::arm_halfword_data_transfer_immediate() {
 		set_reg(rn, result);
 	}
 	if (load_store_bit) {
-		printf("load from memory not implemented yet!\n");
-		exit(1);
+		if (pre_post_bit) {
+			set_reg(get_reg(rd), read_halfword(result));
+		} else {
+			set_reg(get_reg(rd), read_halfword(get_reg(rn)));
+			// write back to base register
+			set_reg(get_reg(rn), result);
+		}
 	} else {
 		if (pre_post_bit) {
 			write_halfword(result, get_reg(rd));
@@ -273,16 +290,58 @@ void ARM::arm_block_data_transfer() {
 	u16 register_list = opcode & 0xFFFF;
 	u32 addr = get_reg(rn);
 	if (load_store_bit) {
-		log_fatal("load from memory not implemented in block transfer");
-	} else {
-		log_debug("store into memory");
 		if (pre_post_bit) {
 			// pre indexing
-			log_debug("pre indexing not implemented in block transfer");
+			// add or subtract 4 bytes before loading value from memory into register
+			if (up_down_bit) {
+				for (int i = 0; i < 16; i++) {
+					if (get_bit(i, register_list)) {
+						// pre increment the address
+						addr += 4;
+						// read word from memory address and store in register
+						set_reg(i, read_word(addr));
+					}
+				}
+			} else {
+				for (int i = 15; i >= 0; i--) {
+					if (get_bit(i, register_list)) {
+						// pre decrement the address
+						addr -= 4;
+						// read word from memory address and store in register
+						set_reg(i, read_word(addr));
+					}
+				}
+			}
+		} else {
+			// post indexing
+			if (up_down_bit) {
+				for (int i = 0; i < 16; i++) {
+					if (get_bit(i, register_list)) {
+						// read word from memory address and store in register
+						set_reg(i, read_word(addr));
+
+						// pre increment the address
+						addr += 4;
+					}
+				}
+			} else {
+				for (int i = 15; i >= 0; i--) {
+					if (get_bit(i, register_list)) {
+						// read word from memory address and store in register
+						set_reg(i, read_word(addr));
+
+						// post decrement the address
+						addr -= 4;
+					}
+				}
+			}
+		}
+	} else {
+		if (pre_post_bit) {
+			// pre indexing
 			// automatically add or subtract 4 bytes from addr
 			if (up_down_bit) {
-				log_debug("add offset to base");
-				for (int i = 15; i >= 0; i--) {
+				for (int i = 0; i < 16; i++) {
 					if (get_bit(i, register_list)) {
 						// pre increment the address
 						addr += 4;
@@ -301,17 +360,12 @@ void ARM::arm_block_data_transfer() {
 
 					}
 				}
-				log_debug("subtract offset from base not implemented in block transfer");
 			}
 		} else {
 			// post indexing
-			log_debug("post indexing");
-			log_debug("%08x", addr);
 			if (up_down_bit) {
-				log_debug("add offset to base");
 				for (int i = 0; i < 16; i++) {
 					if (get_bit(i, register_list)) {
-						log_debug("%d", i);
 						// write register to address
 						write_word(addr, get_reg(i));
 						// increment address after
@@ -319,7 +373,14 @@ void ARM::arm_block_data_transfer() {
 					}
 				}
 			} else {
-				log_fatal("subtract offset from base not implemented in block transfer");
+				for (int i = 15; i >= 0; i--) {
+					if (get_bit(i, register_list)) {
+						// write register to address
+						write_word(addr, get_reg(i));
+						// post decrement
+						addr -= 4;
+					}
+				}
 			}
 		}
 		if (writeback_bit) {
@@ -328,9 +389,7 @@ void ARM::arm_block_data_transfer() {
 		}
 		
 	}
-	
-	
-	log_fatal("block data transfer not implemented yet");
+	regs.r15 += 4;
 }
 
 void ARM::arm_undefined() {

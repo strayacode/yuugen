@@ -84,18 +84,14 @@ template u16 GPU::read_lcdc(u32 addr);
 template u32 GPU::read_lcdc(u32 addr);
 template <typename T>
 T GPU::read_lcdc(u32 addr) {
-    u8 *data_addr = nullptr;
+    log_debug("reading lcdc");
+    T return_value = 0;
     if (in_range(0x06800000, 0x0681FFFF, addr) && get_vram_bank_mst(vramcnt_a) == 0) {
         if (get_vram_bank_enabled(vramcnt_a)) {
-            data_addr = &vram_a[addr & 0x1FFFF];
+            memcpy(&return_value, &vram_a[addr & 0x1FFFF], sizeof(T));
         }
     } else {
         log_fatal("address not implemented! 0x%04x", addr);
-    }
-
-    T return_value = 0;
-    for (u32 i = 0; i < sizeof(T); i++) {
-        return_value |= (data_addr[i] << (i * 8));
     }
 
     return return_value;
