@@ -1,5 +1,6 @@
 #pragma once
 #include <emulator/common/types.h>
+#include <stdio.h>
 
 class Emulator;
 
@@ -159,7 +160,8 @@ private:
     u32 lsl(u32 op2, u8 shift_amount); 
     u32 lsr(u32 op2, u8 shift_amount); 
    
-    
+    int counter = 0;
+    FILE *file;
 
 
 };

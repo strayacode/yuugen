@@ -82,6 +82,7 @@ template <typename T>
 T Memory::arm9_read_io(u32 addr) {
     switch (addr) {
     case 0x04000004:
+        log_warn("dispstat: 0x%04x", emulator->gpu.dispstat);
         return emulator->gpu.dispstat;
     default:
         log_fatal("[Memory] io read by arm9 at address 0x%04x is unimplemented!", addr);

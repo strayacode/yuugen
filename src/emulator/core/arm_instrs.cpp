@@ -234,42 +234,39 @@ void ARM::arm_halfword_data_transfer_immediate() {
 	u8 write_back_bit = get_bit(21, opcode);
 	u8 load_store_bit = get_bit(20, opcode);
 	u8 rn = get_bit_range(16, 19, opcode);
-	// printf("rn: %d\n", rn);
+	
 	u8 rd = get_bit_range(12, 15, opcode);
 	u8 sh = get_bit_range(5, 6, opcode);
 	u16 offset = (get_bit_range(8, 11, opcode) << 4 | get_bit_range(0, 3, opcode));
+	u32 address = get_reg(rn);
+	printf("offset: %d\n", offset);
+	printf("address: %04x\n", address);
+	if (pre_post_bit) {
+		address += up_down_bit ? offset : -offset;
+	}
 	switch (sh) {
 	case 0b01:
-		// unsigned halfword doesnt do anything
+		// reads or writes a halfword value
+		if (load_store_bit) {
+			// load from memory
+			set_reg(rd, read_halfword(address)); 
+		} else {
+			// store into memory
+			write_halfword(address, get_reg(rd));
+		}
 		break;
 	default:
 		log_fatal("sh %d not implemented yet!\n", sh);
 	}
-	u32 result;
-	if (up_down_bit) {
-		result = get_reg(rn) + offset;
-	} else {
-		result = get_reg(rn) - offset;
-	}
-	if (write_back_bit) {
-		set_reg(rn, result);
-	}
-	if (load_store_bit) {
-		if (pre_post_bit) {
-			set_reg(get_reg(rd), read_halfword(result));
-		} else {
-			set_reg(get_reg(rd), read_halfword(get_reg(rn)));
-			// write back to base register
-			set_reg(get_reg(rn), result);
-		}
-	} else {
-		if (pre_post_bit) {
-			write_halfword(result, get_reg(rd));
-		} else {
-			write_halfword(get_reg(rn), get_reg(rd));
-			// write back to base register
-			set_reg(rn, result);
-		}
+	
+	// post indexing always writes back to rn
+	if (!pre_post_bit) {
+		printf("OK\n");
+		set_reg(rn, get_reg(rn) + (up_down_bit ? offset : -offset));
+	} else if (write_back_bit) {
+		// however writeback can also occur for pre indexing
+		printf("OK\n");
+		set_reg(rn, address);
 	}
 	regs.r15 += 4;
 }

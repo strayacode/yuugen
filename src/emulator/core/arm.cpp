@@ -8,6 +8,7 @@
 
 ARM::ARM(Emulator *emulator, int cpu_id): emulator(emulator), cpu_id(cpu_id) {
     fill_arm_lut_table();
+    file = fopen("armwrestler2.log", "w");
     // do thumb later lol
 }
 
@@ -302,7 +303,13 @@ void ARM::fill_arm_lut_table() {
 }
 
 void ARM::execute_instruction() {
-    // printf("cpsr: %d\n", regs.cpsr);
+    
+    if (counter == 100) {
+        exit(1);
+    }
+    debug_regs();
+    fprintf(file, "%d [ARM] r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x\n", counter, regs.r0, regs.r1, regs.r2, regs.r3, regs.r4, regs.r5, regs.r6, regs.r7, regs.r8, regs.r9, regs.r10, regs.r11, regs.r12, regs.r13, regs.r14, regs.r15);
+    counter++;
     if (is_arm()) {
         if (condition_evaluate()) {
             u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);

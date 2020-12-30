@@ -19,10 +19,23 @@ const u32* GPU::get_framebuffer(int screen) {
 }
 
 void GPU::render_scanline(int line) {
+    vcount++;
+    printf("vcount %d dispstat thing %d", vcount, dispstat >> 8);
     if (line < 192) {
         engine_a.render_scanline(line);
         engine_b.render_scanline(line);
     }
+    
+    // check if vcount is equal to lyc
+    if (vcount == (dispstat >> 8)) {
+        // set the v counter flag
+        dispstat |= (1 << 2);
+    }
+    if (vcount == 263) {
+        // reset vcount
+        vcount = 0;
+    }
+    
 }
 
 bool GPU::get_vram_bank_enabled(u8 vramcnt) {
