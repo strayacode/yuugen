@@ -264,7 +264,6 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 }
 
 void Memory::arm9_write_byte(u32 addr, u8 data) {
-    log_warn("addr: 0x%04x data: 0x%04x", addr, data);
     arm9_write<u8>(addr, data);
 }
 

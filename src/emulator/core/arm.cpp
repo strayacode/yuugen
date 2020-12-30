@@ -273,34 +273,35 @@ void ARM::fill_arm_lut_table() {
         if ((i & 0b111100000000) == 0b111100000000) {
             // software interrupt still need to implement
             arm_lut_table[i] = &ARM::arm_undefined;
-        } else if ((i & 0b111000000001) == 0b111000000001) {
+        } else if ((i & 0b111100000001) == 0b111000000001) {
             // coprocessor register transfer (on arm9 only i think)
             arm_lut_table[i] = &ARM::arm_undefined;
-        } else if ((i & 0b111000000001) == 0b111000000000) {
+        } else if ((i & 0b111100000001) == 0b111000000000) {
             // coprocessor data operation (on arm9 only i think)
             arm_lut_table[i] = &ARM::arm_undefined;
-        } else if ((i & 0b110000000000) == 0b110000000000) {
+        } else if ((i & 0b111000000000) == 0b110000000000) {
             // coprocessor data transfer (on arm9 only i think)
             arm_lut_table[i] = &ARM::arm_undefined;
         } else if ((i & 0b111000000000) == 0b101000000000) {
+            // branch
             arm_lut_table[i] = &ARM::arm_branch;
         } else if ((i & 0b111000000000) == 0b100000000000) {
-            // block data transfer still need to implement
+            // block data transfer
             arm_lut_table[i] = &ARM::arm_block_data_transfer;
-        } else if ((i & 0b111000000001) == 0b011000000001) {
+        } else if ((i & 0b1111000000001) == 0b011000000001) {
             // undefined instruction
             arm_lut_table[i] = &ARM::arm_undefined;
         } else if ((i & 0b110000000000) == 0b010000000000) {
-            // single data transfer still need to implement
+            // single data transfer
             arm_lut_table[i] = &ARM::arm_single_data_transfer;
         } else if ((i & 0b111001001001) == 0b000001001001) {
-            // halfword data transfer: immediate offset still need to implement
+            // halfword data transfer: immediate offset
             arm_lut_table[i] = &ARM::arm_halfword_data_transfer_immediate;
         } else if ((i & 0b111001001001) == 0b000000001001) {
             // halfword data transfer: register offset still need to implement
-            arm_lut_table[i] = &ARM::arm_undefined;
+            arm_lut_table[i] = &ARM::arm_halfword_data_transfer_register;
         } else if (i == 0b000100100001) {
-            // branch with exchange still need to implement
+            // branch with exchange
             arm_lut_table[i] = &ARM::arm_branch_exchange;
         } else if ((i & 0b111110111111) == 0b000100001001) {
             // single data swap still need to implement
