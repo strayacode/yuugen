@@ -66,7 +66,8 @@ T Memory::arm9_read(u32 addr) {
             //     return oam[addr - 0x07000000];
         
         default:
-            log_fatal("[Memory] read from arm9 at address 0x%04x is unimplemented!\n", addr);
+            // log_warn("[Memory] read from arm9 at address 0x%04x is unimplemented!", addr);
+            break;
         }
     }
     // log_debug("returnvalue : 0x%04x", return_value);
@@ -87,6 +88,8 @@ T Memory::arm9_read_io(u32 addr) {
     switch (addr) {
     case 0x04000004:
         return emulator->gpu.dispstat;
+    case 0x04000130:
+        return emulator->keypad.keyinput;
     default:
         log_fatal("[Memory] io read by arm9 at address 0x%04x is unimplemented!", addr);
     }
@@ -143,7 +146,7 @@ void Memory::arm9_write(u32 addr, T data) {
             }
             break;
         default:
-            log_fatal("[Memory] write from arm9 at address 0x%04x is unimplemented!", addr);
+            log_warn("[Memory] write from arm9 at address 0x%04x is unimplemented!", addr);
         }
     }
     
@@ -156,7 +159,7 @@ void Memory::arm7_write_io(u32 addr, T data) {
         emulator->interrupt.ime = data;
         break;
     default:
-        log_fatal("[Memory] io write by arm7 at address 0x%04x is unimplemented!\n", addr);
+        log_fatal("[Memory] io write by arm7 at address 0x%04x is unimplemented!", addr);
     }
 }
 

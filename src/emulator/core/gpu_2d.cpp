@@ -52,6 +52,7 @@ void GPU2D::render_vram_display(int line) {
         u16 data;
         switch (get_vram_bank()) {
         case 0:
+            // log_debug("vram a");
             data = (gpu->vram_a[(i * 2) + 1] << 8 | gpu->vram_a[i * 2]);
             break;
         case 1:
@@ -64,7 +65,7 @@ void GPU2D::render_vram_display(int line) {
             data = (gpu->vram_d[(i * 2) + 1] << 8 | gpu->vram_d[i * 2]);
             break;
         }
-
+        // log_debug("data: 0x%04x", data);
         framebuffer[(256 * line) + i] = convert_15_to_24(data);
     }
 }

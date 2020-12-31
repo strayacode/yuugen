@@ -7,6 +7,7 @@
 #include <emulator/core/gpu.h>
 #include <emulator/core/dma.h>
 #include <emulator/core/interrupt.h>
+#include <emulator/core/keypad.h>
 #include <string>
 #include <SDL2/SDL.h>
 
@@ -24,6 +25,7 @@ public:
     GPU gpu;
     DMA dma[2];
     Interrupt interrupt;
+    Keypad keypad;
 
     bool running;
 

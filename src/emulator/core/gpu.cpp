@@ -61,7 +61,8 @@ template void GPU::write_lcdc(u32 addr, u16 data);
 template void GPU::write_lcdc(u32 addr, u32 data);
 template <typename T>
 void GPU::write_lcdc(u32 addr, T data) {
-    // log_debug("YOOOOOO");
+    // log_debug("lcdc write to addr: 0x%04x and data 0x%04x", addr, data);
+
     if (in_range(0x06800000, 0x0681FFFF, addr) && get_vram_bank_mst(vramcnt_a) == 0) {
         if (get_vram_bank_enabled(vramcnt_a)) {
             memcpy(&vram_a[addr & 0x1FFFF], &data, sizeof(T));

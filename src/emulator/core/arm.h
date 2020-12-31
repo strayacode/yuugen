@@ -142,6 +142,7 @@ private:
     // arm instruction handlers
     void arm_branch();
     void arm_undefined();
+    void arm_unimplemented();
     void arm_data_processing();
     void arm_single_data_transfer(); // for ldr and str
     void arm_halfword_data_transfer_immediate();
@@ -156,10 +157,13 @@ private:
     u32 _xor(u32 op1, u32 op2, bool set_flags);
     u32 bic(u32 op1, u32 op2, bool set_flags);
     u32 _and(u32 op1, u32 op2, bool set_flags);
+    u32 sbc(u32 op1, u32 op2, bool set_flags);
 
     // shift stuff
     u32 lsl(u32 op2, u8 shift_amount); 
     u32 lsr(u32 op2, u8 shift_amount); 
+    u32 asr(u32 op2, u8 shift_amount);
+    u32 ror(u32 op2, u8 shift_amount);
    
     #ifdef FILE_LOG
     int counter = 0;

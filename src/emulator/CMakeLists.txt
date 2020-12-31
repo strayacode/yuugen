@@ -13,6 +13,7 @@ add_library(emulator
     common/arithmetic.cpp common/log.h
     common/mem_helpers.h
     core/interrupt.h
+    core/keypad.h
 )
 
 set (DIRECT_BOOT ON)
