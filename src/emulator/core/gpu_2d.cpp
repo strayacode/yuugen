@@ -56,6 +56,7 @@ void GPU2D::render_vram_display(int line) {
             data = (gpu->vram_a[(i * 2) + 1] << 8 | gpu->vram_a[i * 2]);
             break;
         case 1:
+            log_debug("vram b");
             data = (gpu->vram_b[(i * 2) + 1] << 8 | gpu->vram_b[i * 2]);
             break;
         case 2:

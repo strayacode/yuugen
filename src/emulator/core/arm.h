@@ -124,6 +124,7 @@ private:
     u32 get_reg(u8 reg);
     void set_reg(u8 reg, u32 data);
     u32 get_spsr();
+    void set_spsr(u32 data);
 
     void execute_instruction();
     void flush_pipeline();
@@ -149,6 +150,10 @@ private:
     void arm_halfword_data_transfer_register();
     void arm_branch_exchange();
     void arm_block_data_transfer();
+    void arm_single_data_swap();
+    void arm_psr_transfer();
+    void arm_multiply();
+    void arm_multiply_long();
 
     // data processing helpers
     u32 sub(u32 op1, u32 op2, bool set_flags);
@@ -158,6 +163,8 @@ private:
     u32 bic(u32 op1, u32 op2, bool set_flags);
     u32 _and(u32 op1, u32 op2, bool set_flags);
     u32 sbc(u32 op1, u32 op2, bool set_flags);
+    u32 adc(u32 op1, u32 op2, bool set_flags);
+    u32 orr(u32 op1, u32 op2, bool set_flags);
 
     // shift stuff
     u32 lsl(u32 op2, u8 shift_amount); 

@@ -79,7 +79,7 @@ template <typename T>
 T Memory::arm7_read_io(u32 addr) {
     switch (addr) {
     default:
-        log_fatal("[Memory] io read by arm7 at address 0x%04x is unimplemented!", addr);
+        log_debug("[Memory] io read by arm7 at address 0x%04x is unimplemented!", addr);
     }
 }
 

@@ -90,6 +90,13 @@ void ARM::arm_data_processing() {
 		// ADD: rd = op1 + op2
 		set_reg(rd, add(op1, op2, s_bit));
 		break;
+	case 0b0101:
+		// ADC: rd = op1 + op2 + carry
+		set_reg(rd, sbc(op1, op2, s_bit));
+	case 0b0110:
+		// SBC: rd = op1 - op2 + carry - 1
+		set_reg(rd, sbc(op1, op2, s_bit));
+		break;
 	case 0b0111:
 		// RSC: rd = op2 - op1 + carry - 1
 		set_reg(rd, sbc(op2, op1, s_bit));
@@ -105,6 +112,14 @@ void ARM::arm_data_processing() {
 	case 0b1010:
 		// CMP: set condition codes on op1 - op2
 		sub(op1, op2, s_bit);
+		break;
+	case 0b1011:
+		// CMN: set condition codes on op1 + op2
+		add(op1, op2, s_bit);
+		break;
+	case 0b1100:
+		// ORR: rd = op1 | op2
+		set_reg(rd, orr(op1, op2, s_bit));
 		break;
 	case 0b1101:
 		// MOV: rd = op2
@@ -159,6 +174,30 @@ u32 ARM::add(u32 op1, u32 op2, bool set_flags) {
 	return result32;
 }
 
+u32 ARM::orr(u32 op1, u32 op2, bool set_flags) {
+	u32 result = op1 | op2;
+	if (set_flags) {
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 31);
+	}
+	return result;
+}
+
+u32 ARM::adc(u32 op1, u32 op2, bool set_flags) {
+	u64 result = (u64)op1 + (u64)op2 + (u64)get_condition_flag(C_FLAG);
+	u32 result32 = (u32)result;
+	if (set_flags) {
+		// set carry flag to bit 32 of result
+		set_condition_flag(C_FLAG, result >> 32);
+
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 31);
+
+		set_condition_flag(V_FLAG, (~(op1 ^ op2) & (op2 ^ result32)) >> 31);
+	}
+	return result32;
+}
+
 u32 ARM::sbc(u32 op1, u32 op2, bool set_flags) {
 	u32 c_flag = get_condition_flag(C_FLAG);
 	u32 result = op1 - op2 + c_flag - 1;
@@ -173,7 +212,6 @@ u32 ARM::sbc(u32 op1, u32 op2, bool set_flags) {
 }
 
 u32 ARM::mov(u32 op2, bool set_flags) {
-	// log_fatal("op2: 0x%04x", op2);
 	// op1 is ignored in mov
 	if (set_flags) {
 		set_condition_flag(Z_FLAG, op2 == 0);
@@ -202,8 +240,6 @@ u32 ARM::bic(u32 op1, u32 op2, bool set_flags) {
 }
 
 u32 ARM::_and(u32 op1, u32 op2, bool set_flags) {
-	// #ifdef counter
-	// printf("z flag: %d", get_condition_flag(Z_FLAG));
 	u32 result = op1 & op2;
 	if (set_flags) {
 		set_condition_flag(Z_FLAG, result == 0);
@@ -333,7 +369,7 @@ void ARM::arm_halfword_data_transfer_immediate() {
 		}
 		break;
 	default:
-		log_fatal("sh %d not implemented yet!\n", sh);
+		log_warn("sh %d not implemented yet!\n", sh);
 	}
 	
 	// post indexing always writes back to rn
@@ -378,7 +414,7 @@ void ARM::arm_halfword_data_transfer_register() {
 		}
 		break;
 	default:
-		log_fatal("sh %d not implemented yet!\n", sh);
+		log_fatal("sh %d not implemented yet! opcode: 0x%04x", sh, opcode);
 	}
 	
 	// post indexing always writes back to rn
@@ -502,9 +538,58 @@ void ARM::arm_block_data_transfer() {
 	}
 
 	regs.r15 += 4;
-		
-	
-	
+}
+
+void ARM::arm_psr_transfer() {
+	u32 identifier = get_bit_range(16, 21, opcode);
+	if (identifier == 41) {
+		// msr transfer register contents to psr
+		u32 rm = get_reg(opcode & 0xF);
+		bool destination_psr = get_bit(22, opcode);
+		if (destination_psr) {
+			// write to currently banked spsr
+			set_spsr(rm);
+		} else {
+			// write to cpsr
+			regs.cpsr = rm;
+		}
+	} else {
+		log_fatal("identifier %d for arm psr transfer not implemented!", identifier);
+	}
+}
+
+void ARM::arm_single_data_swap() {
+	log_fatal("need to implement single data swap");
+}
+
+void ARM::arm_multiply() {
+	u8 accumulate_bit = get_bit(21, opcode);
+	u8 s_bit = get_bit(20, opcode);
+	u8 rd = get_bit_range(16, 19, opcode);
+	u8 rn = get_bit_range(12, 15, opcode);
+	u8 rs = get_bit_range(8, 11, opcode);
+	u8 rm = opcode & 0xF;
+	u32 result;
+	if (accumulate_bit) {
+		// multiply and accumulate
+		result = (get_reg(rm) * get_reg(rs)) + get_reg(rn);
+	} else {
+		// multiply 
+		result = get_reg(rm) * get_reg(rs);
+	}
+	if (s_bit) {
+		// set flags accordingly
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 31);
+		// carry idk lol
+		// overflow not affected
+	}
+	set_reg(rd, result);
+	// log_fatal("need to implement multiply");
+}
+
+void ARM::arm_multiply_long() {
+	log_fatal("need to implement multiply long");
 }
 
 void ARM::arm_undefined() {

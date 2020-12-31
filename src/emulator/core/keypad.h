@@ -3,7 +3,7 @@
 
 class Keypad {
 public:
-    u16 keyinput;
+    u16 keyinput = 0;
 
 private:
 };
