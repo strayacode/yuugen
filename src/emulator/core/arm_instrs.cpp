@@ -33,8 +33,16 @@ void ARM::arm_data_processing() {
 	if (i_bit) {
 		// shift the unsigned 8 bit immediate
 		u8 immediate = opcode & 0xFF;
-		u8 shift = get_bit_range(8, 11, opcode);
-		op2 = rotate_right(immediate, shift * 2);
+		u8 shift_amount = get_bit_range(8, 11, opcode) * 2;
+		if (shift_amount != 0) {
+			// perform a regular ror
+			u32 result = (immediate >> shift_amount) | (immediate << (32 - shift_amount));
+			// c flag is bit 31 of result as when op2 is rotated the last bit, bit 31 will correspond to the carry out
+			set_condition_flag(C_FLAG, result >> 31);
+			op2 = result;
+		} else {
+			op2 = immediate;
+		}
 	} else {
 		u8 shift_type = get_bit_range(5, 6, opcode);
 		u8 shift_amount;
@@ -200,14 +208,15 @@ u32 ARM::adc(u32 op1, u32 op2, bool set_flags) {
 }
 
 u32 ARM::sbc(u32 op1, u32 op2, bool set_flags) {
-	u32 c_flag = get_condition_flag(C_FLAG);
-	u32 result = op1 - op2 + c_flag - 1;
+	// u32 c_flag = get_condition_flag(C_FLAG);
+	u32 c_flag_result = get_condition_flag(C_FLAG) - 1;
+	u32 result = op1 - op2 + c_flag_result;
 	if (set_flags) {
 		set_condition_flag(Z_FLAG, result == 0);
 		set_condition_flag(N_FLAG, result >> 31);
 		// understanding: for signed overflow either both ops positive and result negative or both ops negative result positive
 		set_condition_flag(V_FLAG, ((op1 ^ op2) & (op1 ^ result)) >> 31);
-		set_condition_flag(C_FLAG, op1 >= op2 - c_flag + 1);
+		set_condition_flag(C_FLAG, op1 >= op2 - c_flag_result);
 	}	
 	return result;
 }
@@ -263,8 +272,25 @@ void ARM::arm_single_data_transfer() {
 	
 
 	if (i_bit) {
-		printf("uhh single data transfer i=1 not implemented yet\n");
-		exit(1);
+		u32 rm = opcode & 0xF;
+		u8 shift_type = get_bit_range(5, 6, opcode);
+		u8 shift_amount = get_bit_range(4, 11, opcode);
+		switch (shift_type) {
+		case 0:
+			op2 = lsl(rm, shift_amount);
+			break;
+		case 1:
+			op2 = lsr(rm, shift_amount);
+			break;
+		case 2:
+			op2 = asr(rm, shift_amount);
+			break;
+		case 3:
+			op2 = ror(rm, shift_amount);
+			break;
+		default:
+			log_fatal("[ARM] in data processing shift type %d is not implemented yet\n", shift_type);
+		}
 	} else {
 		op2 = opcode & 0xFFF;
 	}
@@ -329,12 +355,13 @@ void ARM::arm_single_data_transfer() {
 	// check if rd = r15 in load
 	if (load_store_bit) {
 		
-		if (rd == 15) {
-			log_warn("handle ldr opcode: %08x", opcode);
-			// flush_pipeline();
-		}
+		
 	}
 
+	if (rd == rn) {
+		log_warn("handle ldr opcode: %08x", opcode);
+		// flush_pipeline();
+	}
 	regs.r15 += 4;
 	
 }

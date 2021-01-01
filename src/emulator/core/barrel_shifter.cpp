@@ -4,11 +4,22 @@
 
 // LSL
 u32 ARM::lsl(u32 op2, u8 shift_amount) {
-    if ((shift_amount != 0) && (shift_amount < 32)) {
-        set_condition_flag(C_FLAG, (op2 >> (32 - shift_amount)) & 0x1);
-        return (op2 << shift_amount);
+    u32 result;
+    if (shift_amount < 32) {
+        if (shift_amount != 0) {
+            set_condition_flag(C_FLAG, (op2 >> (32 - shift_amount)) & 0x1);
+        }
+        
+        result = (op2 << shift_amount);
+    } else {
+        result = 0;
+        if (shift_amount == 32) {
+            set_condition_flag(C_FLAG, op2 & 0x1);
+        } else {
+            set_condition_flag(C_FLAG, false);
+        }
     }
-    return op2;
+    return result;
 }
 
 // LSR

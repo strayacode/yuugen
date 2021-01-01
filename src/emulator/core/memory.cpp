@@ -92,7 +92,7 @@ T Memory::arm9_read_io(u32 addr) {
         // return 0x3FF;
         return emulator->keypad.keyinput;
     default:
-        log_fatal("[Memory] io read by arm9 at address 0x%04x is unimplemented!", addr);
+        log_warn("[Memory] io read by arm9 at address 0x%04x is unimplemented!", addr);
     }
 }
 
@@ -168,7 +168,7 @@ void Memory::arm7_write_io(u32 addr, T data) {
 // TODO: look at this more carefully later \../
 template <typename T> 
 void Memory::arm9_write_io(u32 addr, T data) {
-    printf("arm9 writing to addr 0x%04x with data 0x%04x\n", addr, data);
+    // printf("arm9 writing to addr 0x%04x with data 0x%04x\n", addr, data);
     switch (addr) {
     case 0x04000000:
         emulator->gpu.engine_a.dispcnt = data;
@@ -189,7 +189,7 @@ void Memory::arm9_write_io(u32 addr, T data) {
         emulator->gpu.powcnt1 = data;
         break;
     default:
-        log_fatal("[Memory] io write by arm9 at address 0x%04x with data 0x%04x is unimplemented!", addr, data);
+        log_warn("[Memory] io write by arm9 at address 0x%04x with data 0x%04x is unimplemented!", addr, data);
     }
 }
 
