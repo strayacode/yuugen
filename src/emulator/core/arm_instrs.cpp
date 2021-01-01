@@ -307,7 +307,7 @@ void ARM::arm_single_data_transfer() {
 			// pre indexing
 			if (byte_word_bit) {
 				// byte transfer
-				write_byte(result, get_reg(rd) & 0xFF);
+				write_byte(result, (u8)get_reg(rd));
 			} else {
 				// word transfer
 				write_word(result, get_reg(rd));
@@ -316,7 +316,7 @@ void ARM::arm_single_data_transfer() {
 			// post indexing
 			if (byte_word_bit) {
 				// byte transfer
-				write_byte(get_reg(rn), get_reg(rd) & 0xFF);
+				write_byte(get_reg(rn), (u8)get_reg(rd));
 			} else {
 				// word transfer
 				write_word(get_reg(rn), get_reg(rd));

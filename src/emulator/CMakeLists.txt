@@ -18,7 +18,7 @@ add_library(emulator
 
 set (DIRECT_BOOT ON)
 set (FIRMWARE_BOOT OFF)
-set (FILE_LOG ON)
+set (FILE_LOG OFF)
  
 if (DIRECT_BOOT)
     target_compile_definitions(emulator PRIVATE DIRECT_BOOT)
