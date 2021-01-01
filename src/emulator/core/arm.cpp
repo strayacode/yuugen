@@ -195,9 +195,10 @@ void ARM::set_spsr(u32 data) {
 }
 
 void ARM::set_reg(u8 reg, u32 data) {
-    if (reg == 15) {
-        log_warn("opcode: 0x%08x", opcode);
-    }
+    // if (reg == 15) {
+    //     log_warn("opcode: 0x%08x with data from lr being 0x%04x", opcode, data);
+    //     log_warn("lr is same as data: %d", get_reg(14) == data);
+    // }
     u32 cpu_mode = get_bit_range(0, 4, regs.cpsr);
     switch (reg) {
     case 0:
@@ -355,11 +356,11 @@ void ARM::fill_arm_lut_table() {
 
 void ARM::execute_instruction() {
     #ifdef FILE_LOG
-    if (counter == 5000) {
+    if (counter == 500000) {
         exit(1);
     }
     if (cpu_id == 1) {
-        fprintf(file, "%08x\n", opcode);
+        fprintf(file, "%04x %04x\n", opcode, regs.r15);
     }
     
     // fprintf(file, "%d [ARM] r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x\n", counter, regs.r0, regs.r1, regs.r2, regs.r3, regs.r4, regs.r5, regs.r6, regs.r7, regs.r8, regs.r9, regs.r10, regs.r11, regs.r12, regs.r13, regs.r14, regs.r15);

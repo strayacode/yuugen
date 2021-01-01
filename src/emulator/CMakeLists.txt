@@ -13,12 +13,12 @@ add_library(emulator
     common/arithmetic.cpp common/log.h
     common/mem_helpers.h
     core/interrupt.h
-    core/keypad.h
+    core/keypad.h core/keypad.cpp
 )
 
 set (DIRECT_BOOT ON)
 set (FIRMWARE_BOOT OFF)
-set (FILE_LOG OFF)
+set (FILE_LOG ON)
  
 if (DIRECT_BOOT)
     target_compile_definitions(emulator PRIVATE DIRECT_BOOT)

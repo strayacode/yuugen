@@ -39,7 +39,6 @@ T Memory::arm7_read(u32 addr) {
 
 template <typename T>
 T Memory::arm9_read(u32 addr) {
-    // log_warn("addr: 0x%04x", addr);
     T return_value = 0;
     if ((emulator->cp15.get_itcm_enabled()) && (addr < emulator->cp15.get_itcm_size())) {
         memcpy(&return_value, &instruction_tcm[addr & 0x7FFF], sizeof(T));
@@ -89,6 +88,8 @@ T Memory::arm9_read_io(u32 addr) {
     case 0x04000004:
         return emulator->gpu.dispstat;
     case 0x04000130:
+        // just return 0b0000001111111111
+        // return 0x3FF;
         return emulator->keypad.keyinput;
     default:
         log_fatal("[Memory] io read by arm9 at address 0x%04x is unimplemented!", addr);

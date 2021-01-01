@@ -12,9 +12,10 @@ void ARM::arm_branch() {
 		// branch with link
 		// write the old pc which contains the address of the instruction after branch with link to the banked r14
 		set_reg(14, regs.r15 - 4);
+		// log_warn("r14 is now: 0x%04x", get_reg(14));
 	} 
 	// offset is shifted left by 2 and sign extended to 32 bits
-	u32 offset = (get_bit(23, opcode) ? 0xFF000000: 0) | ((opcode & 0xFFFFFF) << 2);
+	u32 offset = (get_bit(23, opcode) ? 0xFF000000: 0) | ((opcode & 0xFFFFFF) * 4);
 	regs.r15 += offset;
 	flush_pipeline();
 }
@@ -139,14 +140,14 @@ void ARM::arm_data_processing() {
 	}
 	if (rd == 15) {
 		if (s_bit) {
+			
 			// load the spsr according to the current mode into cpsr
 			regs.cpsr = get_spsr();
-			flush_pipeline();
 		}
+		flush_pipeline();
 	} else {
 		regs.r15 += 4;
 	}
-	
 }
 
 u32 ARM::sub(u32 op1, u32 op2, bool set_flags) {
@@ -379,6 +380,7 @@ void ARM::arm_halfword_data_transfer_immediate() {
 		// however writeback can also occur for pre indexing
 		set_reg(rn, address);
 	}
+	
 	regs.r15 += 4;
 	
 }
@@ -425,6 +427,7 @@ void ARM::arm_halfword_data_transfer_register() {
 		set_reg(rn, address);
 	}
 
+	
 	regs.r15 += 4;
 }
 
@@ -436,9 +439,9 @@ void ARM::arm_branch_exchange() {
 	if (rn == 15) {
 		log_warn("rn = r15 in branch exchange is undefined!");
 	}
-	// if ((rn & 1) == 1) {
-	// 	log_fatal("oh no thumb");
-	// }
+	if ((rn & 1) == 1) {
+		log_fatal("oh no thumb");
+	}
 	regs.r15 = rn;
 	flush_pipeline();
 }
@@ -589,7 +592,37 @@ void ARM::arm_multiply() {
 }
 
 void ARM::arm_multiply_long() {
-	log_fatal("need to implement multiply long");
+	// TODO: add support for signed multiply long i think
+	u8 u_bit = get_bit(22, opcode);
+	u8 accumulate_bit = get_bit(21, opcode);
+	u8 s_bit = get_bit(20, opcode);
+	u8 rd_hi = get_bit_range(16, 19, opcode);
+	u8 rd_lo = get_bit_range(12, 15, opcode);
+	u8 rs = get_bit_range(8, 11, opcode);
+	u8 rm = opcode & 0xF;
+	u64 result;
+	if (accumulate_bit) {
+		u64 rd_hilo = ((u64)get_reg(rd_hi)) << 32 | (u64)get_reg(rd_lo);
+		// multiply and accumulate
+		result = (get_reg(rm) * get_reg(rs)) + rd_hilo;
+	} else {
+		// multiply only
+		result = get_reg(rm) * get_reg(rs);
+	}
+	
+	if (s_bit) {
+		// set flags
+		set_condition_flag(Z_FLAG, result == 0);
+		set_condition_flag(N_FLAG, result >> 63);
+		// c and v flags are meaningless lol
+	}
+
+	// lower 32 bits of the 64 bit result are written to rd lo
+	set_reg(rd_lo, result & 0xFFFFFFFF);
+	// upper 32 bits of the 64 bit result are written to rd hi
+	set_reg(rd_hi, result >> 32);
+	
+	// log_fatal("need to implement multiply long");
 }
 
 void ARM::arm_undefined() {

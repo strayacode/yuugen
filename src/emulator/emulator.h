@@ -41,7 +41,7 @@ private:
     SDL_Rect bottom_texture_dimensions;
 
     // Event handler
-    SDL_Event e;
+    SDL_Event event;
 
     int window_size_multiplier;
 

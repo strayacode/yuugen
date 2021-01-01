@@ -61,10 +61,57 @@ void Emulator::run(std::string rom_path) {
         SDL_Delay(16);
 
         // check for events
-        while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) {
+        while (SDL_PollEvent(&event) != 0) {
+            if (event.type == SDL_QUIT) {
                 // cool use of goto lol
                 goto cleanup;
+            }
+            if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
+                bool key_pressed = event.type == SDL_KEYDOWN;
+                switch (event.key.keysym.sym) {
+                case SDLK_u:
+                    // A
+                    keypad.handle_key(0, key_pressed);
+                    break;
+                case SDLK_i:
+                    // B
+                    keypad.handle_key(1, key_pressed);
+                    break;
+                // should handle X and Y later (not in keyinput)
+                case SDLK_RSHIFT:
+                    // select
+                    keypad.handle_key(2, key_pressed);
+                    break;
+                case SDLK_RETURN:
+                    // start
+                    keypad.handle_key(3, key_pressed);
+                    break;
+                case SDLK_RIGHT:
+                    // right
+                    keypad.handle_key(4, key_pressed);
+                    break;
+                case SDLK_LEFT:
+                    // left 
+                    keypad.handle_key(5, key_pressed);
+                    break;
+                case SDLK_UP:
+                    // up
+                    keypad.handle_key(6, key_pressed);
+                    break;
+                case SDLK_DOWN:
+                    // down
+                    keypad.handle_key(7, key_pressed);
+                    break;
+                case SDLK_e:
+                    // Button R
+                    keypad.handle_key(8, key_pressed);
+                    break;
+                case SDLK_q:
+                    // Button L
+                    keypad.handle_key(9, key_pressed);
+                    break;
+
+                }
             }
         }
         
