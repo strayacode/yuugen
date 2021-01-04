@@ -246,7 +246,7 @@ void ARMInterpreter::adcs(u32 op2) {
     set_condition_flag(C_FLAG, result >> 32);
 
     set_condition_flag(Z_FLAG, result == 0);
-    set_condition_flag(N_FLAG, result >> 31);
+    set_condition_flag(N_FLAG, result32 >> 31);
 
     set_condition_flag(V_FLAG, (~(regs.r[rn] ^ op2) & (op2 ^ result32)) >> 31);
     regs.r[rd] = result32;
@@ -319,6 +319,8 @@ void ARMInterpreter::rscs(u32 op2) {
 		set_condition_flag(C_FLAG, (u64)op2 >= (u64)regs.r[rn] + (u64)!get_condition_flag(C_FLAG));
     }
 
+    regs.r[rd] = result;
+
     regs.r[15] += 4;
 }
 
@@ -326,7 +328,8 @@ void ARMInterpreter::sbcs(u32 op2) {
     // TODO: correct the flag setting later
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
-    u32 result = regs.r[rn] - op2 - !get_condition_flag(C_FLAG);
+    u32 result = regs.r[rn] - op2 - 1 + get_condition_flag(C_FLAG);
+
     if (rd == 15) {
         regs.cpsr = get_spsr();
     } else {
@@ -334,8 +337,10 @@ void ARMInterpreter::sbcs(u32 op2) {
         set_condition_flag(Z_FLAG, result == 0);
         set_condition_flag(V_FLAG, ((regs.r[rn] ^ op2) & (op2 ^ result)) >> 31);
         // TODO: fix later
-		set_condition_flag(C_FLAG, (u64)regs.r[rn] >= (u64)op2 + (u64)!get_condition_flag(C_FLAG));
+		set_condition_flag(C_FLAG, regs.r[rn] >= result);
     }
+
+    regs.r[rd] = result;
 
     regs.r[15] += 4;
 }
@@ -351,6 +356,7 @@ void ARMInterpreter::mlas() {
     set_condition_flag(Z_FLAG, result == 0);
 
     regs.r[rd] = result;
+
     regs.r[15] += 4;
 }
 
@@ -363,6 +369,7 @@ void ARMInterpreter::muls() {
     set_condition_flag(Z_FLAG, result == 0);
 
     regs.r[rd] = result;
+
     regs.r[15] += 4;
 
 }
@@ -375,6 +382,7 @@ void ARMInterpreter::umulls() {
     u64 result = (u64)regs.r[rm] * (u64)regs.r[rs];
     set_condition_flag(N_FLAG, result >> 63);
     set_condition_flag(Z_FLAG, result == 0);
+
     regs.r[rdhi] = result >> 32;
     regs.r[rdlo] = result & 0xFFFFFFFF;
 
