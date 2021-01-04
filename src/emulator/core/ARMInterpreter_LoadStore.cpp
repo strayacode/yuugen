@@ -28,10 +28,17 @@ void ARMInterpreter::str_pre(u32 op2) {
 
 // fine
 void ARMInterpreter::str_post(u32 op2) {
+    
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
     write_word(regs.r[rn], regs.r[rd]);
+
+    if (op2 == -4) {
+        log_debug("opcode: 0x%04x op2: 0x%04x", opcode, op2);
+        log_debug("rn before: 0x%04x", regs.r[rn]);
+        log_debug("rn soon: 0x%04x", regs.r[rn] + op2);
+    }
 
     // always writeback in post transfer
     regs.r[rn] += op2;

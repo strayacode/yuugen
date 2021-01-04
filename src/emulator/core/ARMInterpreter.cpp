@@ -222,21 +222,10 @@ void ARMInterpreter::step() {
 
 void ARMInterpreter::execute_instruction() {
     // we will return the function results in void function as we dont have to type break then lmao
-    // log_debug("r1: %04x", regs.r[1]);
     
     if (is_arm()) {
-        // prefetch so we dont have to write this out everytime in each instruction function
-        
         // using http://imrannazar.com/ARM-Opcode-Map
         if (condition_evaluate()) {
-            
-            
-            // if (opcode == 0xe3540000) {
-            //     debug = true;
-            // }
-            // if (debug) {
-            //     printf("%08x\n", opcode);
-            // }
             u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
             switch (index) {
             case 0x012: case 0x01A:
@@ -254,7 +243,6 @@ void ARMInterpreter::execute_instruction() {
             case 0x040: case 0x048:
                 return sub(lli());
             case 0x050: case 0x058:
-                // TODO: look into later
                 return subs(lli());
             case 0x080: case 0x088:
                 return add(lli());
@@ -306,7 +294,6 @@ void ARMInterpreter::execute_instruction() {
                 return ldrh_pre(imm_halfword_signed_data_transfer());
             case 0x1E0: case 0x1E8:
                 return mvn(lli());
-
             case 0x200: case 0x201: case 0x202: case 0x203: 
             case 0x204: case 0x205: case 0x206: case 0x207: 
             case 0x208: case 0x209: case 0x20A: case 0x20B: 
