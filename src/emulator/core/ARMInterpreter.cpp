@@ -259,7 +259,7 @@ void ARMInterpreter::execute_instruction() {
             case 0x080: case 0x088:
                 return add(lli());
             case 0x090: case 0x098:
-                return adds(llis());
+                return adds(lli());
             case 0x099:
                 return umulls();
             case 0x0A0: case 0x0A8:

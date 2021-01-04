@@ -6,7 +6,6 @@
 #include <string.h>
 
 GPU::GPU(Emulator *emulator) : emulator(emulator), engine_a(this, 1), engine_b(this, 0) {
-
 }
 
 const u32* GPU::get_framebuffer(int screen) {
@@ -19,6 +18,9 @@ const u32* GPU::get_framebuffer(int screen) {
 }
 
 void GPU::render_scanline(int line) {
+    // set hblank flag
+    dispstat |= (1 << 1);
+
     vcount++;
     // printf("vcount %d dispstat thing %d", vcount, dispstat >> 8);
     switch (vcount) {
@@ -26,11 +28,16 @@ void GPU::render_scanline(int line) {
         // set vblank flag in dispstat
         dispstat |= 1;
         break;
-    case 263:
+    case 227:
         // clear vblank flag in dispstat at end of blank 
         dispstat &= ~1;
+        break;
+    case 228:
         // reset vcount
         vcount = 0;
+
+        // clear hblank flag as hblank flag is set for lines 0..227
+        dispstat &= ~(1 << 1);
         break;
     }
     if (line < 192) {

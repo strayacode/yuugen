@@ -67,7 +67,7 @@ private:
 
     u8 palette_ram[0x800] = {}; // 2kb for engine A obj/bg and engine B obj/bg
     u8 oam[0x800] = {}; // 2kb oam for both engine A and B
-    u16 vcount = 0;
+    int vcount = 0;
 
     bool get_vram_bank_enabled(u8 vramcnt);
     u8 get_vram_bank_offset(u8 vramcnt);

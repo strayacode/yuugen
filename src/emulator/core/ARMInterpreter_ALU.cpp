@@ -1,5 +1,6 @@
 #include <emulator/common/types.h>
 #include <emulator/common/log.h>
+#include <emulator/common/arithmetic.h>
 #include <emulator/Emulator.h>
 
 void ARMInterpreter::mov(u32 op2) {
@@ -227,6 +228,7 @@ void ARMInterpreter::adds(u32 op2) {
     regs.r[rd] = result;
     set_condition_flag(Z_FLAG, result == 0);
     set_condition_flag(N_FLAG, result >> 31);
+    set_condition_flag(C_FLAG, regs.r[rn] > op2 + regs.r[rn]);
     // understanding: for signed overflow either both ops positive and result negative or both ops negative result positive
     set_condition_flag(V_FLAG, (~(regs.r[rn] ^ op2) & (op2 ^ result)) >> 31);
     if (rd == 15) {
@@ -331,6 +333,7 @@ void ARMInterpreter::sbcs(u32 op2) {
         set_condition_flag(N_FLAG, result >> 31);
         set_condition_flag(Z_FLAG, result == 0);
         set_condition_flag(V_FLAG, ((regs.r[rn] ^ op2) & (op2 ^ result)) >> 31);
+        // TODO: fix later
 		set_condition_flag(C_FLAG, (u64)regs.r[rn] >= (u64)op2 + (u64)!get_condition_flag(C_FLAG));
     }
 
@@ -394,73 +397,97 @@ void ARMInterpreter::smulls() {
     regs.r[15] += 4;
 }
 
+// fine
 u32 ARMInterpreter::lli() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
     return regs.r[rm] << shift_amount;
 }
 
+// fine
 u32 ARMInterpreter::lri() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
-    if (rm == 15) {
-        log_fatal("ok");
+    if (shift_amount == 0) {
+        return 0;
+    } else {
+        return regs.r[rm] >> shift_amount;
     }
-    return regs.r[rm] >> shift_amount;
 }
 
+// fine
 u32 ARMInterpreter::lris() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
-    if (rm == 15) {
-        log_fatal("ok");
-    }
+    u32 result;
     if (shift_amount == 0) {
-        set_condition_flag(C_FLAG, regs.r[rm] >> 31);
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << 31));
+        result = 0;
     } else {
         // means shift_amount > 0
-        set_condition_flag(C_FLAG, (regs.r[rm] >> (shift_amount - 1)) & 0x1);
+        result = regs.r[rm] >> shift_amount;
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
     }
-    return regs.r[rm] >> shift_amount;
+    return result;
 }
 
+
+// fine
 u32 ARMInterpreter::lrrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u8 rm = opcode & 0xF;
-    if (rm == 15) {
-        log_fatal("ok");
-    }
+    u32 result;
     if (shift_amount == 0) {
-        set_condition_flag(C_FLAG, regs.r[rm] >> 31);
+        result = regs.r[rm];
+    } else if (shift_amount < 32) {
+        result = regs.r[rm] >> shift_amount;
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
+    } else if (shift_amount == 32) {
+        result = 0;
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << 31));
     } else {
-        // means shift_amount > 0
-        set_condition_flag(C_FLAG, (regs.r[rm] >> (shift_amount - 1)) & 0x1);
+        result = 0;
+        set_condition_flag(C_FLAG, false);
     }
-    return regs.r[rm] >> shift_amount;
+    return result;
 }
 
-
+// fine
 u32 ARMInterpreter::llis() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
-    if (rm == 15) {
-        log_fatal("ok");
-    }
+    
     if (shift_amount > 0) {
-        set_condition_flag(C_FLAG, (regs.r[rm] >> (32 - shift_amount)) & 0x1);
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (32 - shift_amount)));
     }
     return regs.r[rm] << shift_amount;
 }
 
+
+// fine
 u32 ARMInterpreter::llrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u8 rm = opcode & 0xF;
-    if (shift_amount > 0) {
-        set_condition_flag(C_FLAG, (regs.r[rm] >> (32 - shift_amount)) & 0x1);
+    u32 result;
+    if (shift_amount == 0) {
+        result = regs.r[rm];
+    } else if (shift_amount < 32) {
+        result = regs.r[rm] << shift_amount;
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (32 - shift_amount)));
+    } else if (shift_amount == 32) {
+        result = 0;
+        set_condition_flag(C_FLAG, regs.r[rm] & 0x1);
+    } else {
+        // shift amount > 32
+        result = 0;
+        set_condition_flag(C_FLAG, false);
     }
-    return regs.r[rm] << shift_amount;
+
+
+    return result;
 }
 
+// fine
 u32 ARMInterpreter::ari() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
@@ -478,6 +505,7 @@ u32 ARMInterpreter::ari() {
     return result;
 }
 
+// fine
 u32 ARMInterpreter::aris() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
@@ -489,7 +517,7 @@ u32 ARMInterpreter::aris() {
         set_condition_flag(C_FLAG, msb);
     } else {
         // shift amount > 0
-        set_condition_flag(C_FLAG, (regs.r[rm] >> (shift_amount - 1) & 0x1));
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
         // perform asr
         // what happens is that rm gets shifted normally to the right but then the bits not set are set with the msb
         result = (regs.r[rm] >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
@@ -497,6 +525,7 @@ u32 ARMInterpreter::aris() {
     return result;
 }
 
+// fine
 u32 ARMInterpreter::arrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u8 rm = opcode & 0xF;
@@ -504,14 +533,17 @@ u32 ARMInterpreter::arrs() {
     u8 msb = regs.r[rm] >> 31;
 
     if (shift_amount == 0) {
-        result = 0xFFFFFFFF * msb;
-        set_condition_flag(C_FLAG, msb);
-    } else {
+        result = regs.r[rm];
+    } else if (shift_amount < 32) {
         // shift amount > 0
-        set_condition_flag(C_FLAG, (regs.r[rm] >> (shift_amount - 1) & 0x1));
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
         // perform asr
         // what happens is that rm gets shifted normally to the right but then the bits not set are set with the msb
         result = (regs.r[rm] >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
+    } else {
+        // shift amount > 32
+        result = 0xFFFFFFFF * msb;
+        set_condition_flag(C_FLAG, msb);
     }
     return result;
 }
@@ -528,7 +560,7 @@ u32 ARMInterpreter::rris() {
     } else {
         // shift amount > 0
         result = (regs.r[rm] >> shift_amount) | (regs.r[rm] << (32 - shift_amount));
-        set_condition_flag(C_FLAG, (regs.r[rm] >> (shift_amount - 1) & 0x1));
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
     }
 
     return result;

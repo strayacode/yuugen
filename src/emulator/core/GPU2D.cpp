@@ -57,13 +57,13 @@ void GPU2D::render_vram_display(int line) {
             break;
         case 1:
             // log_debug("vram b");
-            data = (gpu->vram_b[(i * 2) + 1] << 8 | gpu->vram_b[i * 2]);
+            data = (gpu->vram_b[(256 * line * 2) + (i * 2) + 1] << 8 | gpu->vram_b[(256 * line * 2) + (i * 2)]);
             break;
         case 2:
-            data = (gpu->vram_c[(i * 2) + 1] << 8 | gpu->vram_c[i * 2]);
+            data = (gpu->vram_c[(256 * line * 2) + (i * 2) + 1] << 8 | gpu->vram_c[(256 * line * 2) + (i * 2)]);
             break;
         case 3:
-            data = (gpu->vram_d[(i * 2) + 1] << 8 | gpu->vram_d[i * 2]);
+            data = (gpu->vram_d[(256 * line * 2) + (i * 2) + 1] << 8 | gpu->vram_d[(256 * line * 2) + (i * 2)]);
             break;
         }
         framebuffer[(256 * line) + i] = convert_15_to_24(data);
