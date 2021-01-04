@@ -1,7 +1,7 @@
-#include <emulator/core/cartridge.h>
+#include <emulator/core/Cartridge.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <emulator/emulator.h>
+#include <emulator/Emulator.h>
 
 Cartridge::Cartridge(Emulator *emulator) : emulator(emulator) {
     

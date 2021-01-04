@@ -1,6 +1,6 @@
-#include <emulator/core/memory.h>
-#include <emulator/emulator.h>
-#include <emulator/core/gpu.h>
+#include <emulator/core/Memory.h>
+#include <emulator/Emulator.h>
+#include <emulator/core/GPU.h>
 #include <stdio.h>
 #include <emulator/common/log.h>
 #include <string>
@@ -48,28 +48,16 @@ T Memory::arm9_read(u32 addr) {
         memcpy(&return_value, &data_tcm[(addr - emulator->cp15.get_dtcm_addr()) & 0x3FFF], sizeof(T));
     } else {
         switch (addr & 0xFF000000) {
-        // case 0x00000000:
-        //     // for now just read from instruction tcm whatever
         case 0x02000000:
             memcpy(&return_value, &main_ram[addr & 0x3FFFFF], sizeof(T));
             break;
-            // case 0x03000000:
-            //     return shared_wram[addr - 0x03000000];
         case 0x04000000:
             return arm9_read_io<T>(addr);
-            // case 0x05000000:
-            //     return palette_ram[addr - 0x05000000];
-            // case 0x06000000:
-            //     // deal with later lol
-            // case 0x07000000:
-            //     return oam[addr - 0x07000000];
-        
         default:
-            // log_warn("[Memory] read from arm9 at address 0x%04x is unimplemented!", addr);
+            log_fatal("[Memory] read from arm9 at address 0x%04x is unimplemented!", addr);
             break;
         }
     }
-    // log_debug("returnvalue : 0x%04x", return_value);
     return return_value;
 
 }
@@ -78,7 +66,7 @@ template <typename T>
 T Memory::arm7_read_io(u32 addr) {
     switch (addr) {
     default:
-        log_debug("[Memory] io read by arm7 at address 0x%04x is unimplemented!", addr);
+        log_fatal("[Memory] io read by arm7 at address 0x%04x is unimplemented!", addr);
     }
 }
 
@@ -88,17 +76,14 @@ T Memory::arm9_read_io(u32 addr) {
     case 0x04000004:
         return emulator->gpu.dispstat;
     case 0x04000130:
-        // just return 0b0000001111111111
-        // return 0x3FF;
         return emulator->keypad.keyinput;
     default:
-        log_warn("[Memory] io read by arm9 at address 0x%04x is unimplemented!", addr);
+        log_fatal("[Memory] io read by arm9 at address 0x%04x is unimplemented!", addr);
     }
 }
 
 template <typename T>
 void Memory::arm7_write(u32 addr, T data) {
-    
     switch (addr & 0xFF000000) {
     case 0x02000000:
         memcpy(&main_ram[addr & 0x3FFFFF], &data, sizeof(T));
@@ -129,9 +114,6 @@ void Memory::arm9_write(u32 addr, T data) {
         case 0x02000000:
             memcpy(&main_ram[addr & 0x3FFFFF], &data, sizeof(T));
             break;
-        case 0x03000000:
-            printf("shared wram\n");
-            break;
         case 0x04000000:
             arm9_write_io<T>(addr, data);
             return; // since write is already done
@@ -141,7 +123,6 @@ void Memory::arm9_write(u32 addr, T data) {
                 break;
             }
             if (addr >= 0x06800000) {
-                // undefined reference
                 emulator->gpu.write_lcdc<T>(addr, data);
                 return; // since write is already done
             }
@@ -168,7 +149,7 @@ void Memory::arm7_write_io(u32 addr, T data) {
 // TODO: look at this more carefully later \../
 template <typename T> 
 void Memory::arm9_write_io(u32 addr, T data) {
-    // printf("arm9 writing to addr 0x%04x with data 0x%04x\n", addr, data);
+    printf("arm9 writing to addr 0x%04x with data 0x%04x\n", addr, data);
     switch (addr) {
     case 0x04000000:
         emulator->gpu.engine_a.dispcnt = data;
@@ -189,7 +170,7 @@ void Memory::arm9_write_io(u32 addr, T data) {
         emulator->gpu.powcnt1 = data;
         break;
     default:
-        log_warn("[Memory] io write by arm9 at address 0x%04x with data 0x%04x is unimplemented!", addr, data);
+        log_fatal("[Memory] io write by arm9 at address 0x%04x with data 0x%04x is unimplemented!", addr, data);
     }
 }
 

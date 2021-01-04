@@ -1,5 +1,5 @@
-#include <emulator/emulator.h>
-#include <emulator/core/gpu.h>
+#include <emulator/Emulator.h>
+#include <emulator/core/GPU.h>
 #include <emulator/common/log.h>
 #include <emulator/common/arithmetic.h>
 #include <emulator/common/mem_helpers.h>

@@ -1,24 +1,26 @@
 add_library(emulator
-    emulator.cpp emulator.h
-    core/arm.cpp core/arm.h
-    core/arm_instrs.cpp core/thumb_instrs.cpp
-    core/memory.cpp core/memory.h
-    core/cp15.cpp core/cp15.h
-    core/cartridge.cpp core/cartridge.h
-    core/disassembler.cpp core/barrel_shifter.cpp
+    Emulator.cpp Emulator.h
+    core/ARMInterpreter.cpp core/ARMInterpreter.h
+    core/ARMInterpreter_Branch.cpp core/ARMInterpreter_Coprocessor.cpp
+    core/ARMInterpreter_Exception.cpp
+    core/ARMInterpreter_LoadStore.cpp core/ARMInterpreter_StatusTransfer.cpp
+    core/ARMInterpreter_ALU.cpp
+    core/Memory.cpp core/Memory.h
+    core/CP15.cpp core/CP15.h
+    core/Cartridge.cpp core/Cartridge.h
     common/types.h common/arithmetic.h
-    core/gpu.cpp core/gpu.h
-    core/gpu_2d.cpp core/gpu_2d.h
-    core/dma.cpp core/dma.h
+    core/GPU.cpp core/GPU.h
+    core/GPU2D.cpp core/GPU2D.h
+    core/DMA.cpp core/DMA.h
     common/arithmetic.cpp common/log.h
     common/mem_helpers.h
-    core/interrupt.h
-    core/keypad.h core/keypad.cpp
+    core/Interrupt.h
+    core/Keypad.h core/Keypad.cpp
 )
 
 set (DIRECT_BOOT ON)
 set (FIRMWARE_BOOT OFF)
-set (FILE_LOG OFF)
+set (FILE_LOG ON)
  
 if (DIRECT_BOOT)
     target_compile_definitions(emulator PRIVATE DIRECT_BOOT)

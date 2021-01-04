@@ -1,6 +1,6 @@
 #pragma once
 #include <emulator/common/types.h>
-#include <emulator/core/gpu_2d.h>
+#include <emulator/core/GPU2D.h>
 
 class Emulator;
 

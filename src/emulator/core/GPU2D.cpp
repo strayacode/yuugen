@@ -1,6 +1,6 @@
-#include <emulator/core/gpu_2d.h>
+#include <emulator/core/GPU2D.h>
 #include <emulator/common/types.h>
-#include <emulator/core/gpu.h>
+#include <emulator/core/GPU.h>
 #include <emulator/common/arithmetic.h>
 #include <emulator/common/log.h>
 #include <stdio.h>

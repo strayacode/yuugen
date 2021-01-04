@@ -1,4 +1,4 @@
-#include <emulator/core/cp15.h>
+#include <emulator/core/CP15.h>
 #include <stdio.h>
 #include <emulator/common/log.h>
 #include <emulator/common/arithmetic.h>

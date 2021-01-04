@@ -9,7 +9,6 @@ u32 get_bit_range(u32 lower_bound, u32 upper_bound, u32 data) {
     return result;
 }
 
-// s32 sign_extend(s16 value)
 u32 rotate_right(u32 value, int shift) {
     return ((value << (32 - shift)) | (value >> shift));
 }
