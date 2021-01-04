@@ -156,11 +156,15 @@ private:
     u32 lli(); // LSL with a 5 bit immediate shift amount
     u32 llis(); // LSL with a 5 bit immediate shift amount
     u32 llrs(); // with a shift amount specified by the bottom byte of the register specified by bits 8..11
+
     u32 lri(); // LSR with a 5 bit immediate shift amount
     u32 lris();
     u32 lrrs();
+
     u32 ari(); // ASR with a 5 bit immediate shift amount
     u32 aris(); // ASR with a 5 bit immediate shift amount
     u32 arrs();
+
+    u32 rris();
     
 };

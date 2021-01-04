@@ -285,7 +285,7 @@ void ARMInterpreter::execute_instruction() {
             case 0x170: case 0x178:
                 return cmns(lli());
             case 0x196: case 0x19E:
-                return orrs(lris());
+                return orrs(rris());
             case 0x19B:
                 return ldrh_pre(reg_halfword_signed_data_transfer());
             case 0x1A0: case 0x1A8:
