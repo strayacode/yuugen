@@ -129,13 +129,15 @@ int main(int argc, char *argv[]) {
     std::unique_ptr<Emulator> emulator = std::make_unique<Emulator>();
     if (argc < 2) {
         log_fatal("no rom argument or other arguments were specified!\n");
-    }
-    int i;
-    for (i = 1; i < argc - 1; i++) {
-        printf("%s\n", argv[i]);
+    } else {
+        int i;
+        for (i = 1; i < argc - 1; i++) {
+            printf("%s\n", argv[i]);
+        }
+        
+        main_loop(argv[i], emulator.get());
     }
     
-    main_loop(argv[i], emulator.get());
     
     return 0;
 }

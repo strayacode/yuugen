@@ -224,13 +224,15 @@ void ARMInterpreter::tsts(u32 op2) {
 void ARMInterpreter::adds(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
-    u32 result = regs.r[rn] + op2;
-    regs.r[rd] = result;
-    set_condition_flag(Z_FLAG, result == 0);
-    set_condition_flag(N_FLAG, result >> 31);
-    set_condition_flag(C_FLAG, regs.r[rn] > op2 + regs.r[rn]);
+    u64 result64 = (u64)regs.r[rn] + (u64)op2;
+    u32 result32 = (u32)result64;
+    regs.r[rd] = result32;
+    set_condition_flag(Z_FLAG, result32 == 0);
+    set_condition_flag(N_FLAG, result32 >> 31);
+    // detect borrow from bit 32
+    set_condition_flag(C_FLAG, result64 >> 32);
     // understanding: for signed overflow either both ops positive and result negative or both ops negative result positive
-    set_condition_flag(V_FLAG, (~(regs.r[rn] ^ op2) & (op2 ^ result)) >> 31);
+    set_condition_flag(V_FLAG, (~(regs.r[rn] ^ op2) & (op2 ^ result32)) >> 31);
     if (rd == 15) {
         log_fatal("handle pls");
     }
@@ -444,6 +446,10 @@ u32 ARMInterpreter::lris() {
 u32 ARMInterpreter::lrrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u8 rm = opcode & 0xF;
+    if (rm == 15) {
+        // prefetch due to how register shifting executes after the prefetch
+        regs.r[15] += 4;
+    }
     u32 result;
     if (shift_amount == 0) {
         result = regs.r[rm];
@@ -476,6 +482,10 @@ u32 ARMInterpreter::llis() {
 u32 ARMInterpreter::llrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u8 rm = opcode & 0xF;
+    if (rm == 15) {
+        // prefetch due to how register shifting executes after the prefetch
+        regs.r[15] += 4;
+    }
     u32 result;
     if (shift_amount == 0) {
         result = regs.r[rm];
@@ -537,6 +547,10 @@ u32 ARMInterpreter::aris() {
 u32 ARMInterpreter::arrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u8 rm = opcode & 0xF;
+    if (rm == 15) {
+        // prefetch due to how register shifting executes after the prefetch
+        regs.r[15] += 4;
+    }
     u32 result;
     u8 msb = regs.r[rm] >> 31;
 
