@@ -41,7 +41,7 @@ void ARMInterpreter::mvn(u32 op2) {
     regs.r[rd] = ~op2;
 
     if (rd == 15) {
-        // log_debug("we are now at r15 = 0x%04x", regs.r[15]);
+        log_debug("we are now at r15 = 0x%04x", regs.r[15]);
         flush_pipeline(); // shrug idk what im doing lmao
         // log_warn("the behaviour rd = 15 might be handled incorrectly in mov");
     } else {

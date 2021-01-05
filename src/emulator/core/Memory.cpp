@@ -18,6 +18,9 @@ Memory::Memory(Emulator *emulator) : emulator(emulator) {
 
 template <typename T>
 T Memory::arm7_read(u32 addr) {
+    // handle correct memory aligning
+    addr &= ~(sizeof(T) - 1);
+
     T return_value = 0;
     switch (addr & 0xFF000000) {
     // main memory
@@ -39,6 +42,10 @@ T Memory::arm7_read(u32 addr) {
 
 template <typename T>
 T Memory::arm9_read(u32 addr) {
+    // handle correct memory aligning
+    addr &= ~(sizeof(T) - 1);
+
+
     T return_value = 0;
     if ((emulator->cp15.get_itcm_enabled()) && (addr < emulator->cp15.get_itcm_size())) {
         memcpy(&return_value, &instruction_tcm[addr & 0x7FFF], sizeof(T));
@@ -84,6 +91,9 @@ T Memory::arm9_read_io(u32 addr) {
 
 template <typename T>
 void Memory::arm7_write(u32 addr, T data) {
+    // handle correct memory aligning
+    addr &= ~(sizeof(T) - 1);
+
     switch (addr & 0xFF000000) {
     case 0x02000000:
         memcpy(&main_ram[addr & 0x3FFFFF], &data, sizeof(T));
@@ -103,6 +113,10 @@ void Memory::arm7_write(u32 addr, T data) {
 
 template <typename T>
 void Memory::arm9_write(u32 addr, T data) {
+    // handle correct memory aligning
+    addr &= ~(sizeof(T) - 1);
+
+
     // tcm writes are specific to arm9
     // also check itcm as it has priority if itcm and dtcm overlap
     if ((emulator->cp15.get_itcm_enabled()) && (addr < emulator->cp15.get_itcm_size())) {

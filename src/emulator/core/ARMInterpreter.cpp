@@ -323,7 +323,7 @@ void ARMInterpreter::execute_instruction() {
             case 0x244: case 0x245: case 0x246: case 0x247: 
             case 0x248: case 0x249: case 0x24A: case 0x24B: 
             case 0x24C: case 0x24D: case 0x24E: case 0x24F:
-                return sub(imms_data_processing());
+                return sub(imm_data_processing());
             case 0x250: case 0x251: case 0x252: case 0x253: 
             case 0x254: case 0x255: case 0x256: case 0x257: 
             case 0x258: case 0x259: case 0x25A: case 0x25B: 
