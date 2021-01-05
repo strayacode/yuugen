@@ -587,3 +587,19 @@ u32 ARMInterpreter::rris() {
 
     return result;
 }
+
+u32 ARMInterpreter::rri() {
+    u8 shift_amount = (opcode >> 7) & 0x1F;
+    u8 rm = opcode & 0xF;
+
+    u32 result;
+    if (shift_amount == 0) {
+        // perform rotate right extend
+        result = (get_condition_flag(C_FLAG) << 31) | (regs.r[rm] >> 1);
+    } else {
+        // shift amount > 0
+        result = (regs.r[rm] >> shift_amount) | (regs.r[rm] << (32 - shift_amount));
+    }
+
+    return result;
+}

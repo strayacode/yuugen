@@ -13,7 +13,7 @@ void main_loop(std::string rom_path, Emulator* emulator) {
 
     
 
-    SDL_Window* window = SDL_CreateWindow("ChronoDS", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 256, 384, SDL_WINDOW_SHOWN);
+    SDL_Window* window = SDL_CreateWindow("ChronoDS", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 256 * emulator->window_size_multiplier, 384 * emulator->window_size_multiplier, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_Texture* top_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 256, 192);
     SDL_Texture* bottom_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 256, 192);
@@ -23,14 +23,14 @@ void main_loop(std::string rom_path, Emulator* emulator) {
     SDL_Rect top_texture_area = {
         .x = 0,
         .y = 0,
-        .w = 256,
-        .h = 192,
+        .w = 256 * emulator->window_size_multiplier,
+        .h = 192 * emulator->window_size_multiplier,
     };
     SDL_Rect bottom_texture_area {
         .x = 0,
-        .y = 192,
-        .w = 256,
-        .h = 192,
+        .y = 192 * emulator->window_size_multiplier,
+        .w = 256 * emulator->window_size_multiplier,
+        .h = 192 * emulator->window_size_multiplier,
     };
 
     emulator->cartridge.load_cartridge(rom_path);
@@ -128,6 +128,7 @@ void main_loop(std::string rom_path, Emulator* emulator) {
 int main(int argc, char *argv[]) {
     std::unique_ptr<Emulator> emulator = std::make_unique<Emulator>();
     if (argc < 2) {
+        main_loop("../roms/armwrestler.nds", emulator.get());
         log_fatal("no rom argument or other arguments were specified!\n");
     } else {
         int i;

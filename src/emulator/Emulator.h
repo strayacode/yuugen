@@ -31,6 +31,7 @@ public:
     void run_nds_frame();
 
     char window_title[30];
+    int window_size_multiplier;
 private:
     
 

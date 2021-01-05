@@ -5,7 +5,7 @@
 #include <emulator/common/log.h>
 
 Emulator::Emulator() : arm9(this, 1), arm7(this, 0), memory(this), cartridge(this), gpu(this), dma {DMA(this, 0), DMA(this, 1)} {
-
+    window_size_multiplier = 2;
 }
 
 void Emulator::reset() {

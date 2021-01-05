@@ -270,14 +270,22 @@ void ARMInterpreter::execute_instruction() {
                 return bx();
             case 0x150: case 0x158:
                 return cmps(lli());
+            case 0x15B:
+                return ldrh_pre(-imm_halfword_signed_data_transfer());
             case 0x170: case 0x178:
                 return cmns(lli());
+            case 0x17B:
+                return ldrh_pre(-imm_halfword_signed_data_transfer());
             case 0x196: case 0x19E:
                 return orrs(rris());
             case 0x19B:
                 return ldrh_pre(reg_halfword_signed_data_transfer());
             case 0x1A0: case 0x1A8:
                 return mov(lli());
+            case 0x1A2: case 0x1AA:
+                return mov(lri());
+            case 0x1A6: case 0x1AE:
+                return mov(rri());
             case 0x1B1:
                 return movs(llrs());
             case 0x1B2: case 0x1BA:
@@ -294,6 +302,8 @@ void ARMInterpreter::execute_instruction() {
                 return ldrh_pre(imm_halfword_signed_data_transfer());
             case 0x1E0: case 0x1E8:
                 return mvn(lli());
+            case 0x1FB:
+                return ldrh_pre(imm_halfword_signed_data_transfer());
             case 0x200: case 0x201: case 0x202: case 0x203: 
             case 0x204: case 0x205: case 0x206: case 0x207: 
             case 0x208: case 0x209: case 0x20A: case 0x20B: 
@@ -359,6 +369,11 @@ void ARMInterpreter::execute_instruction() {
             case 0x408: case 0x409: case 0x40A: case 0x40B: 
             case 0x40C: case 0x40D: case 0x40E: case 0x40F:
                 return str_post(-imm_single_data_transfer());
+            case 0x410: case 0x411: case 0x412: case 0x413: 
+            case 0x414: case 0x415: case 0x416: case 0x417: 
+            case 0x418: case 0x419: case 0x41A: case 0x41B: 
+            case 0x41C: case 0x41D: case 0x41E: case 0x41F:
+                return ldr_post(-imm_single_data_transfer());
             case 0x480: case 0x481: case 0x482: case 0x483: 
             case 0x484: case 0x485: case 0x486: case 0x487: 
             case 0x488: case 0x489: case 0x48A: case 0x48B: 
@@ -379,6 +394,17 @@ void ARMInterpreter::execute_instruction() {
             case 0x4D8: case 0x4D9: case 0x4DA: case 0x4DB: 
             case 0x4DC: case 0x4DD: case 0x4DE: case 0x4DF:
                 return ldrb_post(imm_single_data_transfer());
+            case 0x510: case 0x511: case 0x512: case 0x513:
+            case 0x514: case 0x515: case 0x516: case 0x517:
+            case 0x518: case 0x519: case 0x51A: case 0x51B:
+            case 0x51C: case 0x51D: case 0x51E: case 0x51F:
+                return ldr_pre(-imm_single_data_transfer());
+            case 0x530: case 0x531: case 0x532: case 0x533:
+            case 0x534: case 0x535: case 0x536: case 0x537:
+            case 0x538: case 0x539: case 0x53A: case 0x53B:
+            case 0x53C: case 0x53D: case 0x53E: case 0x53F:
+                // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
+                return ldr_pre(-imm_single_data_transfer());
             case 0x580: case 0x581: case 0x582: case 0x583:
             case 0x584: case 0x585: case 0x586: case 0x587:
             case 0x588: case 0x589: case 0x58A: case 0x58B:
@@ -388,6 +414,12 @@ void ARMInterpreter::execute_instruction() {
             case 0x594: case 0x595: case 0x596: case 0x597:
             case 0x598: case 0x599: case 0x59A: case 0x59B:
             case 0x59C: case 0x59D: case 0x59E: case 0x59F:
+                return ldr_pre(imm_single_data_transfer());
+            case 0x5B0: case 0x5B1: case 0x5B2: case 0x5B3:
+            case 0x5B4: case 0x5B5: case 0x5B6: case 0x5B7:
+            case 0x5B8: case 0x5B9: case 0x5BA: case 0x5BB:
+            case 0x5BC: case 0x5BD: case 0x5BE: case 0x5BF:
+                // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
                 return ldr_pre(imm_single_data_transfer());
             case 0x5C0: case 0x5C1: case 0x5C2: case 0x5C3: 
             case 0x5C4: case 0x5C5: case 0x5C6: case 0x5C7: 
@@ -399,6 +431,72 @@ void ARMInterpreter::execute_instruction() {
             case 0x5D8: case 0x5D9: case 0x5DA: case 0x5DB: 
             case 0x5DC: case 0x5DD: case 0x5DE: case 0x5DF:
                 return ldrb_pre(imm_single_data_transfer());
+            case 0x610: case 0x618:
+                return ldr_post(-rpll());
+            case 0x612: case 0x61A:
+                return ldr_post(-rplr());
+            case 0x614: case 0x61C:
+                return ldr_post(-rpar());
+            case 0x616: case 0x61E:
+                return ldr_post(-rprr());
+            case 0x690: case 0x698:
+                return ldr_post(rpll());
+            case 0x692: case 0x69A:
+                return ldr_post(rplr());
+            case 0x694: case 0x69C:
+                return ldr_post(rpar());
+            case 0x696: case 0x69E:
+                return ldr_post(rprr());
+            case 0x710: case 0x718:
+                return ldr_pre(-rpll());
+            case 0x712: case 0x71A:
+                return ldr_pre(-rplr());
+            case 0x714: case 0x71C:
+                return ldr_pre(-rpar());
+            case 0x716: case 0x71E:
+                return ldr_pre(-rprr());
+            case 0x730: case 0x738:
+                // TODO: split into more functions later
+                return ldr_pre(-rpll());
+            case 0x732: case 0x73A:
+                return ldr_pre(-rplr());
+            case 0x734: case 0x73C:
+                return ldr_pre(-rpar());
+            case 0x736: case 0x73E:
+                return ldr_pre(-rprr());
+            case 0x790: case 0x798:
+                return ldr_pre(rpll());
+            case 0x792: case 0x79A:
+                // TODO: check again later
+                return ldr_pre(rplr());
+            case 0x794: case 0x79C:
+                return ldr_pre(rpar());
+            case 0x796: case 0x79E:
+                return ldr_pre(rprr());
+            case 0x7B0: case 0x7B8:
+                return ldr_pre(rpll());
+            case 0x7B2: case 0x7BA:
+                return ldr_pre(rplr());
+            case 0x7B4: case 0x7BC:
+                return ldr_pre(rpar());
+            case 0x7B6: case 0x7BE:
+                return ldr_pre(rprr());
+            case 0x820: case 0x821: case 0x822: case 0x823:
+            case 0x824: case 0x825: case 0x826: case 0x827:
+            case 0x828: case 0x829: case 0x82A: case 0x82B:
+            case 0x82C: case 0x82D: case 0x82E: case 0x82F:
+                return stmdaw();
+            case 0x830: case 0x831: case 0x832: case 0x833:
+            case 0x834: case 0x835: case 0x836: case 0x837:
+            case 0x838: case 0x839: case 0x83A: case 0x83B:
+            case 0x83C: case 0x83D: case 0x83E: case 0x83F:
+                return ldmdaw();
+            case 0x870: case 0x871: case 0x872: case 0x873:
+            case 0x874: case 0x875: case 0x876: case 0x877:
+            case 0x878: case 0x879: case 0x87A: case 0x87B:
+            case 0x87C: case 0x87D: case 0x87E: case 0x87F:
+                // TODO: make more accurate later
+                return ldmdaw();
             case 0x8A0: case 0x8A1: case 0x8A2: case 0x8A3:
             case 0x8A4: case 0x8A5: case 0x8A6: case 0x8A7:
             case 0x8A8: case 0x8A9: case 0x8AA: case 0x8AB:
@@ -409,11 +507,44 @@ void ARMInterpreter::execute_instruction() {
             case 0x8B8: case 0x8B9: case 0x8BA: case 0x8BB:
             case 0x8BC: case 0x8BD: case 0x8BE: case 0x8BF:
                 return ldmiaw();
+            case 0x8F0: case 0x8F1: case 0x8F2: case 0x8F3:
+            case 0x8F4: case 0x8F5: case 0x8F6: case 0x8F7:
+            case 0x8F8: case 0x8F9: case 0x8FA: case 0x8FB:
+            case 0x8FC: case 0x8FD: case 0x8FE: case 0x8FF:
+                // TODO: make more accurate later
+                return ldmiaw();
             case 0x920: case 0x921: case 0x922: case 0x923:
             case 0x924: case 0x925: case 0x926: case 0x927:
             case 0x928: case 0x929: case 0x92A: case 0x92B:
             case 0x92C: case 0x92D: case 0x92E: case 0x92F:
                 return stmdbw();
+            case 0x930: case 0x931: case 0x932: case 0x933:
+            case 0x934: case 0x935: case 0x936: case 0x937:
+            case 0x938: case 0x939: case 0x93A: case 0x93B:
+            case 0x93C: case 0x93D: case 0x93E: case 0x93F:
+                return ldmdbw();
+            case 0x970: case 0x971: case 0x972: case 0x973:
+            case 0x974: case 0x975: case 0x976: case 0x977:
+            case 0x978: case 0x979: case 0x97A: case 0x97B:
+            case 0x97C: case 0x97D: case 0x97E: case 0x97F:
+                // TODO: make more accurate later
+                return ldmdbw();
+            case 0x9A0: case 0x9A1: case 0x9A2: case 0x9A3:
+            case 0x9A4: case 0x9A5: case 0x9A6: case 0x9A7:
+            case 0x9A8: case 0x9A9: case 0x9AA: case 0x9AB:
+            case 0x9AC: case 0x9AD: case 0x9AE: case 0x9AF:
+                return stmibw();
+            case 0x9B0: case 0x9B1: case 0x9B2: case 0x9B3:
+            case 0x9B4: case 0x9B5: case 0x9B6: case 0x9B7:
+            case 0x9B8: case 0x9B9: case 0x9BA: case 0x9BB:
+            case 0x9BC: case 0x9BD: case 0x9BE: case 0x9BF:
+                return ldmibw();
+            case 0x9F0: case 0x9F1: case 0x9F2: case 0x9F3:
+            case 0x9F4: case 0x9F5: case 0x9F6: case 0x9F7:
+            case 0x9F8: case 0x9F9: case 0x9FA: case 0x9FB:
+            case 0x9FC: case 0x9FD: case 0x9FE: case 0x9FF:
+                // TODO: make this more accurate later by using uw correctly
+                return ldmibw();
             case 0xA00: case 0xA01: case 0xA02: case 0xA03:
             case 0xA04: case 0xA05: case 0xA06: case 0xA07:
             case 0xA08: case 0xA09: case 0xA0A: case 0xA0B:

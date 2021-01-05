@@ -151,6 +151,11 @@ private:
     void stmiaw(); // store multiple increment after with writeback
     void ldmiaw(); // load multiple increment after with writeback
     void stmdbw(); // store multiple decrement before with writeback
+    void stmdaw(); // store multiple decrement after with writeback
+    void ldmibw(); // load multiple increment before with writeback
+    void ldmdbw(); // load multiple decrement before with writeback
+    void ldmdaw(); // load multiple decrement after with writeback
+    void stmibw(); // store multiple increment before with writeback
 
     // shift stuff
     u32 lli(); // LSL with a 5 bit immediate shift amount
@@ -166,5 +171,11 @@ private:
     u32 arrs();
 
     u32 rris();
-    
+    u32 rri();
+
+    // load/store shifts
+    u32 rpll(); // use in load store to shift a register rm with lsl
+    u32 rplr(); // use in load store to shift a register rm with lsr
+    u32 rpar(); // use in load store to shift a register rm with asr
+    u32 rprr(); // use in load store to shift a register rm with ror
 };
