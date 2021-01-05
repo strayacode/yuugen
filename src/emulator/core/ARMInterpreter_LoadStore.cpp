@@ -38,8 +38,10 @@ void ARMInterpreter::str_post(u32 op2) {
     }
     write_word(regs.r[rn], regs.r[rd]);
 
+    
     // always writeback in post transfer
     regs.r[rn] += op2;
+    
 
     regs.r[15] += 4;
 }
@@ -48,11 +50,23 @@ void ARMInterpreter::str_post(u32 op2) {
 void ARMInterpreter::ldr_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
+    // if (rd == rn) {
+    //     log_warn("need to handle");
+    // }
+    // if (regs.r[rn] & 0x3 != 0) {
+    //     log_warn("another thing to handle");
+    // }
+    u32 data = read_word(regs.r[rn]);
+    // data = rotate_right(data, (regs.r[rn] & 0x3) * 8);
+    
 
-    regs.r[rd] = read_word(regs.r[rn]);
+    if (rd != rn) {
+        // always writeback in post transfer
+        regs.r[rn] += op2;
+    }
 
-    // always writeback in post transfer
-    regs.r[rn] += op2;
+    regs.r[rd] = data;
+    
 
     regs.r[15] += 4;
 }
@@ -62,11 +76,18 @@ void ARMInterpreter::ldr_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
+    // if (rd == rn) {
+    //     log_warn("need to handle");
+    // }
+    // if (regs.r[rn] & 0x3 != 0) {
+    //     log_warn("another thing to handle");
+    // }
+    // address = rotate_right(address, (address & 0x3) * 8);
     u32 data = read_word(address);
     // TODO: check this out later more
     // data = rotate_right(data, (regs.r[rn] & 0x3) * 8);
     
-    if (get_bit(21, opcode)) {
+    if (get_bit(21, opcode) && (rd != rn)) {
         // write back to rn
         regs.r[rn] = address;
     }
@@ -127,14 +148,15 @@ void ARMInterpreter::strh_post(u32 op2) {
 void ARMInterpreter::ldrh_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
-    
+    u32 address = read_halfword(regs.r[rn]);
     regs.r[15] += 4;
 
-    regs.r[rd] = read_halfword(regs.r[rn]);
+    
 
     // always write back to base register in post indexing
     regs.r[rn] += op2;
 
+    regs.r[rd] = address;
     
 }
 
@@ -143,10 +165,11 @@ void ARMInterpreter::ldrh_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     
+    u32 address = read_halfword(regs.r[rn] + op2);
 
     regs.r[15] += 4;
 
-    regs.r[rd] = read_halfword(regs.r[rn] + op2);
+    
 
     
     // check for writeback
@@ -156,6 +179,8 @@ void ARMInterpreter::ldrh_pre(u32 op2) {
         regs.r[rn] += op2;
     }
 
+    regs.r[rd] = address;
+
     
 }
 
@@ -163,11 +188,12 @@ void ARMInterpreter::ldrh_pre(u32 op2) {
 void ARMInterpreter::ldrb_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
-
-    regs.r[rd] = read_byte(regs.r[rn]);
+    u32 address = read_byte(regs.r[rn]);
 
     // always writeback in post transfer
     regs.r[rn] += op2;
+
+    regs.r[rd] = address;
 
     regs.r[15] += 4;
 }

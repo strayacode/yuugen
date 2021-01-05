@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
     std::unique_ptr<Emulator> emulator = std::make_unique<Emulator>();
     if (argc < 2) {
         main_loop("../roms/armwrestler.nds", emulator.get());
-        log_fatal("no rom argument or other arguments were specified!\n");
+        log_fatal("no rom argument or other arguments were specified!");
     } else {
         int i;
         for (i = 1; i < argc - 1; i++) {
