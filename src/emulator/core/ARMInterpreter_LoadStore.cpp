@@ -489,7 +489,7 @@ void ARMInterpreter::ldmiauw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
     
-    
+    u8 old_mode = regs.cpsr & 0x1F;
     
     // first we must switch to user mode so that we can change the values of usr mode registers
     update_mode(0x1F);
@@ -501,6 +501,9 @@ void ARMInterpreter::ldmiauw() {
             address += 4;
         }
     }
+
+    // switching back to to old mode is my guess
+    update_mode(old_mode);
 
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
@@ -521,6 +524,8 @@ void ARMInterpreter::ldmdauw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
+    u8 old_mode = regs.cpsr & 0x1F;
+
     update_mode(0x1F);
 
     for (int i = 15; i >= 0; i--) {
@@ -529,6 +534,8 @@ void ARMInterpreter::ldmdauw() {
             address -= 4;
         }
     }
+
+    update_mode(old_mode);
 
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
@@ -549,6 +556,8 @@ void ARMInterpreter::ldmibuw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
+    u8 old_mode = regs.cpsr & 0x1F;
+
     update_mode(0x1F);
 
     for (int i = 0; i < 16; i++) {
@@ -557,6 +566,8 @@ void ARMInterpreter::ldmibuw() {
             regs.r[i] = read_word(address);
         }
     }
+
+    update_mode(old_mode);
 
 
     // if rn is in rlist:
@@ -578,6 +589,8 @@ void ARMInterpreter::ldmdbuw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
+    u8 old_mode = regs.cpsr & 0x1F;
+
     update_mode(0x1F);
 
     for (int i = 15; i >= 0; i--) {
@@ -586,6 +599,8 @@ void ARMInterpreter::ldmdbuw() {
             regs.r[i] = read_word(address);
         }
     }
+
+    update_mode(old_mode);
 
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist

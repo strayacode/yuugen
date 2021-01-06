@@ -8,6 +8,8 @@ void ARMInterpreter::mov(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     regs.r[rd] = op2;
 
+    
+
     if (rd == 15) {
         // log_debug("we are now at r15 = 0x%04x", regs.r[15]);
         flush_pipeline(); // shrug idk what im doing lmao
