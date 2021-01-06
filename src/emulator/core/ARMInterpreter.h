@@ -19,6 +19,15 @@ private:
         ARMv5,
     };
 
+    enum register_banks {
+        USR_BANK = 0,
+        FIQ_BANK = 1,
+        SVC_BANK = 2,
+        ABT_BANK = 3,
+        IRQ_BANK = 4,
+        UND_BANK = 5,
+    };
+
     enum condition_codes {
         // each number specifies the bit to access in cpsr
         N_FLAG = 31,
@@ -42,39 +51,15 @@ private:
 
     struct registers {
         u32 r[16] = {};
-        // specifically these are transfer to r when the cpu is switched to mode usr or sys
-        // r_usr registers are used for something like stm to store the values in r[16] so they can be restored later on with mode switch
-        u32 r_usr[16] = {};
+        
+        // banked register arrays applies to r8, r9, r10, r11, r12, r13, r14
+        u32 r_banked[6][7] = {};
         u32 cpsr;
 
-        // fiq mode registers
-        u32 r8_fiq;
-        u32 r9_fiq;
-        u32 r10_fiq;
-        u32 r11_fiq;
-        u32 r12_fiq;
-        u32 r13_fiq;
-        u32 r14_fiq;
         u32 spsr_fiq;
-
-        // svc mode registers
-        u32 r13_svc;
-        u32 r14_svc;
         u32 spsr_svc;
-
-        // abt mode registers
-        u32 r13_abt;
-        u32 r14_abt;
         u32 spsr_abt;
-
-        // irq mode registers
-        u32 r13_irq;
-        u32 r14_irq;
         u32 spsr_irq;
-
-        // und mode registers
-        u32 r13_und;
-        u32 r14_und;
         u32 spsr_und;
 
     } regs;
@@ -89,7 +74,9 @@ private:
 
     u32 get_spsr();
     void set_spsr(u32 data);
-    void set_mode(u8 mode);
+    void update_mode(u8 new_mode);
+
+    u8 get_bank(u8 mode);
 
     u8 read_byte(u32 addr);
     u16 read_halfword(u32 addr);
@@ -154,12 +141,20 @@ private:
     void bx();
     void stmiaw(); // store multiple increment after with writeback
     void ldmiaw(); // load multiple increment after with writeback
+    void ldmiauw(); // load multiple increment after with writeback and use user registers i think
     void stmdbw(); // store multiple decrement before with writeback
     void stmdaw(); // store multiple decrement after with writeback
     void ldmibw(); // load multiple increment before with writeback
+    void ldmibuw(); // load multiple increment before with writeback and use user registers i think
+    void ldmdbuw(); // load multiple decrement before with writeback and use user registers i think
     void ldmdbw(); // load multiple decrement before with writeback
     void ldmdaw(); // load multiple decrement after with writeback
+    void ldmdauw(); // load multiple decrement after with writeback and use user registers i think
     void stmibw(); // store multiple increment before with writeback
+
+
+    // ARM9 exclusive instructions
+    void clz(); 
 
     // shift stuff
     u32 lli(); // LSL with a 5 bit immediate shift amount

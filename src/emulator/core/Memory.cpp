@@ -35,7 +35,7 @@ T Memory::arm7_read(u32 addr) {
         }
         break;
     default:
-        log_fatal("[Memory] read from arm7 at address 0x%04x is unimplemented!\n", addr);
+        log_warn("[Memory] read from arm7 at address 0x%04x is unimplemented!", addr);
     }
     return return_value;
 }
@@ -61,7 +61,7 @@ T Memory::arm9_read(u32 addr) {
         case 0x04000000:
             return arm9_read_io<T>(addr);
         default:
-            log_fatal("[Memory] read from arm9 at address 0x%04x is unimplemented!", addr);
+            log_warn("[Memory] read from arm9 at address 0x%04x is unimplemented!", addr);
             break;
         }
     }
@@ -107,7 +107,7 @@ void Memory::arm7_write(u32 addr, T data) {
         arm7_write_io<T>(addr, data);
         return; // since write is already done
     default:
-        log_fatal("[Memory] write from arm7 to address 0x%04x is unimplemented!", addr);
+        log_warn("[Memory] write from arm7 to address 0x%04x is unimplemented!", addr);
     }
 }
 

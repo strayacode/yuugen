@@ -25,19 +25,20 @@ void ARMInterpreter::msr_reg() {
         if ((regs.cpsr & 0x1F) == 0x10) {
             // remove way to change bits 0..23
             mask &= 0xFF000000;
-            regs.cpsr = regs.r[rm] & mask;
+            regs.cpsr = (regs.r[rm] & mask) | (regs.cpsr & ~0xFF000000);
             return;
         } else {
             
             // proceed with setting cpsr normally
             // first change bits 0..7
             if (get_bit(16, opcode)) {
-                log_debug("good");
-                set_mode(regs.r[rm]);
+                update_mode(regs.r[rm]);
             }
 
             // then change bits 8..23
-            regs.cpsr = regs.r[rm] & mask & 0xFFFFFF00;
+            for (int i = 0; i < 3; i++) {
+                regs.cpsr = ((0xFF << ((i + 1) * 8)) & mask & regs.r[rm]) | (regs.cpsr & ~(0xFF << ((i + 1) * 8)));
+            }
 
         }
     }

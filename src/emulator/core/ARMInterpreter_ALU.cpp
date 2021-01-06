@@ -407,6 +407,23 @@ void ARMInterpreter::smulls() {
     regs.r[15] += 4;
 }
 
+void ARMInterpreter::clz() {
+    u8 rm = opcode & 0xF;
+    u8 rd = (opcode >> 12) & 0xF;
+    if (regs.r[rm] == 0) {
+        regs.r[rd] = 32;
+        return;
+    } else {
+        // rm is checked from bit 31 to bit 0 and number found when the bit is 1
+        for (int i = 31; i >= 0; i--) {
+            if (get_bit(i, regs.r[rm])) {
+                regs.r[rd] = 31 - i;
+                return;
+            }
+        }
+    }
+}
+
 // fine
 u32 ARMInterpreter::lli() {
     u8 shift_amount = (opcode >> 7) & 0x1F;

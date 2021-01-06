@@ -62,25 +62,25 @@ void ARMInterpreter::direct_boot() {
     // common between arm7 and arm9
     regs.r[0] = regs.r[1] = regs.r[2] = regs.r[3] = regs.r[4] = regs.r[5] = regs.r[6] = regs.r[7] = regs.r[8] = regs.r[9] = regs.r[10] = regs.r[11] = regs.r[12] = regs.r[14] = 0;
 
-    regs.r8_fiq = regs.r9_fiq = regs.r10_fiq = regs.r11_fiq = regs.r12_fiq = regs.r14_fiq = regs.spsr_fiq = 0;
-	regs.r14_svc = regs.spsr_svc = 0;
-	regs.r14_abt = regs.spsr_abt = 0;
-	regs.r14_irq = regs.spsr_irq = 0;
-	regs.r14_und = regs.spsr_und = 0;
+    regs.r_banked[FIQ_BANK][0] = regs.r_banked[FIQ_BANK][1] = regs.r_banked[FIQ_BANK][2] = regs.r_banked[FIQ_BANK][3] = regs.r_banked[FIQ_BANK][4] = regs.r_banked[FIQ_BANK][6] = regs.spsr_fiq = 0;
+	regs.r_banked[SVC_BANK][6] = regs.spsr_svc = 0;
+	regs.r_banked[ABT_BANK][6] = regs.spsr_abt = 0;
+	regs.r_banked[IRQ_BANK][6] = regs.spsr_irq = 0;
+	regs.r_banked[UND_BANK][6] = regs.spsr_und = 0;
     // switch to system mode
     regs.cpsr = 0x0000001F;
 
     if (cpu_id == ARMv5) {
         // specific to arm9
-        regs.r[13] = regs.r13_fiq = regs.r13_abt = regs.r13_und = 0x03002F7C;
-        regs.r13_svc = 0x03003FC0;
-        regs.r13_irq = 0x03003F80;
+        regs.r[13] = regs.r_banked[FIQ_BANK][5] = regs.r_banked[ABT_BANK][5] = regs.r_banked[UND_BANK][5] = 0x03002F7C;
+        regs.r_banked[SVC_BANK][5] = 0x03003FC0;
+        regs.r_banked[IRQ_BANK][5] = 0x03003F80;
         regs.r[15] = emulator->cartridge.header.arm9_entry_address;
     } else {
         // arm7 specific
-        regs.r[13] = regs.r13_fiq = regs.r13_abt = regs.r13_und = 0x0380FD80;
-        regs.r13_svc = 0x0380FFC0;
-        regs.r13_irq = 0x0380FF80;
+        regs.r[13] = regs.r_banked[FIQ_BANK][5] = regs.r_banked[ABT_BANK][5] = regs.r_banked[UND_BANK][5] = 0x0380FD80;
+        regs.r_banked[SVC_BANK][5] = 0x0380FFC0;
+        regs.r_banked[IRQ_BANK][5] = 0x0380FF80;
         regs.r[15] = emulator->cartridge.header.arm7_entry_address;
     }
     log_debug("sucessfully initialised direct boot state");
@@ -205,49 +205,61 @@ void ARMInterpreter::set_spsr(u32 data) {
     // TODO: probably want to investigate which bits are preserved
 }
 
-void ARMInterpreter::set_mode(u8 mode) {
-    // not sure if i should load banked spsr into cpsr :thinking:
-    log_warn("mode 0x%04x", mode);
-    switch (mode & 0x1F) {
+u8 ARMInterpreter::get_bank(u8 mode) {
+    switch (mode) {
     case USR: case SYS:
-        regs.r[8] = regs.r_usr[8];
-        regs.r[9] = regs.r_usr[9];
-        regs.r[10] = regs.r_usr[10];
-        regs.r[11] = regs.r_usr[11];
-        regs.r[12] = regs.r_usr[12];
-        regs.r[13] = regs.r_usr[13];
-        regs.r[14] = regs.r_usr[14];
-        break;
+        return USR_BANK;
     case FIQ:
-        regs.r[8] = regs.r8_fiq;
-        regs.r[9] = regs.r9_fiq;
-        regs.r[10] = regs.r10_fiq;
-        regs.r[11] = regs.r11_fiq;
-        regs.r[12] = regs.r12_fiq;
-        regs.r[13] = regs.r13_fiq;
-        regs.r[14] = regs.r14_fiq;
-        break;
+        return FIQ_BANK;
     case SVC:
-        regs.r[13] = regs.r13_svc;
-        regs.r[14] = regs.r14_svc;
-        break;
+        return SVC_BANK;
     case ABT:
-        regs.r[13] = regs.r13_abt;
-        regs.r[14] = regs.r14_abt;
-        break;
+        return ABT_BANK;
     case IRQ:
-        regs.r[13] = regs.r13_irq;
-        regs.r[14] = regs.r14_irq;
-        break;
+        return IRQ_BANK;
     case UND:
-        regs.r[13] = regs.r13_und;
-        regs.r[14] = regs.r14_und;
-        break;
+        return UND_BANK;
     default:
-        log_fatal("mode switch to mode 0x%04x has not been implemented yet", mode & 0x1F);
+        log_fatal("thats why");
     }
+}
+
+void ARMInterpreter::update_mode(u8 new_mode) {
+    // not sure if i should load banked spsr into cpsr :thinking:
+    u8 old_bank = get_bank(regs.cpsr & 0x1F);
+    u8 new_bank = get_bank(new_mode);
+    if (old_bank == new_bank) {
+        return;
+    }
+    
+    log_warn("going from mode 0x%04x to mode 0x%04x", regs.cpsr & 0x1F, new_mode);
+    // so the main idea is we are saving the current registers to the banked registers of the old cpu mode
+    // and loading the current registers with values from the banked registers of the new cpu mode
+    
+    if (old_bank == FIQ_BANK || new_bank == FIQ_BANK) {
+        // first save the current registers into the bank of the old cpu mode
+        for (int i = 0; i < 7; i++) {
+            regs.r_banked[old_bank][i] = regs.r[8 + i];
+        }
+
+        // then put the values of registers in the new bank into the current registers
+        for (int i = 0; i < 7; i++) {
+            regs.r[8 + i] = regs.r_banked[new_bank][i];
+        }
+
+    } else {
+        // just do the same thing for r13 and r14
+        regs.r_banked[old_bank][5] = regs.r[13];
+        regs.r_banked[old_bank][6] = regs.r[14];
+
+        regs.r[13] = regs.r_banked[new_bank][5];
+        regs.r[14] = regs.r_banked[new_bank][6];
+        // log_debug("other bank");
+    }
+
+
     // finally actually set the mode in cpsr
-    regs.cpsr = (regs.cpsr & ~0x1F) | (mode & 0x1F);
+    regs.cpsr = (regs.cpsr & ~0x1F) | (new_mode & 0x1F);
 }
 
 void ARMInterpreter::step() {
@@ -317,6 +329,8 @@ void ARMInterpreter::execute_instruction() {
                 return cmps(lli());
             case 0x15B:
                 return ldrh_pre(-imm_halfword_signed_data_transfer());
+            case 0x161:
+                return clz();
             case 0x170: case 0x178:
                 return cmns(lli());
             case 0x17B:
@@ -439,6 +453,11 @@ void ARMInterpreter::execute_instruction() {
             case 0x4D8: case 0x4D9: case 0x4DA: case 0x4DB: 
             case 0x4DC: case 0x4DD: case 0x4DE: case 0x4DF:
                 return ldrb_post(imm_single_data_transfer());
+            case 0x500: case 0x501: case 0x502: case 0x503:
+            case 0x504: case 0x505: case 0x506: case 0x507:
+            case 0x508: case 0x509: case 0x50A: case 0x50B:
+            case 0x50C: case 0x50D: case 0x50E: case 0x50F:
+                return str_pre(-imm_single_data_transfer());
             case 0x510: case 0x511: case 0x512: case 0x513:
             case 0x514: case 0x515: case 0x516: case 0x517:
             case 0x518: case 0x519: case 0x51A: case 0x51B:
@@ -541,7 +560,7 @@ void ARMInterpreter::execute_instruction() {
             case 0x878: case 0x879: case 0x87A: case 0x87B:
             case 0x87C: case 0x87D: case 0x87E: case 0x87F:
                 // TODO: make more accurate later
-                return ldmdaw();
+                return ldmdauw();
             case 0x8A0: case 0x8A1: case 0x8A2: case 0x8A3:
             case 0x8A4: case 0x8A5: case 0x8A6: case 0x8A7:
             case 0x8A8: case 0x8A9: case 0x8AA: case 0x8AB:
@@ -557,7 +576,7 @@ void ARMInterpreter::execute_instruction() {
             case 0x8F8: case 0x8F9: case 0x8FA: case 0x8FB:
             case 0x8FC: case 0x8FD: case 0x8FE: case 0x8FF:
                 // TODO: make more accurate later
-                return ldmiaw();
+                return ldmiauw();
             case 0x920: case 0x921: case 0x922: case 0x923:
             case 0x924: case 0x925: case 0x926: case 0x927:
             case 0x928: case 0x929: case 0x92A: case 0x92B:
@@ -573,7 +592,7 @@ void ARMInterpreter::execute_instruction() {
             case 0x978: case 0x979: case 0x97A: case 0x97B:
             case 0x97C: case 0x97D: case 0x97E: case 0x97F:
                 // TODO: make more accurate later
-                return ldmdbw();
+                return ldmdbuw();
             case 0x9A0: case 0x9A1: case 0x9A2: case 0x9A3:
             case 0x9A4: case 0x9A5: case 0x9A6: case 0x9A7:
             case 0x9A8: case 0x9A9: case 0x9AA: case 0x9AB:
@@ -589,7 +608,7 @@ void ARMInterpreter::execute_instruction() {
             case 0x9F8: case 0x9F9: case 0x9FA: case 0x9FB:
             case 0x9FC: case 0x9FD: case 0x9FE: case 0x9FF:
                 // TODO: make this more accurate later by using uw correctly
-                return ldmibw();
+                return ldmibuw();
             case 0xA00: case 0xA01: case 0xA02: case 0xA03:
             case 0xA04: case 0xA05: case 0xA06: case 0xA07:
             case 0xA08: case 0xA09: case 0xA0A: case 0xA0B:

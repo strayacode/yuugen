@@ -397,6 +397,8 @@ void ARMInterpreter::ldmiaw() {
     
 }
 
+
+
 void ARMInterpreter::ldmibw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
@@ -406,6 +408,8 @@ void ARMInterpreter::ldmibw() {
     }
 
     regs.r[15] += 4;
+
+    
 
     for (int i = 0; i < 16; i++) {
         if (get_bit(i, opcode)) {
@@ -420,6 +424,8 @@ void ARMInterpreter::ldmibw() {
 
     
 }
+
+
 
 void ARMInterpreter::ldmdbw() {
     u8 rn = (opcode >> 16) & 0xF;
@@ -474,6 +480,131 @@ void ARMInterpreter::ldmdaw() {
             address += 4;
             regs.r[i] = read_word(address);
             
+            
+        }
+    }
+
+
+    regs.r[rn] = address;
+
+    
+}
+
+void ARMInterpreter::ldmiauw() {
+    log_debug("1");
+    u8 rn = (opcode >> 16) & 0xF;
+    u32 address = regs.r[rn];
+    
+    if (get_bit(15, opcode)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+    
+    // first we must switch to user mode so that we can change the values of usr mode registers
+    update_mode(0x1F);
+
+    for (int i = 0; i < 16; i++) {
+        if (get_bit(i, opcode)) {
+            
+            regs.r[i] = read_word(address);
+            address += 4;
+        }
+    }
+
+    // writeback cant occur when usr regs are written to
+    regs.r[rn] = address;
+
+    
+}
+
+void ARMInterpreter::ldmdauw() {
+    // log_warn("jew");
+    log_debug("2");
+    u8 rn = (opcode >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    if (get_bit(15, opcode)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+
+    // first we must switch to user mode so that we can change the values of usr mode registers
+    update_mode(0x1F);
+
+    for (int i = 0; i < 16; i++) {
+        if (get_bit(i, opcode)) {
+            address -= 4;
+        }
+    }    
+
+    for (int i = 0; i < 16; i++) {
+        if (get_bit(i, opcode)) {
+            address += 4;
+            // load the values into user registers
+            regs.r[i] = read_word(address);
+        }
+    }
+
+    regs.r[rn] = address;
+
+
+}
+
+void ARMInterpreter::ldmibuw() {
+    log_debug("3");
+    u8 rn = (opcode >> 16) & 0xF;
+    u32 address = regs.r[rn];
+    log_debug("in ldmibuw: address we are reading from is 0x%04x", address);
+    if (get_bit(15, opcode)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+
+    // first we must switch to user mode so that we can change the values of usr mode registers
+    update_mode(0x1F);
+
+    for (int i = 0; i < 16; i++) {
+        if (get_bit(i, opcode)) {
+            address += 4;
+            regs.r[i] = read_word(address);
+            
+        }
+    }
+
+    regs.r[rn] = address;
+
+    
+}
+
+void ARMInterpreter::ldmdbuw() {
+    log_debug("4");
+    u8 rn = (opcode >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    if (get_bit(15, opcode)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+
+    // first we must switch to user mode so that we can change the values of usr mode registers
+    update_mode(0x1F);
+
+
+    for (int i = 0; i < 16; i++) {
+        if (get_bit(i, opcode)) {
+            address -= 4;
+        }
+    }    
+
+    for (int i = 0; i < 16; i++) {
+        if (get_bit(i, opcode)) {
+            
+            regs.r[i] = read_word(address);
+            address += 4;
             
         }
     }
