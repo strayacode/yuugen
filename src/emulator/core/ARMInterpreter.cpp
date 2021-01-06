@@ -205,6 +205,51 @@ void ARMInterpreter::set_spsr(u32 data) {
     // TODO: probably want to investigate which bits are preserved
 }
 
+void ARMInterpreter::set_mode(u8 mode) {
+    // not sure if i should load banked spsr into cpsr :thinking:
+    log_warn("mode 0x%04x", mode);
+    switch (mode & 0x1F) {
+    case USR: case SYS:
+        regs.r[8] = regs.r_usr[8];
+        regs.r[9] = regs.r_usr[9];
+        regs.r[10] = regs.r_usr[10];
+        regs.r[11] = regs.r_usr[11];
+        regs.r[12] = regs.r_usr[12];
+        regs.r[13] = regs.r_usr[13];
+        regs.r[14] = regs.r_usr[14];
+        break;
+    case FIQ:
+        regs.r[8] = regs.r8_fiq;
+        regs.r[9] = regs.r9_fiq;
+        regs.r[10] = regs.r10_fiq;
+        regs.r[11] = regs.r11_fiq;
+        regs.r[12] = regs.r12_fiq;
+        regs.r[13] = regs.r13_fiq;
+        regs.r[14] = regs.r14_fiq;
+        break;
+    case SVC:
+        regs.r[13] = regs.r13_svc;
+        regs.r[14] = regs.r14_svc;
+        break;
+    case ABT:
+        regs.r[13] = regs.r13_abt;
+        regs.r[14] = regs.r14_abt;
+        break;
+    case IRQ:
+        regs.r[13] = regs.r13_irq;
+        regs.r[14] = regs.r14_irq;
+        break;
+    case UND:
+        regs.r[13] = regs.r13_und;
+        regs.r[14] = regs.r14_und;
+        break;
+    default:
+        log_fatal("mode switch to mode 0x%04x has not been implemented yet", mode & 0x1F);
+    }
+    // finally actually set the mode in cpsr
+    regs.cpsr = (regs.cpsr & ~0x1F) | (mode & 0x1F);
+}
+
 void ARMInterpreter::step() {
     // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
     opcode = pipeline[0]; // store the current executing instruction 

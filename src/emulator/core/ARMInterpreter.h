@@ -42,6 +42,9 @@ private:
 
     struct registers {
         u32 r[16] = {};
+        // specifically these are transfer to r when the cpu is switched to mode usr or sys
+        // r_usr registers are used for something like stm to store the values in r[16] so they can be restored later on with mode switch
+        u32 r_usr[16] = {};
         u32 cpsr;
 
         // fiq mode registers
@@ -86,6 +89,7 @@ private:
 
     u32 get_spsr();
     void set_spsr(u32 data);
+    void set_mode(u8 mode);
 
     u8 read_byte(u32 addr);
     u16 read_halfword(u32 addr);

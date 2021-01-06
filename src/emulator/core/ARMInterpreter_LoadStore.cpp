@@ -67,7 +67,6 @@ void ARMInterpreter::ldr_post(u32 op2) {
     // TODO: make sure this is correct later
     // i.e. not word aligned
     if (address & 0x3) {
-        log_warn("handle");
         u8 shift_amount = (address & 0x3) * 8;
         data = rotate_right(data, shift_amount);
     }
@@ -98,7 +97,6 @@ void ARMInterpreter::ldr_pre(u32 op2) {
     u32 data = read_word(address);
 
     if (address & 0x3) {
-        log_warn("handle");
         u8 shift_amount = (address & 0x3) * 8;
         data = rotate_right(data, shift_amount);
     }
