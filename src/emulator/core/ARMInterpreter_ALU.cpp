@@ -408,6 +408,10 @@ void ARMInterpreter::smulls() {
 }
 
 void ARMInterpreter::clz() {
+    // arm9 exclusive
+    if (cpu_id == ARMv4) {
+        return;
+    }
     u8 rm = opcode & 0xF;
     u8 rd = (opcode >> 12) & 0xF;
     if (regs.r[rm] == 0) {

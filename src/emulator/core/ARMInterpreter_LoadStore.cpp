@@ -355,10 +355,9 @@ void ARMInterpreter::stmdaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
-    regs.r[15] += 4;
-
     
 
+    
     // subtract offset from base
     for (int i = 15; i >= 0; i--) {
         if (get_bit(i, opcode)) { 
@@ -368,6 +367,9 @@ void ARMInterpreter::stmdaw() {
             address -= 4;
         }
     }
+    // on arm9 if rn is in rlist writeback is never done
+
+    regs.r[15] += 4;
 
     // writeback to base register
     regs.r[rn] = address;
@@ -377,24 +379,27 @@ void ARMInterpreter::ldmiaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
-    if (get_bit(15, opcode)) {
-        log_fatal("handle lol");
-    }
-
-    regs.r[15] += 4;
-    
-
     for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
+        if (opcode & (1 << i)) {
             regs.r[i] = read_word(address);
             address += 4;
         }
     }
 
 
-    regs.r[rn] = address;
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
 
+    if (!(opcode & (1 << rn)) ||(cpu_id == ARMv5 && ((opcode & 0xFFFF) == (1 << rn)) || !(((opcode & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
     
+    if (get_bit(15, opcode)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
 }
 
 
@@ -403,26 +408,27 @@ void ARMInterpreter::ldmibw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
+    for (int i = 0; i < 16; i++) {
+        if (opcode & (1 << i)) {
+            address += 4;
+            regs.r[i] = read_word(address);
+        }
+    }
+
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(opcode & (1 << rn)) ||(cpu_id == ARMv5 && ((opcode & 0xFFFF) == (1 << rn)) || !(((opcode & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+    
     if (get_bit(15, opcode)) {
         log_fatal("handle lol");
     }
 
     regs.r[15] += 4;
-
-    
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            address += 4;
-            regs.r[i] = read_word(address);
-            
-        }
-    }
-
-
-    regs.r[rn] = address;
-
-    
 }
 
 
@@ -431,75 +437,59 @@ void ARMInterpreter::ldmdbw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
+    for (int i = 15; i >= 0; i--) {
+        if (opcode & (1 << i)) {
+            address -= 4;
+            regs.r[i] = read_word(address);
+        }
+    }
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(opcode & (1 << rn)) ||(cpu_id == ARMv5 && ((opcode & 0xFFFF) == (1 << rn)) || !(((opcode & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+    
     if (get_bit(15, opcode)) {
         log_fatal("handle lol");
     }
 
     regs.r[15] += 4;
-
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            address -= 4;
-        }
-    }    
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            
-            regs.r[i] = read_word(address);
-            address += 4;
-            
-        }
-    }
-
-
-    regs.r[rn] = address;
-
-    
 }
 
 void ARMInterpreter::ldmdaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
+    for (int i = 15; i >= 0; i--) {
+        if (opcode & (1 << i)) {
+            regs.r[i] = read_word(address);
+            address -= 4;
+        }
+    }
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(opcode & (1 << rn)) ||(cpu_id == ARMv5 && ((opcode & 0xFFFF) == (1 << rn)) || !(((opcode & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+    
     if (get_bit(15, opcode)) {
         log_fatal("handle lol");
     }
 
     regs.r[15] += 4;
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            address -= 4;
-        }
-    }    
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            address += 4;
-            regs.r[i] = read_word(address);
-            
-            
-        }
-    }
-
-
-    regs.r[rn] = address;
-
-    
 }
 
 void ARMInterpreter::ldmiauw() {
-    log_debug("1");
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
     
-    if (get_bit(15, opcode)) {
-        log_fatal("handle lol");
-    }
-
-    regs.r[15] += 4;
+    
     
     // first we must switch to user mode so that we can change the values of usr mode registers
     update_mode(0x1F);
@@ -512,107 +502,104 @@ void ARMInterpreter::ldmiauw() {
         }
     }
 
-    // writeback cant occur when usr regs are written to
-    regs.r[rn] = address;
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+    if (!(opcode & (1 << rn)) ||(cpu_id == ARMv5 && ((opcode & 0xFFFF) == (1 << rn)) || !(((opcode & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
 
+    if (get_bit(15, opcode)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
     
 }
 
 void ARMInterpreter::ldmdauw() {
-    // log_warn("jew");
-    log_debug("2");
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
+    update_mode(0x1F);
+
+    for (int i = 15; i >= 0; i--) {
+        if (opcode & (1 << i)) {
+            regs.r[i] = read_word(address);
+            address -= 4;
+        }
+    }
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(opcode & (1 << rn)) ||(cpu_id == ARMv5 && ((opcode & 0xFFFF) == (1 << rn)) || !(((opcode & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+    
     if (get_bit(15, opcode)) {
         log_fatal("handle lol");
     }
 
     regs.r[15] += 4;
-
-    // first we must switch to user mode so that we can change the values of usr mode registers
-    update_mode(0x1F);
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            address -= 4;
-        }
-    }    
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            address += 4;
-            // load the values into user registers
-            regs.r[i] = read_word(address);
-        }
-    }
-
-    regs.r[rn] = address;
-
-
 }
 
 void ARMInterpreter::ldmibuw() {
-    log_debug("3");
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
-    log_debug("in ldmibuw: address we are reading from is 0x%04x", address);
+
+    update_mode(0x1F);
+
+    for (int i = 0; i < 16; i++) {
+        if (opcode & (1 << i)) {
+            address += 4;
+            regs.r[i] = read_word(address);
+        }
+    }
+
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(opcode & (1 << rn)) ||((cpu_id == ARMv5) && ((opcode & 0xFFFF) == (1 << rn)) || !(((opcode & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+    
     if (get_bit(15, opcode)) {
         log_fatal("handle lol");
     }
 
     regs.r[15] += 4;
-
-    // first we must switch to user mode so that we can change the values of usr mode registers
-    update_mode(0x1F);
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            address += 4;
-            regs.r[i] = read_word(address);
-            
-        }
-    }
-
-    regs.r[rn] = address;
-
-    
 }
 
 void ARMInterpreter::ldmdbuw() {
-    log_debug("4");
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
+    update_mode(0x1F);
+
+    for (int i = 15; i >= 0; i--) {
+        if (opcode & (1 << i)) {
+            address -= 4;
+            regs.r[i] = read_word(address);
+        }
+    }
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(opcode & (1 << rn)) ||((cpu_id == ARMv5) && ((opcode & 0xFFFF) == (1 << rn)) || !(((opcode & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+    
     if (get_bit(15, opcode)) {
         log_fatal("handle lol");
     }
 
     regs.r[15] += 4;
-
-    // first we must switch to user mode so that we can change the values of usr mode registers
-    update_mode(0x1F);
-
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            address -= 4;
-        }
-    }    
-
-    for (int i = 0; i < 16; i++) {
-        if (get_bit(i, opcode)) {
-            
-            regs.r[i] = read_word(address);
-            address += 4;
-            
-        }
-    }
-
-
-    regs.r[rn] = address;
-
-    
 }
 
 u32 ARMInterpreter::rpll() {

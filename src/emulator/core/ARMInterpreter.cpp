@@ -559,7 +559,6 @@ void ARMInterpreter::execute_instruction() {
             case 0x874: case 0x875: case 0x876: case 0x877:
             case 0x878: case 0x879: case 0x87A: case 0x87B:
             case 0x87C: case 0x87D: case 0x87E: case 0x87F:
-                // TODO: make more accurate later
                 return ldmdauw();
             case 0x8A0: case 0x8A1: case 0x8A2: case 0x8A3:
             case 0x8A4: case 0x8A5: case 0x8A6: case 0x8A7:
@@ -575,7 +574,6 @@ void ARMInterpreter::execute_instruction() {
             case 0x8F4: case 0x8F5: case 0x8F6: case 0x8F7:
             case 0x8F8: case 0x8F9: case 0x8FA: case 0x8FB:
             case 0x8FC: case 0x8FD: case 0x8FE: case 0x8FF:
-                // TODO: make more accurate later
                 return ldmiauw();
             case 0x920: case 0x921: case 0x922: case 0x923:
             case 0x924: case 0x925: case 0x926: case 0x927:
@@ -591,7 +589,6 @@ void ARMInterpreter::execute_instruction() {
             case 0x974: case 0x975: case 0x976: case 0x977:
             case 0x978: case 0x979: case 0x97A: case 0x97B:
             case 0x97C: case 0x97D: case 0x97E: case 0x97F:
-                // TODO: make more accurate later
                 return ldmdbuw();
             case 0x9A0: case 0x9A1: case 0x9A2: case 0x9A3:
             case 0x9A4: case 0x9A5: case 0x9A6: case 0x9A7:
@@ -607,7 +604,6 @@ void ARMInterpreter::execute_instruction() {
             case 0x9F4: case 0x9F5: case 0x9F6: case 0x9F7:
             case 0x9F8: case 0x9F9: case 0x9FA: case 0x9FB:
             case 0x9FC: case 0x9FD: case 0x9FE: case 0x9FF:
-                // TODO: make this more accurate later by using uw correctly
                 return ldmibuw();
             case 0xA00: case 0xA01: case 0xA02: case 0xA03:
             case 0xA04: case 0xA05: case 0xA06: case 0xA07:
