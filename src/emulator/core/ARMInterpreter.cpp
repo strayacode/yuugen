@@ -307,12 +307,16 @@ void ARMInterpreter::execute_instruction() {
                 return adds(lli());
             case 0x099:
                 return umulls();
+            case 0x100:
+                return mrs_cpsr();
             case 0x0A0: case 0x0A8:
                 return adc(lli());
             case 0x0A2: case 0x0AA:
                 return adc(lri());
             case 0x0B0: case 0x0B8:
                 return adcs(lli());
+            case 0x0B9:
+                return umlals();
             case 0x0CB: case 0x0EB:
                 return strh_post(imm_halfword_signed_data_transfer());
             case 0x0D0: case 0x0D8:
@@ -321,14 +325,26 @@ void ARMInterpreter::execute_instruction() {
                 return smulls();
             case 0x0F0: case 0x0F8:
                 return rscs(lli());
+            case 0x0F9:
+                return smlals();
+            case 0x109:
+                return swp();
+            case 0x11B:
+                return ldrh_pre(-reg_halfword_signed_data_transfer());
+            case 0x11D:
+                return ldrsb_pre(-reg_halfword_signed_data_transfer());
             case 0x120:
                 return msr_reg();
             case 0x121:
                 return bx();
+            case 0x149:
+                return swpb();
             case 0x150: case 0x158:
                 return cmps(lli());
             case 0x15B:
                 return ldrh_pre(-imm_halfword_signed_data_transfer());
+            case 0x15D:
+                return ldrsb_pre(-imm_halfword_signed_data_transfer());
             case 0x161:
                 return clz();
             case 0x170: case 0x178:
@@ -339,6 +355,8 @@ void ARMInterpreter::execute_instruction() {
                 return orrs(rris());
             case 0x19B:
                 return ldrh_pre(reg_halfword_signed_data_transfer());
+            case 0x19D:
+                return ldrsb_pre(reg_halfword_signed_data_transfer());
             case 0x1A0: case 0x1A8:
                 return mov(lli());
             case 0x1A2: case 0x1AA:
@@ -359,6 +377,8 @@ void ARMInterpreter::execute_instruction() {
                 return bics(aris());
             case 0x1DB:
                 return ldrh_pre(imm_halfword_signed_data_transfer());
+            case 0x1DD:
+                return ldrsb_pre(imm_halfword_signed_data_transfer());
             case 0x1E0: case 0x1E8:
                 return mvn(lli());
             case 0x1FB:
@@ -393,6 +413,11 @@ void ARMInterpreter::execute_instruction() {
             case 0x288: case 0x289: case 0x28A: case 0x28B: 
             case 0x28C: case 0x28D: case 0x28E: case 0x28F:
                 return add(imm_data_processing());
+            case 0x290: case 0x291: case 0x292: case 0x293: 
+            case 0x294: case 0x295: case 0x296: case 0x297: 
+            case 0x298: case 0x299: case 0x29A: case 0x29B: 
+            case 0x29C: case 0x29D: case 0x29E: case 0x29F:
+                return adds(imm_data_processing());
             case 0x2D0: case 0x2D1: case 0x2D2: case 0x2D3: 
             case 0x2D4: case 0x2D5: case 0x2D6: case 0x2D7: 
             case 0x2D8: case 0x2D9: case 0x2DA: case 0x2DB: 
@@ -403,6 +428,11 @@ void ARMInterpreter::execute_instruction() {
             case 0x318: case 0x319: case 0x31A: case 0x31B: 
             case 0x31C: case 0x31D: case 0x31E: case 0x31F:
                 return tsts(imms_data_processing());
+            case 0x320: case 0x321: case 0x322: case 0x323: 
+            case 0x324: case 0x325: case 0x326: case 0x327: 
+            case 0x328: case 0x329: case 0x32A: case 0x32B: 
+            case 0x32C: case 0x32D: case 0x32E: case 0x32F:
+                return msr_imm();
             case 0x350: case 0x351: case 0x352: case 0x353: 
             case 0x354: case 0x355: case 0x356: case 0x357: 
             case 0x358: case 0x359: case 0x35A: case 0x35B: 
@@ -418,6 +448,16 @@ void ARMInterpreter::execute_instruction() {
             case 0x3A8: case 0x3A9: case 0x3AA: case 0x3AB: 
             case 0x3AC: case 0x3AD: case 0x3AE: case 0x3AF:
                 return mov(imm_data_processing());
+            case 0x3B0: case 0x3B1: case 0x3B2: case 0x3B3: 
+            case 0x3B4: case 0x3B5: case 0x3B6: case 0x3B7: 
+            case 0x3B8: case 0x3B9: case 0x3BA: case 0x3BB: 
+            case 0x3BC: case 0x3BD: case 0x3BE: case 0x3BF:
+                return movs(imms_data_processing());
+            case 0x3C0: case 0x3C1: case 0x3C2: case 0x3C3: 
+            case 0x3C4: case 0x3C5: case 0x3C6: case 0x3C7: 
+            case 0x3C8: case 0x3C9: case 0x3CA: case 0x3CB: 
+            case 0x3CC: case 0x3CD: case 0x3CE: case 0x3CF:
+                return bic(imm_data_processing());
             case 0x3E0: case 0x3E1: case 0x3E2: case 0x3E3: 
             case 0x3E4: case 0x3E5: case 0x3E6: case 0x3E7: 
             case 0x3E8: case 0x3E9: case 0x3EA: case 0x3EB: 
@@ -469,6 +509,18 @@ void ARMInterpreter::execute_instruction() {
             case 0x53C: case 0x53D: case 0x53E: case 0x53F:
                 // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
                 return ldr_pre(-imm_single_data_transfer());
+            case 0x550: case 0x551: case 0x552: case 0x553:
+            case 0x554: case 0x555: case 0x556: case 0x557:
+            case 0x558: case 0x559: case 0x55A: case 0x55B:
+            case 0x55C: case 0x55D: case 0x55E: case 0x55F:
+                // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
+                return ldrb_pre(-imm_single_data_transfer());
+            case 0x570: case 0x571: case 0x572: case 0x573:
+            case 0x574: case 0x575: case 0x576: case 0x577:
+            case 0x578: case 0x579: case 0x57A: case 0x57B:
+            case 0x57C: case 0x57D: case 0x57E: case 0x57F:
+                // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
+                return ldrb_pre(-imm_single_data_transfer());
             case 0x580: case 0x581: case 0x582: case 0x583:
             case 0x584: case 0x585: case 0x586: case 0x587:
             case 0x588: case 0x589: case 0x58A: case 0x58B:
@@ -494,6 +546,12 @@ void ARMInterpreter::execute_instruction() {
             case 0x5D4: case 0x5D5: case 0x5D6: case 0x5D7: 
             case 0x5D8: case 0x5D9: case 0x5DA: case 0x5DB: 
             case 0x5DC: case 0x5DD: case 0x5DE: case 0x5DF:
+                return ldrb_pre(imm_single_data_transfer());
+            case 0x5F0: case 0x5F1: case 0x5F2: case 0x5F3:
+            case 0x5F4: case 0x5F5: case 0x5F6: case 0x5F7:
+            case 0x5F8: case 0x5F9: case 0x5FA: case 0x5FB:
+            case 0x5FC: case 0x5FD: case 0x5FE: case 0x5FF:
+                // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
                 return ldrb_pre(imm_single_data_transfer());
             case 0x610: case 0x618:
                 return ldr_post(-rpll());

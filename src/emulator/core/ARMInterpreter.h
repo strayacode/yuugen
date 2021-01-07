@@ -116,12 +116,14 @@ private:
     void strb_pre(u32 op2);
     void ldrb_post(u32 op2);
     void ldrb_pre(u32 op2);
+    void ldrsb_pre(u32 op2);
 
     // data processing
     void subs(u32 op2);
     void sub(u32 op2);
     void cmps(u32 op2);
     void bics(u32 op2);
+    void bic(u32 op2);
     void add(u32 op2);
     void adds(u32 op2);
     void adcs(u32 op2);
@@ -137,11 +139,17 @@ private:
     void cmns(u32 op2);
     void rscs(u32 op2);
     void sbcs(u32 op2);
+    void swp();
+    void swpb();
     void mlas();
     void muls();
     void umulls();
     void smulls();
+    void umlals();
+    void smlals();
     void msr_reg();
+    void msr_imm();
+    void mrs_cpsr();
 
     // branch instructions
     void b();

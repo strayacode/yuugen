@@ -138,6 +138,20 @@ void ARMInterpreter::bics(u32 op2) {
     regs.r[15] += 4;
 }
 
+void ARMInterpreter::bic(u32 op2) {
+    u8 rd = (opcode >> 12) & 0xF;
+    u8 rn = (opcode >> 16) & 0xF;
+    u32 result = regs.r[rn] & ~op2;
+    regs.r[rd] = result;
+    if (rd == 15) {
+        // copy the spsr of the current mode to the cpsr
+        log_fatal("shit");
+        regs.cpsr = get_spsr();
+    } 
+
+    regs.r[15] += 4;
+}
+
 void ARMInterpreter::add(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -346,6 +360,38 @@ void ARMInterpreter::sbcs(u32 op2) {
     regs.r[15] += 4;
 }
 
+void ARMInterpreter::swp() {
+    u8 rm = opcode & 0xF;
+    u8 rd = (opcode >> 12) & 0xF;
+    u8 rn = (opcode >> 16) & 0xF;
+
+    u32 address = regs.r[rn];
+    u32 data = read_word(address);
+    if (address & 0x3) {
+        data = rotate_right(data, (address & 0x3) * 8);
+    }
+
+    write_word(address, regs.r[rm]);
+    regs.r[rd] = data;
+
+
+    regs.r[15] += 4;
+}
+
+void ARMInterpreter::swpb() {
+    u8 rm = opcode & 0xF;
+    u8 rd = (opcode >> 12) & 0xF;
+    u8 rn = (opcode >> 16) & 0xF;
+
+    u8 data = read_byte(regs.r[rn]);
+    write_byte(regs.r[rn], regs.r[rm] & 0xFF);
+    regs.r[rd] = data;
+
+    regs.r[15] += 4;
+}
+
+
+
 void ARMInterpreter::mlas() {
     u8 rm = opcode & 0xF;
     u8 rs = (opcode >> 8) & 0xF;
@@ -402,6 +448,38 @@ void ARMInterpreter::smulls() {
     set_condition_flag(N_FLAG, regs.r[rdhi] >> 31);
     set_condition_flag(Z_FLAG, result == 0);
     
+
+    regs.r[15] += 4;
+}
+
+void ARMInterpreter::umlals() {
+    u8 rm = opcode & 0xF;
+    u8 rs = (opcode >> 8) & 0xF;
+    u8 rdlo = (opcode >> 12) & 0xF;
+    u8 rdhi = (opcode >> 16) & 0xF;
+    u64 result = (u64)regs.r[rm] * (u64)regs.r[rs];
+    result += ((u64)regs.r[rdlo] + (u64)regs.r[rdhi]);
+    regs.r[rdlo] = result;
+    regs.r[rdhi] = result >> 32;
+    set_condition_flag(N_FLAG, regs.r[rdhi] >> 31);
+    set_condition_flag(Z_FLAG, result == 0);
+
+    regs.r[15] += 4;
+}
+
+void ARMInterpreter::smlals() {
+    // TODO: check later!
+    u8 rm = opcode & 0xF;
+    u8 rs = (opcode >> 8) & 0xF;
+    u8 rdlo = (opcode >> 12) & 0xF;
+    u8 rdhi = (opcode >> 16) & 0xF;
+    s64 result = (s32)regs.r[rm];
+    result *= (s32)regs.r[rs];
+    result += ((s64)regs.r[rdlo] + (s64)regs.r[rdhi]);
+    regs.r[rdlo] = result;
+    regs.r[rdhi] = result >> 32;
+    set_condition_flag(N_FLAG, regs.r[rdhi] >> 31);
+    set_condition_flag(Z_FLAG, result == 0);
 
     regs.r[15] += 4;
 }

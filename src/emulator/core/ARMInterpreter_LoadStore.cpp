@@ -231,10 +231,8 @@ void ARMInterpreter::ldrb_pre(u32 op2) {
     
 
     
-
-    if (rd == rn) {
-        log_fatal("hmmmm");
-    }
+    // TODO: maybe ldrb and strb use the rn == rd edgecase ill check later
+    
     
 
     regs.r[15] += 4;
@@ -283,6 +281,22 @@ void ARMInterpreter::strb_pre(u32 op2) {
     regs.r[15] += 4;
 
     
+}
+
+// TODO: look at writeback later
+void ARMInterpreter::ldrsb_pre(u32 op2) {
+    u8 rd = (opcode >> 12) & 0xF;
+    u8 rn = (opcode >> 16) & 0xF;
+
+    u32 address = regs.r[rn] + op2;
+
+    u32 data = read_byte(address);
+    
+    data = (get_bit(7, opcode) ? 0XFFFFFF00 : 0) | (data);
+
+    regs.r[rd] = data;
+
+    regs.r[15] += 4;
 }
 
 // fine
