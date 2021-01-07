@@ -95,11 +95,15 @@ private:
 
     void mov(u32 op2);
     void movs(u32 op2);
+
+    // helpers
     u32 imm_data_processing();
     u32 imms_data_processing();
     u32 imm_single_data_transfer();
     u32 reg_halfword_signed_data_transfer();
     u32 imm_halfword_signed_data_transfer();
+
+    // load and store instructions
     void str_pre(u32 op2);
     void str_post(u32 op2);
     void ldr_pre(u32 op2);
@@ -112,6 +116,8 @@ private:
     void strb_pre(u32 op2);
     void ldrb_post(u32 op2);
     void ldrb_pre(u32 op2);
+
+    // data processing
     void subs(u32 op2);
     void sub(u32 op2);
     void cmps(u32 op2);
@@ -136,9 +142,13 @@ private:
     void umulls();
     void smulls();
     void msr_reg();
+
+    // branch instructions
     void b();
     void bl();
     void bx();
+
+    // ldm/stm instructions
     void stmiaw(); // store multiple increment after with writeback
     void ldmiaw(); // load multiple increment after with writeback
     void ldmiauw(); // load multiple increment after with writeback and use user registers i think

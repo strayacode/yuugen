@@ -46,7 +46,7 @@ void ARMInterpreter::str_post(u32 op2) {
 
     
     // always writeback in post transfer
-    regs.r[rn] = address;
+    regs.r[rn] += op2;
     
     regs.r[15] += 4;
     
@@ -60,7 +60,9 @@ void ARMInterpreter::ldr_post(u32 op2) {
     regs.r[15] += 4;
     u32 data = read_word(regs.r[rn]);
     
-
+    if (rd == 15) {
+        log_fatal("handle");
+    }
     // TODO: make sure this is correct later
     // i.e. not word aligned
     if (address & 0x3) {
@@ -68,12 +70,14 @@ void ARMInterpreter::ldr_post(u32 op2) {
         data = rotate_right(data, shift_amount);
     }
 
+    regs.r[rd] = data;  
+
     if (rd != rn) {
         // always writeback in post transfer
         regs.r[rn] += op2;
     }
 
-    regs.r[rd] = data; 
+    
 }
 
 // fine
@@ -127,13 +131,16 @@ void ARMInterpreter::strh_pre(u32 op2) {
         log_fatal("handle");
     }
     regs.r[15] += 4;
-
-    write_halfword(address, regs.r[rd]);
-
     if (get_bit(21, opcode)) {
         // write back to rn
         regs.r[rn] = address;
+        write_halfword(address, regs.r[rd]);
+    } else {
+        write_halfword(address, regs.r[rd]);
     }
+    
+
+    // TODO: change later!
 }
 
 // fine
@@ -144,15 +151,16 @@ void ARMInterpreter::strh_post(u32 op2) {
     if (rd == 15) {
         log_fatal("handle");
     }
+    // always write back to base register in post indexing
+    regs.r[rn] = address;
 
-    regs.r[15] += 4;
+    
 
     write_halfword(regs.r[rn], regs.r[rd]);
 
     
-
-    // always write back to base register in post indexing
-    regs.r[rn] = address;
+    regs.r[15] += 4;
+    
 
     
 }
@@ -177,23 +185,19 @@ void ARMInterpreter::ldrh_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     
-    u32 address = read_halfword(regs.r[rn] + op2);
-
-    regs.r[15] += 4;
-
-    
-
-    
     // check for writeback
 
     if (get_bit(21, opcode)) {
         // write back to rn
         regs.r[rn] += op2;
+        regs.r[rd] = read_halfword(regs.r[rn]);
+    } else {
+        regs.r[rd] = read_halfword(regs.r[rn] + op2);
     }
 
-    regs.r[rd] = address;
-
     
+
+    regs.r[15] += 4;
 }
 
 // fine
@@ -201,9 +205,7 @@ void ARMInterpreter::ldrb_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     regs.r[rd] = read_byte(regs.r[rn]);
-    if (rd != rn) {
-        regs.r[rn] += op2;
-    }
+    regs.r[rn] += op2;
 
     if (rd == 15) {
         log_fatal("hmmmm");
@@ -221,9 +223,12 @@ void ARMInterpreter::ldrb_pre(u32 op2) {
     if (get_bit(21, opcode)) {
         // write back to rn
         regs.r[rn] += op2;
+        regs.r[rd] = read_byte(regs.r[rn]);
+    } else {
+        regs.r[rd] = read_byte(regs.r[rn] + op2);
     }
 
-    regs.r[rd] = read_byte(regs.r[rn] + op2);
+    
 
     
 
@@ -245,14 +250,10 @@ void ARMInterpreter::strb_post(u32 op2) {
         log_fatal("handle");
     }
 
-    
-    if (get_bit(21, opcode)) {
-        // always writeback in post transfer
-        regs.r[rn] += op2;
-    }
-    
+    write_word(regs.r[rn], regs.r[rd]);
 
-    write_word(regs.r[rn], (u8)regs.r[rd]);
+    // always writeback in post transfer
+    regs.r[rn] += op2;
 
     regs.r[15] += 4;
 
@@ -272,9 +273,12 @@ void ARMInterpreter::strb_pre(u32 op2) {
     if (get_bit(21, opcode)) {
         // write back to rn
         regs.r[rn] += op2;
+        write_word(regs.r[rn], regs.r[rd]);
+    } else {
+        write_word(regs.r[rn] + op2, regs.r[rd]);
     }
 
-    write_word(regs.r[rn] + op2, (u8)regs.r[rd]);
+    
 
     regs.r[15] += 4;
 
@@ -337,6 +341,8 @@ void ARMInterpreter::stmdbw() {
 
     u32 writeback = address;
 
+    
+
     // subtract offset from base
     for (int i = 0; i < 16; i++) {
         if (get_bit(i, opcode)) { 
@@ -346,9 +352,11 @@ void ARMInterpreter::stmdbw() {
             address += 4;
         }
     }
-   
+
     // writeback to base register
     regs.r[rn] = writeback;
+   
+    
 }
 
 // fine
@@ -376,10 +384,12 @@ void ARMInterpreter::stmdaw() {
         }
     }
 
-    regs.r[15] += 4;
+    
 
     // writeback to base register
     regs.r[rn] = writeback;
+
+    regs.r[15] += 4;
 }
 
 void ARMInterpreter::ldmiaw() {

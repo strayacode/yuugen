@@ -111,12 +111,11 @@ void ARMInterpreter::cmps(u32 op2) {
     u8 rn = (opcode >> 16) & 0xF;
     
     u32 result = regs.r[rn] - op2;
-    // log_debug("result: %04x", result);
 
     set_condition_flag(N_FLAG, result >> 31);
     set_condition_flag(Z_FLAG, result == 0);
     set_condition_flag(C_FLAG, op2 >= regs.r[rn]);
-    set_condition_flag(V_FLAG, (~(regs.r[rn] ^ op2) & (op2 ^ result)) >> 31);
+    set_condition_flag(V_FLAG, ((regs.r[rn] ^ op2) & (regs.r[rn] ^ result)) >> 31);
 
     regs.r[15] += 4;
 }
