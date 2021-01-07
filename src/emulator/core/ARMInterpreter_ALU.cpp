@@ -28,9 +28,8 @@ void ARMInterpreter::movs(u32 op2) {
 	set_condition_flag(N_FLAG, op2 >> 31);
     regs.r[rd] = op2;
     if (rd == 15) {
-        // log_debug("we are now at r15 = 0x%04x", regs.r[15]);
+        regs.cpsr = get_spsr();
         flush_pipeline(); // shrug idk what im doing lmao
-        // log_warn("the behaviour rd = 15 might be handled incorrectly in mov");
     } else {
         regs.r[15] += 4;
     }
@@ -43,9 +42,8 @@ void ARMInterpreter::mvn(u32 op2) {
     regs.r[rd] = ~op2;
 
     if (rd == 15) {
-        log_debug("we are now at r15 = 0x%04x", regs.r[15]);
+        regs.cpsr = get_spsr();
         flush_pipeline(); // shrug idk what im doing lmao
-        // log_warn("the behaviour rd = 15 might be handled incorrectly in mov");
     } else {
         regs.r[15] += 4;
     }
@@ -468,20 +466,20 @@ u32 ARMInterpreter::lris() {
 // fine
 u32 ARMInterpreter::lrrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
-    u8 rm = opcode & 0xF;
-    if (rm == 15) {
+    u32 rm = regs.r[opcode & 0xF];
+    if ((opcode & 0xF) == 15) {
         // prefetch due to how register shifting executes after the prefetch
-        regs.r[15] += 4;
+        rm += 4;
     }
     u32 result;
     if (shift_amount == 0) {
-        result = regs.r[rm];
+        result = rm;
     } else if (shift_amount < 32) {
-        result = regs.r[rm] >> shift_amount;
-        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
+        result = rm >> shift_amount;
+        set_condition_flag(C_FLAG, rm & (1 << (shift_amount - 1)));
     } else if (shift_amount == 32) {
         result = 0;
-        set_condition_flag(C_FLAG, regs.r[rm] & (1 << 31));
+        set_condition_flag(C_FLAG, rm & (1 << 31));
     } else {
         result = 0;
         set_condition_flag(C_FLAG, false);
@@ -504,20 +502,20 @@ u32 ARMInterpreter::llis() {
 // fine
 u32 ARMInterpreter::llrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
-    u8 rm = opcode & 0xF;
-    if (rm == 15) {
+    u32 rm = regs.r[opcode & 0xF];
+    if ((opcode & 0xF) == 15) {
         // prefetch due to how register shifting executes after the prefetch
-        regs.r[15] += 4;
+        rm += 4;
     }
     u32 result;
     if (shift_amount == 0) {
-        result = regs.r[rm];
+        result = rm;
     } else if (shift_amount < 32) {
-        result = regs.r[rm] << shift_amount;
-        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (32 - shift_amount)));
+        result = rm << shift_amount;
+        set_condition_flag(C_FLAG, rm & (1 << (32 - shift_amount)));
     } else if (shift_amount == 32) {
         result = 0;
-        set_condition_flag(C_FLAG, regs.r[rm] & 0x1);
+        set_condition_flag(C_FLAG, rm & 0x1);
     } else {
         // shift amount > 32
         result = 0;
@@ -569,22 +567,22 @@ u32 ARMInterpreter::aris() {
 // fine
 u32 ARMInterpreter::arrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
-    u8 rm = opcode & 0xF;
-    if (rm == 15) {
+    u32 rm = regs.r[opcode & 0xF];
+    if ((opcode & 0xF) == 15) {
         // prefetch due to how register shifting executes after the prefetch
-        regs.r[15] += 4;
+        rm += 4;
     }
     u32 result;
-    u8 msb = regs.r[rm] >> 31;
+    u8 msb = rm >> 31;
 
     if (shift_amount == 0) {
-        result = regs.r[rm];
+        result = rm;
     } else if (shift_amount < 32) {
         // shift amount > 0
-        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
+        set_condition_flag(C_FLAG, rm & (1 << (shift_amount - 1)));
         // perform asr
         // what happens is that rm gets shifted normally to the right but then the bits not set are set with the msb
-        result = (regs.r[rm] >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
+        result = (rm >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
     } else {
         // shift amount > 32
         result = 0xFFFFFFFF * msb;

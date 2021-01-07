@@ -51,6 +51,7 @@ void main_loop(std::string rom_path, Emulator* emulator) {
         SDL_RenderCopy(renderer, bottom_texture, nullptr, &bottom_texture_area);
         SDL_RenderPresent(renderer);
         // check for events
+        // check for events
         while (SDL_PollEvent(&event) != 0) {
             if (event.type == SDL_QUIT) {
                 // cool use of goto lol
@@ -114,7 +115,9 @@ void main_loop(std::string rom_path, Emulator* emulator) {
             frame_time_start = SDL_GetTicks();
             emulator->frames = 0;
         }
+        
     }
+
     cleanup:
         SDL_DestroyWindow(window);
         SDL_DestroyRenderer(renderer);

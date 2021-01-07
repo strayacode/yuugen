@@ -73,5 +73,3 @@ void GPU2D::render_vram_display(int line) {
 u8 GPU2D::get_vram_bank() {
     return get_bit_range(18, 19, dispcnt);
 }
-
-
