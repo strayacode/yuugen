@@ -457,12 +457,14 @@ void ARMInterpreter::umlals() {
     u8 rs = (opcode >> 8) & 0xF;
     u8 rdlo = (opcode >> 12) & 0xF;
     u8 rdhi = (opcode >> 16) & 0xF;
-    u64 result = (u64)regs.r[rm] * (u64)regs.r[rs];
-    result += ((u64)regs.r[rdlo] + (u64)regs.r[rdhi]);
-    regs.r[rdlo] = result;
-    regs.r[rdhi] = result >> 32;
-    set_condition_flag(N_FLAG, regs.r[rdhi] >> 31);
+    u64 rdhilo = ((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]);
+    u64 result = (u64)regs.r[rm] * (u64)regs.r[rs] + rdhilo;
+    set_condition_flag(N_FLAG, result >> 63);
     set_condition_flag(Z_FLAG, result == 0);
+    regs.r[rdlo] = result & 0xFFFFFFFF;
+
+    regs.r[rdhi] = result >> 32;
+
 
     regs.r[15] += 4;
 }
@@ -473,9 +475,9 @@ void ARMInterpreter::smlals() {
     u8 rs = (opcode >> 8) & 0xF;
     u8 rdlo = (opcode >> 12) & 0xF;
     u8 rdhi = (opcode >> 16) & 0xF;
-    s64 result = (s32)regs.r[rm];
-    result *= (s32)regs.r[rs];
-    result += ((s64)regs.r[rdlo] + (s64)regs.r[rdhi]);
+    s64 rdhilo = (s64)(((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]));
+    s64 result = ((s64)(s32)regs.r[rm] * (s64)(s32)regs.r[rs]);
+    result += rdhilo;
     regs.r[rdlo] = result;
     regs.r[rdhi] = result >> 32;
     set_condition_flag(N_FLAG, regs.r[rdhi] >> 31);
