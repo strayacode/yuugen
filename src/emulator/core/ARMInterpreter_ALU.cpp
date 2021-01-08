@@ -3,7 +3,7 @@
 #include <emulator/common/arithmetic.h>
 #include <emulator/Emulator.h>
 
-void ARMInterpreter::mov(u32 op2) {
+void ARMInterpreter::arm_mov(u32 op2) {
     // get rd
     u8 rd = (opcode >> 12) & 0xF;
     regs.r[rd] = op2;
@@ -20,7 +20,7 @@ void ARMInterpreter::mov(u32 op2) {
     
 }
 
-void ARMInterpreter::movs(u32 op2) {
+void ARMInterpreter::arm_movs(u32 op2) {
     // get rd
     u8 rd = (opcode >> 12) & 0xF;
     
@@ -36,7 +36,7 @@ void ARMInterpreter::movs(u32 op2) {
     
 }
 
-void ARMInterpreter::mvn(u32 op2) {
+void ARMInterpreter::arm_mvn(u32 op2) {
     // get rd
     u8 rd = (opcode >> 12) & 0xF;
     regs.r[rd] = ~op2;
@@ -50,7 +50,7 @@ void ARMInterpreter::mvn(u32 op2) {
     
 }
 
-u32 ARMInterpreter::imm_data_processing() {
+u32 ARMInterpreter::arm_imm_data_processing() {
     u32 immediate = opcode & 0xFF;
     u8 shift_amount = ((opcode >> 8) & 0xF) * 2;
 
@@ -58,7 +58,7 @@ u32 ARMInterpreter::imm_data_processing() {
     return result;
 }
 
-u32 ARMInterpreter::imms_data_processing() {
+u32 ARMInterpreter::arm_imms_data_processing() {
     u32 immediate = opcode & 0xFF;
     u8 shift_amount = ((opcode >> 8) & 0xF) * 2;
     
@@ -69,7 +69,7 @@ u32 ARMInterpreter::imms_data_processing() {
     return result;
 }
 
-void ARMInterpreter::subs(u32 op2) {
+void ARMInterpreter::arm_subs(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
@@ -92,7 +92,7 @@ void ARMInterpreter::subs(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::sub(u32 op2) {
+void ARMInterpreter::arm_sub(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
@@ -107,7 +107,7 @@ void ARMInterpreter::sub(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::cmps(u32 op2) {
+void ARMInterpreter::arm_cmps(u32 op2) {
     u8 rn = (opcode >> 16) & 0xF;
     
     u32 result = regs.r[rn] - op2;
@@ -120,7 +120,7 @@ void ARMInterpreter::cmps(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::bics(u32 op2) {
+void ARMInterpreter::arm_bics(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] & ~op2;
@@ -138,7 +138,7 @@ void ARMInterpreter::bics(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::bic(u32 op2) {
+void ARMInterpreter::arm_bic(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] & ~op2;
@@ -152,7 +152,7 @@ void ARMInterpreter::bic(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::add(u32 op2) {
+void ARMInterpreter::arm_add(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
@@ -167,7 +167,7 @@ void ARMInterpreter::add(u32 op2) {
 
 
 
-void ARMInterpreter::ands(u32 op2) {
+void ARMInterpreter::arm_ands(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] & op2;
@@ -184,7 +184,7 @@ void ARMInterpreter::ands(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::_and(u32 op2) {
+void ARMInterpreter::arm_and(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] & op2;
@@ -198,7 +198,7 @@ void ARMInterpreter::_and(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::eor(u32 op2) {
+void ARMInterpreter::arm_eor(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] ^ op2;
@@ -211,7 +211,7 @@ void ARMInterpreter::eor(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::eors(u32 op2) {
+void ARMInterpreter::arm_eors(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] ^ op2;
@@ -225,7 +225,7 @@ void ARMInterpreter::eors(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::tsts(u32 op2) {
+void ARMInterpreter::arm_tsts(u32 op2) {
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] & op2;
     set_condition_flag(Z_FLAG, result == 0);
@@ -234,7 +234,7 @@ void ARMInterpreter::tsts(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::adds(u32 op2) {
+void ARMInterpreter::arm_adds(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u64 result64 = (u64)regs.r[rn] + (u64)op2;
@@ -253,7 +253,7 @@ void ARMInterpreter::adds(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::adcs(u32 op2) {
+void ARMInterpreter::arm_adcs(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u64 result = (u64)regs.r[rn] + (u64)op2 + (u64)get_condition_flag(C_FLAG);
@@ -269,7 +269,7 @@ void ARMInterpreter::adcs(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::adc(u32 op2) {
+void ARMInterpreter::arm_adc(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] + op2 + get_condition_flag(C_FLAG);
@@ -278,7 +278,7 @@ void ARMInterpreter::adc(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::orr(u32 op2) {
+void ARMInterpreter::arm_orr(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
@@ -294,7 +294,7 @@ void ARMInterpreter::orr(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::orrs(u32 op2) {
+void ARMInterpreter::arm_orrs(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     regs.r[rd] = regs.r[rn] | op2;
@@ -309,7 +309,7 @@ void ARMInterpreter::orrs(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::cmns(u32 op2) {
+void ARMInterpreter::arm_cmns(u32 op2) {
     u8 rn = (opcode >> 16) & 0xF;
     u32 result = regs.r[rn] + op2;
     set_condition_flag(Z_FLAG, result == 0);
@@ -320,7 +320,7 @@ void ARMInterpreter::cmns(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::rscs(u32 op2) {
+void ARMInterpreter::arm_rscs(u32 op2) {
     // TODO: correct the flag setting later
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -339,7 +339,7 @@ void ARMInterpreter::rscs(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::sbcs(u32 op2) {
+void ARMInterpreter::arm_sbcs(u32 op2) {
     // TODO: correct the flag setting later
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -360,7 +360,7 @@ void ARMInterpreter::sbcs(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::swp() {
+void ARMInterpreter::arm_swp() {
     u8 rm = opcode & 0xF;
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -378,7 +378,7 @@ void ARMInterpreter::swp() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::swpb() {
+void ARMInterpreter::arm_swpb() {
     u8 rm = opcode & 0xF;
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -392,7 +392,7 @@ void ARMInterpreter::swpb() {
 
 
 
-void ARMInterpreter::mlas() {
+void ARMInterpreter::arm_mlas() {
     u8 rm = opcode & 0xF;
     u8 rs = (opcode >> 8) & 0xF;
     u8 rn = (opcode >> 12) & 0xF;
@@ -407,7 +407,7 @@ void ARMInterpreter::mlas() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::muls() {
+void ARMInterpreter::arm_muls() {
     u8 rm = opcode & 0xF;
     u8 rs = (opcode >> 8) & 0xF;
     u8 rd = (opcode >> 16) & 0xF;
@@ -421,7 +421,7 @@ void ARMInterpreter::muls() {
 
 }
 
-void ARMInterpreter::umulls() {
+void ARMInterpreter::arm_umulls() {
     u8 rm = opcode & 0xF;
     u8 rs = (opcode >> 8) & 0xF;
     u8 rdlo = (opcode >> 12) & 0xF;
@@ -436,7 +436,7 @@ void ARMInterpreter::umulls() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::smulls() {
+void ARMInterpreter::arm_smulls() {
     u8 rm = opcode & 0xF;
     u8 rs = (opcode >> 8) & 0xF;
     u8 rdlo = (opcode >> 12) & 0xF;
@@ -452,7 +452,7 @@ void ARMInterpreter::smulls() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::umlals() {
+void ARMInterpreter::arm_umlals() {
     u8 rm = opcode & 0xF;
     u8 rs = (opcode >> 8) & 0xF;
     u8 rdlo = (opcode >> 12) & 0xF;
@@ -469,7 +469,7 @@ void ARMInterpreter::umlals() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::smlals() {
+void ARMInterpreter::arm_smlals() {
     // TODO: check later!
     u8 rm = opcode & 0xF;
     u8 rs = (opcode >> 8) & 0xF;
@@ -486,7 +486,7 @@ void ARMInterpreter::smlals() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::clz() {
+void ARMInterpreter::arm_clz() {
     // arm9 exclusive
     if (cpu_id == ARMv4) {
         return;
@@ -508,14 +508,14 @@ void ARMInterpreter::clz() {
 }
 
 // fine
-u32 ARMInterpreter::lli() {
+u32 ARMInterpreter::arm_lli() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
     return regs.r[rm] << shift_amount;
 }
 
 // fine
-u32 ARMInterpreter::lri() {
+u32 ARMInterpreter::arm_lri() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
     if (shift_amount == 0) {
@@ -526,7 +526,7 @@ u32 ARMInterpreter::lri() {
 }
 
 // fine
-u32 ARMInterpreter::lris() {
+u32 ARMInterpreter::arm_lris() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
     u32 result;
@@ -543,7 +543,7 @@ u32 ARMInterpreter::lris() {
 
 
 // fine
-u32 ARMInterpreter::lrrs() {
+u32 ARMInterpreter::arm_lrrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u32 rm = regs.r[opcode & 0xF];
     if ((opcode & 0xF) == 15) {
@@ -567,7 +567,7 @@ u32 ARMInterpreter::lrrs() {
 }
 
 // fine
-u32 ARMInterpreter::llis() {
+u32 ARMInterpreter::arm_llis() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
     
@@ -579,7 +579,7 @@ u32 ARMInterpreter::llis() {
 
 
 // fine
-u32 ARMInterpreter::llrs() {
+u32 ARMInterpreter::arm_llrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u32 rm = regs.r[opcode & 0xF];
     if ((opcode & 0xF) == 15) {
@@ -606,7 +606,7 @@ u32 ARMInterpreter::llrs() {
 }
 
 // fine
-u32 ARMInterpreter::ari() {
+u32 ARMInterpreter::arm_ari() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
     u32 result;
@@ -624,7 +624,7 @@ u32 ARMInterpreter::ari() {
 }
 
 // fine
-u32 ARMInterpreter::aris() {
+u32 ARMInterpreter::arm_aris() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
     u32 result;
@@ -644,7 +644,7 @@ u32 ARMInterpreter::aris() {
 }
 
 // fine
-u32 ARMInterpreter::arrs() {
+u32 ARMInterpreter::arm_arrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u32 rm = regs.r[opcode & 0xF];
     if ((opcode & 0xF) == 15) {
@@ -670,7 +670,7 @@ u32 ARMInterpreter::arrs() {
     return result;
 }
 
-u32 ARMInterpreter::rris() {
+u32 ARMInterpreter::arm_rris() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
 
@@ -688,7 +688,7 @@ u32 ARMInterpreter::rris() {
     return result;
 }
 
-u32 ARMInterpreter::rri() {
+u32 ARMInterpreter::arm_rri() {
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 rm = opcode & 0xF;
 

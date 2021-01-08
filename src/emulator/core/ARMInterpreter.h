@@ -93,106 +93,106 @@ private:
 
     void execute_instruction();
 
-    void mov(u32 op2);
-    void movs(u32 op2);
+    void arm_mov(u32 op2);
+    void arm_movs(u32 op2);
 
     // helpers
-    u32 imm_data_processing();
-    u32 imms_data_processing();
-    u32 imm_single_data_transfer();
-    u32 reg_halfword_signed_data_transfer();
-    u32 imm_halfword_signed_data_transfer();
-
+    u32 arm_imm_data_processing();
+    u32 arm_imms_data_processing();
+    u32 arm_imm_single_data_transfer();
+    u32 arm_reg_halfword_signed_data_transfer();
+    u32 arm_imm_halfword_signed_data_transfer();
+    
     // load and store instructions
-    void str_pre(u32 op2);
-    void str_post(u32 op2);
-    void ldr_pre(u32 op2);
-    void ldr_post(u32 op2);
-    void ldrh_post(u32 op2);
-    void ldrh_pre(u32 op2);
-    void strh_pre(u32 op2);
-    void strh_post(u32 op2);
-    void strb_post(u32 op2);
-    void strb_pre(u32 op2);
-    void ldrb_post(u32 op2);
-    void ldrb_pre(u32 op2);
-    void ldrsb_pre(u32 op2);
+    void arm_str_pre(u32 op2);
+    void arm_str_post(u32 op2);
+    void arm_ldr_pre(u32 op2);
+    void arm_ldr_post(u32 op2);
+    void arm_ldrh_post(u32 op2);
+    void arm_ldrh_pre(u32 op2);
+    void arm_strh_pre(u32 op2);
+    void arm_strh_post(u32 op2);
+    void arm_strb_post(u32 op2);
+    void arm_strb_pre(u32 op2);
+    void arm_ldrb_post(u32 op2);
+    void arm_ldrb_pre(u32 op2);
+    void arm_ldrsb_pre(u32 op2);
 
     // data processing
-    void subs(u32 op2);
-    void sub(u32 op2);
-    void cmps(u32 op2);
-    void bics(u32 op2);
-    void bic(u32 op2);
-    void add(u32 op2);
-    void adds(u32 op2);
-    void adcs(u32 op2);
-    void adc(u32 op2);
-    void mvn(u32 op2);
-    void ands(u32 op2);
-    void _and(u32 op2);
-    void eor(u32 op2);
-    void eors(u32 op2);
-    void tsts(u32 op2);
-    void orr(u32 op2);
-    void orrs(u32 op2);
-    void cmns(u32 op2);
-    void rscs(u32 op2);
-    void sbcs(u32 op2);
-    void swp();
-    void swpb();
-    void mlas();
-    void muls();
-    void umulls();
-    void smulls();
-    void umlals();
-    void smlals();
-    void msr_reg();
-    void msr_imm();
-    void mrs_cpsr();
+    void arm_subs(u32 op2);
+    void arm_sub(u32 op2);
+    void arm_cmps(u32 op2);
+    void arm_bics(u32 op2);
+    void arm_bic(u32 op2);
+    void arm_add(u32 op2);
+    void arm_adds(u32 op2);
+    void arm_adcs(u32 op2);
+    void arm_adc(u32 op2);
+    void arm_mvn(u32 op2);
+    void arm_ands(u32 op2);
+    void arm_and(u32 op2);
+    void arm_eor(u32 op2);
+    void arm_eors(u32 op2);
+    void arm_tsts(u32 op2);
+    void arm_orr(u32 op2);
+    void arm_orrs(u32 op2);
+    void arm_cmns(u32 op2);
+    void arm_rscs(u32 op2);
+    void arm_sbcs(u32 op2);
+    void arm_swp();
+    void arm_swpb();
+    void arm_mlas();
+    void arm_muls();
+    void arm_umulls();
+    void arm_smulls();
+    void arm_umlals();
+    void arm_smlals();
+    void arm_msr_reg();
+    void arm_msr_imm();
+    void arm_mrs_cpsr();
 
     // branch instructions
-    void b();
-    void bl();
-    void bx();
+    void arm_b();
+    void arm_bl();
+    void arm_bx();
 
     // ldm/stm instructions
-    void stmiaw(); // store multiple increment after with writeback
-    void ldmiaw(); // load multiple increment after with writeback
-    void ldmiauw(); // load multiple increment after with writeback and use user registers i think
-    void stmdbw(); // store multiple decrement before with writeback
-    void stmdaw(); // store multiple decrement after with writeback
-    void ldmibw(); // load multiple increment before with writeback
-    void ldmibuw(); // load multiple increment before with writeback and use user registers i think
-    void ldmdbuw(); // load multiple decrement before with writeback and use user registers i think
-    void ldmdbw(); // load multiple decrement before with writeback
-    void ldmdaw(); // load multiple decrement after with writeback
-    void ldmdauw(); // load multiple decrement after with writeback and use user registers i think
-    void stmibw(); // store multiple increment before with writeback
+    void arm_stmiaw(); // store multiple increment after with writeback
+    void arm_ldmiaw(); // load multiple increment after with writeback
+    void arm_ldmiauw(); // load multiple increment after with writeback and use user registers i think
+    void arm_stmdbw(); // store multiple decrement before with writeback
+    void arm_stmdaw(); // store multiple decrement after with writeback
+    void arm_ldmibw(); // load multiple increment before with writeback
+    void arm_ldmibuw(); // load multiple increment before with writeback and use user registers i think
+    void arm_ldmdbuw(); // load multiple decrement before with writeback and use user registers i think
+    void arm_ldmdbw(); // load multiple decrement before with writeback
+    void arm_ldmdaw(); // load multiple decrement after with writeback
+    void arm_ldmdauw(); // load multiple decrement after with writeback and use user registers i think
+    void arm_stmibw(); // store multiple increment before with writeback
 
 
     // ARM9 exclusive instructions
-    void clz(); 
+    void arm_clz(); 
 
     // shift stuff
-    u32 lli(); // LSL with a 5 bit immediate shift amount
-    u32 llis(); // LSL with a 5 bit immediate shift amount
-    u32 llrs(); // with a shift amount specified by the bottom byte of the register specified by bits 8..11
+    u32 arm_lli(); // LSL with a 5 bit immediate shift amount
+    u32 arm_llis(); // LSL with a 5 bit immediate shift amount
+    u32 arm_llrs(); // with a shift amount specified by the bottom byte of the register specified by bits 8..11
 
-    u32 lri(); // LSR with a 5 bit immediate shift amount
-    u32 lris();
-    u32 lrrs();
+    u32 arm_lri(); // LSR with a 5 bit immediate shift amount
+    u32 arm_lris();
+    u32 arm_lrrs();
 
-    u32 ari(); // ASR with a 5 bit immediate shift amount
-    u32 aris(); // ASR with a 5 bit immediate shift amount
-    u32 arrs();
+    u32 arm_ari(); // ASR with a 5 bit immediate shift amount
+    u32 arm_aris(); // ASR with a 5 bit immediate shift amount
+    u32 arm_arrs();
 
-    u32 rris();
-    u32 rri();
+    u32 arm_rris();
+    u32 arm_rri();
 
     // load/store shifts
-    u32 rpll(); // use in load store to shift a register rm with lsl
-    u32 rplr(); // use in load store to shift a register rm with lsr
-    u32 rpar(); // use in load store to shift a register rm with asr
-    u32 rprr(); // use in load store to shift a register rm with ror
+    u32 arm_rpll(); // use in load store to shift a register rm with lsl
+    u32 arm_rplr(); // use in load store to shift a register rm with lsr
+    u32 arm_rpar(); // use in load store to shift a register rm with asr
+    u32 arm_rprr(); // use in load store to shift a register rm with ror
 };

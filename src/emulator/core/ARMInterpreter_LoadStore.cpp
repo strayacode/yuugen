@@ -4,12 +4,12 @@
 #include <emulator/common/log.h>
 
 // fine
-u32 ARMInterpreter::imm_single_data_transfer() {
+u32 ARMInterpreter::arm_imm_single_data_transfer() {
     return opcode & 0xFFF;
 }
 
 // fine
-void ARMInterpreter::str_pre(u32 op2) {
+void ARMInterpreter::arm_str_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
@@ -32,7 +32,7 @@ void ARMInterpreter::str_pre(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::str_post(u32 op2) {
+void ARMInterpreter::arm_str_post(u32 op2) {
     
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -53,7 +53,7 @@ void ARMInterpreter::str_post(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::ldr_post(u32 op2) {
+void ARMInterpreter::arm_ldr_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
@@ -81,16 +81,10 @@ void ARMInterpreter::ldr_post(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::ldr_pre(u32 op2) {
+void ARMInterpreter::arm_ldr_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
-    // if (regs.r[rn] & 0x3 != 0) {
-    //     log_warn("another thing to handle");
-    // }
-    // address = rotate_right(address, (address & 0x3) * 8);
-
-    
 
     u32 data = read_word(address);
 
@@ -113,17 +107,17 @@ void ARMInterpreter::ldr_pre(u32 op2) {
 
 
 // fine
-u32 ARMInterpreter::reg_halfword_signed_data_transfer() {
+u32 ARMInterpreter::arm_reg_halfword_signed_data_transfer() {
     return regs.r[opcode & 0xF];
 }
 
 // fine
-u32 ARMInterpreter::imm_halfword_signed_data_transfer() {
+u32 ARMInterpreter::arm_imm_halfword_signed_data_transfer() {
     return ((opcode >> 4) & 0xF0) | (opcode & 0xF);
 }
 
 // fine
-void ARMInterpreter::strh_pre(u32 op2) {
+void ARMInterpreter::arm_strh_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
@@ -144,7 +138,7 @@ void ARMInterpreter::strh_pre(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::strh_post(u32 op2) {
+void ARMInterpreter::arm_strh_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
@@ -166,7 +160,7 @@ void ARMInterpreter::strh_post(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::ldrh_post(u32 op2) {
+void ARMInterpreter::arm_ldrh_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
@@ -181,7 +175,7 @@ void ARMInterpreter::ldrh_post(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::ldrh_pre(u32 op2) {
+void ARMInterpreter::arm_ldrh_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     
@@ -201,7 +195,7 @@ void ARMInterpreter::ldrh_pre(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::ldrb_post(u32 op2) {
+void ARMInterpreter::arm_ldrb_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     regs.r[rd] = read_byte(regs.r[rn]);
@@ -216,7 +210,7 @@ void ARMInterpreter::ldrb_post(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::ldrb_pre(u32 op2) {
+void ARMInterpreter::arm_ldrb_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
@@ -241,7 +235,7 @@ void ARMInterpreter::ldrb_pre(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::strb_post(u32 op2) {
+void ARMInterpreter::arm_strb_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     if (rd == 15) {
@@ -259,7 +253,7 @@ void ARMInterpreter::strb_post(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::strb_pre(u32 op2) {
+void ARMInterpreter::arm_strb_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     if (rd == 15) {
@@ -289,10 +283,8 @@ void ARMInterpreter::ldrsb_pre(u32 op2) {
     u8 rn = (opcode >> 16) & 0xF;
 
     u32 address = regs.r[rn] + op2;
-
-    u32 data = read_byte(address);
-    
-    data = (get_bit(7, opcode) ? 0XFFFFFF00 : 0) | (data);
+    // first we cast to s8 to read the data as a signed byte and then cast to s32 to sign extend to a 32 bit integer
+    u32 data = (s32)(s8)read_byte(address);
 
     regs.r[rd] = data;
 
