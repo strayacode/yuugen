@@ -748,17 +748,19 @@ void ARMInterpreter::thumb_lsr_imm() {
     u8 rd = opcode & 0x7;
     u8 rm = (opcode >> 3) & 0x7;
     u32 immediate_5 = (opcode >> 6) & 0x1F;
-
+    log_debug("rm: r%d rd: r%d", rm, rd);
     if (immediate_5 == 0) {
         set_condition_flag(C_FLAG, regs.r[rd] & (1 << 31));
         regs.r[rd] = 0;
     } else {
+        log_debug("immediate 5: 0x%04x", immediate_5);
         // immediate_5 > 0
         set_condition_flag(C_FLAG, regs.r[rd] & (1 << (immediate_5 - 1)));
         regs.r[rd] = regs.r[rm] >> immediate_5;
+        
     }
     set_condition_flag(N_FLAG, regs.r[rd] >> 31);
     set_condition_flag(Z_FLAG, regs.r[rd] == 0);
-
+    log_debug("c flag: %d", get_condition_flag(C_FLAG));
     regs.r[15] += 2;
 }

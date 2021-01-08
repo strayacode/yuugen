@@ -57,9 +57,11 @@ void ARMInterpreter::thumb_bl_offset() {
 
 void ARMInterpreter::thumb_bcs() {
     // only branch if carry flag set
+    log_debug("c flag: %d", get_condition_flag(C_FLAG));
     if (get_condition_flag(C_FLAG)) {
-        u32 offset = (s32)(s8)(opcode & 0xFF) << 1;
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
         regs.r[15] += offset;
+        log_debug("r15: 0x%04x", regs.r[15]);
         flush_pipeline();
     } else {
         regs.r[15] += 2;
@@ -69,7 +71,7 @@ void ARMInterpreter::thumb_bcs() {
 void ARMInterpreter::thumb_bcc() {
     // only branch if carry flag cleared
     if (!get_condition_flag(C_FLAG)) {
-        u32 offset = (s32)(s8)(opcode & 0xFF) << 1;
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
         regs.r[15] += offset;
         flush_pipeline();
     } else {

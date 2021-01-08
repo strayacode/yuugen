@@ -798,36 +798,32 @@ void ARMInterpreter::execute_instruction() {
         }
     } else {
         // using http://imrannazar.com/ARM-Opcode-Map
-        if (condition_evaluate()) { 
-            u8 index = (opcode >> 8) & 0xFF;
-            switch (index) {
-            case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
-                return thumb_lsr_imm();
-            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: case 0x26: case 0x27:
-                return thumb_mov_imm();
-            case 0x28: case 0x29: case 0x2A: case 0x2B: case 0x2C: case 0x2D: case 0x2E: case 0x2F:
-                return thumb_cmp_imm();
-            case 0x46:
-                return thumb_movh();
-            case 0x48: case 0x49: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F:
-                return thumb_ldrpc_imm();
-            case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
-                return thumb_ldrh_imm5();
-            case 0xB5:
-                return thumb_push_lr();
-            case 0xD2:
-                return thumb_bcs();
-            case 0xD3:
-                return thumb_bcc();
-            case 0xF0: case 0xF1: case 0xF2: case 0xF3: case 0xF4: case 0xF5: case 0xF6: case 0xF7:
-                return thumb_bl_setup();
-            case 0xF8: case 0xF9: case 0xFA: case 0xFB: case 0xFC: case 0xFD: case 0xFE: case 0xFF:
-                return thumb_bl_offset();
-            default:
-                log_fatal("opcode 0x%04x is unimplemented with identifier 0x%02x", opcode, index);
-            }
-        } else {
-            regs.r[15] += 2;
+        u8 index = (opcode >> 8) & 0xFF;
+        switch (index) {
+        case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+            return thumb_lsr_imm();
+        case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: case 0x26: case 0x27:
+            return thumb_mov_imm();
+        case 0x28: case 0x29: case 0x2A: case 0x2B: case 0x2C: case 0x2D: case 0x2E: case 0x2F:
+            return thumb_cmp_imm();
+        case 0x46:
+            return thumb_movh();
+        case 0x48: case 0x49: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F:
+            return thumb_ldrpc_imm();
+        case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
+            return thumb_ldrh_imm5();
+        case 0xB5:
+            return thumb_push_lr();
+        case 0xD2:
+            return thumb_bcs();
+        case 0xD3:
+            return thumb_bcc();
+        case 0xF0: case 0xF1: case 0xF2: case 0xF3: case 0xF4: case 0xF5: case 0xF6: case 0xF7:
+            return thumb_bl_setup();
+        case 0xF8: case 0xF9: case 0xFA: case 0xFB: case 0xFC: case 0xFD: case 0xFE: case 0xFF:
+            return thumb_bl_offset();
+        default:
+            log_fatal("opcode 0x%04x is unimplemented with identifier 0x%02x", opcode, index);
         }
     }
 }

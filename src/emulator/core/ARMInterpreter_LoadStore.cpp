@@ -755,7 +755,7 @@ void ARMInterpreter::thumb_ldrpc_imm() {
     // in this instruction pc is word aligned (pc & 0xFFFFFFFC)
     u32 address = (regs.r[15] & ~0x3) + immediate;
     regs.r[rd] = read_word(address);
-    
+    // log_fatal("address is 0x%04x", address);
     if (address & 0x1) {
         log_fatal("this is unpredictable behaviour");
     }
