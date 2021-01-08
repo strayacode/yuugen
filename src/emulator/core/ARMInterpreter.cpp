@@ -806,14 +806,28 @@ void ARMInterpreter::execute_instruction() {
             return thumb_mov_imm();
         case 0x28: case 0x29: case 0x2A: case 0x2B: case 0x2C: case 0x2D: case 0x2E: case 0x2F:
             return thumb_cmp_imm();
+        case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
+            return thumb_add_imm();
+        case 0x38: case 0x39: case 0x3A: case 0x3B: case 0x3C: case 0x3D: case 0x3E: case 0x3F:
+            return thumb_sub_imm();
         case 0x46:
             return thumb_movh();
+        case 0x47:
+            return thumb_bx();
         case 0x48: case 0x49: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F:
             return thumb_ldrpc_imm();
+        case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x65: case 0x66: case 0x67:
+            return thumb_str_imm();
         case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
             return thumb_ldrh_imm5();
         case 0xB5:
             return thumb_push_lr();
+        case 0xBD:
+            return thumb_pop_pc();
+        case 0xD0:
+            return thumb_beq();
+        case 0xD1:
+            return thumb_bne();
         case 0xD2:
             return thumb_bcs();
         case 0xD3:

@@ -748,12 +748,10 @@ void ARMInterpreter::thumb_lsr_imm() {
     u8 rd = opcode & 0x7;
     u8 rm = (opcode >> 3) & 0x7;
     u32 immediate_5 = (opcode >> 6) & 0x1F;
-    log_debug("rm: r%d rd: r%d", rm, rd);
     if (immediate_5 == 0) {
         set_condition_flag(C_FLAG, regs.r[rd] & (1 << 31));
         regs.r[rd] = 0;
     } else {
-        log_debug("immediate 5: 0x%04x", immediate_5);
         // immediate_5 > 0
         set_condition_flag(C_FLAG, regs.r[rd] & (1 << (immediate_5 - 1)));
         regs.r[rd] = regs.r[rm] >> immediate_5;
@@ -761,6 +759,37 @@ void ARMInterpreter::thumb_lsr_imm() {
     }
     set_condition_flag(N_FLAG, regs.r[rd] >> 31);
     set_condition_flag(Z_FLAG, regs.r[rd] == 0);
-    log_debug("c flag: %d", get_condition_flag(C_FLAG));
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_add_imm() {
+    u8 immediate = opcode & 0xFF;
+    u8 rd = (opcode >> 8) & 0x7;
+    u64 result64 = (u64)regs.r[rd] + (u64)immediate;
+    u32 result32 = (u32)result64;
+    regs.r[rd] = result32;
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+    // detect borrow from bit 32
+    set_condition_flag(C_FLAG, result64 >> 32);
+    // understanding: for signed overflow either both ops positive and result negative or both ops negative result positive
+    set_condition_flag(V_FLAG, (~(regs.r[rd] ^ immediate) & (immediate ^ result32)) >> 31);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_sub_imm() {
+    u32 immediate = opcode & 0xFF;
+    u8 rd = (opcode >> 8) & 0x7;
+    
+    u32 result = regs.r[rd] - immediate;
+    regs.r[rd] = result;
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+    set_condition_flag(C_FLAG, immediate >= regs.r[rd]);
+    set_condition_flag(V_FLAG, (~(regs.r[rd] ^ immediate) & (immediate ^ result)) >> 31);
+
     regs.r[15] += 2;
 }

@@ -57,11 +57,9 @@ void ARMInterpreter::thumb_bl_offset() {
 
 void ARMInterpreter::thumb_bcs() {
     // only branch if carry flag set
-    log_debug("c flag: %d", get_condition_flag(C_FLAG));
     if (get_condition_flag(C_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
         regs.r[15] += offset;
-        log_debug("r15: 0x%04x", regs.r[15]);
         flush_pipeline();
     } else {
         regs.r[15] += 2;
@@ -77,4 +75,42 @@ void ARMInterpreter::thumb_bcc() {
     } else {
         regs.r[15] += 2;
     }
+}
+
+void ARMInterpreter::thumb_beq() {
+    // only branch if zero flag set
+    if (get_condition_flag(Z_FLAG)) {
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+        regs.r[15] += offset;
+        flush_pipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}
+
+void ARMInterpreter::thumb_bne() {
+    // only branch if zero flag clear
+    if (!get_condition_flag(Z_FLAG)) {
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+        regs.r[15] += offset;
+        flush_pipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}
+
+void ARMInterpreter::thumb_bx() {
+    u8 rm = (opcode >> 3) & 0xF;
+
+    if (regs.r[rm] & 0x1) {
+        // just load rm into r15 normally in thumb
+        regs.r[15] = regs.r[rm] & ~1;
+    } else {
+        // switch to arm state
+        // clear bit 5 in cpsr
+        regs.cpsr &= ~(1 << 5);
+        regs.r[15] = regs.r[rm] & ~3;
+    }
+
+    flush_pipeline();
 }

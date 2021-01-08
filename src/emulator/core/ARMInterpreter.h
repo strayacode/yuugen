@@ -203,6 +203,8 @@ private:
     void thumb_mov_imm();
     void thumb_movh();
     void thumb_cmp_imm();
+    void thumb_add_imm();
+    void thumb_sub_imm();
 
     // shifts
     void thumb_lsr_imm();
@@ -212,9 +214,14 @@ private:
     void thumb_bl_offset(); // this is the second part of a bl which provides the lower part of a branch offset and does the actual branch
     void thumb_bcs();
     void thumb_bcc();
+    void thumb_beq();
+    void thumb_bne();
+    void thumb_bx();
 
     // load store instructions
-    void thumb_push_lr(); // pushes possibly all registers r0-7 and r14 to the stack point by r13 - 4 i think
+    void thumb_push_lr(); // pushes possibly all registers r0-7 and r14 to the stack
+    void thumb_pop_pc(); // pops possibly all registers r0-7 and r15 from the stack and thus branches and can switch between arm and thumb state
     void thumb_ldrpc_imm();
     void thumb_ldrh_imm5();
+    void thumb_str_imm();
 };

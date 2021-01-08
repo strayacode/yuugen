@@ -745,8 +745,36 @@ void ARMInterpreter::thumb_push_lr() {
     
 
     regs.r[15] += 2;
+}
 
+void ARMInterpreter::thumb_pop_pc() {
+    u32 address = regs.r[13];
 
+    for (int i = 0; i < 8; i++) {
+        if (get_bit(i, opcode)) {
+            regs.r[i] = read_word(address);
+            address += 4;
+        }
+    }
+
+    // now handle r15 stuff
+    regs.r[15] = read_word(address);
+    address += 4;
+    
+    // writeback to r13
+    regs.r[13] = address;
+
+    // now to handle mode switch and stuff
+    // if cpu is armv4 or bit 0 of r15 is 1 stay in thumb state
+    if ((cpu_id == ARMv4) || (regs.r[15] & 0x1)) {
+        // halfword align r15 and flush pipeline
+        regs.r[15] &= ~1;
+    } else {
+        // clear bit 5 of cpsr to switch to arm state
+        regs.cpsr &= ~(1 << 5);
+        regs.r[15] &= ~3;
+    }
+    flush_pipeline();
 }
 
 void ARMInterpreter::thumb_ldrpc_imm() {
@@ -776,4 +804,19 @@ void ARMInterpreter::thumb_ldrh_imm5() {
     regs.r[rd] = read_halfword(address);
 
     regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_str_imm() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u32 immediate = (opcode >> 6) & 0x1F;
+    u32 address = regs.r[rn] + (immediate * 4);
+
+    if (address & 0x3) {
+        log_fatal("unpredictable");
+    }
+
+    write_word(address, regs.r[rd]);
+
+    regs.r[rd] += 2;
 }
