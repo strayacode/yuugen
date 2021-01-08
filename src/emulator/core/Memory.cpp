@@ -35,7 +35,7 @@ T Memory::arm7_read(u32 addr) {
         }
         break;
     default:
-        log_warn("[Memory] read from arm7 at address 0x%04x is unimplemented!", addr);
+        log_fatal("[Memory] read from arm7 at address 0x%04x is unimplemented!", addr);
     }
     return return_value;
 }
@@ -58,10 +58,13 @@ T Memory::arm9_read(u32 addr) {
         case 0x02000000:
             memcpy(&return_value, &main_ram[addr & 0x3FFFFF], sizeof(T));
             break;
+        case 0x03000000:
+            memcpy(&return_value, &shared_wram[addr & 0x7FFF], sizeof(T));
+            break;
         case 0x04000000:
             return arm9_read_io<T>(addr);
         default:
-            log_warn("[Memory] read from arm9 at address 0x%04x is unimplemented!", addr);
+            log_fatal("[Memory] read from arm9 at address 0x%04x is unimplemented!", addr);
             break;
         }
     }
@@ -80,6 +83,8 @@ T Memory::arm7_read_io(u32 addr) {
 template <typename T>
 T Memory::arm9_read_io(u32 addr) {
     switch (addr) {
+    case 0x04000000:
+        return emulator->gpu.engine_a.dispcnt;
     case 0x04000004:
         return emulator->gpu.dispstat;
     case 0x04000130:
@@ -107,7 +112,7 @@ void Memory::arm7_write(u32 addr, T data) {
         arm7_write_io<T>(addr, data);
         return; // since write is already done
     default:
-        log_warn("[Memory] write from arm7 to address 0x%04x is unimplemented!", addr);
+        log_fatal("[Memory] write from arm7 to address 0x%04x is unimplemented!", addr);
     }
 }
 
@@ -142,7 +147,7 @@ void Memory::arm9_write(u32 addr, T data) {
             }
             break;
         default:
-            log_warn("[Memory] write from arm9 at address 0x%04x is unimplemented!", addr);
+            log_fatal("[Memory] write from arm9 at address 0x%04x is unimplemented!", addr);
         }
     }
     

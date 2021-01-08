@@ -40,8 +40,6 @@ void ARMInterpreter::arm_str_post(u32 op2) {
         log_fatal("handle");
     }
 
-    u32 address = regs.r[rn] + op2;
-
     write_word(regs.r[rn], regs.r[rd]);
 
     
@@ -278,7 +276,7 @@ void ARMInterpreter::arm_strb_pre(u32 op2) {
 }
 
 // TODO: look at writeback later
-void ARMInterpreter::ldrsb_pre(u32 op2) {
+void ARMInterpreter::arm_ldrsb_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
@@ -292,7 +290,7 @@ void ARMInterpreter::ldrsb_pre(u32 op2) {
 }
 
 // fine
-void ARMInterpreter::stmiaw() {
+void ARMInterpreter::arm_stmiaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -312,7 +310,7 @@ void ARMInterpreter::stmiaw() {
 }
 
 // fine
-void ARMInterpreter::stmibw() {
+void ARMInterpreter::arm_stmibw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -333,7 +331,7 @@ void ARMInterpreter::stmibw() {
 }
 
 // fine
-void ARMInterpreter::stmdbw() {
+void ARMInterpreter::arm_stmdbw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -366,7 +364,7 @@ void ARMInterpreter::stmdbw() {
 }
 
 // fine
-void ARMInterpreter::stmdaw() {
+void ARMInterpreter::arm_stmdaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -398,7 +396,7 @@ void ARMInterpreter::stmdaw() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::ldmiaw() {
+void ARMInterpreter::arm_ldmiaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -427,7 +425,7 @@ void ARMInterpreter::ldmiaw() {
 
 
 
-void ARMInterpreter::ldmibw() {
+void ARMInterpreter::arm_ldmibw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -456,7 +454,7 @@ void ARMInterpreter::ldmibw() {
 
 
 
-void ARMInterpreter::ldmdbw() {
+void ARMInterpreter::arm_ldmdbw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -490,7 +488,7 @@ void ARMInterpreter::ldmdbw() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::ldmdaw() {
+void ARMInterpreter::arm_ldmdaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -525,7 +523,7 @@ void ARMInterpreter::ldmdaw() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::ldmiauw() {
+void ARMInterpreter::arm_ldmiauw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
     
@@ -560,7 +558,7 @@ void ARMInterpreter::ldmiauw() {
     
 }
 
-void ARMInterpreter::ldmdauw() {
+void ARMInterpreter::arm_ldmdauw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -601,7 +599,7 @@ void ARMInterpreter::ldmdauw() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::ldmibuw() {
+void ARMInterpreter::arm_ldmibuw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -634,7 +632,7 @@ void ARMInterpreter::ldmibuw() {
     regs.r[15] += 4;
 }
 
-void ARMInterpreter::ldmdbuw() {
+void ARMInterpreter::arm_ldmdbuw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -674,14 +672,14 @@ void ARMInterpreter::ldmdbuw() {
     regs.r[15] += 4;
 }
 
-u32 ARMInterpreter::rpll() {
+u32 ARMInterpreter::arm_rpll() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
     
     return regs.r[rm] << shift_amount;
 }
 
-u32 ARMInterpreter::rplr() {
+u32 ARMInterpreter::arm_rplr() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
     if (shift_amount == 0) {
@@ -691,7 +689,7 @@ u32 ARMInterpreter::rplr() {
     }
 }
 
-u32 ARMInterpreter::rpar() {
+u32 ARMInterpreter::arm_rpar() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 msb = opcode >> 31;
@@ -703,7 +701,7 @@ u32 ARMInterpreter::rpar() {
     }
 }
 
-u32 ARMInterpreter::rprr() {
+u32 ARMInterpreter::arm_rprr() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
 
@@ -714,4 +712,68 @@ u32 ARMInterpreter::rprr() {
         // rotate right
         return (regs.r[rm] >> shift_amount) | (regs.r[rm] << (32 - shift_amount));
     }
+}
+
+// thumb instructions start here
+
+void ARMInterpreter::thumb_push_lr() {
+    // - 4 from r13 as lr is always going to be pushed in this instruction
+    u32 address = regs.r[13];
+
+    for (int i = 0; i < 8; i++) {
+        if (get_bit(i, opcode)) {
+            address -= 4;
+        }
+    }
+
+    address -= 4;
+
+    // set r13
+    regs.r[13] = address;
+
+    for (int i = 0; i < 8; i++) {
+        if (get_bit(i, opcode)) {
+            write_word(address, regs.r[i]);
+            address += 4;
+        }
+    }
+
+    // write lr to stack too
+    write_word(address, regs.r[14]);
+    address += 4;
+
+    
+
+    regs.r[15] += 2;
+
+
+}
+
+void ARMInterpreter::thumb_ldrpc_imm() {
+    u32 immediate = (opcode & 0xFF) << 2;
+    u8 rd = (opcode >> 8) & 0x7;
+    // in this instruction pc is word aligned (pc & 0xFFFFFFFC)
+    u32 address = (regs.r[15] & ~0x3) + immediate;
+    regs.r[rd] = read_word(address);
+    
+    if (address & 0x1) {
+        log_fatal("this is unpredictable behaviour");
+    }
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_ldrh_imm5() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u32 immediate_5 = (opcode >> 6) & 0x1F;
+    u32 address = regs.r[rn] + (immediate_5 * 2);
+
+    if (address & 0x1) {
+        log_fatal("this is unpredictable behaviour");
+    }
+
+    regs.r[rd] = read_halfword(address);
+
+    regs.r[15] += 2;
 }

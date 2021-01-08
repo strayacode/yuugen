@@ -703,3 +703,62 @@ u32 ARMInterpreter::arm_rri() {
 
     return result;
 }
+
+
+// start of thumb instructions
+
+void ARMInterpreter::thumb_mov_imm() {
+    u8 rd = (opcode >> 8) & 0x7;
+
+    regs.r[rd] = opcode & 0xFF;
+    
+    // set flags
+    set_condition_flag(N_FLAG, regs.r[0] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[0] == 0);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_movh() {
+    u8 rd = (get_bit(7, opcode) << 3) | (opcode & 0x7);
+
+    u8 rm = (get_bit(6, opcode) << 3) | ((opcode >> 3) & 0x7);  
+    regs.r[rd] = regs.r[rm];
+
+    regs.r[15] += 2; 
+}
+
+void ARMInterpreter::thumb_cmp_imm() {
+    u8 rn = (opcode >> 8) & 0x7;
+    u32 immediate = opcode & 0xFF;
+    u32 result = regs.r[rn] - immediate;
+
+
+    // set flags
+    set_condition_flag(N_FLAG, result >> 31);
+    set_condition_flag(Z_FLAG, result == 0);
+    set_condition_flag(C_FLAG, immediate >= regs.r[rn]);
+    set_condition_flag(V_FLAG, ((regs.r[rn] ^ immediate) & (regs.r[rn] ^ result)) >> 31);
+
+
+    regs.r[15] += 2;  
+}
+
+void ARMInterpreter::thumb_lsr_imm() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+    u32 immediate_5 = (opcode >> 6) & 0x1F;
+
+    if (immediate_5 == 0) {
+        set_condition_flag(C_FLAG, regs.r[rd] & (1 << 31));
+        regs.r[rd] = 0;
+    } else {
+        // immediate_5 > 0
+        set_condition_flag(C_FLAG, regs.r[rd] & (1 << (immediate_5 - 1)));
+        regs.r[rd] = regs.r[rm] >> immediate_5;
+    }
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+}

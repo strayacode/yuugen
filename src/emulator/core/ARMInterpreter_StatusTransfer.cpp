@@ -3,7 +3,7 @@
 #include <emulator/common/log.h>
 #include <emulator/common/arithmetic.h>
 
-void ARMInterpreter::msr_reg() {
+void ARMInterpreter::arm_msr_reg() {
     // user programs cant change cpsr
     u8 rm = opcode & 0xF;
     u32 mask = 0;
@@ -47,9 +47,9 @@ void ARMInterpreter::msr_reg() {
 
 }
 
-void ARMInterpreter::msr_imm() {
+void ARMInterpreter::arm_msr_imm() {
     // user programs cant change cpsr
-    u32 immediate = imm_data_processing();
+    u32 immediate = arm_imm_data_processing();
     u32 mask = 0;
     for (int i = 0; i < 4; i++) {
         if (get_bit(i + 16, immediate)) {
@@ -92,7 +92,7 @@ void ARMInterpreter::msr_imm() {
 }
 
 
-void ARMInterpreter::mrs_cpsr() {
+void ARMInterpreter::arm_mrs_cpsr() {
     u8 rd = (opcode >> 12) & 0xF;
     // move the cpsr to the register rd
     regs.r[rd] = regs.cpsr;

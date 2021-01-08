@@ -219,8 +219,6 @@ u8 ARMInterpreter::get_bank(u8 mode) {
         return IRQ_BANK;
     case UND:
         return UND_BANK;
-    default:
-        log_fatal("thats why");
     }
 }
 
@@ -271,8 +269,7 @@ void ARMInterpreter::step() {
     if (is_arm()) {
         pipeline[1] = read_word(regs.r[15]);
     } else {
-        log_fatal("still need to implement thumb");
-        // pipeline[1] = read_halfword(regs.r15);
+        pipeline[1] = read_halfword(regs.r[15]);
     }
     execute_instruction();
 }
@@ -286,383 +283,383 @@ void ARMInterpreter::execute_instruction() {
             u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
             switch (index) {
             case 0x012: case 0x01A:
-                return ands(lris());
+                return arm_ands(arm_lris());
             case 0x014: case 0x01C:
-                return ands(aris());
+                return arm_ands(arm_aris());
             case 0x019:
-                return muls();
+                return arm_muls();
             case 0x020: case 0x028:
-                return eor(lli());
+                return arm_eor(arm_lli());
             case 0x030: case 0x038:
-                return eors(llis());
+                return arm_eors(arm_llis());
             case 0x39:
-                return mlas();
+                return arm_mlas();
             case 0x040: case 0x048:
-                return sub(lli());
+                return arm_sub(arm_lli());
             case 0x050: case 0x058:
-                return subs(lli());
+                return arm_subs(arm_lli());
             case 0x080: case 0x088:
-                return add(lli());
+                return arm_add(arm_lli());
             case 0x090: case 0x098:
-                return adds(lli());
+                return arm_adds(arm_lli());
             case 0x099:
-                return umulls();
+                return arm_umulls();
             case 0x100:
-                return mrs_cpsr();
+                return arm_mrs_cpsr();
             case 0x0A0: case 0x0A8:
-                return adc(lli());
+                return arm_adc(arm_lli());
             case 0x0A2: case 0x0AA:
-                return adc(lri());
+                return arm_adc(arm_lri());
             case 0x0B0: case 0x0B8:
-                return adcs(lli());
+                return arm_adcs(arm_lli());
             case 0x0B9:
-                return umlals();
+                return arm_umlals();
             case 0x0CB: case 0x0EB:
-                return strh_post(imm_halfword_signed_data_transfer());
+                return arm_strh_post(arm_imm_halfword_signed_data_transfer());
             case 0x0D0: case 0x0D8:
-                return sbcs(lli());
+                return arm_sbcs(arm_lli());
             case 0x0D9:
-                return smulls();
+                return arm_smulls();
             case 0x0F0: case 0x0F8:
-                return rscs(lli());
+                return arm_rscs(arm_lli());
             case 0x0F9:
-                return smlals();
+                return arm_smlals();
             case 0x109:
-                return swp();
+                return arm_swp();
             case 0x11B:
-                return ldrh_pre(-reg_halfword_signed_data_transfer());
+                return arm_ldrh_pre(-arm_reg_halfword_signed_data_transfer());
             case 0x11D:
-                return ldrsb_pre(-reg_halfword_signed_data_transfer());
+                return arm_ldrsb_pre(-arm_reg_halfword_signed_data_transfer());
             case 0x120:
-                return msr_reg();
+                return arm_msr_reg();
             case 0x121:
-                return bx();
+                return arm_bx();
             case 0x149:
-                return swpb();
+                return arm_swpb();
             case 0x150: case 0x158:
-                return cmps(lli());
+                return arm_cmps(arm_lli());
             case 0x15B:
-                return ldrh_pre(-imm_halfword_signed_data_transfer());
+                return arm_ldrh_pre(-arm_imm_halfword_signed_data_transfer());
             case 0x15D:
-                return ldrsb_pre(-imm_halfword_signed_data_transfer());
+                return arm_ldrsb_pre(-arm_imm_halfword_signed_data_transfer());
             case 0x161:
-                return clz();
+                return arm_clz();
             case 0x170: case 0x178:
-                return cmns(lli());
+                return arm_cmns(arm_lli());
             case 0x17B:
-                return ldrh_pre(-imm_halfword_signed_data_transfer());
+                return arm_ldrh_pre(-arm_imm_halfword_signed_data_transfer());
             case 0x196: case 0x19E:
-                return orrs(rris());
+                return arm_orrs(arm_rris());
             case 0x19B:
-                return ldrh_pre(reg_halfword_signed_data_transfer());
+                return arm_ldrh_pre(arm_reg_halfword_signed_data_transfer());
             case 0x19D:
-                return ldrsb_pre(reg_halfword_signed_data_transfer());
+                return arm_ldrsb_pre(arm_reg_halfword_signed_data_transfer());
             case 0x1A0: case 0x1A8:
-                return mov(lli());
+                return arm_mov(arm_lli());
             case 0x1A2: case 0x1AA:
-                return mov(lri());
+                return arm_mov(arm_lri());
             case 0x1A6: case 0x1AE:
-                return mov(rri());
+                return arm_mov(arm_rri());
             case 0x1B1:
-                return movs(llrs());
+                return arm_movs(arm_llrs());
             case 0x1B2: case 0x1BA:
-                return movs(lris());
+                return arm_movs(arm_lris());
             case 0x1B5:
-                return movs(arrs());
+                return arm_movs(arm_arrs());
             case 0x1CB:
-                return strh_pre(imm_halfword_signed_data_transfer());
+                return arm_strh_pre(arm_imm_halfword_signed_data_transfer());
             case 0x1D0: case 0x1D8:
-                return bics(llis());
+                return arm_bics(arm_llis());
             case 0x1D4: case 0x1DC:
-                return bics(aris());
+                return arm_bics(arm_aris());
             case 0x1DB:
-                return ldrh_pre(imm_halfword_signed_data_transfer());
+                return arm_ldrh_pre(arm_imm_halfword_signed_data_transfer());
             case 0x1DD:
-                return ldrsb_pre(imm_halfword_signed_data_transfer());
+                return arm_ldrsb_pre(arm_imm_halfword_signed_data_transfer());
             case 0x1E0: case 0x1E8:
-                return mvn(lli());
+                return arm_mvn(arm_lli());
             case 0x1FB:
-                return ldrh_pre(imm_halfword_signed_data_transfer());
+                return arm_ldrh_pre(arm_imm_halfword_signed_data_transfer());
             case 0x200: case 0x201: case 0x202: case 0x203: 
             case 0x204: case 0x205: case 0x206: case 0x207: 
             case 0x208: case 0x209: case 0x20A: case 0x20B: 
             case 0x20C: case 0x20D: case 0x20E: case 0x20F:
-                return _and(imm_data_processing());
+                return arm_and(arm_imm_data_processing());
             case 0x210: case 0x211: case 0x212: case 0x213: 
             case 0x214: case 0x215: case 0x216: case 0x217: 
             case 0x218: case 0x219: case 0x21A: case 0x21B: 
             case 0x21C: case 0x21D: case 0x21E: case 0x21F:
-                return ands(imms_data_processing());
+                return arm_ands(arm_imms_data_processing());
             case 0x220: case 0x221: case 0x222: case 0x223: 
             case 0x224: case 0x225: case 0x226: case 0x227: 
             case 0x228: case 0x229: case 0x22A: case 0x22B: 
             case 0x22C: case 0x22D: case 0x22E: case 0x22F:
-                return eor(imm_data_processing());
+                return arm_eor(arm_imm_data_processing());
             case 0x240: case 0x241: case 0x242: case 0x243: 
             case 0x244: case 0x245: case 0x246: case 0x247: 
             case 0x248: case 0x249: case 0x24A: case 0x24B: 
             case 0x24C: case 0x24D: case 0x24E: case 0x24F:
-                return sub(imm_data_processing());
+                return arm_sub(arm_imm_data_processing());
             case 0x250: case 0x251: case 0x252: case 0x253: 
             case 0x254: case 0x255: case 0x256: case 0x257: 
             case 0x258: case 0x259: case 0x25A: case 0x25B: 
             case 0x25C: case 0x25D: case 0x25E: case 0x25F:
-                return subs(imms_data_processing());
+                return arm_subs(arm_imms_data_processing());
             case 0x280: case 0x281: case 0x282: case 0x283: 
             case 0x284: case 0x285: case 0x286: case 0x287: 
             case 0x288: case 0x289: case 0x28A: case 0x28B: 
             case 0x28C: case 0x28D: case 0x28E: case 0x28F:
-                return add(imm_data_processing());
+                return arm_add(arm_imm_data_processing());
             case 0x290: case 0x291: case 0x292: case 0x293: 
             case 0x294: case 0x295: case 0x296: case 0x297: 
             case 0x298: case 0x299: case 0x29A: case 0x29B: 
             case 0x29C: case 0x29D: case 0x29E: case 0x29F:
-                return adds(imm_data_processing());
+                return arm_adds(arm_imm_data_processing());
             case 0x2D0: case 0x2D1: case 0x2D2: case 0x2D3: 
             case 0x2D4: case 0x2D5: case 0x2D6: case 0x2D7: 
             case 0x2D8: case 0x2D9: case 0x2DA: case 0x2DB: 
             case 0x2DC: case 0x2DD: case 0x2DE: case 0x2DF:
-                return sbcs(imms_data_processing());
+                return arm_sbcs(arm_imms_data_processing());
             case 0x310: case 0x311: case 0x312: case 0x313: 
             case 0x314: case 0x315: case 0x316: case 0x317: 
             case 0x318: case 0x319: case 0x31A: case 0x31B: 
             case 0x31C: case 0x31D: case 0x31E: case 0x31F:
-                return tsts(imms_data_processing());
+                return arm_tsts(arm_imms_data_processing());
             case 0x320: case 0x321: case 0x322: case 0x323: 
             case 0x324: case 0x325: case 0x326: case 0x327: 
             case 0x328: case 0x329: case 0x32A: case 0x32B: 
             case 0x32C: case 0x32D: case 0x32E: case 0x32F:
-                return msr_imm();
+                return arm_msr_imm();
             case 0x350: case 0x351: case 0x352: case 0x353: 
             case 0x354: case 0x355: case 0x356: case 0x357: 
             case 0x358: case 0x359: case 0x35A: case 0x35B: 
             case 0x35C: case 0x35D: case 0x35E: case 0x35F:
-                return cmps(imms_data_processing());
+                return arm_cmps(arm_imms_data_processing());
             case 0x380: case 0x381: case 0x382: case 0x383: 
             case 0x384: case 0x385: case 0x386: case 0x387: 
             case 0x388: case 0x389: case 0x38A: case 0x38B: 
             case 0x38C: case 0x38D: case 0x38E: case 0x38F:
-                return orr(imm_data_processing());
+                return arm_orr(arm_imm_data_processing());
             case 0x3A0: case 0x3A1: case 0x3A2: case 0x3A3: 
             case 0x3A4: case 0x3A5: case 0x3A6: case 0x3A7: 
             case 0x3A8: case 0x3A9: case 0x3AA: case 0x3AB: 
             case 0x3AC: case 0x3AD: case 0x3AE: case 0x3AF:
-                return mov(imm_data_processing());
+                return arm_mov(arm_imm_data_processing());
             case 0x3B0: case 0x3B1: case 0x3B2: case 0x3B3: 
             case 0x3B4: case 0x3B5: case 0x3B6: case 0x3B7: 
             case 0x3B8: case 0x3B9: case 0x3BA: case 0x3BB: 
             case 0x3BC: case 0x3BD: case 0x3BE: case 0x3BF:
-                return movs(imms_data_processing());
+                return arm_movs(arm_imms_data_processing());
             case 0x3C0: case 0x3C1: case 0x3C2: case 0x3C3: 
             case 0x3C4: case 0x3C5: case 0x3C6: case 0x3C7: 
             case 0x3C8: case 0x3C9: case 0x3CA: case 0x3CB: 
             case 0x3CC: case 0x3CD: case 0x3CE: case 0x3CF:
-                return bic(imm_data_processing());
+                return arm_bic(arm_imm_data_processing());
             case 0x3E0: case 0x3E1: case 0x3E2: case 0x3E3: 
             case 0x3E4: case 0x3E5: case 0x3E6: case 0x3E7: 
             case 0x3E8: case 0x3E9: case 0x3EA: case 0x3EB: 
             case 0x3EC: case 0x3ED: case 0x3EE: case 0x3EF:
-                return mvn(imm_data_processing());
+                return arm_mvn(arm_imm_data_processing());
             case 0x400: case 0x401: case 0x402: case 0x403: 
             case 0x404: case 0x405: case 0x406: case 0x407: 
             case 0x408: case 0x409: case 0x40A: case 0x40B: 
             case 0x40C: case 0x40D: case 0x40E: case 0x40F:
-                return str_post(-imm_single_data_transfer());
+                return arm_str_post(-arm_imm_single_data_transfer());
             case 0x410: case 0x411: case 0x412: case 0x413: 
             case 0x414: case 0x415: case 0x416: case 0x417: 
             case 0x418: case 0x419: case 0x41A: case 0x41B: 
             case 0x41C: case 0x41D: case 0x41E: case 0x41F:
-                return ldr_post(-imm_single_data_transfer());
+                return arm_ldr_post(-arm_imm_single_data_transfer());
             case 0x480: case 0x481: case 0x482: case 0x483: 
             case 0x484: case 0x485: case 0x486: case 0x487: 
             case 0x488: case 0x489: case 0x48A: case 0x48B: 
             case 0x48C: case 0x48D: case 0x48E: case 0x48F:
-                return str_post(imm_single_data_transfer());
+                return arm_str_post(arm_imm_single_data_transfer());
             case 0x490: case 0x491: case 0x492: case 0x493: 
             case 0x494: case 0x495: case 0x496: case 0x497: 
             case 0x498: case 0x499: case 0x49A: case 0x49B: 
             case 0x49C: case 0x49D: case 0x49E: case 0x49F:
-                return ldr_post(imm_single_data_transfer());
+                return arm_ldr_post(arm_imm_single_data_transfer());
             case 0x4C0: case 0x4C1: case 0x4C2: case 0x4C3: 
             case 0x4C4: case 0x4C5: case 0x4C6: case 0x4C7: 
             case 0x4C8: case 0x4C9: case 0x4CA: case 0x4CB: 
             case 0x4CC: case 0x4CD: case 0x4CE: case 0x4CF:
-                return strb_post(imm_single_data_transfer());
+                return arm_strb_post(arm_imm_single_data_transfer());
             case 0x4D0: case 0x4D1: case 0x4D2: case 0x4D3: 
             case 0x4D4: case 0x4D5: case 0x4D6: case 0x4D7: 
             case 0x4D8: case 0x4D9: case 0x4DA: case 0x4DB: 
             case 0x4DC: case 0x4DD: case 0x4DE: case 0x4DF:
-                return ldrb_post(imm_single_data_transfer());
+                return arm_ldrb_post(arm_imm_single_data_transfer());
             case 0x500: case 0x501: case 0x502: case 0x503:
             case 0x504: case 0x505: case 0x506: case 0x507:
             case 0x508: case 0x509: case 0x50A: case 0x50B:
             case 0x50C: case 0x50D: case 0x50E: case 0x50F:
-                return str_pre(-imm_single_data_transfer());
+                return arm_str_pre(-arm_imm_single_data_transfer());
             case 0x510: case 0x511: case 0x512: case 0x513:
             case 0x514: case 0x515: case 0x516: case 0x517:
             case 0x518: case 0x519: case 0x51A: case 0x51B:
             case 0x51C: case 0x51D: case 0x51E: case 0x51F:
-                return ldr_pre(-imm_single_data_transfer());
+                return arm_ldr_pre(-arm_imm_single_data_transfer());
             case 0x530: case 0x531: case 0x532: case 0x533:
             case 0x534: case 0x535: case 0x536: case 0x537:
             case 0x538: case 0x539: case 0x53A: case 0x53B:
             case 0x53C: case 0x53D: case 0x53E: case 0x53F:
                 // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
-                return ldr_pre(-imm_single_data_transfer());
+                return arm_ldr_pre(-arm_imm_single_data_transfer());
             case 0x550: case 0x551: case 0x552: case 0x553:
             case 0x554: case 0x555: case 0x556: case 0x557:
             case 0x558: case 0x559: case 0x55A: case 0x55B:
             case 0x55C: case 0x55D: case 0x55E: case 0x55F:
                 // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
-                return ldrb_pre(-imm_single_data_transfer());
+                return arm_ldrb_pre(-arm_imm_single_data_transfer());
             case 0x570: case 0x571: case 0x572: case 0x573:
             case 0x574: case 0x575: case 0x576: case 0x577:
             case 0x578: case 0x579: case 0x57A: case 0x57B:
             case 0x57C: case 0x57D: case 0x57E: case 0x57F:
                 // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
-                return ldrb_pre(-imm_single_data_transfer());
+                return arm_ldrb_pre(-arm_imm_single_data_transfer());
             case 0x580: case 0x581: case 0x582: case 0x583:
             case 0x584: case 0x585: case 0x586: case 0x587:
             case 0x588: case 0x589: case 0x58A: case 0x58B:
             case 0x58C: case 0x58D: case 0x58E: case 0x58F:
-                return str_pre(imm_single_data_transfer());
+                return arm_str_pre(arm_imm_single_data_transfer());
             case 0x590: case 0x591: case 0x592: case 0x593:
             case 0x594: case 0x595: case 0x596: case 0x597:
             case 0x598: case 0x599: case 0x59A: case 0x59B:
             case 0x59C: case 0x59D: case 0x59E: case 0x59F:
-                return ldr_pre(imm_single_data_transfer());
+                return arm_ldr_pre(arm_imm_single_data_transfer());
             case 0x5B0: case 0x5B1: case 0x5B2: case 0x5B3:
             case 0x5B4: case 0x5B5: case 0x5B6: case 0x5B7:
             case 0x5B8: case 0x5B9: case 0x5BA: case 0x5BB:
             case 0x5BC: case 0x5BD: case 0x5BE: case 0x5BF:
                 // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
-                return ldr_pre(imm_single_data_transfer());
+                return arm_ldr_pre(arm_imm_single_data_transfer());
             case 0x5C0: case 0x5C1: case 0x5C2: case 0x5C3: 
             case 0x5C4: case 0x5C5: case 0x5C6: case 0x5C7: 
             case 0x5C8: case 0x5C9: case 0x5CA: case 0x5CB: 
             case 0x5CC: case 0x5CD: case 0x5CE: case 0x5CF:
-                return strb_pre(imm_single_data_transfer());
+                return arm_strb_pre(arm_imm_single_data_transfer());
             case 0x5D0: case 0x5D1: case 0x5D2: case 0x5D3: 
             case 0x5D4: case 0x5D5: case 0x5D6: case 0x5D7: 
             case 0x5D8: case 0x5D9: case 0x5DA: case 0x5DB: 
             case 0x5DC: case 0x5DD: case 0x5DE: case 0x5DF:
-                return ldrb_pre(imm_single_data_transfer());
+                return arm_ldrb_pre(arm_imm_single_data_transfer());
             case 0x5F0: case 0x5F1: case 0x5F2: case 0x5F3:
             case 0x5F4: case 0x5F5: case 0x5F6: case 0x5F7:
             case 0x5F8: case 0x5F9: case 0x5FA: case 0x5FB:
             case 0x5FC: case 0x5FD: case 0x5FE: case 0x5FF:
                 // TODO: later separate ldr and str into separate instructions where if statement is not required for writeback check
-                return ldrb_pre(imm_single_data_transfer());
+                return arm_ldrb_pre(arm_imm_single_data_transfer());
             case 0x610: case 0x618:
-                return ldr_post(-rpll());
+                return arm_ldr_post(-arm_rpll());
             case 0x612: case 0x61A:
-                return ldr_post(-rplr());
+                return arm_ldr_post(-arm_rplr());
             case 0x614: case 0x61C:
-                return ldr_post(-rpar());
+                return arm_ldr_post(-arm_rpar());
             case 0x616: case 0x61E:
-                return ldr_post(-rprr());
+                return arm_ldr_post(-arm_rprr());
             case 0x690: case 0x698:
-                return ldr_post(rpll());
+                return arm_ldr_post(arm_rpll());
             case 0x692: case 0x69A:
-                return ldr_post(rplr());
+                return arm_ldr_post(arm_rplr());
             case 0x694: case 0x69C:
-                return ldr_post(rpar());
+                return arm_ldr_post(arm_rpar());
             case 0x696: case 0x69E:
-                return ldr_post(rprr());
+                return arm_ldr_post(arm_rprr());
             case 0x710: case 0x718:
-                return ldr_pre(-rpll());
+                return arm_ldr_pre(-arm_rpll());
             case 0x712: case 0x71A:
-                return ldr_pre(-rplr());
+                return arm_ldr_pre(-arm_rplr());
             case 0x714: case 0x71C:
-                return ldr_pre(-rpar());
+                return arm_ldr_pre(-arm_rpar());
             case 0x716: case 0x71E:
-                return ldr_pre(-rprr());
+                return arm_ldr_pre(-arm_rprr());
             case 0x730: case 0x738:
                 // TODO: split into more functions later
-                return ldr_pre(-rpll());
+                return arm_ldr_pre(-arm_rpll());
             case 0x732: case 0x73A:
-                return ldr_pre(-rplr());
+                return arm_ldr_pre(-arm_rplr());
             case 0x734: case 0x73C:
-                return ldr_pre(-rpar());
+                return arm_ldr_pre(-arm_rpar());
             case 0x736: case 0x73E:
-                return ldr_pre(-rprr());
+                return arm_ldr_pre(-arm_rprr());
             case 0x790: case 0x798:
-                return ldr_pre(rpll());
+                return arm_ldr_pre(arm_rpll());
             case 0x792: case 0x79A:
                 // TODO: check again later
-                return ldr_pre(rplr());
+                return arm_ldr_pre(arm_rplr());
             case 0x794: case 0x79C:
-                return ldr_pre(rpar());
+                return arm_ldr_pre(arm_rpar());
             case 0x796: case 0x79E:
-                return ldr_pre(rprr());
+                return arm_ldr_pre(arm_rprr());
             case 0x7B0: case 0x7B8:
-                return ldr_pre(rpll());
+                return arm_ldr_pre(arm_rpll());
             case 0x7B2: case 0x7BA:
-                return ldr_pre(rplr());
+                return arm_ldr_pre(arm_rplr());
             case 0x7B4: case 0x7BC:
-                return ldr_pre(rpar());
+                return arm_ldr_pre(arm_rpar());
             case 0x7B6: case 0x7BE:
-                return ldr_pre(rprr());
+                return arm_ldr_pre(arm_rprr());
             case 0x820: case 0x821: case 0x822: case 0x823:
             case 0x824: case 0x825: case 0x826: case 0x827:
             case 0x828: case 0x829: case 0x82A: case 0x82B:
             case 0x82C: case 0x82D: case 0x82E: case 0x82F:
-                return stmdaw();
+                return arm_stmdaw();
             case 0x830: case 0x831: case 0x832: case 0x833:
             case 0x834: case 0x835: case 0x836: case 0x837:
             case 0x838: case 0x839: case 0x83A: case 0x83B:
             case 0x83C: case 0x83D: case 0x83E: case 0x83F:
-                return ldmdaw();
+                return arm_ldmdaw();
             case 0x870: case 0x871: case 0x872: case 0x873:
             case 0x874: case 0x875: case 0x876: case 0x877:
             case 0x878: case 0x879: case 0x87A: case 0x87B:
             case 0x87C: case 0x87D: case 0x87E: case 0x87F:
-                return ldmdauw();
+                return arm_ldmdauw();
             case 0x8A0: case 0x8A1: case 0x8A2: case 0x8A3:
             case 0x8A4: case 0x8A5: case 0x8A6: case 0x8A7:
             case 0x8A8: case 0x8A9: case 0x8AA: case 0x8AB:
             case 0x8AC: case 0x8AD: case 0x8AE: case 0x8AF:
-                return stmiaw();
+                return arm_stmiaw();
             case 0x8B0: case 0x8B1: case 0x8B2: case 0x8B3:
             case 0x8B4: case 0x8B5: case 0x8B6: case 0x8B7:
             case 0x8B8: case 0x8B9: case 0x8BA: case 0x8BB:
             case 0x8BC: case 0x8BD: case 0x8BE: case 0x8BF:
-                return ldmiaw();
+                return arm_ldmiaw();
             case 0x8F0: case 0x8F1: case 0x8F2: case 0x8F3:
             case 0x8F4: case 0x8F5: case 0x8F6: case 0x8F7:
             case 0x8F8: case 0x8F9: case 0x8FA: case 0x8FB:
             case 0x8FC: case 0x8FD: case 0x8FE: case 0x8FF:
-                return ldmiauw();
+                return arm_ldmiauw();
             case 0x920: case 0x921: case 0x922: case 0x923:
             case 0x924: case 0x925: case 0x926: case 0x927:
             case 0x928: case 0x929: case 0x92A: case 0x92B:
             case 0x92C: case 0x92D: case 0x92E: case 0x92F:
-                return stmdbw();
+                return arm_stmdbw();
             case 0x930: case 0x931: case 0x932: case 0x933:
             case 0x934: case 0x935: case 0x936: case 0x937:
             case 0x938: case 0x939: case 0x93A: case 0x93B:
             case 0x93C: case 0x93D: case 0x93E: case 0x93F:
-                return ldmdbw();
+                return arm_ldmdbw();
             case 0x970: case 0x971: case 0x972: case 0x973:
             case 0x974: case 0x975: case 0x976: case 0x977:
             case 0x978: case 0x979: case 0x97A: case 0x97B:
             case 0x97C: case 0x97D: case 0x97E: case 0x97F:
-                return ldmdbuw();
+                return arm_ldmdbuw();
             case 0x9A0: case 0x9A1: case 0x9A2: case 0x9A3:
             case 0x9A4: case 0x9A5: case 0x9A6: case 0x9A7:
             case 0x9A8: case 0x9A9: case 0x9AA: case 0x9AB:
             case 0x9AC: case 0x9AD: case 0x9AE: case 0x9AF:
-                return stmibw();
+                return arm_stmibw();
             case 0x9B0: case 0x9B1: case 0x9B2: case 0x9B3:
             case 0x9B4: case 0x9B5: case 0x9B6: case 0x9B7:
             case 0x9B8: case 0x9B9: case 0x9BA: case 0x9BB:
             case 0x9BC: case 0x9BD: case 0x9BE: case 0x9BF:
-                return ldmibw();
+                return arm_ldmibw();
             case 0x9F0: case 0x9F1: case 0x9F2: case 0x9F3:
             case 0x9F4: case 0x9F5: case 0x9F6: case 0x9F7:
             case 0x9F8: case 0x9F9: case 0x9FA: case 0x9FB:
             case 0x9FC: case 0x9FD: case 0x9FE: case 0x9FF:
-                return ldmibuw();
+                return arm_ldmibuw();
             case 0xA00: case 0xA01: case 0xA02: case 0xA03:
             case 0xA04: case 0xA05: case 0xA06: case 0xA07:
             case 0xA08: case 0xA09: case 0xA0A: case 0xA0B:
@@ -727,7 +724,7 @@ void ARMInterpreter::execute_instruction() {
             case 0xAF4: case 0xAF5: case 0xAF6: case 0xAF7:
             case 0xAF8: case 0xAF9: case 0xAFA: case 0xAFB:
             case 0xAFC: case 0xAFD: case 0xAFE: case 0xAFF:
-                return b();
+                return arm_b();
             case 0xB00: case 0xB01: case 0xB02: case 0xB03:
             case 0xB04: case 0xB05: case 0xB06: case 0xB07:
             case 0xB08: case 0xB09: case 0xB0A: case 0xB0B:
@@ -792,7 +789,7 @@ void ARMInterpreter::execute_instruction() {
             case 0xBF4: case 0xBF5: case 0xBF6: case 0xBF7:
             case 0xBF8: case 0xBF9: case 0xBFA: case 0xBFB:
             case 0xBFC: case 0xBFD: case 0xBFE: case 0xBFF:
-                return bl();
+                return arm_bl();
             default:
                 log_fatal("opcode 0x%08x is unimplemented with identifier 0x%03x", opcode, index);
             }
@@ -800,6 +797,37 @@ void ARMInterpreter::execute_instruction() {
             regs.r[15] += 4;
         }
     } else {
-        log_fatal("thumb instruction set not implemented yet");
+        // using http://imrannazar.com/ARM-Opcode-Map
+        if (condition_evaluate()) { 
+            u8 index = (opcode >> 8) & 0xFF;
+            switch (index) {
+            case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+                return thumb_lsr_imm();
+            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: case 0x26: case 0x27:
+                return thumb_mov_imm();
+            case 0x28: case 0x29: case 0x2A: case 0x2B: case 0x2C: case 0x2D: case 0x2E: case 0x2F:
+                return thumb_cmp_imm();
+            case 0x46:
+                return thumb_movh();
+            case 0x48: case 0x49: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F:
+                return thumb_ldrpc_imm();
+            case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
+                return thumb_ldrh_imm5();
+            case 0xB5:
+                return thumb_push_lr();
+            case 0xD2:
+                return thumb_bcs();
+            case 0xD3:
+                return thumb_bcc();
+            case 0xF0: case 0xF1: case 0xF2: case 0xF3: case 0xF4: case 0xF5: case 0xF6: case 0xF7:
+                return thumb_bl_setup();
+            case 0xF8: case 0xF9: case 0xFA: case 0xFB: case 0xFC: case 0xFD: case 0xFE: case 0xFF:
+                return thumb_bl_offset();
+            default:
+                log_fatal("opcode 0x%04x is unimplemented with identifier 0x%02x", opcode, index);
+            }
+        } else {
+            regs.r[15] += 2;
+        }
     }
 }

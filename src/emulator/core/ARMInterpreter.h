@@ -195,4 +195,26 @@ private:
     u32 arm_rplr(); // use in load store to shift a register rm with lsr
     u32 arm_rpar(); // use in load store to shift a register rm with asr
     u32 arm_rprr(); // use in load store to shift a register rm with ror
+
+
+    // thumb instructions
+
+    // data processing instructions
+    void thumb_mov_imm();
+    void thumb_movh();
+    void thumb_cmp_imm();
+
+    // shifts
+    void thumb_lsr_imm();
+
+    // branch instructions
+    void thumb_bl_setup(); // this is the first part of a bl which sets up the upper part of the branch offset
+    void thumb_bl_offset(); // this is the second part of a bl which provides the lower part of a branch offset and does the actual branch
+    void thumb_bcs();
+    void thumb_bcc();
+
+    // load store instructions
+    void thumb_push_lr(); // pushes possibly all registers r0-7 and r14 to the stack point by r13 - 4 i think
+    void thumb_ldrpc_imm();
+    void thumb_ldrh_imm5();
 };
