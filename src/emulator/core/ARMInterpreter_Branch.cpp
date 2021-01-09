@@ -143,3 +143,19 @@ void ARMInterpreter::thumb_bx() {
 
     flush_pipeline();
 }
+
+void ARMInterpreter::thumb_blx() {
+    // arm9 specific instruction
+    if (cpu_id == ARMv4) {
+        return;
+    }
+
+    u32 offset_11 = (opcode & 0x7FF) << 1;
+    u32 next_instruction_address = regs.r[15] - 2;
+    regs.r[15] = (regs.r[14] + offset_11) & 0xFFFFFFFC;
+    regs.r[14] = next_instruction_address | 1;
+    // set t flag to 0
+    regs.cpsr &= ~(1 << 5);
+    // flush the pipeline
+    flush_pipeline();
+}

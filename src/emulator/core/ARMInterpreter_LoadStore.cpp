@@ -781,6 +781,7 @@ void ARMInterpreter::thumb_pop_pc() {
 
     // now handle r15 stuff
     regs.r[15] = read_word(address);
+    
     address += 4;
     
     // writeback to r13
@@ -866,7 +867,7 @@ void ARMInterpreter::thumb_ldr_imm5() {
     u32 address = regs.r[rn] + (immediate * 4);
 
     if (address & 0x3) {
-        log_fatal("unpredictable");
+        log_warn("unpredictable");
     }
 
     regs.r[rd] = read_word(address);
@@ -899,6 +900,19 @@ void ARMInterpreter::thumb_ldrb_imm5() {
 
     u32 address = regs.r[rn] + immediate;
     regs.r[rd] = read_byte(address);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_strb_imm5() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+
+    u32 immediate = (opcode >> 6) & 0x1F;
+
+
+    u32 address = regs.r[rn] + immediate;
+    write_word(address, regs.r[rd] & 0xFF);
 
     regs.r[15] += 2;
 }

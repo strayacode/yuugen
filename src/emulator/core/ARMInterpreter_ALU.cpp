@@ -777,7 +777,7 @@ void ARMInterpreter::thumb_lsr_imm() {
     u8 rm = (opcode >> 3) & 0x7;
     u32 immediate_5 = (opcode >> 6) & 0x1F;
     if (immediate_5 == 0) {
-        set_condition_flag(C_FLAG, regs.r[rd] & (1 << 31));
+        set_condition_flag(C_FLAG, regs.r[rd] >> 31);
         regs.r[rd] = 0;
     } else {
         // immediate_5 > 0
@@ -808,6 +808,9 @@ void ARMInterpreter::thumb_asr_imm() {
         set_condition_flag(C_FLAG, regs.r[rm] & (1 << (immediate - 1)));
         regs.r[rd] = (regs.r[rm] >> immediate) | ((0xFFFFFFFF * msb) << (32 - immediate));
     }
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
 
     regs.r[15] += 2;
 }
@@ -891,14 +894,12 @@ void ARMInterpreter::thumb_lsl_imm() {
     u8 rm = (opcode >> 3) & 0x7;
     u32 immediate = (opcode >> 6) & 0x1F;
     // TODO: optimise later
-    if (immediate == 0) {
-        regs.r[rd] = regs.r[rm];
-    } else {
-        // shift amount > 0
-        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (32 - immediate)));
-        regs.r[rd] = regs.r[rm] << immediate;
-    }
 
+    if (immediate > 0) {
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (32 - immediate)));
+    }
+    
+    regs.r[rd] = regs.r[rm] << immediate;
     set_condition_flag(N_FLAG, regs.r[rd] >> 31);
     set_condition_flag(Z_FLAG, regs.r[rd] == 0);
 
@@ -994,16 +995,16 @@ void ARMInterpreter::thumb_mvn_reg() {
 void ARMInterpreter::thumb_neg_reg() {
     u8 rd = opcode & 0x7;
     u8 rm = (opcode >> 3) & 0x7;
+    u8 zero = 0;
 
-
-    regs.r[rd] = -regs.r[rm];
+    regs.r[rd] = zero - regs.r[rm];
 
     set_condition_flag(N_FLAG, regs.r[rd] >> 31);
     set_condition_flag(Z_FLAG, regs.r[rd] == 0);
 
     // TODO: fix later
-    set_condition_flag(C_FLAG, regs.r[rm] >= 0);
-    set_condition_flag(V_FLAG, (~(regs.r[rd] ^ regs.r[rm]) & (regs.r[rm] ^ regs.r[rd])) >> 31);
+    set_condition_flag(C_FLAG, zero >= regs.r[rd]);
+    set_condition_flag(V_FLAG, ((zero ^ regs.r[rm]) & (zero ^ regs.r[rd])) >> 31);
 
     regs.r[15] += 2;
 }
@@ -1012,20 +1013,20 @@ void ARMInterpreter::thumb_ror_reg() {
     u8 rd = opcode & 0x7;
     u8 rs = (opcode >> 3) & 0x7;
 
-    u32 shift_amount = regs.r[rs] & 0xFF;
-    // TODO: optimise this shif
-    if (shift_amount == 0) {
-        // do nothing lol
-    } else if ((regs.r[rs] & 0x1F) == 0) {
-        set_condition_flag(C_FLAG, regs.r[rd] >> 31);
-    } else {
-        // regs.r[rs] & 0x1F > 0
-        set_condition_flag(C_FLAG, regs.r[rd] & (1 << ((regs.r[rs] & 0x1F) - 1)));
-        regs.r[rd] = (regs.r[rd] >> (regs.r[rs] & 0x1F)) | (regs.r[rd] << (regs.r[rs] & 0x1F));
-    } 
+    u8 shift_amount = regs.r[rs] & 0xFF;
+    // TODO: optimise this shit
+
+    
+    if (shift_amount > 0) {
+        set_condition_flag(C_FLAG, regs.r[rd] & (1 << (shift_amount - 1)));
+    }
+
+    regs.r[rd] = (regs.r[rd] >> shift_amount) | (regs.r[rd] << (32 - shift_amount));
 
     set_condition_flag(N_FLAG, regs.r[rd] >> 31);
     set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+    
 
     regs.r[15] += 2;
 }

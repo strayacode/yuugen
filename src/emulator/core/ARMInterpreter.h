@@ -235,6 +235,7 @@ private:
     void thumb_bx();
     void thumb_bmi();
     void thumb_bpl();
+    void thumb_blx();
 
     // load store instructions
     void thumb_push_lr(); // pushes possibly all registers r0-7 and r14 to the stack
@@ -248,4 +249,5 @@ private:
     void thumb_ldrh_reg();
     void thumb_ldrb_imm5();
     void thumb_strh_imm5();
+    void thumb_strb_imm5();
 };
