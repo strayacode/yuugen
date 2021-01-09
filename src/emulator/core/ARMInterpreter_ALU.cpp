@@ -744,6 +744,34 @@ void ARMInterpreter::thumb_cmp_imm() {
     regs.r[15] += 2;  
 }
 
+void ARMInterpreter::thumb_cmp_reg() {
+    u8 rn = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+    u32 result = regs.r[rn] - regs.r[rm];
+
+
+    // set flags
+    set_condition_flag(N_FLAG, result >> 31);
+    set_condition_flag(Z_FLAG, result == 0);
+    set_condition_flag(C_FLAG, regs.r[rm] >= regs.r[rn]);
+    set_condition_flag(V_FLAG, ((regs.r[rn] ^ regs.r[rm]) & (regs.r[rn] ^ result)) >> 31);
+
+
+    regs.r[15] += 2;  
+}
+
+void ARMInterpreter::thumb_tst_reg() {
+    u8 rn = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+
+    u32 result = regs.r[rn] & regs.r[rm];
+
+    set_condition_flag(N_FLAG, result >> 31);
+    set_condition_flag(Z_FLAG, result == 0);
+
+    regs.r[15] += 2;
+}
+
 void ARMInterpreter::thumb_lsr_imm() {
     u8 rd = opcode & 0x7;
     u8 rm = (opcode >> 3) & 0x7;
@@ -759,6 +787,53 @@ void ARMInterpreter::thumb_lsr_imm() {
     }
     set_condition_flag(N_FLAG, regs.r[rd] >> 31);
     set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_asr_imm() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+
+    u32 immediate = (opcode >> 6) & 0x1F;
+
+    u32 msb = regs.r[rm] >> 31;
+
+    if (immediate == 0) {
+        set_condition_flag(C_FLAG, msb);
+        regs.r[rd] = 0xFFFFFFFF * msb;
+
+        
+    } else {
+        // immediate > 0
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (immediate - 1)));
+        regs.r[rd] = (regs.r[rm] >> immediate) | ((0xFFFFFFFF * msb) << (32 - immediate));
+    }
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_lsl_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rs = (opcode >> 3) & 0x7;
+    u8 shift_amount = regs.r[rs] & 0xFF;
+    // TODO: optimise later
+    if (shift_amount == 0) {
+        // do nothing lol
+    } else if (shift_amount < 32) {
+        set_condition_flag(C_FLAG, regs.r[rd] & (1 << (32 - shift_amount)));
+        regs.r[rd] <<= shift_amount;
+    } else if (shift_amount == 32) {
+        set_condition_flag(C_FLAG, regs.r[rd] & 0x1);
+        regs.r[rd] = 0;
+    } else {
+        // shift_amount > 32
+        set_condition_flag(C_FLAG, false);
+        regs.r[rd] = 0;
+    }
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
     regs.r[15] += 2;
 }
 
@@ -779,6 +854,23 @@ void ARMInterpreter::thumb_add_imm() {
     regs.r[15] += 2;
 }
 
+void ARMInterpreter::thumb_add_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u8 rm = (opcode >> 6) & 0x7;
+    u64 result64 = (u64)regs.r[rn] + (u64)regs.r[rm];
+    u32 result32 = (u32)result64;
+    regs.r[rd] = regs.r[rn] + regs.r[rm];
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+    // detect borrow from bit 32
+    set_condition_flag(C_FLAG, result64 >> 32);
+    // understanding: for signed overflow either both ops positive and result negative or both ops negative result positive
+    set_condition_flag(V_FLAG, (~(regs.r[rm] ^ regs.r[rn]) & (regs.r[rn] ^ result32)) >> 31);
+
+    regs.r[15] += 2;
+}
+
 void ARMInterpreter::thumb_sub_imm() {
     u32 immediate = opcode & 0xFF;
     u8 rd = (opcode >> 8) & 0x7;
@@ -792,4 +884,137 @@ void ARMInterpreter::thumb_sub_imm() {
     set_condition_flag(V_FLAG, (~(regs.r[rd] ^ immediate) & (immediate ^ result)) >> 31);
 
     regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_lsl_imm() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+    u32 immediate = (opcode >> 6) & 0x1F;
+    // TODO: optimise later
+    if (immediate == 0) {
+        regs.r[rd] = regs.r[rm];
+    } else {
+        // shift amount > 0
+        set_condition_flag(C_FLAG, regs.r[rm] & (1 << (32 - immediate)));
+        regs.r[rd] = regs.r[rm] << immediate;
+    }
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_orr() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+    regs.r[rd] |= regs.r[rm];
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_and() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+
+    regs.r[rd] &= regs.r[rm];
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_add_imm3() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u32 immediate = (opcode >> 6) & 0x7;
+    u64 result64 = (u64)regs.r[rn] + (u64)immediate;
+    u32 result32 = (u32)result64;
+    regs.r[rd] = regs.r[rn] + immediate;
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+    // detect borrow from bit 32
+    set_condition_flag(C_FLAG, result64 >> 32);
+    // understanding: for signed overflow either both ops positive and result negative or both ops negative result positive
+    set_condition_flag(V_FLAG, (~(immediate ^ regs.r[rn]) & (regs.r[rn] ^ result32)) >> 31);
+
+    regs.r[15] += 2;
+
+}
+
+void ARMInterpreter::thumb_addh() {
+    u8 rd = (get_bit(7, opcode) << 3) | (opcode & 0x7);
+    u8 rm = (opcode >> 3) & 0xF;
+
+    regs.r[rd] += regs.r[rm];
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_addpc_reg() {
+    u32 immediate = opcode & 0xFF;
+    u8 rd = (opcode >> 8) & 0x7;
+
+    regs.r[rd] = (regs.r[15] & 0xFFFFFFFC) + (immediate << 2);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_mul_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+
+    regs.r[rd] *= regs.r[rm];
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_mvn_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+
+
+    regs.r[rd] = ~regs.r[rm];
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+
+}
+
+void ARMInterpreter::thumb_neg_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+
+
+    regs.r[rd] = -regs.r[rm];
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+    // TODO: fix later
+    set_condition_flag(C_FLAG, regs.r[rm] >= 0);
+    set_condition_flag(V_FLAG, (~(regs.r[rd] ^ regs.r[rm]) & (regs.r[rm] ^ regs.r[rd])) >> 31);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_ror_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rs = (opcode >> 3) & 0x7;
+
+    u32 shift_amount = regs.r[rs];
+    // TODO: optimise this shif
+    if (shift_amount == 0) {
+        // do nothing lol
+    }
 }

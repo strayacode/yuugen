@@ -747,6 +747,28 @@ void ARMInterpreter::thumb_push_lr() {
     regs.r[15] += 2;
 }
 
+void ARMInterpreter::thumb_push() {
+    u32 address = regs.r[13];
+
+    for (int i = 0; i < 8; i++) {
+        if (get_bit(i, opcode)) {
+            address -= 4;
+        }
+    }
+
+    // set r13
+    regs.r[13] = address;
+
+    for (int i = 0; i < 8; i++) {
+        if (get_bit(i, opcode)) {
+            write_word(address, regs.r[i]);
+            address += 4;
+        }
+    }
+
+    regs.r[15] += 2;
+}
+
 void ARMInterpreter::thumb_pop_pc() {
     u32 address = regs.r[13];
 
@@ -775,6 +797,22 @@ void ARMInterpreter::thumb_pop_pc() {
         regs.r[15] &= ~3;
     }
     flush_pipeline();
+}
+
+void ARMInterpreter::thumb_pop() {
+    u32 address = regs.r[13];
+
+    for (int i = 0; i < 8; i++) {
+        if (get_bit(i, opcode)) {
+            regs.r[i] = read_word(address);
+            address += 4;
+        }
+    }
+    
+    // writeback to r13
+    regs.r[13] = address;
+
+    regs.r[15] += 2;
 }
 
 void ARMInterpreter::thumb_ldrpc_imm() {
@@ -806,7 +844,7 @@ void ARMInterpreter::thumb_ldrh_imm5() {
     regs.r[15] += 2;
 }
 
-void ARMInterpreter::thumb_str_imm() {
+void ARMInterpreter::thumb_str_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u32 immediate = (opcode >> 6) & 0x1F;
@@ -819,4 +857,64 @@ void ARMInterpreter::thumb_str_imm() {
     write_word(address, regs.r[rd]);
 
     regs.r[rd] += 2;
+}
+
+void ARMInterpreter::thumb_ldr_imm5() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u32 immediate = (opcode >> 6) & 0x1F;
+    u32 address = regs.r[rn] + (immediate * 4);
+
+    if (address & 0x3) {
+        log_fatal("unpredictable");
+    }
+
+    regs.r[rd] = read_word(address);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_ldrh_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u8 rm = (opcode >> 6) & 0x7;
+
+    u32 address = regs.r[rn] + regs.r[rm];
+
+    if (address & 0x3) {
+        log_warn("unpredictable");
+    }
+
+    regs.r[rd] = read_halfword(address);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_ldrb_imm5() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+
+    u32 immediate = (opcode >> 6) & 0x1F;
+
+
+    u32 address = regs.r[rn] + immediate;
+    regs.r[rd] = read_byte(address);
+
+    regs.r[15] += 2;
+}
+
+void ARMInterpreter::thumb_strh_imm5() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+
+    u32 immediate = (opcode >> 6) & 0x1F;
+
+    u32 address = regs.r[rn] + (immediate * 2);
+    if (address & 0x3) {
+        log_warn("unpredictable");
+    }
+
+    write_halfword(address, regs.r[rd] & 0xFFFF);
+
+    regs.r[15] += 2;
 }

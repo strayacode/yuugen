@@ -203,11 +203,26 @@ private:
     void thumb_mov_imm();
     void thumb_movh();
     void thumb_cmp_imm();
+    void thumb_cmp_reg();
     void thumb_add_imm();
     void thumb_sub_imm();
+    void thumb_add_reg();
+    void thumb_orr();
+    void thumb_and();
+    void thumb_add_imm3();
+    void thumb_addh();
+    void thumb_addpc_reg();
+    void thumb_tst_reg();
+    void thumb_mul_reg();
+    void thumb_mvn_reg();
+    void thumb_neg_reg();
 
     // shifts
     void thumb_lsr_imm();
+    void thumb_lsl_imm();
+    void thumb_asr_imm();
+    void thumb_lsl_reg();
+    void thumb_ror_reg();
 
     // branch instructions
     void thumb_bl_setup(); // this is the first part of a bl which sets up the upper part of the branch offset
@@ -216,12 +231,21 @@ private:
     void thumb_bcc();
     void thumb_beq();
     void thumb_bne();
+    void thumb_b();
     void thumb_bx();
+    void thumb_bmi();
+    void thumb_bpl();
 
     // load store instructions
     void thumb_push_lr(); // pushes possibly all registers r0-7 and r14 to the stack
+    void thumb_push();
     void thumb_pop_pc(); // pops possibly all registers r0-7 and r15 from the stack and thus branches and can switch between arm and thumb state
+    void thumb_pop();
     void thumb_ldrpc_imm();
     void thumb_ldrh_imm5();
-    void thumb_str_imm();
+    void thumb_str_imm5();
+    void thumb_ldr_imm5();
+    void thumb_ldrh_reg();
+    void thumb_ldrb_imm5();
+    void thumb_strh_imm5();
 };

@@ -99,6 +99,35 @@ void ARMInterpreter::thumb_bne() {
     }
 }
 
+void ARMInterpreter::thumb_bmi() {
+    // only branch if negative flag set
+    if (get_condition_flag(N_FLAG)) {
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+        regs.r[15] += offset;
+        flush_pipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}
+
+void ARMInterpreter::thumb_bpl() {
+    // only branch if negative flag clear
+    if (!get_condition_flag(N_FLAG)) {
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+        regs.r[15] += offset;
+        flush_pipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}
+
+
+void ARMInterpreter::thumb_b() {
+    u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+    regs.r[15] += offset;
+    flush_pipeline();   
+}
+
 void ARMInterpreter::thumb_bx() {
     u8 rm = (opcode >> 3) & 0xF;
 
