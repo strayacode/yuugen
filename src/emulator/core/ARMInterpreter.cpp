@@ -830,11 +830,16 @@ void ARMInterpreter::execute_instruction() {
             switch ((opcode >> 6) & 0x3) {
             case 0:
                 return thumb_and();
+            case 1:
+                return thumb_eor();
             case 2:
                 return thumb_lsl_reg();
+            case 3:
+                log_fatal("3");
             default:
                 log_fatal("opcode 0x%04x is unimplemented with identifier 0x%02x", opcode, index);
             }
+            break;
         case 0x41:
             // using the data processing opcode table with bits
             switch ((opcode >> 6) & 0x3) {
@@ -843,6 +848,7 @@ void ARMInterpreter::execute_instruction() {
             default:
                 log_fatal("opcode 0x%04x is unimplemented with identifier 0x%02x", opcode, index);
             }
+            break;
         case 0x42:
             // using the data processing opcode table with bits
             switch ((opcode >> 6) & 0x3) {
@@ -855,6 +861,7 @@ void ARMInterpreter::execute_instruction() {
             default:
                 log_fatal("opcode 0x%04x is unimplemented with identifier 0x%02x", opcode, index);
             }
+            break;
         case 0x43:
             // using the data processing opcode table with bits 
             switch ((opcode >> 6) & 0x3) {
@@ -869,12 +876,18 @@ void ARMInterpreter::execute_instruction() {
             default:
                 log_fatal("opcode 0x%04x is unimplemented with identifier 0x%02x", opcode, index);
             }
+            break;
         case 0x44:
             return thumb_addh();
         case 0x46:
             return thumb_movh();
         case 0x47:
-            return thumb_bx();
+            // now check bit 7 to see if its a bx or blx
+            if (get_bit(7, opcode)) {
+                return thumb_blx();
+            } else {
+                return thumb_bx();
+            }
         case 0x48: case 0x49: case 0x4A: case 0x4B: 
         case 0x4C: case 0x4D: case 0x4E: case 0x4F:
             return thumb_ldrpc_imm();
@@ -926,7 +939,7 @@ void ARMInterpreter::execute_instruction() {
             return thumb_b();   
         case 0xE8: case 0xE9: case 0xEA: case 0xEB: 
         case 0xEC: case 0xED: case 0xEE: case 0xEF:
-            return thumb_blx(); 
+            return thumb_blx_offset(); 
         case 0xF0: case 0xF1: case 0xF2: case 0xF3: 
         case 0xF4: case 0xF5: case 0xF6: case 0xF7:
             return thumb_bl_setup();

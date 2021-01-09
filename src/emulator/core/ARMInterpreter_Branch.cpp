@@ -39,18 +39,17 @@ void ARMInterpreter::arm_bx() {
 // thumb instructions start here
 
 void ARMInterpreter::thumb_bl_setup() {
-    u32 immediate_11 = (get_bit(10, opcode) ? 0xFFFFF800 : 0) | (opcode & 0x7FF);
-    u32 offset = immediate_11 << 12; 
+    u32 immediate_11 = (get_bit(10, opcode) ? 0xFFFFF000 : 0) | ((opcode & 0x7FF) << 1);
 
-    regs.r[14] = regs.r[15] + offset;
+    regs.r[14] = regs.r[15] + (immediate_11 << 11);
 
     regs.r[15] += 2;
 }
 
 void ARMInterpreter::thumb_bl_offset() {
     u32 offset_11 = (opcode & 0x7FF) << 1;
-    u32 next_instruction_address = regs.r[15] + 2;
-    regs.r[15] = regs.r[14] + offset_11;
+    u32 next_instruction_address = regs.r[15] - 2;
+    regs.r[15] = (regs.r[14] + offset_11) & ~1;
     regs.r[14] = next_instruction_address | 1;
     flush_pipeline();
 }
@@ -123,7 +122,7 @@ void ARMInterpreter::thumb_bpl() {
 
 
 void ARMInterpreter::thumb_b() {
-    u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+    u32 offset = (get_bit(10, opcode) ? 0xFFFFFF00 : 0) | ((opcode & 0x7FF) << 1);
     regs.r[15] += offset;
     flush_pipeline();   
 }
@@ -144,7 +143,7 @@ void ARMInterpreter::thumb_bx() {
     flush_pipeline();
 }
 
-void ARMInterpreter::thumb_blx() {
+void ARMInterpreter::thumb_blx_offset() {
     // arm9 specific instruction
     if (cpu_id == ARMv4) {
         return;
@@ -158,4 +157,30 @@ void ARMInterpreter::thumb_blx() {
     regs.cpsr &= ~(1 << 5);
     // flush the pipeline
     flush_pipeline();
+}
+
+void ARMInterpreter::thumb_blx() {
+    // arm9 specific instruction
+    if (cpu_id == ARMv4) {
+        return;
+    }
+    u8 rm = (opcode >> 3) & 0x7;
+
+    u32 next_instruction_address = regs.r[15] - 2;
+    regs.r[14] = next_instruction_address | 1;
+
+    regs.r[15] = (regs.r[rm] & ~1) << 1;
+
+    // change bit 5 of cpsr
+    if (regs.r[rm] & 0x1) {
+        // stay in thumb state
+        // TODO: handle halfword alignment i think
+        regs.cpsr |= (1 << 5);
+    } else {
+        // switch to arm state
+        // TODO: handle word alignment i think
+        regs.cpsr &= ~(1 << 5);
+    }
+    flush_pipeline();
+
 }

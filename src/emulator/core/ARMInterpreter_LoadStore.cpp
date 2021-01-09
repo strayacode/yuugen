@@ -824,7 +824,8 @@ void ARMInterpreter::thumb_ldrpc_imm() {
     regs.r[rd] = read_word(address);
     // log_fatal("address is 0x%04x", address);
     if (address & 0x1) {
-        log_fatal("this is unpredictable behaviour");
+        u8 shift_amount = (address & 0x3) * 8;
+        regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
     }
 
     regs.r[15] += 2;
@@ -835,10 +836,6 @@ void ARMInterpreter::thumb_ldrh_imm5() {
     u8 rn = (opcode >> 3) & 0x7;
     u32 immediate_5 = (opcode >> 6) & 0x1F;
     u32 address = regs.r[rn] + (immediate_5 * 2);
-
-    if (address & 0x1) {
-        log_fatal("this is unpredictable behaviour");
-    }
 
     regs.r[rd] = read_halfword(address);
 
@@ -851,10 +848,6 @@ void ARMInterpreter::thumb_str_imm5() {
     u32 immediate = (opcode >> 6) & 0x1F;
     u32 address = regs.r[rn] + (immediate * 4);
 
-    if (address & 0x3) {
-        log_fatal("unpredictable");
-    }
-
     write_word(address, regs.r[rd]);
 
     regs.r[rd] += 2;
@@ -866,11 +859,12 @@ void ARMInterpreter::thumb_ldr_imm5() {
     u32 immediate = (opcode >> 6) & 0x1F;
     u32 address = regs.r[rn] + (immediate * 4);
 
-    if (address & 0x3) {
-        log_warn("unpredictable");
-    }
-
     regs.r[rd] = read_word(address);
+
+    if (address & 0x3) {
+        u8 shift_amount = (address & 0x3) * 8;
+        regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
+    }
 
     regs.r[15] += 2;
 }
@@ -883,7 +877,7 @@ void ARMInterpreter::thumb_ldrh_reg() {
     u32 address = regs.r[rn] + regs.r[rm];
 
     if (address & 0x3) {
-        log_warn("unpredictable");
+        log_warn("unpredictable in ldrh reg");
     }
 
     regs.r[rd] = read_halfword(address);
@@ -912,7 +906,7 @@ void ARMInterpreter::thumb_strb_imm5() {
 
 
     u32 address = regs.r[rn] + immediate;
-    write_word(address, regs.r[rd] & 0xFF);
+    write_byte(address, regs.r[rd] & 0xFF);
 
     regs.r[15] += 2;
 }
@@ -924,10 +918,6 @@ void ARMInterpreter::thumb_strh_imm5() {
     u32 immediate = (opcode >> 6) & 0x1F;
 
     u32 address = regs.r[rn] + (immediate * 2);
-    if (address & 0x3) {
-        log_warn("unpredictable");
-    }
-
     write_halfword(address, regs.r[rd] & 0xFFFF);
 
     regs.r[15] += 2;

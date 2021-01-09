@@ -216,7 +216,8 @@ private:
     void thumb_mul_reg();
     void thumb_mvn_reg();
     void thumb_neg_reg();
-
+    void thumb_eor();
+    
     // shifts
     void thumb_lsr_imm();
     void thumb_lsl_imm();
@@ -235,6 +236,7 @@ private:
     void thumb_bx();
     void thumb_bmi();
     void thumb_bpl();
+    void thumb_blx_offset();
     void thumb_blx();
 
     // load store instructions
