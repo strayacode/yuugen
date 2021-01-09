@@ -1012,9 +1012,20 @@ void ARMInterpreter::thumb_ror_reg() {
     u8 rd = opcode & 0x7;
     u8 rs = (opcode >> 3) & 0x7;
 
-    u32 shift_amount = regs.r[rs];
+    u32 shift_amount = regs.r[rs] & 0xFF;
     // TODO: optimise this shif
     if (shift_amount == 0) {
         // do nothing lol
-    }
+    } else if ((regs.r[rs] & 0x1F) == 0) {
+        set_condition_flag(C_FLAG, regs.r[rd] >> 31);
+    } else {
+        // regs.r[rs] & 0x1F > 0
+        set_condition_flag(C_FLAG, regs.r[rd] & (1 << ((regs.r[rs] & 0x1F) - 1)));
+        regs.r[rd] = (regs.r[rd] >> (regs.r[rs] & 0x1F)) | (regs.r[rd] << (regs.r[rs] & 0x1F));
+    } 
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
 }
