@@ -446,6 +446,14 @@ u32 Memory::arm9_read_word(u32 addr) {
 				// 0kb for arm9 which means share wram is empty so just return 0
 				return 0;
 			}
+		case 0x04000000:
+			switch (addr) {
+			case 0x04004008:
+				return 0;
+			default:
+				log_fatal("unimplemented 32 bit arm9 io read at address 0x%08x", addr);
+			}
+			break;
 		case 0xFF000000:
 			memcpy(&return_value, &arm9_bios[addr & 0x7FFF], 4);
 			break;

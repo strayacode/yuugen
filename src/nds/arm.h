@@ -142,6 +142,7 @@ private:
 	void arm_orrs(u32 op2);
 	void arm_rscs(u32 op2);
 	void arm_sbcs(u32 op2);
+	void arm_rsb(u32 op2);
 	void arm_swp();
 	void arm_swpb();
 
@@ -177,6 +178,7 @@ private:
 	void arm_bx();
 	void arm_blx_offset();
 	void arm_blx_reg();
+	void arm_swi();
 
 	// transfer instructions
 	void arm_ldrb_pre(u32 op2);
@@ -190,6 +192,7 @@ private:
 	void arm_msr_reg();
 	void arm_msr_imm();
 	void arm_mrs_cpsr();
+	void arm_mrs_spsr();
 	void arm_strh_pre(u32 op2);
 	void arm_strh_post(u32 op2);
 	void arm_ldrh_pre(u32 op2);
@@ -208,6 +211,8 @@ private:
     void arm_ldmdaw(); // load multiple decrement after with writeback
     void arm_ldmdauw(); // load multiple decrement after with writeback and use user registers i think
     void arm_stmibw(); // store multiple increment before with writeback
+
+    
 
 	// transfer helpers
 	u32 arm_imm_single_data_transfer();

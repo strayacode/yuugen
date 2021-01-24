@@ -42,6 +42,22 @@ void CP15::write_reg(u32 cn, u32 cm, u32 cp, u32 data) {
 	case 0x010000:
 		control_register = data;
 		break;
+    case 0x020000:
+        // PU Cachability Bits for Data/Unified Protection Region
+    case 0x020001:
+        // PU Cachability Bits for Instruction Protection Region
+    case 0x030000:
+        // PU Cache Write-Bufferability Bits for Data Protection Regions
+        break;
+    case 0x050002:
+        // PU Extended Access Permission Data/Unified Protection Region
+        break;
+    case 0x050003:
+        // PU Extended Access Permission Instruction Protection Region
+        break;
+    case 0x060000: case 0x060100: case 0x060200: case 0x060300: case 0x060400: case 0x060500: case 0x060600: case 0x060700:
+        // dont do anything lol this is just protection unit region stuff which we dont need to emulate
+        break;
 	case 0x070500:
 		// invalidate entire instruction cache
 		log_warn("[CP15] invalidating the entire instruction cache");
@@ -110,4 +126,8 @@ u32 CP15::get_dtcm_size() {
 
 u32 CP15::get_itcm_size() {
 	return itcm_size;
+}
+
+u32 CP15::get_exception_base() {
+    return (get_bit(13, control_register) ? 0xFFFF0000 : 0x00000000);
 }

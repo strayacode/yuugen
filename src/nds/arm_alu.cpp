@@ -51,6 +51,21 @@ void ARM::arm_sub(u32 op2) {
     regs.r[15] += 4;
 }
 
+void ARM::arm_rsb(u32 op2) {
+    u8 rd = (opcode >> 12) & 0xF;
+    u8 rn = (opcode >> 16) & 0xF;
+
+    u32 result = op2 - regs.r[rn];
+
+    regs.r[rd] = result;
+    
+    if (rd == 15) {
+        log_fatal("handle pls");
+    }
+
+    regs.r[15] += 4;
+}
+
 void ARM::arm_subs(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -281,6 +296,7 @@ void ARM::arm_movs(u32 op2) {
 	set_condition_flag(N_FLAG, op2 >> 31);
     regs.r[rd] = op2;
     if (rd == 15) {
+        // log_fatal("handle");
         regs.cpsr = regs.spsr;
         arm_flush_pipeline(); // shrug idk what im doing lmao
     } else {

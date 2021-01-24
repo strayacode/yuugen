@@ -352,6 +352,14 @@ void ARM::arm_mrs_cpsr() {
     regs.r[15] += 4;
 }
 
+void ARM::arm_mrs_spsr() {
+    u8 rd = (opcode >> 12) & 0xF;
+    // move the spsr into the register rd
+    regs.r[rd] = regs.spsr;
+
+    regs.r[15] += 4;
+}
+
 
 void ARM::arm_strh_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;

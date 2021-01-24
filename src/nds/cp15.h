@@ -28,6 +28,11 @@ public:
 	u8 itcm[0x8000] = {};
 	u8 dtcm[0x4000] = {};
 
+	// this is used to get bit 13 of the control register to check if the base of exceptions should be 0x00000000 or 0xFFFF0000
+	u32 get_exception_base();
+
+
+
 private:
 	NDS *nds;
 
