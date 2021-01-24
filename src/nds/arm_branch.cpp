@@ -103,6 +103,7 @@ void ARM::arm_swi() {
     // check the exception base and jump to the correct address in the bios
     regs.r[15] = nds->cp15.get_exception_base() + 0x08;
     
+    arm_flush_pipeline();
 }
 
 

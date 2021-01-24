@@ -347,6 +347,8 @@ void ARM::execute_instruction() {
                 return arm_ldrsb_pre(-arm_imm_halfword_signed_data_transfer());
             case 0x160:
                 return arm_msr_reg();
+            case 0x161:
+                return arm_clz();
             case 0x170: case 0x178:
                 return arm_cmn(arm_lli());
             case 0x17B:
@@ -363,12 +365,16 @@ void ARM::execute_instruction() {
                 return arm_mov(arm_lli());
             case 0x1A2: case 0x1AA:
                 return arm_mov(arm_lri());
+            case 0x1A4: case 0x1AC:
+                return arm_mov(arm_ari());
             case 0x1B0: case 0x1B8:
                 return arm_movs(arm_llis());
             case 0x1B1:
                 return arm_movs(arm_llrs());
             case 0x1B2: case 0x1BA:
                 return arm_movs(arm_lris());
+            case 0x1B4: case 0x1BC:
+                return arm_movs(arm_aris());
             case 0x1B5:
                 return arm_movs(arm_arrs());
             case 0x1CB:
@@ -510,6 +516,11 @@ void ARM::execute_instruction() {
             case 0x518: case 0x519: case 0x51A: case 0x51B:
             case 0x51C: case 0x51D: case 0x51E: case 0x51F:
                 return arm_ldr_pre(-arm_imm_single_data_transfer());
+            case 0x520: case 0x521: case 0x522: case 0x523:
+            case 0x524: case 0x525: case 0x526: case 0x527:
+            case 0x528: case 0x529: case 0x52A: case 0x52B:
+            case 0x52C: case 0x52D: case 0x52E: case 0x52F:
+                return arm_str_pre(-arm_imm_single_data_transfer());
             case 0x530: case 0x531: case 0x532: case 0x533:
             case 0x534: case 0x535: case 0x536: case 0x537:
             case 0x538: case 0x539: case 0x53A: case 0x53B:
@@ -625,6 +636,11 @@ void ARM::execute_instruction() {
             case 0x878: case 0x879: case 0x87A: case 0x87B:
             case 0x87C: case 0x87D: case 0x87E: case 0x87F:
                 return arm_ldmdauw();
+            case 0x890: case 0x891: case 0x892: case 0x893:
+            case 0x894: case 0x895: case 0x896: case 0x897:
+            case 0x898: case 0x899: case 0x89A: case 0x89B:
+            case 0x89C: case 0x89D: case 0x89E: case 0x89F:
+                return arm_ldmia();
             case 0x8A0: case 0x8A1: case 0x8A2: case 0x8A3:
             case 0x8A4: case 0x8A5: case 0x8A6: case 0x8A7:
             case 0x8A8: case 0x8A9: case 0x8AA: case 0x8AB:
@@ -1031,7 +1047,10 @@ void ARM::execute_instruction() {
             return thumb_pop_pc();
         case 0xC0: case 0xC1: case 0xC2: case 0xC3: 
         case 0xC4: case 0xC5: case 0xC6: case 0xC7:
-            return thumb_stmia_reg(); 
+            return thumb_stmia_reg();
+        case 0xC8: case 0xC9: case 0xCA: case 0xCB: 
+        case 0xCC: case 0xCD: case 0xCE: case 0xCF:
+            return thumb_ldmia_reg();
         case 0xD0:
             return thumb_beq();
         case 0xD1:

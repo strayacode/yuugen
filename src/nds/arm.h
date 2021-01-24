@@ -155,6 +155,9 @@ private:
 	void arm_umlals();
 	void arm_smlals();
 
+	// armv5 instructions
+	void arm_clz();
+
 
 
 	// alu helpers
@@ -167,6 +170,7 @@ private:
 	u32 arm_lri();
 	u32 arm_lris();
 	u32 arm_aris();
+	u32 arm_ari();
 	u32 arm_llrs();
 	u32 arm_arrs();
 	u32 arm_rri();
@@ -211,6 +215,11 @@ private:
     void arm_ldmdaw(); // load multiple decrement after with writeback
     void arm_ldmdauw(); // load multiple decrement after with writeback and use user registers i think
     void arm_stmibw(); // store multiple increment before with writeback
+    void arm_ldmia();
+
+    // armv5 instructions
+    void arm_ldrd_post(u32 op2);
+    // void arm_ldrd_pre()
 
     
 
@@ -290,5 +299,6 @@ private:
 	void thumb_ldrh_reg();
 	void thumb_ldr_imm5();
 	void thumb_stmia_reg();
+	void thumb_ldmia_reg();
 	void thumb_ldr_reg();
 };

@@ -13,6 +13,7 @@ Cartridge::~Cartridge() {
 }
 
 void Cartridge::load_cartridge(std::string rom_path) {
+	printf("rom path is %s\n", rom_path.c_str());
     FILE *file_buffer = fopen(rom_path.c_str(), "rb");
     if (file_buffer == NULL) {
         log_fatal("[Cartridge] error while opening the selected rom! make you sure specify the path correctly");

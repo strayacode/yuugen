@@ -12,7 +12,7 @@ endif()
 find_package(Qt5 COMPONENTS Core Widgets)
 
 # Tell CMake to create the helloworld executable
-add_executable(ChronoDS main.cpp)
+add_executable(ChronoDS main.cpp mainwindow.h mainwindow.cpp)
 
 # Add the Qt5 Widgets for linking
 target_link_libraries(ChronoDS PRIVATE nds common Qt5::Widgets)

@@ -585,6 +585,24 @@ void ARM::arm_ldmiaw() {
     regs.r[15] += 4;
 }
 
+void ARM::arm_ldmia() {
+    u8 rn = (opcode >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 16; i++) {
+        if (opcode & (1 << i)) {
+            regs.r[i] = read_word(address);
+            address += 4;
+        }
+    }
+    
+    if (get_bit(15, opcode)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
 
 
 void ARM::arm_ldmibw() {
@@ -833,6 +851,8 @@ void ARM::arm_ldmdbuw() {
 
     regs.r[15] += 4;
 }
+
+
 
 u32 ARM::arm_reg_halfword_signed_data_transfer() {
     return regs.r[opcode & 0xF];
@@ -1134,6 +1154,24 @@ void ARM::thumb_stmia_reg() {
     for (int i = 0; i < 8; i++) {
         if (get_bit(i, opcode)) {
             write_word(address, regs.r[i]);
+            address += 4;
+        }
+    }
+
+    // writeback to rn
+
+    regs.r[rn] = address;
+
+    regs.r[15] += 2;
+}
+
+void ARM::thumb_ldmia_reg() {
+    u8 rn = (opcode >> 8) & 0x3;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 8; i++) {
+        if (get_bit(i, opcode)) {
+            regs.r[i] = read_word(address);
             address += 4;
         }
     }

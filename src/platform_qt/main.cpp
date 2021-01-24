@@ -1,12 +1,16 @@
 #include <QApplication>
-#include <QPushButton>
+#include "mainwindow.h"
+#include <memory>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
-    QPushButton button ("Hello world!");
-    button.show();
+    std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>();
+    if (!window->initialise()) {
+    	return EXIT_FAILURE;
+    }
+    
+    // button.show();
 
     return a.exec(); // .exec starts QApplication and related GUI, this line starts 'event loop'    
 }

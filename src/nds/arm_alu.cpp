@@ -591,6 +591,23 @@ u32 ARM::arm_aris() {
     return result;
 }
 
+u32 ARM::arm_ari() {
+    u8 shift_amount = (opcode >> 7) & 0x1F;
+    u8 rm = opcode & 0xF;
+    u32 result;
+    u8 msb = regs.r[rm] >> 31;
+
+    if (shift_amount == 0) {
+        result = 0xFFFFFFFF * msb;
+    } else {
+        // shift amount > 0
+        // perform asr
+        // what happens is that rm gets shifted normally to the right but then the bits not set are set with the msb
+        result = (regs.r[rm] >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
+    }
+    return result;
+}
+
 u32 ARM::arm_llrs() {
     u8 shift_amount = regs.r[(opcode >> 8) & 0xF] & 0xFF;
     u32 rm = regs.r[opcode & 0xF];
@@ -662,6 +679,24 @@ u32 ARM::arm_rris() {
 }
 
 
+// TODO: optimise later with some fancy bit arithmetic
+void ARM::arm_clz() {
+    u8 rm = opcode & 0xF;
+    u8 rd = (opcode >> 12) & 0xF;
+
+    if (regs.r[rm] == 0) {
+        regs.r[rd] = 32;
+    } else {
+        u8 zero_bits = 0;
+        int i = 31;
+        while (get_bit(i, opcode) == 0) {
+            zero_bits++;
+        }
+        regs.r[rd] = 31 - zero_bits;
+    }
+
+    regs.r[15] += 4;
+}
 
 
 

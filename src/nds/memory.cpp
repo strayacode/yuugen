@@ -78,6 +78,30 @@ u16 Memory::arm7_read_halfword(u32 addr) {
 		// for now we will ignore main memory control because seems to only matter for power down????
 		memcpy(&return_value, &main_memory[addr & 0x3FFFFF], 2);
 		break;
+	case 0x03000000:
+		if (addr >= 0x03800000) {
+			memcpy(&return_value, &arm7_wram[addr & 0xFFFF], 2);
+		} else {
+			switch (WRAMCNT) {
+			case 0:
+				// 32k for arm9 and 0k for arm7 so we then write to arm7 wram (0x03800000 and up)
+				memcpy(&return_value, &arm7_wram[addr & 0xFFFF], 2);
+				break;
+			case 1:
+				// the first block is for 16k of arm7 wram and next 16k block is for arm9
+				memcpy(&return_value, &shared_wram[addr & 0x3FFF], 2);
+				break;
+			case 2:
+				// the first block is 16k for arm9 wram and next 16k block is for arm7
+				memcpy(&return_value, &shared_wram[(addr & 0x3FFF) + 0x4000], 2);
+				break;
+			case 3:
+				// 32 k for arm7 and 0k for arm9
+				memcpy(&return_value, &shared_wram[addr & 0x7FFF], 2);
+				break;
+			}
+		}
+		break;
 	case 0x04000000:
 		// log_warn("arm7 16bit reading at address 0x%08x", addr);
 		switch (addr) {
@@ -282,6 +306,9 @@ void Memory::arm7_write_halfword(u32 addr, u16 data) {
 		case 0x040001C2:
 			nds->spi.write_spidata(data);
 			break;
+		case 0x04000208:
+			nds->interrupt.write_ime(data);
+			return;
 		default:
 			log_fatal("unimplemented 16 bit arm9 io write at address 0x%08x with data 0x%04x", addr, data);
 		}
@@ -336,6 +363,9 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 			nds->timers[0].write_tmcnt_l(1, data & 0xFFFF);
 			nds->timers[0].write_tmcnt_h(1, data >> 16);
 			break;
+		case 0x04000180:
+			nds->ipc.write_ipcsync7(data);
+			break;
 		case 0x040001A4:
 			nds->cartridge.write_romctrl(data);
 			break;
@@ -389,6 +419,25 @@ u16 Memory::arm9_read_halfword(u32 addr) {
 		case 0x02000000:
 			// for now we will ignore main memory control because seems to only matter for power down????
 			memcpy(&return_value, &main_memory[addr & 0x3FFFFF], 2);
+			break;
+		case 0x03000000:
+			switch (WRAMCNT) {
+			case 0:
+				// 32 kb for arm9
+				memcpy(&return_value, &shared_wram[addr & 0x7FFF], 2);
+				break;
+			case 1:
+				// first block is 16kb for arm7 and second block is 16kb for arm9
+				memcpy(&return_value, &shared_wram[(addr & 0x3FFF) + 0x4000], 2);
+				break;
+			case 2:
+				// first block is 16kb for arm9 and second block is 16kb for arm7
+				memcpy(&return_value, &shared_wram[addr & 0x3FFF], 2);
+				break;
+			case 3:
+				// 0kb for arm9 which means share wram is empty so just return 0
+				return 0;
+			}
 			break;
 		case 0x04000000:
 			// log_warn("arm9 reading from data address 0x%04x", addr);
@@ -446,8 +495,11 @@ u32 Memory::arm9_read_word(u32 addr) {
 				// 0kb for arm9 which means share wram is empty so just return 0
 				return 0;
 			}
+			break;
 		case 0x04000000:
 			switch (addr) {
+			case 0x04000004:
+
 			case 0x04004008:
 				return 0;
 			default:
@@ -557,6 +609,26 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 		case 0x02000000:
 			// for now we will ignore main memory control because seems to only matter for power down????
 			memcpy(&main_memory[addr & 0x3FFFFF], &data, 4);
+			break;
+		case 0x03000000:
+			switch (WRAMCNT) {
+			case 0:
+				// 32 kb for arm9
+				memcpy(&shared_wram[addr & 0x7FFF], &data, 4);
+				break;
+			case 1:
+				// first block is 16kb for arm7 and second block is 16kb for arm9
+				memcpy(&shared_wram[(addr & 0x3FFF) + 0x4000], &data, 4);
+				break;
+			case 2:
+				// first block is 16kb for arm9 and second block is 16kb for arm7
+				memcpy(&shared_wram[addr & 0x3FFF], &data, 4);
+				break;
+			case 3:
+				// 0kb for arm9 which means share wram is empty so just return 0
+				// do nothing lol
+				break;
+			}
 			break;
 		case 0x04000000:
 			// log_warn("arm9 writing data 0x%08x to address 0x%08x", data, addr);
