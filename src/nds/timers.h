@@ -35,7 +35,7 @@ private:
 	// this is changed in tmcnt_h writes to the number of cycles needed before a timer can increment
 	u16 cycles_left[4] = {};
 
-	u8 enabled = false;
+	u8 enabled = 0;
 
 	// each register corresponds to some settings for each tmcnt_l
 	u16 tmcnt_h[4] = {};

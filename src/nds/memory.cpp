@@ -105,6 +105,8 @@ u16 Memory::arm7_read_halfword(u32 addr) {
 	case 0x04000000:
 		// log_warn("arm7 16bit reading at address 0x%08x", addr);
 		switch (addr) {
+		case 0x04000004:
+			return nds->gpu.DISPSTAT;
 		case 0x04000180:
 			return nds->ipc.read_ipcsync7();
 		default:
@@ -561,7 +563,7 @@ void Memory::arm9_write_halfword(u32 addr, u16 data) {
 		// log_warn("arm9 writing data 0x%08x to address 0x%04x", data, addr);
 		switch (addr) {
 		case 0x040000D0:
-			nds->dma[1].channel[2].DMACNT_L = data;
+			nds->dma[1].write_dmacnt_l(2, data);
 			break;
 		case 0x04000180:
 			nds->ipc.write_ipcsync9(data);
@@ -636,6 +638,15 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 			case 0x04000000:
 				// write to DISPCNT for engine
 				nds->gpu.engine_a.DISPCNT = data;
+				break;
+			case 0x040000B0:
+				// write to DMA0SAD
+				nds->dma[1].dma_channel[0].DMASAD = data;
+				break;
+			case 0x040000B8:
+				// write to DMA0CNT_L and DMA0CNT_H
+				nds->dma[1].write_dmacnt_l(0, data & 0xFFFF);
+				nds->dma[1].write_dmacnt_h(0, data >> 16);
 				break;
 			case 0x040001A0:
 				// write to AUXSPICNT
