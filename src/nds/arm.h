@@ -264,6 +264,7 @@ private:
 	void thumb_neg_reg();
 	void thumb_ror_reg();
 	void thumb_tst_reg();
+	void thumb_sub_imm3();
 
 	// branch instructions
 	void thumb_bgt();

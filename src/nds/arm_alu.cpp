@@ -1099,3 +1099,20 @@ void ARM::thumb_tst_reg() {
 
     regs.r[15] += 2;
 }
+
+void ARM::thumb_sub_imm3() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+
+
+    u8 imm3 = (opcode >> 6) & 0x7;
+
+    regs.r[rd] = regs.r[rn] - imm3;
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
+    set_condition_flag(C_FLAG, imm3 >= regs.r[rn]);
+    set_condition_flag(V_FLAG, (~(regs.r[rn] ^ imm3) & (imm3 ^ regs.r[rd])) >> 31);
+
+    regs.r[15] += 2;
+}

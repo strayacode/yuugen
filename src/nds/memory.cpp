@@ -565,6 +565,38 @@ void Memory::arm9_write_halfword(u32 addr, u16 data) {
 		case 0x040000D0:
 			nds->dma[1].write_dmacnt_l(2, data);
 			break;
+		case 0x04000100:
+			// write to TM0CNT_L for arm9
+			nds->timers[1].write_tmcnt_l(0, data);
+			break;
+		case 0x04000102:
+			// write to TM0CNT_H for arm9
+			nds->timers[1].write_tmcnt_h(0, data);
+			break;
+		case 0x04000104:
+			// write to TM1CNT_L for arm9
+			nds->timers[1].write_tmcnt_l(1, data);
+			break;
+		case 0x04000106:
+			// write to TM1CNT_H for arm9
+			nds->timers[1].write_tmcnt_h(1, data);
+			break;
+		case 0x04000108:
+			// write to TM2CNT_L for arm9
+			nds->timers[1].write_tmcnt_l(2, data);
+			break;
+		case 0x0400010A:
+			// write to TM2CNT_H for arm9
+			nds->timers[1].write_tmcnt_h(2, data);
+			break;
+		case 0x0400010C:
+			// write to TM3CNT_L for arm9
+			nds->timers[1].write_tmcnt_l(3, data);
+			break;
+		case 0x0400010E:
+			// write to TM3CNT_H for arm9
+			nds->timers[1].write_tmcnt_h(3, data);
+			break;
 		case 0x04000180:
 			nds->ipc.write_ipcsync9(data);
 			break;
@@ -643,10 +675,57 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 				// write to DMA0SAD
 				nds->dma[1].dma_channel[0].DMASAD = data;
 				break;
+			case 0x040000B4:
+				// write to DMA0DAD
+				nds->dma[1].dma_channel[0].DMADAD = data;
+				break;
 			case 0x040000B8:
 				// write to DMA0CNT_L and DMA0CNT_H
 				nds->dma[1].write_dmacnt_l(0, data & 0xFFFF);
 				nds->dma[1].write_dmacnt_h(0, data >> 16);
+				break;
+			case 0x040000BC:
+				// write to DMA1SAD
+				nds->dma[1].dma_channel[1].DMASAD = data;
+				break;
+			case 0x040000C0:
+				// write to DMA1DAD
+				nds->dma[1].dma_channel[1].DMADAD = data;
+				break;
+			case 0x040000C4:
+				// write to DMA1CNT_L and DMA1CNT_H
+				nds->dma[1].write_dmacnt_l(1, data & 0xFFFF);
+				nds->dma[1].write_dmacnt_h(1, data >> 16);
+				break;
+			case 0x040000C8:
+				// write to DMA2SAD
+				nds->dma[1].dma_channel[2].DMASAD = data;
+				break;
+			case 0x040000CC:
+				// write to DMA2DAD
+				nds->dma[1].dma_channel[2].DMADAD = data;
+				break;
+			case 0x040000D0:
+				// write to DMA2CNT_L and DMA2CNT_H
+				nds->dma[1].write_dmacnt_l(2, data & 0xFFFF);
+				nds->dma[1].write_dmacnt_h(2, data >> 16);
+				break;
+			case 0x040000D4:
+				// write to DMA3SAD
+				nds->dma[1].dma_channel[3].DMASAD = data;
+				break;
+			case 0x040000D8:
+				// write to DMA3DAD
+				nds->dma[1].dma_channel[3].DMADAD = data;
+				break;
+			case 0x040000DC:
+				// write to DMA3CNT_L and DMA3CNT_H
+				nds->dma[1].write_dmacnt_l(3, data & 0xFFFF);
+				nds->dma[1].write_dmacnt_h(3, data >> 16);
+				break;
+			case 0x040000EC:
+				// write to DMA3FILL
+				DMAFILL[3] = data;
 				break;
 			case 0x040001A0:
 				// write to AUXSPICNT

@@ -924,6 +924,8 @@ void ARM::execute_instruction() {
             return thumb_sub_reg();
         case 0x1C: case 0x1D:
             return thumb_add_imm3();
+        case 0x1E: case 0x1F:
+            return thumb_sub_imm3();
         case 0x20: case 0x21: case 0x22: case 0x23: 
         case 0x24: case 0x25: case 0x26: case 0x27:
             return thumb_mov_imm();
