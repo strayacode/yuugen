@@ -23,7 +23,7 @@ void CP15::direct_boot() {
 
 
 u32 CP15::read_reg(u32 cn, u32 cm, u32 cp) {
-	log_warn("reading from register C%d, C%d, C%d", cn, cm, cp);
+	// log_warn("reading from register C%d, C%d, C%d", cn, cm, cp);
 	switch (cn << 16 | cm << 8 | cp) {
 	case 0x010000:
 		// read control register
@@ -37,7 +37,7 @@ u32 CP15::read_reg(u32 cn, u32 cm, u32 cp) {
 }
 
 void CP15::write_reg(u32 cn, u32 cm, u32 cp, u32 data) {
-	log_warn("writing data 0x%08x to register C%d, C%d, C%d", data, cn, cm, cp);
+	// log_warn("writing data 0x%08x to register C%d, C%d, C%d", data, cn, cm, cp);
 	switch (cn << 16 | cm << 8 | cp) {
 	case 0x010000:
 		control_register = data;

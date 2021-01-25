@@ -252,11 +252,11 @@ void Memory::arm7_write_byte(u32 addr, u8 data) {
 			nds->interrupt.write_ime(data);
 			return;
 		default:
-			log_fatal("unimplemented 8 bit arm7 io write at address 0x%08x with data 0x%01x", addr, data);
+			log_fatal("unimplemented 8 bit arm7 io write at address 0x%08x with data 0x%02x", addr, data);
 		}
 		break;
 	default:
-		log_fatal("unimplemented 8 bit arm7 write at address 0x%08x with data 0x%01x", addr, data);
+		log_fatal("unimplemented 8 bit arm7 write at address 0x%08x with data 0x%02x", addr, data);
 	}
 }
 
@@ -310,7 +310,7 @@ void Memory::arm7_write_halfword(u32 addr, u16 data) {
 			nds->interrupt.write_ime(data);
 			return;
 		default:
-			log_fatal("unimplemented 16 bit arm9 io write at address 0x%08x with data 0x%04x", addr, data);
+			log_fatal("unimplemented 16 bit arm7 io write at address 0x%08x with data 0x%04x", addr, data);
 		}
 
 		break;
@@ -379,12 +379,12 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 			nds->interrupt.IF = data;
 			break;
 		default:
-			log_fatal("unimplemented 32 bit arm7 io write at address 0x%08x with data 0x%04x", addr, data);
+			log_fatal("unimplemented 32 bit arm7 io write at address 0x%08x with data 0x%08x", addr, data);
 		}
 
 		break;
 	default:
-		log_fatal("unimplemented 32 bit arm7 write at address 0x%08x with data 0x%04x", addr, data);
+		log_fatal("unimplemented 32 bit arm7 write at address 0x%08x with data 0x%08x", addr, data);
 	}
 }
 
@@ -540,12 +540,12 @@ void Memory::arm9_write_byte(u32 addr, u8 data) {
 			WRAMCNT = data & 0x3;
 			return;
 		default:
-			log_fatal("unimplemented 8 bit arm9 io write at address 0x%08x with data 0x%04x", addr, data);
+			log_fatal("unimplemented 8 bit arm9 io write at address 0x%08x with data 0x%02x", addr, data);
 		}
 
 		break;
 	default:
-		log_fatal("unimplemented 8 bit arm9 write at address 0x%08x with data 0x%01x", addr, data);
+		log_fatal("unimplemented 8 bit arm9 write at address 0x%08x with data 0x%02x", addr, data);
 	}
 }
 

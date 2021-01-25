@@ -288,7 +288,6 @@ void ARM::arm_eors(u32 op2) {
 }
 
 void ARM::arm_movs(u32 op2) {
-
     // get rd
     u8 rd = (opcode >> 12) & 0xF;
     
@@ -305,7 +304,7 @@ void ARM::arm_movs(u32 op2) {
     } else {
         regs.r[15] += 4;
     }
-    
+
 }
 
 void ARM::arm_cmn(u32 op2) {

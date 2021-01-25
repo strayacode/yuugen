@@ -270,7 +270,6 @@ void ARM::execute_instruction() {
     // // if (counter == 1413964) {
     // //     exit(1);
     // // }   
-    printf("%08x\n", opcode);
     if (counter == 279) {
         exit(1);
     }

@@ -255,10 +255,8 @@ void ARM::arm_str_post(u32 op2) {
 }
 
 void ARM::arm_msr_reg() {
-    printf("cpsr before: 0x%08x\n", regs.cpsr);
     // user programs cant change cpsr
     u8 rm = opcode & 0xF;
-    printf("r%d is 0x%08x\n", rm, regs.r[rm]);
     u32 mask = 0;
     for (int i = 0; i < 4; i++) {
         if (get_bit(i + 16, regs.r[rm])) {
@@ -282,11 +280,7 @@ void ARM::arm_msr_reg() {
             // proceed with setting cpsr normally
             // first change bits 0..7
             if (get_bit(16, opcode)) {
-                printf("cpsr is 0x%08x\n", regs.cpsr);
-                printf("jew\n");
-                printf("r%d is 0x%08x\n", rm, regs.r[rm]);
                 update_mode(regs.r[rm] & 0x1F);
-                printf("end\n");
             }
 
             // set bits 5..7 too
@@ -300,8 +294,6 @@ void ARM::arm_msr_reg() {
             }
         }
     }
-    printf("cpsr is now 0x%08x\n", regs.cpsr);
-    printf("end\n");
     regs.r[15] += 4;
 
 }
