@@ -82,7 +82,6 @@ void ARM::arm_blx_reg() {
 }
 
 void ARM::arm_swi() {
-    
     // store the address of the next instruction after the swi in lr_svc
     regs.r_banked[BANK_SVC][6] = regs.r[15] - 4;
 
@@ -100,6 +99,8 @@ void ARM::arm_swi() {
     // disable normal interrupts
     regs.cpsr |= (1 << 7);
     
+
+    // regs.r[14] = regs.r[15] - 4;
     // check the exception base and jump to the correct address in the bios
     regs.r[15] = nds->cp15.get_exception_base() + 0x08;
     

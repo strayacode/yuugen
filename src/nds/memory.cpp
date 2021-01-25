@@ -108,7 +108,7 @@ u16 Memory::arm7_read_halfword(u32 addr) {
 		case 0x04000180:
 			return nds->ipc.read_ipcsync7();
 		default:
-			log_fatal("unimplemented 32 bit arm9 io read at address 0x%08x", addr);
+			log_fatal("unimplemented 16 bit arm7 io read at address 0x%08x", addr);
 		}
 
 		break;

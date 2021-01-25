@@ -162,7 +162,6 @@ void ARM::arm_bics(u32 op2) {
 void ARM::arm_add(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
-
     regs.r[rd] = regs.r[rn] + op2;
     if (rd == 15) {
         log_fatal("handle pls");
@@ -289,6 +288,7 @@ void ARM::arm_eors(u32 op2) {
 }
 
 void ARM::arm_movs(u32 op2) {
+
     // get rd
     u8 rd = (opcode >> 12) & 0xF;
     
@@ -296,7 +296,10 @@ void ARM::arm_movs(u32 op2) {
 	set_condition_flag(N_FLAG, op2 >> 31);
     regs.r[rd] = op2;
     if (rd == 15) {
-        // log_fatal("handle");
+        // update mode to return from supervisor mode i think lol
+        update_mode(regs.spsr & 0x1F);
+
+        // update spsr after otherwise update_mode() thinks there is no mode switch
         regs.cpsr = regs.spsr;
         arm_flush_pipeline(); // shrug idk what im doing lmao
     } else {
