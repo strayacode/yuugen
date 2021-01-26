@@ -1155,6 +1155,7 @@ void ARM::thumb_ldr_imm5() {
     regs.r[rd] = read_word(address);
 
     if (address & 0x3) {
+        // printf("jew\n");
         u8 shift_amount = (address & 0x3) << 3;
         regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
     }

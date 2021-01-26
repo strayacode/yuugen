@@ -58,11 +58,17 @@ public:
 	u16 BLDCNT = 0;
 	u16 BLDALPHA = 0;
 
+	// brightness (fade in/fade out coefficient)
+	u16 BLDY = 0;
+
 
 
 	const u32* get_framebuffer();
 
 	void render_scanline(int line);
+
+	void write_palette_ram(u32 addr, u16 data);
+	void write_oam(u32 addr, u16 data);
 private:
 	GPU *gpu;
 
@@ -79,4 +85,11 @@ private:
     void render_vram_display(int line);
 
     u32 convert_15_to_24(u32 colour);
+
+    // each gpu engine holds 1kb of palette ram with the first 512 bytes for bg palette and the remaining memory for obj palette
+	u16 palette_ram[0x400] = {};
+
+	// each gpu engine holds 1kb of oam which allows for a total of 128 oam entries for each gpu engine (128 sprites)
+	u16 oam[0x400] = {};
+
 };

@@ -530,9 +530,10 @@ u32 Memory::arm9_read_word(u32 addr) {
 			case 0x040000DC:
 				// read dma3cnt_l and dma3cnt_h
 				// printf("opcode rn is 0x%08x\n", nds->arm9.opcode);y
+				printf("dmacnt_h 0x%08x dmacnt_l 0x%08x\n", nds->dma[1].dma_channel[3].DMACNT_H, nds->dma[1].dma_channel[3].DMACNT_L);
 				// return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFFF) << 16) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF));
 				// return (((nds->dma[1].read_dmacnt_h(3) << 16) & 0xFFFF) | ((nds->dma[1].read_dmacnt_l(3)) & 0xFFFF));
-				return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFE0) << 16) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0x1FFFF));
+				return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFFF) << 16) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF));
 				// printf("value that might be wrong: 0x%08x\n", (((nds->dma[1].dma_channel[3].DMACNT_H << 16) & 0xFFFF) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF)));
 				// log_fatal("lul");
 				// return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFFF) << 16) | (nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF);
@@ -577,9 +578,24 @@ void Memory::arm9_write_byte(u32 addr, u8 data) {
 		case 0x04000240:
 			nds->gpu.vramcnt_a = data;
 			return;
+		case 0x04000244:
+			nds->gpu.vramcnt_e = data;
+			return;
+		case 0x04000245:
+			nds->gpu.vramcnt_f = data;
+			return;
+		case 0x04000246:
+			nds->gpu.vramcnt_g = data;
+			return;
 		case 0x04000247:
 			// only bits 0..1 are used
 			WRAMCNT = data & 0x3;
+			return;
+		case 0x04000248:
+			nds->gpu.vramcnt_h = data;
+			return;
+		case 0x04000249:
+			nds->gpu.vramcnt_i = data;
 			return;
 		default:
 			log_fatal("unimplemented 8 bit arm9 io write at address 0x%08x with data 0x%02x", addr, data);
@@ -896,10 +912,124 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 			case 0x04000304:
 				nds->gpu.POWCNT1 = data;
 				break;
+			case 0x04001000:
+				// write to DISPCNT (engine b)
+				nds->gpu.engine_b.DISPCNT = data;
+				break;
+			case 0x04001008:
+				// write to BG0CNT and BG1CNT (engine b)
+				nds->gpu.engine_b.BGCNT[0] = data & 0xFFFF;
+				nds->gpu.engine_b.BGCNT[1] = data >> 16;
+				break;
+			case 0x0400100C:
+				// write to BG2CNT and BG3CNT (engine b)
+				nds->gpu.engine_b.BGCNT[2] = data & 0xFFFF;
+				nds->gpu.engine_b.BGCNT[3] = data >> 16;
+				break;
+			case 0x04001010:
+				// write to BG0HOFS and BG1HOFS (engine b)
+				nds->gpu.engine_b.BGHOFS[0] = data & 0xFFFF;
+				nds->gpu.engine_b.BGHOFS[1] = data >> 16;
+				break;
+			case 0x04001014:
+				// write to BG2HOFS and BG3HOFS (engine b)
+				nds->gpu.engine_b.BGHOFS[2] = data & 0xFFFF;
+				nds->gpu.engine_b.BGHOFS[3] = data >> 16;
+				break;
+			case 0x04001018:
+				// write to BG0VOFS and BG1VOFS (engine b)
+				nds->gpu.engine_b.BGVOFS[0] = data & 0xFFFF;
+				nds->gpu.engine_b.BGVOFS[1] = data >> 16;
+				break;
+			case 0x0400101C:
+				// write to BG2VOFS and BG3VOFS (engine b)
+				nds->gpu.engine_b.BGVOFS[2] = data & 0xFFFF;
+				nds->gpu.engine_b.BGVOFS[3] = data >> 16;
+				break;
+			case 0x04001020:
+				// write to BG2PA and BG2PB (engine b)
+				nds->gpu.engine_b.BG2PA = data & 0xFFFF;
+				nds->gpu.engine_b.BG2PB = data >> 16;
+				break;
+			case 0x04001024:
+				// write to BG2PC and BG2PD (engine b)
+				nds->gpu.engine_b.BG2PC = data & 0xFFFF;
+				nds->gpu.engine_b.BG2PD = data >> 16;
+				break;
+			case 0x04001028:
+				// write to BG2X (engine b)
+				nds->gpu.engine_b.BG2X = data;
+				break;
+			case 0x0400102C:
+				// write to BG2Y (engine b)
+				nds->gpu.engine_b.BG2Y = data;
+				break;
+			case 0x04001030:
+				// write to BG3PA and BG3PB (engine b)
+				nds->gpu.engine_b.BG3PA = data & 0xFFFF;
+				nds->gpu.engine_b.BG3PB = data >> 16;
+				break;
+			case 0x04001034:
+				// write to BG3PC and BG3PD (engine b)
+				nds->gpu.engine_b.BG3PC = data & 0xFFFF;
+				nds->gpu.engine_b.BG3PD = data >> 16;
+				break;
+			case 0x04001038:
+				// write to BG3X (engine b)
+				nds->gpu.engine_b.BG3X = data;
+				break;
+			case 0x0400103C:
+				// write to BG3Y (engine b)
+				nds->gpu.engine_b.BG3Y = data;
+				break;
+			case 0x04001040:
+				// write to WIN0H and WIN1H (engine b)
+				nds->gpu.engine_b.WIN0H = data & 0xFFFF;
+				nds->gpu.engine_b.WIN1H = data >> 16;
+				break;
+			case 0x04001044:
+				// write to WIN0V and WIN1V (engine b)
+				nds->gpu.engine_b.WIN0V = data & 0xFFFF;
+				nds->gpu.engine_b.WIN1V = data >> 16;
+				break;
+			case 0x04001048:
+				// write to WININ and WINOUT (engine b)
+				nds->gpu.engine_b.WININ = data & 0xFFFF;
+				nds->gpu.engine_b.WINOUT = data >> 16;
+				break;
+			case 0x0400104C:
+				// write to MOSAIC (engine b)
+				nds->gpu.engine_b.MOSAIC = data & 0xFFFF;
+				break;
+			case 0x04001050:
+				// write to BLDCNT and BLDALPHA (engine b)
+				nds->gpu.engine_b.BLDCNT = data & 0xFFFF;
+				nds->gpu.engine_b.BLDALPHA = data >> 16;
+				break;
+			case 0x04001054:
+				// write to BLDY (engine b)
+				nds->gpu.engine_b.BLDY = data & 0xFFFF;
+				break;
+			case 0x04001058:
+				// dont do anything is this address is unused (shrug)
+				return;
 			default:
 				log_fatal("unimplemented 32 bit arm9 io write at address 0x%08x with data 0x%08x", addr, data);
 			}
 
+			break;
+		case 0x05000000:
+			// write to palette ram
+			// check depending on the address which engines palette ram to write to
+			if ((addr & 0x3FF) < 400) {
+				// this is the first block which is assigned to engine a
+				nds->gpu.engine_a.write_palette_ram(addr, data & 0xFFFF);
+				nds->gpu.engine_a.write_palette_ram(addr + 2, data >> 16);
+			} else {
+				// write to engine b's palette ram
+				nds->gpu.engine_b.write_palette_ram(addr, data & 0xFFFF);
+				nds->gpu.engine_b.write_palette_ram(addr + 2, data >> 16);
+			}
 			break;
 		case 0x06000000:
 			if (addr >= 0x06800000) {
@@ -907,6 +1037,18 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 				nds->gpu.write_lcdc_vram(addr + 2, data >> 16);
 			} else {
 				log_fatal("unimplemented 32 bit arm9 write at address 0x%08x with data 0x%08x", addr, data);
+			}
+			break;
+		case 0x07000000:
+			// check memory address to see which engine to write to oam
+			if ((addr & 0x3FF) < 0x400) {
+				// this is the first block of oam which is 1kb and is assigned to engine a
+				nds->gpu.engine_a.write_oam(addr, data & 0xFFFF);
+				nds->gpu.engine_a.write_oam(addr, data >> 16);
+			} else {
+				// write to engine b's palette ram
+				nds->gpu.engine_b.write_oam(addr, data & 0xFFFF);
+				nds->gpu.engine_b.write_oam(addr + 2, data >> 16);
 			}
 			break;
 		default:

@@ -13,6 +13,14 @@ u8 GPU2D::get_vram_bank() {
 	return (DISPCNT >> 18) & 0x3;
 }
 
+void GPU2D::write_palette_ram(u32 addr, u16 data) {
+    palette_ram[addr & 0x3FF] = data;
+}
+
+void GPU2D::write_oam(u32 addr, u16 data) {
+    oam[addr & 0x3FF] = data;
+}
+
 void GPU2D::render_scanline(int line) {
 	// get the display mode (bits 16..17)
 	u8 display_mode = (DISPCNT >> 16) & 0x3;

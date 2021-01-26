@@ -26,6 +26,7 @@ void DMA::transfer() {
 			}
 			// loop through all the data units specified by internal word count
 			for (int j = 0; j < dma_channel[i].internal_word_count; j++) {
+				// printf("%d / %d %08x\n", j, dma_channel[i].internal_word_count, dma_channel[i].internal_destination_address);
 				// check if we are transferring words or halfwords
 				if (get_bit(10, dma_channel[i].DMACNT_H)) {
 					// transfer words
@@ -134,7 +135,7 @@ void DMA::write_dmacnt_h(u8 channel, u16 value) {
 	u16 old_dmacnt_h = dma_channel[channel].DMACNT_H;
 
 	// write to dmacnt_h
-	dma_channel[channel].DMACNT_H = value & 0xFFE0; // bits 0..4 are unused (always 0)
+	dma_channel[channel].DMACNT_H = value & ((cpu_id == 1) ? 0xFFFF : 0xFFE0); // bits 0..4 are unused (always 0)
 
 
 
