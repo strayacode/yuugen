@@ -29,20 +29,25 @@ void NDS::run_nds_frame() {
         for (int j = 0; j < 355 * 3; j++) {
             // run arm9 and arm7 stuff
             // since arm9 runs at the twice the clock speed of arm7 we run it 2 times instead of 1
-            
-            arm9.step();
-            arm9.step();
-            if (timers[1].get_timer_enabled()) {
-                // tick arm9 timers by 2 cycles
-                timers[1].tick(2);
+            for (int i = 0; i < 2; i++) {
+                arm9.step();
+                if (timers[1].get_timer_enabled()) {
+                    // tick arm9 timers by 2 cycles
+                    timers[1].tick(1);
+                }
+                if (dma[1].get_dma_enabled()) {
+                    dma[1].transfer();
+                }
             }
-
-
-
+            
+        
             arm7.step();
             if (timers[0].get_timer_enabled()) {
                 // tick arm7 timers by 2 cycles
                 timers[0].tick(2);
+            }
+            if (dma[0].get_dma_enabled()) {
+                dma[0].transfer();
             }
 
             // this is called for hblank to begin when 256 dots have passed in a scanline (each dot is 3 cycle)

@@ -7,7 +7,7 @@ class NDS;
 
 class DMA {
 public:
-	DMA(NDS *nds, int cpu_id);
+	DMA(NDS *nds, bool cpu_id);
 
 	struct dma_channel {
         u32 DMASAD; // only first 27 or 28 significant bits are used. i would this is the address that data is taken from
@@ -31,10 +31,14 @@ public:
     void write_dmacnt_l(u8 channel, u16 value);
     void write_dmacnt_h(u8 channel, u16 value);
 
+    bool get_dma_enabled();
+
+    void transfer();
+
 private:
 	NDS *nds;
 
-    int cpu_id;
+    bool cpu_id;
 
     u8 enabled = 0;
 };

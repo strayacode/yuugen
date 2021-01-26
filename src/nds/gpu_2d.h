@@ -10,7 +10,9 @@ class GPU2D {
 public:
 	GPU2D(GPU *gpu, int engine_id);
 
-	u32 DISPCNT;
+	u32 DISPCNT = 0;
+
+	u16 BGCNT[4] = {};
 
 	const u32* get_framebuffer();
 

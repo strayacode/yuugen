@@ -500,8 +500,8 @@ u32 Memory::arm9_read_word(u32 addr) {
 			break;
 		case 0x04000000:
 			switch (addr) {
-			case 0x04000004:
-
+			case 0x040000EC:
+				return DMAFILL[3];
 			case 0x04004008:
 				return 0;
 			default:
@@ -670,6 +670,15 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 			case 0x04000000:
 				// write to DISPCNT for engine
 				nds->gpu.engine_a.DISPCNT = data;
+				break;
+			case 0x04000004:
+				// write to DISPSTAT
+				nds->gpu.DISPSTAT = data & 0xFFFF;
+				break;
+			case 0x04000008:
+				// write to BG0CNT and BG1CNT (engine a)
+				nds->gpu.engine_a.BGCNT[0] = data & 0xFFFF;
+				nds->gpu.engine_a.BGCNT[1] = data >> 16;
 				break;
 			case 0x040000B0:
 				// write to DMA0SAD
