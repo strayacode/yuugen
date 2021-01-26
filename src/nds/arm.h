@@ -15,7 +15,8 @@ public:
 	void direct_boot();
 	void step();
 
-	
+	// holds the opcode of the current instruction idk
+	u32 opcode;
 
 private:
 	NDS *nds;
@@ -39,8 +40,7 @@ private:
 
 	int counter = 0;
 
-	// holds the opcode of the current instruction idk
-	u32 opcode;
+	
 	
 
 	// 0 = arm7, 1 = arm9

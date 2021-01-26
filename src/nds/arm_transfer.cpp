@@ -134,7 +134,7 @@ void ARM::arm_ldr_pre(u32 op2) {
     u32 data = read_word(address);
 
     if (address & 0x3) {
-        u8 shift_amount = (address & 0x3) * 8;
+        u8 shift_amount = (address & 0x3) << 3;
         data = rotate_right(data, shift_amount);
     }
 
@@ -156,14 +156,30 @@ void ARM::arm_ldr_post(u32 op2) {
     u32 address = regs.r[rn];
     regs.r[15] += 4;
     u32 data = read_word(regs.r[rn]);
-    
     if (rd == 15) {
-        log_fatal("handle");
+        // TODO: optimise later
+        if (cpu_id == ARMv4) {
+            // in armv4 this is sort of just treated as a mov pc so we just flush the pipeline
+            arm_flush_pipeline();
+        } else {
+            // arm9 specific
+            if (regs.r[15] & 0x1) {
+                // switch to thumb
+                regs.cpsr |= (1 << 5);
+
+                // halfword align the address
+                regs.r[15] &= ~1;
+
+                thumb_flush_pipeline();
+            } else {
+                arm_flush_pipeline();
+            }
+        }
     }
     // TODO: make sure this is correct later
     // i.e. not word aligned
     if (address & 0x3) {
-        u8 shift_amount = (address & 0x3) * 8;
+        u8 shift_amount = (address & 0x3) << 3;
         data = rotate_right(data, shift_amount);
     }
 
@@ -260,7 +276,7 @@ void ARM::arm_msr_reg() {
     u32 mask = 0;
     for (int i = 0; i < 4; i++) {
         if (get_bit(i + 16, regs.r[rm])) {
-            mask |= (0xFF << (i * 8));
+            mask |= (0xFF << (i << 3));
         }
     }
     
@@ -289,7 +305,7 @@ void ARM::arm_msr_reg() {
             // then change bits 8..23
             for (int i = 0; i < 3; i++) {
                 if (get_bit(17 + i, opcode)) {
-                    regs.cpsr = ((0xFF << ((i + 1) * 8)) & regs.r[rm]) | (regs.cpsr & ~(0xFF << ((i + 1) * 8)));
+                    regs.cpsr = ((0xFF << ((i + 1) << 3)) & regs.r[rm]) | (regs.cpsr & ~(0xFF << ((i + 1) << 3)));
                 }
             }
         }
@@ -304,7 +320,7 @@ void ARM::arm_msr_imm() {
     u32 mask = 0;
     for (int i = 0; i < 4; i++) {
         if (get_bit(i + 16, immediate)) {
-            mask |= (0xFF << (i * 8));
+            mask |= (0xFF << (i << 3));
         }
     }
 
@@ -333,7 +349,7 @@ void ARM::arm_msr_imm() {
             // then change bits 8..23
             for (int i = 0; i < 3; i++) {
                 if (get_bit(17 + i, opcode)) {
-                    regs.cpsr = ((0xFF << ((i + 1) * 8)) & immediate) | (regs.cpsr & ~(0xFF << ((i + 1) * 8)));
+                    regs.cpsr = ((0xFF << ((i + 1) << 3)) & immediate) | (regs.cpsr & ~(0xFF << ((i + 1) << 3)));
                 }
             }
         }
@@ -917,7 +933,7 @@ void ARM::thumb_ldrpc_imm() {
     regs.r[rd] = read_word(address);
     // log_fatal("address is 0x%04x", address);
     if (address & 0x3) {
-        u8 shift_amount = (address & 0x3) * 8;
+        u8 shift_amount = (address & 0x3) << 3;
         regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
     }
 
@@ -972,7 +988,7 @@ void ARM::thumb_strh_imm5() {
     u8 rn = (opcode >> 3) & 0x7;
 
     u32 immediate = (opcode >> 6) & 0x1F;
-    u32 address = regs.r[rn] + (immediate * 2);
+    u32 address = regs.r[rn] + (immediate << 1);
     write_halfword(address, regs.r[rd]);
 
     regs.r[15] += 2;
@@ -982,7 +998,7 @@ void ARM::thumb_ldrh_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u32 immediate_5 = (opcode >> 6) & 0x1F;
-    u32 address = regs.r[rn] + (immediate_5 * 2);
+    u32 address = regs.r[rn] + (immediate_5 << 1);
 
     regs.r[rd] = read_halfword(address);
 
@@ -993,7 +1009,7 @@ void ARM::thumb_str_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u32 immediate = (opcode >> 6) & 0x1F;
-    u32 address = regs.r[rn] + (immediate * 4);
+    u32 address = regs.r[rn] + (immediate << 2);
 
     write_word(address, regs.r[rd]);
 
@@ -1016,7 +1032,7 @@ void ARM::thumb_strb_imm5() {
 void ARM::thumb_strsp_reg() {
     u8 rd = (opcode >> 8) & 0x7;
     u32 immediate = opcode & 0xFF;
-    u32 address = regs.r[13] + (immediate * 4);
+    u32 address = regs.r[13] + (immediate << 2);
     write_word(address, regs.r[rd]);
 
     regs.r[15] += 2;
@@ -1073,7 +1089,7 @@ void ARM::thumb_pop_pc() {
 void ARM::thumb_ldrsp_reg() {
     u32 immediate = opcode & 0xFF;
     u8 rd = (opcode >> 8) & 0x7;
-    u32 address = regs.r[13] + (immediate * 4);
+    u32 address = regs.r[13] + (immediate << 2);
     if (address & 0x3) {
         log_fatal("uhhh");
     } else {
@@ -1134,12 +1150,12 @@ void ARM::thumb_ldr_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u32 immediate = (opcode >> 6) & 0x1F;
-    u32 address = regs.r[rn] + (immediate * 4);
+    u32 address = regs.r[rn] + (immediate << 2);
 
     regs.r[rd] = read_word(address);
 
     if (address & 0x3) {
-        u8 shift_amount = (address & 0x3) * 8;
+        u8 shift_amount = (address & 0x3) << 3;
         regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
     }
 
@@ -1192,7 +1208,7 @@ void ARM::thumb_ldr_reg() {
     regs.r[rd] = read_word(address);
 
     if (address & 0x3) {
-        u8 shift_amount = (address & 0x3) * 8;
+        u8 shift_amount = (address & 0x3) << 3;
         regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
     }
 

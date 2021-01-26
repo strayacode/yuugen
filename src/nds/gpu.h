@@ -54,12 +54,13 @@ public:
 		BOTTOM_SCREEN,
 	};
 
-	u16 DISPSTAT = 0;
+	u16 DISPSTAT9, DISPSTAT7 = 0;
 
 	// indicates the current scanline
 	u16 VCOUNT = 0;
 
-	void write_dispstat(u16 data);
+	void write_dispstat9(u16 data);
+    void write_dispstat7(u16 data);
 
 private:
 	

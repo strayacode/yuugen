@@ -24,6 +24,12 @@ add_library(nds
 
 )
 
+set (IO_DEBUG OFF)
+
+if (IO_DEBUG) 
+	target_compile_definitions(nds PRIVATE IO_DEBUG)
+endif()
+
 target_include_directories(nds PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 target_link_libraries(nds PRIVATE common)

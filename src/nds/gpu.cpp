@@ -6,14 +6,20 @@ GPU::GPU(NDS *nds) : nds(nds), engine_a(this, 0), engine_b(this, 1) {
 
 }
 
-void GPU::write_dispstat(u16 data) {
+void GPU::write_dispstat9(u16 data) {
 	// make sure to only change bits which are writeable
-	DISPSTAT = (data & 0xFFB8);
+	DISPSTAT9 = (data & 0xFFB8);
+}
+
+void GPU::write_dispstat7(u16 data) {
+    // make sure to only change bits which are writeable
+    DISPSTAT7 = (data & 0xFFB8);
 }
 
 void GPU::render_scanline_begin(int line) {
     // set hblank flag as the gpu has now done 256 dots on the scanline and is ready to start hblank
-    DISPSTAT |= (1 << 1);
+    DISPSTAT9 |= (1 << 1);
+    DISPSTAT7 |= (1 << 1);
 
     
     if (line < 192) {
@@ -27,11 +33,13 @@ void GPU::render_scanline_end(int line) {
 	switch (VCOUNT) {
     case 192:
         // set vblank flag in dispstat as vblank starts when 192 scanlines have been rendered
-        DISPSTAT |= 1;
+        DISPSTAT9 |= 1;
+        DISPSTAT7 |= 1;
         break;
     case 262: // last scanline
         // clear vblank flag in dispstat at end of vblank 
-        DISPSTAT &= ~1;
+        DISPSTAT9 &= ~1;
+        DISPSTAT7 &= ~1;
         break;
     case 263: // frame is finished
         // reset vcount
@@ -41,12 +49,24 @@ void GPU::render_scanline_end(int line) {
 
 
 	// clear the hblank flag as we are now at the end of the scanline as hblank has finished
-	DISPSTAT &= ~(1 << 1);
+	DISPSTAT9 &= ~(1 << 1);
+    DISPSTAT7 &= ~(1 << 1);
 
-	if ((DISPSTAT >> 8) == VCOUNT) {
+	if ((DISPSTAT9 >> 8) == VCOUNT) {
 		// set the v counter flag
-		DISPSTAT |= (1 << 2);
-	} 
+		DISPSTAT7 |= (1 << 2);
+	} else if (get_bit(2, DISPSTAT9)) {
+        // reset v counter flag on next line as at that point v count will not be the same as lyc and thus v counter flag must be reset
+        DISPSTAT9 &= ~(1 << 2);
+    }
+
+    if ((DISPSTAT7 >> 8) == VCOUNT) {
+        // set the v counter flag
+        DISPSTAT7 |= (1 << 2);
+    } else if (get_bit(2, DISPSTAT7)) {
+        // reset v counter flag on next line as at that point v count will not be the same as lyc and thus v counter flag must be reset
+        DISPSTAT7 &= ~(1 << 2);
+    }
 }
 
 const u32* GPU::get_framebuffer(int screen) {

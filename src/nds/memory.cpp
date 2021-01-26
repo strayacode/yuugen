@@ -25,6 +25,9 @@ void Memory::reset() {
 
 u8 Memory::arm7_read_byte(u32 addr) {
 	switch (addr & 0xFF000000) {
+	case 0x02000000:
+		// for now we will ignore main memory control because seems to only matter for power down????
+		return main_memory[addr & 0x3FFFFF];
 	case 0x03000000:
 		// TODO: change this to regular writes
 		// ok in shared wram it is split into repeating blocks for arm7 and arm9
@@ -48,7 +51,9 @@ u8 Memory::arm7_read_byte(u32 addr) {
 		}
 		break;
 	case 0x04000000:
-		// log_warn("arm7 8bit reading at address 0x%08x", addr);
+		#ifdef IO_DEBUG
+		log_warn("arm7 8bit reading at address 0x%08x", addr);
+		#endif
 		switch (addr) {
 		case 0x04000138:
 			return nds->rtc.control_register;
@@ -103,10 +108,14 @@ u16 Memory::arm7_read_halfword(u32 addr) {
 		}
 		break;
 	case 0x04000000:
-		// log_warn("arm7 16bit reading at address 0x%08x", addr);
+		#ifdef IO_DEBUG
+		log_warn("arm7 16bit reading at address 0x%08x", addr);
+		#endif
 		switch (addr) {
 		case 0x04000004:
-			return nds->gpu.DISPSTAT;
+			return nds->gpu.DISPSTAT7;
+		case 0x04000130:
+			return nds->input.KEYINPUT;
 		case 0x04000180:
 			return nds->ipc.read_ipcsync7();
 		default:
@@ -159,7 +168,9 @@ u32 Memory::arm7_read_word(u32 addr) {
 		}
 		break;
 	case 0x04000000:
-		// log_warn("arm7 reading from address 0x%08x", addr);
+		#ifdef IO_DEBUG
+		log_warn("arm7 reading from address 0x%08x", addr);
+		#endif
 		switch (addr) {
 		case 0x04000180:
 			return nds->ipc.read_ipcsync7();
@@ -212,7 +223,9 @@ void Memory::arm7_write_byte(u32 addr, u8 data) {
 		}
 		break;
 	case 0x04000000:
-		// log_warn("arm7 writing data 0x%02x to address 0x%08x", data, addr);
+		#ifdef IO_DEBUG
+		log_warn("arm7 writing data 0x%02x to address 0x%08x", data, addr);
+		#endif
 		switch (addr) {
 		case 0x04000138:
 			nds->rtc.control_register = data;
@@ -297,7 +310,9 @@ void Memory::arm7_write_halfword(u32 addr, u16 data) {
 		}
 		break;
 	case 0x04000000:
-		// log_warn("arm7 writing data 0x%08x to address 0x%04x", data, addr);
+		#ifdef IO_DEBUG
+		log_warn("arm7 writing data 0x%08x to address 0x%04x", data, addr);
+		#endif
 		switch (addr) {
 		case 0x04000180:
 			nds->ipc.write_ipcsync7(data);
@@ -355,7 +370,9 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 		}
 		break;
 	case 0x04000000:
-		// log_warn("arm7 writing data 0x%08x to address 0x%08x", data, addr);
+		#ifdef IO_DEBUG
+		log_warn("arm7 writing data 0x%08x to address 0x%08x", data, addr);
+		#endif
 		switch (addr) {
 		case 0x04000100:
 			nds->timers[0].write_tmcnt_l(0, data & 0xFFFF);
@@ -395,9 +412,14 @@ u8 Memory::arm9_read_byte(u32 addr) {
 	case 0x02000000:
 		return main_memory[addr & 0x3FFFFF];
 	case 0x04000000:
+		#ifdef IO_DEBUG
+		log_warn("arm9 reading data from address 0x%08x", addr);
+		#endif
 		switch (addr) {
 			case 0x04000300:
 				return POSTFLG9;
+			case 0x04004000:
+				return 0;
 			default:
 				log_fatal("unimplemented 8 bit arm9 io read at address 0x%08x", addr);
 		}
@@ -442,10 +464,12 @@ u16 Memory::arm9_read_halfword(u32 addr) {
 			}
 			break;
 		case 0x04000000:
-			// log_warn("arm9 reading from data address 0x%04x", addr);
+			#ifdef IO_DEBUG
+			log_warn("arm9 reading data from address 0x%08x", addr);
+			#endif
 			switch (addr) {
 			case 0x04000004:
-				return nds->gpu.DISPSTAT;
+				return nds->gpu.DISPSTAT9;
 			case 0x04000130:
 				return nds->input.KEYINPUT;
 			case 0x04000180:
@@ -499,9 +523,23 @@ u32 Memory::arm9_read_word(u32 addr) {
 			}
 			break;
 		case 0x04000000:
+			#ifdef IO_DEBUG
+			log_warn("arm9 reading data from address 0x%08x", addr);
+			#endif
 			switch (addr) {
+			case 0x040000DC:
+				// read dma3cnt_l and dma3cnt_h
+				// printf("opcode rn is 0x%08x\n", nds->arm9.opcode);y
+				// return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFFF) << 16) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF));
+				// return (((nds->dma[1].read_dmacnt_h(3) << 16) & 0xFFFF) | ((nds->dma[1].read_dmacnt_l(3)) & 0xFFFF));
+				return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFE0) << 16) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0x1FFFF));
+				// printf("value that might be wrong: 0x%08x\n", (((nds->dma[1].dma_channel[3].DMACNT_H << 16) & 0xFFFF) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF)));
+				// log_fatal("lul");
+				// return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFFF) << 16) | (nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF);
 			case 0x040000EC:
 				return DMAFILL[3];
+			case 0x04000180:
+				return nds->ipc.read_ipcsync9();
 			case 0x04004008:
 				return 0;
 			default:
@@ -529,7 +567,9 @@ void Memory::arm9_write_byte(u32 addr, u8 data) {
 		main_memory[addr & 0x3FFFFF] = data;
 		break;
 	case 0x04000000:
-		// log_warn("arm9 writing data 0x%08x to address 0x%04x", data, addr);
+		#ifdef IO_DEBUG
+		log_warn("arm9 writing data 0x%08x to address 0x%04x", data, addr);
+		#endif
 		switch (addr) {
 		case 0x04000208:
 			nds->interrupt.write_ime(data);
@@ -560,7 +600,9 @@ void Memory::arm9_write_halfword(u32 addr, u16 data) {
 		memcpy(&main_memory[addr & 0x3FFFFF], &data, 2);
 		break;
 	case 0x04000000:
-		// log_warn("arm9 writing data 0x%08x to address 0x%04x", data, addr);
+		#ifdef IO_DEBUG
+		log_warn("arm9 writing data 0x%08x to address 0x%04x", data, addr);
+		#endif
 		switch (addr) {
 		case 0x040000D0:
 			nds->dma[1].write_dmacnt_l(2, data);
@@ -665,7 +707,9 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 			}
 			break;
 		case 0x04000000:
-			// log_warn("arm9 writing data 0x%08x to address 0x%08x", data, addr);
+			#ifdef IO_DEBUG
+			log_warn("arm9 writing data 0x%08x to address 0x%08x", data, addr);
+			#endif
 			switch (addr) {
 			case 0x04000000:
 				// write to DISPCNT for engine
@@ -673,12 +717,97 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 				break;
 			case 0x04000004:
 				// write to DISPSTAT
-				nds->gpu.DISPSTAT = data & 0xFFFF;
+				nds->gpu.write_dispstat9(data & 0xFFFF);
 				break;
 			case 0x04000008:
 				// write to BG0CNT and BG1CNT (engine a)
 				nds->gpu.engine_a.BGCNT[0] = data & 0xFFFF;
 				nds->gpu.engine_a.BGCNT[1] = data >> 16;
+				break;
+			case 0x0400000C:
+				// write to BG2CNT and BG3CNT (engine a)
+				nds->gpu.engine_a.BGCNT[2] = data & 0xFFFF;
+				nds->gpu.engine_a.BGCNT[3] = data >> 16;
+				break;
+			case 0x04000010:
+				// write to BG0HOFS and BG1HOFS (engine a)
+				nds->gpu.engine_a.BGHOFS[0] = data & 0xFFFF;
+				nds->gpu.engine_a.BGHOFS[1] = data >> 16;
+				break;
+			case 0x04000014:
+				// write to BG2HOFS and BG3HOFS (engine a)
+				nds->gpu.engine_a.BGHOFS[2] = data & 0xFFFF;
+				nds->gpu.engine_a.BGHOFS[3] = data >> 16;
+				break;
+			case 0x04000018:
+				// write to BG0VOFS and BG1VOFS (engine a)
+				nds->gpu.engine_a.BGVOFS[0] = data & 0xFFFF;
+				nds->gpu.engine_a.BGVOFS[1] = data >> 16;
+				break;
+			case 0x0400001C:
+				// write to BG2VOFS and BG3VOFS (engine a)
+				nds->gpu.engine_a.BGVOFS[2] = data & 0xFFFF;
+				nds->gpu.engine_a.BGVOFS[3] = data >> 16;
+				break;
+			case 0x04000020:
+				// write to BG2PA and BG2PB (engine a)
+				nds->gpu.engine_a.BG2PA = data & 0xFFFF;
+				nds->gpu.engine_a.BG2PB = data >> 16;
+				break;
+			case 0x04000024:
+				// write to BG2PC and BG2PD (engine a)
+				nds->gpu.engine_a.BG2PC = data & 0xFFFF;
+				nds->gpu.engine_a.BG2PD = data >> 16;
+				break;
+			case 0x04000028:
+				// write to BG2X (engine a)
+				nds->gpu.engine_a.BG2X = data;
+				break;
+			case 0x0400002C:
+				// write to BG2Y (engine a)
+				nds->gpu.engine_a.BG2Y = data;
+				break;
+			case 0x04000030:
+				// write to BG3PA and BG3PB
+				nds->gpu.engine_a.BG3PA = data & 0xFFFF;
+				nds->gpu.engine_a.BG3PB = data >> 16;
+				break;
+			case 0x04000034:
+				// write to BG3PC and BG3PD
+				nds->gpu.engine_a.BG3PC = data & 0xFFFF;
+				nds->gpu.engine_a.BG3PD = data >> 16;
+				break;
+			case 0x04000038:
+				// write to BG3X
+				nds->gpu.engine_a.BG3X = data;
+				break;
+			case 0x0400003C:
+				// write to BG3Y
+				nds->gpu.engine_a.BG3Y = data;
+				break;
+			case 0x04000040:
+				// write to WIN0H and WIN1H
+				nds->gpu.engine_a.WIN0H = data & 0xFFFF;
+				nds->gpu.engine_a.WIN1H = data >> 16;
+				break;
+			case 0x04000044:
+				// write to WIN0V and WIN1V
+				nds->gpu.engine_a.WIN0V = data & 0xFFFF;
+				nds->gpu.engine_a.WIN1V = data >> 16;
+				break;
+			case 0x04000048:
+				// write to WININ and WINOUT
+				nds->gpu.engine_a.WININ = data & 0xFFFF;
+				nds->gpu.engine_a.WINOUT = data >> 16;
+				break;
+			case 0x0400004C:
+				// write to MOSAIC
+				nds->gpu.engine_a.MOSAIC = data & 0xFFFF;
+				break;
+			case 0x04000050:
+				// write to BLDCNT and BLDALPHA
+				nds->gpu.engine_a.BLDCNT = data & 0xFFFF;
+				nds->gpu.engine_a.BLDALPHA = data >> 16;
 				break;
 			case 0x040000B0:
 				// write to DMA0SAD
@@ -735,6 +864,9 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 			case 0x040000EC:
 				// write to DMA3FILL
 				DMAFILL[3] = data;
+				break;
+			case 0x04000180:
+				nds->ipc.write_ipcsync9(data);
 				break;
 			case 0x040001A0:
 				// write to AUXSPICNT

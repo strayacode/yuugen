@@ -3,7 +3,7 @@
 
 u32 ARM::arm_imm_data_processing() {
 	u32 immediate = opcode & 0xFF;
-    u8 shift_amount = ((opcode >> 8) & 0xF) * 2;
+    u8 shift_amount = ((opcode >> 8) & 0xF) << 1;
 
     u32 result = (immediate >> shift_amount) | (immediate << (32 - shift_amount));
     return result;
@@ -11,7 +11,7 @@ u32 ARM::arm_imm_data_processing() {
 
 u32 ARM::arm_imms_data_processing() {
 	u32 immediate = opcode & 0xFF;
-    u8 shift_amount = ((opcode >> 8) & 0xF) * 2;
+    u8 shift_amount = ((opcode >> 8) & 0xF) << 1;
 
     u32 result = (immediate >> shift_amount) | (immediate << (32 - shift_amount));
 
@@ -73,7 +73,7 @@ void ARM::arm_subs(u32 op2) {
     u32 result = regs.r[rn] - op2;
 
     regs.r[rd] = result;
-
+    
     if (rd == 15) {
         log_fatal("handle pls");
         // copy the spsr of the current mode to the cpsr
@@ -493,7 +493,7 @@ void ARM::arm_swp() {
     u32 address = regs.r[rn];
     u32 data = read_word(address);
     if (address & 0x3) {
-        data = rotate_right(data, (address & 0x3) * 8);
+        data = rotate_right(data, (address & 0x3) << 3);
     }
 
     write_word(address, regs.r[rm]);

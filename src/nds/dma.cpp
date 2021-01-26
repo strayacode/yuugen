@@ -5,6 +5,14 @@ DMA::DMA(NDS *nds, bool cpu_id) : nds(nds), cpu_id(cpu_id) {
 
 }
 
+// u16 DMA::read_dmacnt_l(u8 channel) {
+// 	return dma_channel[channel].DMACNT_L & 0xFFFF;
+// }
+
+// u16 DMA::read_dmacnt_h(u8 channel) {
+// 	return dma_channel[channel].DMACNT_H & 0xFFFF;
+// }
+
 void DMA::transfer() {
 	// check each dma channel if they are enabled, starting with channel 0 first as that has the highest priority
 	for (int i = 0; i < 4; i++) {
@@ -16,7 +24,6 @@ void DMA::transfer() {
 			if (get_bit(9, dma_channel[i].DMACNT_H) || get_bit(14, dma_channel[i].DMACNT_H)) {
 				log_fatal("repeat bit or irq request bit not implemented yet!");
 			}
-
 			// loop through all the data units specified by internal word count
 			for (int j = 0; j < dma_channel[i].internal_word_count; j++) {
 				// check if we are transferring words or halfwords
@@ -88,9 +95,12 @@ void DMA::transfer() {
 					}
 				}
 			}
-
 			// disable the dma channel after the transfer has finished
 			enabled &= ~(1 << i);
+
+			// also clear bit 15 (enabled bit)
+			dma_channel[i].DMACNT_H &= ~(1 << 15);
+
 		}
 	}
 }
@@ -146,6 +156,7 @@ void DMA::write_dmacnt_h(u8 channel, u16 value) {
 	} else {
 		log_fatal("other dma start timing not implemented yet: %d", ((dma_channel[channel].DMACNT_H) >> 11) & 0x7);
 	}
+
 }
 
 bool DMA::get_dma_enabled() {
