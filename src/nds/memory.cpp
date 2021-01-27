@@ -395,7 +395,7 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 			nds->interrupt[0].write_ie7(data);
 			break;
 		case 0x04000214:
-			nds->interrupt[0].IF = data;
+			nds->interrupt[0].write_if(data);
 			break;
 		default:
 			log_fatal("unimplemented 32 bit arm7 io write at address 0x%08x with data 0x%08x", addr, data);
@@ -904,7 +904,7 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 				nds->interrupt[1].write_ie9(data);
 				break;
 			case 0x04000214:
-				nds->interrupt[1].IF = data;
+				nds->interrupt[1].write_if(data);
 				break;
 			case 0x04000240:
 				// sets vramcnt_a, vramcnt_b, vramcnt_c and vramcnt_d
