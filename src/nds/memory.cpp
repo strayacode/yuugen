@@ -662,6 +662,9 @@ void Memory::arm9_write_halfword(u32 addr, u16 data) {
 		case 0x04000180:
 			nds->ipc.write_ipcsync9(data);
 			break;
+		case 0x04000184:
+			nds->ipc.write_ipcfifocnt9(data);
+			break;
 		case 0x04000204:
 			// TODO: handle masking bits later
 			EXMEMCNT = data;

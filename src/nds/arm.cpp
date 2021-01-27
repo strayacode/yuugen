@@ -254,7 +254,7 @@ void ARM::step() {
 }
 
 void ARM::execute_instruction() {
-    counter++;
+    // counter++;
     // check for interrupts first
     // for an interrupt service to occur ime must be set, at least 1 interrupt must be enabled and requested and interrupts must be enabled in the cpsr
     if (nds->interrupt[cpu_id].IME && (nds->interrupt[cpu_id].IE & nds->interrupt[cpu_id].IF) && !get_bit(7, regs.cpsr)) {

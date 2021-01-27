@@ -14,6 +14,8 @@ public:
 	void write_ie7(u32 value);
 	void write_if(u32 value);
 
+	void request_interrupt(u8 bit);
+
 	// interrupt request flags
 	u32 IF;	
 

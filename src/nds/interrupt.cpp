@@ -23,3 +23,7 @@ void Interrupt::write_if(u32 value) {
 	// when writing to IF a value of 1 actually resets the bit to acknowledge the interrupt while writing 0 has no change
 	IF &= ~(value);
 }
+
+void Interrupt::request_interrupt(u8 bit) {
+	IF |= (1 << bit);
+}
