@@ -17,14 +17,22 @@ void GPU::write_dispstat7(u16 data) {
 }
 
 void GPU::render_scanline_begin(int line) {
+    if (line < 192) {
+        engine_a.render_scanline(line);
+        engine_b.render_scanline(line);
+    }
+
     // set hblank flag as the gpu has now done 256 dots on the scanline and is ready to start hblank
     DISPSTAT9 |= (1 << 1);
     DISPSTAT7 |= (1 << 1);
 
-    
-    if (line < 192) {
-        engine_a.render_scanline(line);
-        engine_b.render_scanline(line);
+    // check if hblank irqs enabled
+    if (get_bit(4, DISPSTAT7)) {
+        nds->interrupt[0].request_interrupt(1);
+    }
+
+    if (get_bit(4, DISPSTAT9)) {
+        nds->interrupt[1].request_interrupt(1);
     }
 }
 
@@ -35,6 +43,14 @@ void GPU::render_scanline_end(int line) {
         // set vblank flag in dispstat as vblank starts when 192 scanlines have been rendered
         DISPSTAT9 |= 1;
         DISPSTAT7 |= 1;
+
+        // check for vblank interrupts
+        if (get_bit(3, DISPSTAT7)) {
+            nds->interrupt[0].request_interrupt(0);
+        }
+        if (get_bit(3, DISPSTAT9)) {
+            nds->interrupt[1].request_interrupt(0);
+        }
         break;
     case 262: // last scanline
         // clear vblank flag in dispstat at end of vblank 
@@ -52,20 +68,30 @@ void GPU::render_scanline_end(int line) {
 	DISPSTAT9 &= ~(1 << 1);
     DISPSTAT7 &= ~(1 << 1);
 
-	if ((DISPSTAT9 >> 8) == VCOUNT) {
-		// set the v counter flag
-		DISPSTAT7 |= (1 << 2);
-	} else if (get_bit(2, DISPSTAT9)) {
-        // reset v counter flag on next line as at that point v count will not be the same as lyc and thus v counter flag must be reset
-        DISPSTAT9 &= ~(1 << 2);
-    }
-
     if ((DISPSTAT7 >> 8) == VCOUNT) {
         // set the v counter flag
         DISPSTAT7 |= (1 << 2);
+
+        // also request a v counter irq if enabled
+        if (get_bit(5, DISPSTAT7)) {
+            nds->interrupt[0].request_interrupt(2);
+        }
     } else if (get_bit(2, DISPSTAT7)) {
         // reset v counter flag on next line as at that point v count will not be the same as lyc and thus v counter flag must be reset
         DISPSTAT7 &= ~(1 << 2);
+    }
+
+	if ((DISPSTAT9 >> 8) == VCOUNT) {
+		// set the v counter flag
+		DISPSTAT7 |= (1 << 2);
+
+        // also request a v counter irq if enabled
+        if (get_bit(5, DISPSTAT9)) {
+            nds->interrupt[1].request_interrupt(2);
+        }
+	} else if (get_bit(2, DISPSTAT9)) {
+        // reset v counter flag on next line as at that point v count will not be the same as lyc and thus v counter flag must be reset
+        DISPSTAT9 &= ~(1 << 2);
     }
 }
 
