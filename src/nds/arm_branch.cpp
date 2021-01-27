@@ -102,7 +102,8 @@ void ARM::arm_swi() {
 
     // regs.r[14] = regs.r[15] - 4;
     // check the exception base and jump to the correct address in the bios
-    regs.r[15] = nds->cp15.get_exception_base() + 0x08;
+    // also only use cp15 exception base from control register if arm9
+    regs.r[15] = ((cpu_id) ? nds->cp15.get_exception_base() : 0x00000000) + 0x08;
     
     arm_flush_pipeline();
 }
@@ -314,7 +315,7 @@ void ARM::thumb_swi() {
 
     // regs.r[14] = regs.r[15] - 4;
     // check the exception base and jump to the correct address in the bios
-    regs.r[15] = nds->cp15.get_exception_base() + 0x08;
+    regs.r[15] = ((cpu_id) ? nds->cp15.get_exception_base() : 0x00000000) + 0x08;
     
     arm_flush_pipeline();
 }
