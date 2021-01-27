@@ -23,8 +23,9 @@ void IPC::write_ipcsync9(u16 data) {
 	// mask bits correctly
 	IPCSYNC9 = (data & 0x6F00);
 
-	if (get_bit(14, IPCSYNC9)) {
-		log_fatal("handle");
+	// check if other cpu allows for irq to be sent for fifo and if the current cpu will send an irq
+	if (get_bit(13, IPCSYNC9) && get_bit(14, IPCSYNC7)) {
+		nds->interrupt[1].request_interrupt(16);
 	}
 
 	// now store data output specified by bits 8..11 in ipcsync of other cpu for bits 0..3

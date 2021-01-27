@@ -280,3 +280,15 @@ void ARM::thumb_bmi() {
         regs.r[15] += 2;
     }
 }
+
+void ARM::thumb_ble() {
+    
+    // only branch on condition
+    if ((get_condition_flag(Z_FLAG) || (get_condition_flag(N_FLAG) != get_condition_flag(V_FLAG)))) {
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+        regs.r[15] += offset;
+        thumb_flush_pipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}

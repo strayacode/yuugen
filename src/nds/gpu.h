@@ -54,7 +54,7 @@ public:
 		BOTTOM_SCREEN,
 	};
 
-	u16 DISPSTAT9, DISPSTAT7 = 0;
+	u16 DISPSTAT7, DISPSTAT9 = 0;
 
 	// indicates the current scanline
 	u16 VCOUNT = 0;

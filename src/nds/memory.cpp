@@ -416,6 +416,8 @@ u8 Memory::arm9_read_byte(u32 addr) {
 		log_warn("arm9 reading data from address 0x%08x", addr);
 		#endif
 		switch (addr) {
+			case 0x04000208:
+				return nds->interrupt[1].IME;
 			case 0x04000300:
 				return POSTFLG9;
 			case 0x04004000:
@@ -534,6 +536,10 @@ u32 Memory::arm9_read_word(u32 addr) {
 				return DMAFILL[3];
 			case 0x04000180:
 				return nds->ipc.read_ipcsync9();
+			case 0x04000208:
+				return nds->interrupt[1].IME;
+			case 0x04000210:
+				return nds->interrupt[1].IE;
 			case 0x04000240:
 				return (nds->gpu.vramcnt_d << 24 | nds->gpu.vramcnt_c << 16 | nds->gpu.vramcnt_b << 8 | nds->gpu.vramcnt_a);
 			case 0x04004008:
@@ -624,6 +630,9 @@ void Memory::arm9_write_halfword(u32 addr, u16 data) {
 		log_warn("arm9 writing data 0x%08x to address 0x%04x", data, addr);
 		#endif
 		switch (addr) {
+		case 0x04000004:
+			nds->gpu.write_dispstat9(data);
+			break;
 		case 0x040000D0:
 			nds->dma[1].write_dmacnt_l(2, data);
 			break;

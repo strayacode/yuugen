@@ -7,7 +7,7 @@ class NDS;
 
 class Interrupt {
 public:
-	Interrupt(NDS *nds);
+	Interrupt(NDS *nds, bool cpu_id);
 
 	void write_ime(u32 value);
 	void write_ie9(u32 value);
@@ -29,6 +29,8 @@ public:
 
 private:
 	NDS *nds;
+
+	bool cpu_id;
 
 	
 

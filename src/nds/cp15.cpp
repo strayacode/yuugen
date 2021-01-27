@@ -58,6 +58,10 @@ void CP15::write_reg(u32 cn, u32 cm, u32 cp, u32 data) {
     case 0x060000: case 0x060100: case 0x060200: case 0x060300: case 0x060400: case 0x060500: case 0x060600: case 0x060700:
         // dont do anything lol this is just protection unit region stuff which we dont need to emulate
         break;
+    case 0x070004:
+        // halt the arm9 (wait for interrupts)
+        nds->arm9.halt();
+        break;
 	case 0x070500:
 		// invalidate entire instruction cache
 		log_warn("[CP15] invalidating the entire instruction cache");

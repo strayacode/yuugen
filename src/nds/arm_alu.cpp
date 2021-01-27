@@ -1116,3 +1116,20 @@ void ARM::thumb_sub_imm3() {
 
     regs.r[15] += 2;
 }
+
+void ARM::thumb_adc_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+
+    u64 result = (u64)regs.r[rd] + (u64)regs.r[rm] + (u64)get_condition_flag(C_FLAG);
+    u32 result32 = (u32)result;
+    set_condition_flag(C_FLAG, result >> 32);
+
+    set_condition_flag(Z_FLAG, result == 0);
+    set_condition_flag(N_FLAG, result32 >> 31);
+
+    set_condition_flag(V_FLAG, (~(regs.r[rd] ^ regs.r[rm]) & (regs.r[rm] ^ result32)) >> 31);
+    regs.r[rd] = result32;
+
+    regs.r[15] += 2;
+}

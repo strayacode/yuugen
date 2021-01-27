@@ -1215,3 +1215,15 @@ void ARM::thumb_ldr_reg() {
 
     regs.r[15] += 2;
 }
+
+void ARM::thumb_strh_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u8 rm = (opcode >> 6) & 0x7;
+
+    u32 address = regs.r[rn] + regs.r[rm];
+
+    write_halfword(address, regs.r[rd] & 0xFFFF);
+
+    regs.r[15] += 2;
+}

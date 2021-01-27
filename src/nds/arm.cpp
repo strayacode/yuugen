@@ -254,6 +254,11 @@ void ARM::step() {
 }
 
 void ARM::execute_instruction() {
+    // check if arm is halted first
+    if (halted) {
+        return;
+    }
+
     // counter++;
     // check for interrupts first
     // for an interrupt service to occur ime must be set, at least 1 interrupt must be enabled and requested and interrupts must be enabled in the cpsr
@@ -281,11 +286,11 @@ void ARM::execute_instruction() {
         
         arm_flush_pipeline();
     }
-    if (cpu_id == 1) {
-        fprintf(buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x\n", regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], regs.r[8],
-        regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13]
-        , regs.r[14], regs.r[15], opcode);
-    } 
+    // if (cpu_id == 1) {
+    //     fprintf(buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x\n", regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], regs.r[8],
+    //     regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13]
+    //     , regs.r[14], regs.r[15], opcode);
+    // } 
     
     // // if (counter == 0)
     // // if (cpu_id == 1) {
@@ -988,6 +993,12 @@ void ARM::execute_instruction() {
         case 0x41:
             // using the data processing opcode table with bits
             switch ((opcode >> 6) & 0x3) {
+            case 0:
+                log_fatal("0");
+            case 1:
+                return thumb_adc_reg();
+            case 2:
+                log_fatal("2");
             case 3:
                 return thumb_ror_reg();
             default:
@@ -1041,6 +1052,8 @@ void ARM::execute_instruction() {
             return thumb_ldrpc_imm();
         case 0x50: case 0x51:
             return thumb_str_reg();
+        case 0x52: case 0x53:
+            return thumb_strh_reg();
         case 0x58: case 0x59:
             return thumb_ldr_reg();
         case 0x5A: case 0x5B:
@@ -1109,6 +1122,8 @@ void ARM::execute_instruction() {
             return thumb_blt();
         case 0xDC:
             return thumb_bgt();
+        case 0xDD:
+            return thumb_ble();
         case 0xE0: case 0xE1: case 0xE2: case 0xE3: 
         case 0xE4: case 0xE5: case 0xE6: case 0xE7:
             return thumb_b(); 
@@ -1125,4 +1140,14 @@ void ARM::execute_instruction() {
             log_fatal("arm%d opcode 0x%04x with identifier 0x%02x is unimplemented!", cpu_id ? 9: 7, opcode, index);
         }
 	}
+}
+
+void ARM::halt() {
+    // this seems to be exclusively from cp15 writes that cause arm9 to wait for interrupts?
+    if (cpu_id == ARMv4) {
+        return;
+    }
+
+    // set IE to 0 so that only interrupts enabled after the arm9 is halted are detected
+    nds->interrupt[1].IE = 0;
 }

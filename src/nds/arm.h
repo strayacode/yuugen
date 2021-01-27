@@ -18,6 +18,12 @@ public:
 	// holds the opcode of the current instruction idk
 	u32 opcode;
 
+	// if true this causes the cpu (mostly arm9) to wait for an interrupt to occur from other components of the ds
+	bool halted = false;
+
+	// causes the arm9 to halt and set ie to 0 so that interrupts are only accpeted if they are enabled after the arm9 is halted
+	void halt();
+
 private:
 	NDS *nds;
 
@@ -113,6 +119,7 @@ private:
 
 	bool is_arm();
 
+	
 
 	// arm instructions
 
@@ -265,6 +272,7 @@ private:
 	void thumb_ror_reg();
 	void thumb_tst_reg();
 	void thumb_sub_imm3();
+	void thumb_adc_reg();
 
 	// branch instructions
 	void thumb_bgt();
@@ -282,6 +290,7 @@ private:
 	void thumb_bpl();
 	void thumb_bcs();
 	void thumb_bmi();
+	void thumb_ble();
 
 	// transfer instructions
 	void thumb_ldrpc_imm();
@@ -302,4 +311,5 @@ private:
 	void thumb_stmia_reg();
 	void thumb_ldmia_reg();
 	void thumb_ldr_reg();
+	void thumb_strh_reg();
 };
