@@ -27,7 +27,9 @@ public:
 	CP15 cp15;
 	Memory memory;
 	Cartridge cartridge;
-	Interrupt interrupt;
+
+	// 2 sets of interrupt registers. 0 is for arm7 and 1 is for arm9
+	Interrupt interrupt[2];
 	IPC ipc;
 	GPU gpu;
 	RTC rtc;

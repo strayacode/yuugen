@@ -65,7 +65,7 @@ void SPI::write_spidata(u8 data) {
 	}
 
 	if (get_bit(14, SPICNT)) {
-		if (nds->interrupt.IME) {
+		if (nds->interrupt[0].IME) {
 			log_fatal("oops interrupts not handled yet");
 		}
 		

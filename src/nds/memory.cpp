@@ -264,7 +264,7 @@ void Memory::arm7_write_byte(u32 addr, u8 data) {
 			nds->spi.write_spidata(data);
 			return;
 		case 0x04000208:
-			nds->interrupt.write_ime(data);
+			nds->interrupt[0].write_ime(data);
 			return;
 		default:
 			log_fatal("unimplemented 8 bit arm7 io write at address 0x%08x with data 0x%02x", addr, data);
@@ -324,7 +324,7 @@ void Memory::arm7_write_halfword(u32 addr, u16 data) {
 			nds->spi.write_spidata(data);
 			break;
 		case 0x04000208:
-			nds->interrupt.write_ime(data);
+			nds->interrupt[0].write_ime(data);
 			return;
 		default:
 			log_fatal("unimplemented 16 bit arm7 io write at address 0x%08x with data 0x%04x", addr, data);
@@ -389,13 +389,13 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 			nds->cartridge.write_romctrl(data);
 			break;
 		case 0x04000208:
-			nds->interrupt.write_ime(data);
+			nds->interrupt[0].write_ime(data);
 			break;
 		case 0x04000210:
-			nds->interrupt.write_ie7(data);
+			nds->interrupt[0].write_ie7(data);
 			break;
 		case 0x04000214:
-			nds->interrupt.IF = data;
+			nds->interrupt[0].IF = data;
 			break;
 		default:
 			log_fatal("unimplemented 32 bit arm7 io write at address 0x%08x with data 0x%08x", addr, data);
@@ -529,18 +529,13 @@ u32 Memory::arm9_read_word(u32 addr) {
 			switch (addr) {
 			case 0x040000DC:
 				// read dma3cnt_l and dma3cnt_h
-				// printf("opcode rn is 0x%08x\n", nds->arm9.opcode);y
-				printf("dmacnt_h 0x%08x dmacnt_l 0x%08x\n", nds->dma[1].dma_channel[3].DMACNT_H, nds->dma[1].dma_channel[3].DMACNT_L);
-				// return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFFF) << 16) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF));
-				// return (((nds->dma[1].read_dmacnt_h(3) << 16) & 0xFFFF) | ((nds->dma[1].read_dmacnt_l(3)) & 0xFFFF));
 				return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFFF) << 16) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF));
-				// printf("value that might be wrong: 0x%08x\n", (((nds->dma[1].dma_channel[3].DMACNT_H << 16) & 0xFFFF) | ((nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF)));
-				// log_fatal("lul");
-				// return ((((nds->dma[1].dma_channel[3].DMACNT_H) & 0xFFFF) << 16) | (nds->dma[1].dma_channel[3].DMACNT_L) & 0xFFFF);
 			case 0x040000EC:
 				return DMAFILL[3];
 			case 0x04000180:
 				return nds->ipc.read_ipcsync9();
+			case 0x04000240:
+				return (nds->gpu.vramcnt_d << 24 | nds->gpu.vramcnt_c << 16 | nds->gpu.vramcnt_b << 8 | nds->gpu.vramcnt_a);
 			case 0x04004008:
 				return 0;
 			default:
@@ -573,10 +568,19 @@ void Memory::arm9_write_byte(u32 addr, u8 data) {
 		#endif
 		switch (addr) {
 		case 0x04000208:
-			nds->interrupt.write_ime(data);
+			nds->interrupt[1].write_ime(data);
 			return;
 		case 0x04000240:
 			nds->gpu.vramcnt_a = data;
+			return;
+		case 0x04000241:
+			nds->gpu.vramcnt_b = data;
+			return;
+		case 0x04000242:
+			nds->gpu.vramcnt_c = data;
+			return;
+		case 0x04000243:
+			nds->gpu.vramcnt_d = data;
 			return;
 		case 0x04000244:
 			nds->gpu.vramcnt_e = data;
@@ -894,13 +898,13 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 				nds->cartridge.write_romctrl(data);
 				break;
 			case 0x04000208:
-				nds->interrupt.write_ime(data);
+				nds->interrupt[1].write_ime(data);
 				break;
 			case 0x04000210:
-				nds->interrupt.write_ie9(data);
+				nds->interrupt[1].write_ie9(data);
 				break;
 			case 0x04000214:
-				nds->interrupt.IF = data;
+				nds->interrupt[1].IF = data;
 				break;
 			case 0x04000240:
 				// sets vramcnt_a, vramcnt_b, vramcnt_c and vramcnt_d

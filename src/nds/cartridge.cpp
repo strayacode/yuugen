@@ -142,7 +142,7 @@ void Cartridge::do_command() {
 
 	// deal with end of command
 	if (get_bit(14, AUXSPICNT)) {
-		if (nds->interrupt.IME) {
+		if (nds->interrupt[0].IME) {
 			log_fatal("handle");
 		}
 		
