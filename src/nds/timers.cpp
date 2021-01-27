@@ -1,7 +1,7 @@
 #include <nds/nds.h>
 #include <nds/timers.h>
 
-Timers::Timers(NDS *nds) : nds(nds) {
+Timers::Timers(NDS *nds, bool cpu_id) : nds(nds), cpu_id(cpu_id) {
 
 }
 
@@ -85,6 +85,11 @@ void Timers::tick(int cycles) {
 void Timers::overflow(u8 index) {
 	// on overflow the reload value is copied into the selected tmcnt_l
 	tmcnt_l[index] = reload_value[index];
+
+	// check if timer overflow irqs are enabled
+	if (get_bit(6, tmcnt_h[index])) {
+		nds->interrupt[cpu_id].request_interrupt(3 + index);
+	}
 
 	// for the count up timing behaviour:
 	// the index of this timer that overflows cant be 3 as the next index is out of range

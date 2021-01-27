@@ -1,7 +1,7 @@
 #include <nds/nds.h>
 
 // TODO: add cpu id to dma later
-NDS::NDS() : spi(this), cp15(this), spu(this), dma {DMA(this, 0), DMA(this, 1)}, arm9(this, 1), arm7(this, 0), timers {Timers(this), Timers(this)}, gpu(this), memory(this), cartridge(this), interrupt {Interrupt(this, 0), Interrupt(this, 0)}, ipc(this), rtc(this) {
+NDS::NDS() : spi(this), cp15(this), spu(this), dma {DMA(this, 0), DMA(this, 1)}, arm9(this, 1), arm7(this, 0), timers {Timers(this, 0), Timers(this, 1)}, gpu(this), memory(this), cartridge(this), interrupt {Interrupt(this, 0), Interrupt(this, 0)}, ipc(this), rtc(this) {
 	
 }
 

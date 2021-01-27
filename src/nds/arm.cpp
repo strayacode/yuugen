@@ -316,8 +316,12 @@ void ARM::execute_instruction() {
             u32 index = ((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0xF);
             
             switch (index) {
+            case 0x000: case 0x008:
+                return arm_and(arm_lli());
             case 0x006: case 0x00E:
                 return arm_and(arm_rri());
+            case 0x010: case 0x018:
+                return arm_ands(arm_llis());
             case 0x012: case 0x01A:
                 return arm_ands(arm_lris());
             case 0x014: case 0x01C:
@@ -935,7 +939,7 @@ void ARM::execute_instruction() {
             case 0xFFC: case 0xFFD: case 0xFFE: case 0xFFF:
                 return arm_swi();
             default:
-            	log_fatal("arm%d opcode 0x%04x with identifier 0x%03x is unimplemented!", cpu_id ? 9: 7, opcode, index);
+            	log_fatal("arm%d opcode 0x%08x with identifier 0x%03x is unimplemented!", cpu_id ? 9: 7, opcode, index);
             }
         } else {
         	regs.r[15] += 4;

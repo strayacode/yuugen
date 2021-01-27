@@ -317,6 +317,9 @@ void Memory::arm7_write_halfword(u32 addr, u16 data) {
 		case 0x04000180:
 			nds->ipc.write_ipcsync7(data);
 			break;
+		case 0x04000184:
+			nds->ipc.write_ipcfifocnt7(data);
+			break;
 		case 0x040001C0:
 			nds->spi.write_spicnt(data);
 			break;
@@ -374,6 +377,8 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 		log_warn("arm7 writing data 0x%08x to address 0x%08x", data, addr);
 		#endif
 		switch (addr) {
+		case 0x04000000:
+
 		case 0x04000100:
 			nds->timers[0].write_tmcnt_l(0, data & 0xFFFF);
 			nds->timers[0].write_tmcnt_h(0, data >> 16);
@@ -540,6 +545,8 @@ u32 Memory::arm9_read_word(u32 addr) {
 				return nds->interrupt[1].IME;
 			case 0x04000210:
 				return nds->interrupt[1].IE;
+			case 0x04000214:
+				return nds->interrupt[1].IF;
 			case 0x04000240:
 				return (nds->gpu.vramcnt_d << 24 | nds->gpu.vramcnt_c << 16 | nds->gpu.vramcnt_b << 8 | nds->gpu.vramcnt_a);
 			case 0x04004008:

@@ -11,7 +11,7 @@ class NDS;
 
 class Timers {
 public:
-	Timers(NDS *nds);
+	Timers(NDS *nds, bool cpu_id);
 
 	void write_tmcnt_l(u8 index, u16 data);
 	void write_tmcnt_h(u8 index, u16 data);
@@ -39,4 +39,6 @@ private:
 
 	// each register corresponds to some settings for each tmcnt_l
 	u16 tmcnt_h[4] = {};
+
+	bool cpu_id;
 };
