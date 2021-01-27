@@ -14,6 +14,7 @@ add_library(nds
 	spu.h spu.cpp
 	dma.h dma.cpp
 	input.h input.cpp
+	maths_unit.h maths_unit.cpp
 
 	arm_branch.cpp
 	arm_alu.cpp

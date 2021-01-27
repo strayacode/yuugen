@@ -259,7 +259,7 @@ void ARM::execute_instruction() {
         return;
     }
 
-    // counter++;
+    counter++;
     // check for interrupts first
     // for an interrupt service to occur ime must be set, at least 1 interrupt must be enabled and requested and interrupts must be enabled in the cpsr
     if (nds->interrupt[cpu_id].IME && (nds->interrupt[cpu_id].IE & nds->interrupt[cpu_id].IF) && !get_bit(7, regs.cpsr)) {
@@ -287,9 +287,9 @@ void ARM::execute_instruction() {
         arm_flush_pipeline();
     }
     // if (cpu_id == 1) {
-    //     fprintf(buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x\n", regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], regs.r[8],
-    //     regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13]
-    //     , regs.r[14], regs.r[15], opcode);
+    fprintf(buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x\n", regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], regs.r[8],
+    regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13]
+    , regs.r[14], regs.r[15], opcode);
     // } 
     
     // // if (counter == 0)
@@ -422,6 +422,8 @@ void ARM::execute_instruction() {
                 return arm_movs(arm_aris());
             case 0x1B5:
                 return arm_movs(arm_arrs());
+            case 0x1C0: case 0x1C8:
+                return arm_bic(arm_lli());
             case 0x1CB:
                 return arm_strh_pre(arm_imm_halfword_signed_data_transfer());
             case 0x1D0: case 0x1D8:
@@ -496,6 +498,11 @@ void ARM::execute_instruction() {
             case 0x358: case 0x359: case 0x35A: case 0x35B: 
             case 0x35C: case 0x35D: case 0x35E: case 0x35F:
                 return arm_cmp(arm_imm_data_processing());
+            case 0x370: case 0x371: case 0x372: case 0x373:
+            case 0x374: case 0x375: case 0x376: case 0x377:
+            case 0x378: case 0x379: case 0x37A: case 0x37B:
+            case 0x37C: case 0x37D: case 0x37E: case 0x37F:
+                return arm_cmn(arm_imms_data_processing());
             case 0x380: case 0x381: case 0x382: case 0x383: 
             case 0x384: case 0x385: case 0x386: case 0x387: 
             case 0x388: case 0x389: case 0x38A: case 0x38B: 
@@ -1093,7 +1100,7 @@ void ARM::execute_instruction() {
         case 0xAC: case 0xAD: case 0xAE: case 0xAF:
             return thumb_addsp_reg();
         case 0xB0:
-            return thumb_addsp_imm();
+            return thumb_addsp_imm7();
         case 0xB4:
             return thumb_push();
         case 0xB5:
@@ -1128,6 +1135,8 @@ void ARM::execute_instruction() {
             return thumb_bgt();
         case 0xDD:
             return thumb_ble();
+        case 0xDF:
+            return thumb_swi();
         case 0xE0: case 0xE1: case 0xE2: case 0xE3: 
         case 0xE4: case 0xE5: case 0xE6: case 0xE7:
             return thumb_b(); 

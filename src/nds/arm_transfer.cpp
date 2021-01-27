@@ -594,7 +594,28 @@ void ARM::arm_ldmiaw() {
     }
     
     if (get_bit(15, opcode)) {
-        log_fatal("handle lol");
+        // handle arm9 behaviour
+        if (cpu_id == ARMv5) {
+            if (regs.r[15] & 0x1) {
+                // switch to thumb mode
+                regs.cpsr |= (1 << 5);
+
+                // halfword align the address
+                regs.r[15] &= ~1;
+
+                thumb_flush_pipeline();
+            } else {
+                // word align the address
+                regs.r[15] &= ~3;
+
+                arm_flush_pipeline();
+            }
+        } else {
+            // word align the address
+            regs.r[15] &= ~3;
+
+            arm_flush_pipeline();
+        }
     }
 
     regs.r[15] += 4;

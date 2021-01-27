@@ -13,6 +13,7 @@
 #include <nds/spu.h>
 #include <nds/dma.h>
 #include <nds/input.h>
+#include <nds/maths_unit.h>
 #include <string>
 #include <common/log.h>
 
@@ -47,6 +48,8 @@ public:
 	SPU spu;
 	
 	Input input;
+
+	MathsUnit maths_unit;
 
 private:
 	

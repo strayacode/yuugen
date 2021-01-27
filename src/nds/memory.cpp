@@ -118,6 +118,8 @@ u16 Memory::arm7_read_halfword(u32 addr) {
 			return nds->input.KEYINPUT;
 		case 0x04000180:
 			return nds->ipc.read_ipcsync7();
+		case 0x04000184:
+			return nds->ipc.IPCFIFOCNT7;
 		default:
 			log_fatal("unimplemented 16 bit arm7 io read at address 0x%08x", addr);
 		}
@@ -640,6 +642,12 @@ void Memory::arm9_write_halfword(u32 addr, u16 data) {
 		case 0x04000004:
 			nds->gpu.write_dispstat9(data);
 			break;
+		case 0x040000B8:
+			nds->dma[1].write_dmacnt_l(0, data);
+			break;
+		case 0x040000BA:
+			nds->dma[1].write_dmacnt_h(0, data);
+			break;
 		case 0x040000D0:
 			nds->dma[1].write_dmacnt_l(2, data);
 			break;
@@ -685,6 +693,9 @@ void Memory::arm9_write_halfword(u32 addr, u16 data) {
 			// TODO: handle masking bits later
 			EXMEMCNT = data;
 			break;
+		case 0x04000208:
+			nds->interrupt[1].write_ime(data);
+			break;
 		case 0x04000304:
 			nds->gpu.POWCNT1 = data;
 			break;
@@ -702,7 +713,8 @@ void Memory::arm9_write_halfword(u32 addr, u16 data) {
 		}
 		break;
 	default:
-		log_fatal("unimplemented 16 bit arm9 write at address 0x%08x with data 0x%04x", addr, data);
+		log_warn("unimplemented 16 bit arm9 write at address 0x%08x with data 0x%04x", addr, data);
+		return;
 	}
 }
 void Memory::arm9_write_word(u32 addr, u32 data) {
@@ -1075,7 +1087,8 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 			}
 			break;
 		default:
-			log_fatal("unimplemented 32 bit arm9 write at address 0x%08x with data 0x%08x", addr, data);
+			log_warn("unimplemented 32 bit arm9 write at address 0x%08x with data 0x%08x", addr, data);
+			return;
 		}
 	}
 }

@@ -11,11 +11,6 @@ void Timers::write_tmcnt_l(u8 index, u16 data) {
 }
 
 void Timers::write_tmcnt_h(u8 index, u16 data) {
-
-	if (get_bit(6, data)) {
-		log_fatal("timer irq enable not implemented yet!");
-	}
-
 	// if count up timing is enabled the prescalar value is ignored so instead the timer increments when the previous counter overflows? hmm
 	// count up timing cant be used on timer 0 too
 	

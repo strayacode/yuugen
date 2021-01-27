@@ -840,12 +840,18 @@ void ARM::thumb_movh() {
     u8 rm = (opcode >> 3) & 0xF;
     regs.r[rd] = regs.r[rm];
 
+    if (rd == 15) {
+        log_fatal("handle!");
+    }
+
     regs.r[15] += 2; 
 }
 
-void ARM::thumb_addsp_imm() {
-	u32 immediate = opcode & 0x7F;
-	regs.r[13] += (immediate << 2);
+void ARM::thumb_addsp_imm7() {
+	u32 immediate = (opcode & 0x7F) << 2;
+
+    // need to check bit 7 to check if we subtract or add from sp
+    regs.r[13] = regs.r[13] + (get_bit(7, opcode) ? -immediate : immediate);
 
 	regs.r[15] += 2;
 }

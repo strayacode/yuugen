@@ -145,6 +145,7 @@ private:
 	void arm_adc(u32 op2);
 	void arm_mvn(u32 op2);
 	void arm_cmn(u32 op2);
+	void arm_cmns(u32 op2);
 	void arm_orr(u32 op2);
 	void arm_orrs(u32 op2);
 	void arm_rscs(u32 op2);
@@ -253,7 +254,7 @@ private:
 	void thumb_cmp_reg();
 	void thumb_mvn_reg();
 	void thumb_movh();
-	void thumb_addsp_imm();
+	void thumb_addsp_imm7();
 	void thumb_addpc_reg();
 	void thumb_cmp_imm();
 	void thumb_orr_reg();
@@ -291,6 +292,7 @@ private:
 	void thumb_bcs();
 	void thumb_bmi();
 	void thumb_ble();
+	void thumb_swi();
 
 	// transfer instructions
 	void thumb_ldrpc_imm();

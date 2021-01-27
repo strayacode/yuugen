@@ -25,6 +25,8 @@ public:
 
 	void write_ipcfifocnt7(u16 data);
 	void write_ipcfifocnt9(u16 data);
+
+	u16 IPCFIFOCNT7, IPCFIFOCNT9;
 private:
 	NDS *nds;
 
@@ -34,7 +36,7 @@ private:
 	// also only 4 bits can be exchanged
 	u16 IPCSYNC7, IPCSYNC9;
 
-	u16 IPCFIFOCNT7, IPCFIFOCNT9;
+	
 
 	u32 send_queue[16] = {};
 	u32 recieve_queue[16] = {};

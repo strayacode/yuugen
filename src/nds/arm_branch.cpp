@@ -292,3 +292,29 @@ void ARM::thumb_ble() {
         regs.r[15] += 2;
     }
 }
+
+void ARM::thumb_swi() {
+    // store the address of the next instruction after the swi in lr_svc
+    regs.r_banked[BANK_SVC][6] = regs.r[15] - 2;
+
+    // store the cpsr in spsr_svc
+    regs.spsr_banked[BANK_SVC] = regs.cpsr;
+
+    // enter supervisor mode
+    update_mode(SVC);
+
+    // always execute in arm state
+    regs.cpsr &= ~(1 << 5);
+
+    // fiq interrupts state is unchanged
+
+    // disable normal interrupts
+    regs.cpsr |= (1 << 7);
+    
+
+    // regs.r[14] = regs.r[15] - 4;
+    // check the exception base and jump to the correct address in the bios
+    regs.r[15] = nds->cp15.get_exception_base() + 0x08;
+    
+    arm_flush_pipeline();
+}
