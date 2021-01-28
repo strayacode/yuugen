@@ -872,6 +872,22 @@ void ARM::thumb_cmp_imm() {
     regs.r[15] += 2;  
 }
 
+void ARM::thumb_cmph() {
+    u8 rn = (get_bit(7, opcode) << 3) | (opcode & 0x7);
+    u8 rm = (opcode >> 3) & 0xF;
+    u32 result = regs.r[rn] - regs.r[rm];
+
+
+    // set flags
+    set_condition_flag(N_FLAG, result >> 31);
+    set_condition_flag(Z_FLAG, result == 0);
+    set_condition_flag(C_FLAG, regs.r[rn] >= result);
+    set_condition_flag(V_FLAG, ((regs.r[rn] ^ regs.r[rm]) & (regs.r[rn] ^ result)) >> 31);
+
+
+    regs.r[15] += 2;  
+}
+
 void ARM::thumb_orr_reg() {
     u8 rd = opcode & 0x7;
     u8 rm = (opcode >> 3) & 0x7;

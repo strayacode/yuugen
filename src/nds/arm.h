@@ -274,6 +274,7 @@ private:
 	void thumb_tst_reg();
 	void thumb_sub_imm3();
 	void thumb_adc_reg();
+	void thumb_cmph();
 
 	// branch instructions
 	void thumb_bgt();

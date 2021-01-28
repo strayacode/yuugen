@@ -43,11 +43,11 @@ public:
 
     // render scanline begin is executed when 256 * 3 have passed in a scanline (when hblank starts)
     // it renders the scanline to the relative framebuffer
-    void render_scanline_begin(int line);
+    void render_scanline_begin();
 
     // render scanline end is called when at the very end of a scanline (when 355 * 3 cycles have passed)
     // this does stuff mainly related to dispstat to reflect changes in stuff
-    void render_scanline_end(int line);
+    void render_scanline_end();
 
     enum screen {
 		TOP_SCREEN,

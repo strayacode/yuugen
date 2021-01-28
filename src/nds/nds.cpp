@@ -52,10 +52,10 @@ void NDS::run_nds_frame() {
 
             // this is called for hblank to begin when 256 dots have passed in a scanline (each dot is 3 cycle)
             if (j == 768) {
-                gpu.render_scanline_begin(i);
+                gpu.render_scanline_begin();
             }      
         }
-        gpu.render_scanline_end(i);
+        gpu.render_scanline_end();
     }
 }
 

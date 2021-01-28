@@ -3,8 +3,10 @@
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QPaintEvent>
+#include <QKeyEvent>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <nds/nds.h>
 
 class MainWindow : public QMainWindow {
@@ -14,9 +16,13 @@ public:
 	bool initialise();
 	void closeEvent(QCloseEvent *event);
 	void paintEvent(QPaintEvent *event);
+	void keyPressEvent(QKeyEvent *event);
+	void keyReleaseEvent(QKeyEvent *event);
 
 private:
 	NDS nds;
+
+	bool ready = false;
 
 	// menus
 	QMenu* file_menu;
@@ -28,7 +34,7 @@ private:
 	// strings
 	QString rom_path;
 
-	QPixmap top_screen_pixmap, bottom_screen_pixmap;
+	QImage top_screen_image, bottom_screen_image;
 
 signals:
 
