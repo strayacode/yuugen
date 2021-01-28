@@ -44,7 +44,17 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 	painter.fillRect(rect(), Qt::black);
 	if (ready) {
 		nds.run_nds_frame();
+		frames++;
+		std::chrono::duration<double> current_time = std::chrono::steady_clock::now() - last_frame_time;
+		if (current_time.count() >= 1.0f)
+	    {
+	    	window_title = "ChronoDS - " + QString::number(frames) + " FPS";
+	    	setWindowTitle(window_title);
+	        frames = 0;
+	        last_frame_time = std::chrono::steady_clock::now();
+    	}
 	}
+
 	
 
 	memcpy(top_screen_image.scanLine(0), nds.gpu.get_framebuffer(nds.gpu.TOP_SCREEN), 256*192*4);
