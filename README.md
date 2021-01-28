@@ -5,9 +5,9 @@ Website for monthly progress reports: https://strayacode.github.io/
 ## Installation:
 ### Linux:
 Dependencies: 
-cmake ,
-SDL2 (if building for the SDL2 frontend) ,
-Qt (if building for the Qt frontend) ,
+- cmake
+- SDL2 (if building for the SDL2 frontend)
+- Qt (if building for the Qt frontend)
 1. `git clone https://github.com/strayacode/ChronoDS.git`
 2. `cd ChronoDS`
 3. make a build directory where the binary will be built and a roms directory to place your roms dumped from your DS
