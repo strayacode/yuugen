@@ -277,6 +277,7 @@ private:
 	void thumb_sub_imm3();
 	void thumb_adc_reg();
 	void thumb_cmph();
+	void thumb_bic_reg();
 
 	// branch instructions
 	void thumb_bgt();
@@ -295,6 +296,8 @@ private:
 	void thumb_bcs();
 	void thumb_bmi();
 	void thumb_ble();
+	void thumb_bge();
+	void thumb_bls();
 	void thumb_swi();
 
 	// transfer instructions
@@ -317,4 +320,5 @@ private:
 	void thumb_ldmia_reg();
 	void thumb_ldr_reg();
 	void thumb_strh_reg();
+	void thumb_ldrb_reg();
 };

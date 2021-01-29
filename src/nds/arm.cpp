@@ -286,7 +286,7 @@ void ARM::execute_instruction() {
         
         arm_flush_pipeline();
     }
-    // if ((cpu_id == 1)) {
+    // if ((cpu_id == 0) && (counter > 20000000)) {
     //     fprintf(buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x\n", regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], regs.r[8],
     //     regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13]
     //     , regs.r[14], regs.r[15], opcode);
@@ -301,7 +301,7 @@ void ARM::execute_instruction() {
     // // // if (counter == 1413964) {
     // // //     exit(1);
     // // // }   
-    // if (counter == 21495) {
+    // if (counter == 2000005) {
     //     exit(1);
     // }
     // if ()
@@ -1039,7 +1039,7 @@ void ARM::execute_instruction() {
             case 1:
                 return thumb_mul_reg();
             case 2:
-                log_fatal("2");
+                return thumb_bic_reg();
             case 3:
                 return thumb_mvn_reg();
             default:
@@ -1071,6 +1071,8 @@ void ARM::execute_instruction() {
             return thumb_ldr_reg();
         case 0x5A: case 0x5B:
             return thumb_ldrh_reg();
+        case 0x5C: case 0x5D:
+            return thumb_ldrb_reg();
         case 0x60: case 0x61: case 0x62: case 0x63: 
         case 0x64: case 0x65: case 0x66: case 0x67:
             return thumb_str_imm5();
@@ -1131,6 +1133,10 @@ void ARM::execute_instruction() {
             return thumb_bpl();
         case 0xD8:
             return thumb_bhi();
+        case 0xD9:
+            return thumb_bls();
+        case 0xDA:
+            return thumb_bge();
         case 0xDB:
             return thumb_blt();
         case 0xDC:
@@ -1158,10 +1164,7 @@ void ARM::execute_instruction() {
 }
 
 void ARM::halt() {
-    // this seems to be exclusively from cp15 writes that cause arm9 to wait for interrupts?
-    if (cpu_id == ARMv4) {
-        return;
-    }
+    halted = true;
 
     // set IE to 0 so that only interrupts enabled after the arm9 is halted are detected
     nds->interrupt[1].IE = 0;

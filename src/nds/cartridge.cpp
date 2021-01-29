@@ -109,9 +109,9 @@ void Cartridge::do_command() {
 		break;
 	}
 
-	if (block_size == 0) {
-		log_fatal("handle");
-	}
+	// if (block_size == 0) {
+	// 	return;
+	// }
 
 	// only execute command if block start is set and data word status is cleared (0=busy)
 	if ((get_bit(31, ROMCTRL)) && (!get_bit(23, ROMCTRL))) {
@@ -122,6 +122,10 @@ void Cartridge::do_command() {
 			data_output = 0xFFFFFFFF;
 			// set to word ready
 			ROMCTRL |= (1 << 23);
+			break;
+		case 0x3C:
+			// key1 encryption enabled lol
+			key1_encryption = true;
 			break;
 		case 0x90:
 			// get chip id

@@ -294,6 +294,30 @@ void ARM::thumb_ble() {
     }
 }
 
+void ARM::thumb_bge() {
+    
+    // only branch on condition
+    if (get_condition_flag(N_FLAG) == get_condition_flag(V_FLAG)) {
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+        regs.r[15] += offset;
+        thumb_flush_pipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}
+
+void ARM::thumb_bls() {
+    
+    // only branch on condition
+    if (!get_condition_flag(C_FLAG) || get_condition_flag(Z_FLAG)) {
+        u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
+        regs.r[15] += offset;
+        thumb_flush_pipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}
+
 void ARM::thumb_swi() {
     // store the address of the next instruction after the swi in lr_svc
     regs.r_banked[BANK_SVC][6] = regs.r[15] - 2;

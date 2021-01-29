@@ -74,7 +74,7 @@ void HostInterface::cleanup() {
 }
 
 void HostInterface::run(std::string rom_path) {
-	nds.direct_boot(rom_path);
+	nds.firmware_boot();
 
 	u32 frame_time_start = SDL_GetTicks();
 	while (true) {

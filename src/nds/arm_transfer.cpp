@@ -1251,3 +1251,19 @@ void ARM::thumb_strh_reg() {
 
     regs.r[15] += 2;
 }
+
+void ARM::thumb_ldrb_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u8 rm = (opcode >> 6) & 0x7;
+
+    u32 address = regs.r[rn] + regs.r[rm];
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[rd] = read_byte(address);
+
+    regs.r[15] += 2;
+}

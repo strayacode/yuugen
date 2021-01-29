@@ -59,5 +59,7 @@ private:
 	u16 AUXSPICNT;
 	u16 AUXSPIDATA;
 
+
+	bool key1_encryption = false;
 	
 };

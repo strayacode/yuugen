@@ -841,7 +841,9 @@ void ARM::thumb_movh() {
     regs.r[rd] = regs.r[rm];
 
     if (rd == 15) {
-        log_fatal("handle!");
+        // halfword align
+        regs.r[15] &= ~1;
+        thumb_flush_pipeline();
     }
 
     regs.r[15] += 2; 
@@ -1152,6 +1154,22 @@ void ARM::thumb_adc_reg() {
 
     set_condition_flag(V_FLAG, (~(regs.r[rd] ^ regs.r[rm]) & (regs.r[rm] ^ result32)) >> 31);
     regs.r[rd] = result32;
+
+    regs.r[15] += 2;
+}
+
+void ARM::thumb_bic_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rm = (opcode >> 3) & 0x7;
+
+    regs.r[rd] = regs.r[rd] & ~regs.r[rm];
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
 
     regs.r[15] += 2;
 }

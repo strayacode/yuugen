@@ -114,6 +114,8 @@ u16 Memory::arm7_read_halfword(u32 addr) {
 		switch (addr) {
 		case 0x04000004:
 			return nds->gpu.DISPSTAT7;
+		case 0x040000BA:
+			return nds->dma[0].dma_channel[0].DMACNT_H;
 		case 0x04000130:
 			return nds->input.KEYINPUT;
 		case 0x04000180:
@@ -180,6 +182,10 @@ u32 Memory::arm7_read_word(u32 addr) {
 			return nds->cartridge.ROMCTRL;
 		case 0x040001C0:
 			return ((nds->spi.SPIDATA << 16) | nds->spi.SPICNT);
+		case 0x04000208:
+			return nds->interrupt[0].IME;
+		case 0x04000210:
+			return nds->interrupt[0].IE;
 		case 0x04100010:
 			return nds->cartridge.data_output;
 		default:
@@ -193,6 +199,11 @@ u32 Memory::arm7_read_word(u32 addr) {
 }
 
 void Memory::arm7_write_byte(u32 addr, u8 data) {
+	// ignore arm7 bios writes
+	if (addr < 0x4000) {
+		return;
+	}
+
 	switch (addr & 0xFF000000) {
 	case 0x02000000:
 		main_memory[addr & 0x3FFFFF] = data;
@@ -268,6 +279,16 @@ void Memory::arm7_write_byte(u32 addr, u8 data) {
 		case 0x04000208:
 			nds->interrupt[0].write_ime(data);
 			return;
+		case 0x04000301:
+			switch (data) {
+			// only allow halting
+			case 0x80:
+				nds->arm7.halt();
+				break;
+			default:
+				log_fatal("unknown HALTCNT state 0x%02x!", data);
+			}
+			return;
 		default:
 			log_fatal("unimplemented 8 bit arm7 io write at address 0x%08x with data 0x%02x", addr, data);
 		}
@@ -316,6 +337,15 @@ void Memory::arm7_write_halfword(u32 addr, u16 data) {
 		log_warn("arm7 writing data 0x%08x to address 0x%04x", data, addr);
 		#endif
 		switch (addr) {
+		case 0x040000BA:
+			nds->dma[0].write_dmacnt_h(0, data);
+			break;
+		case 0x0400010C:
+			nds->timers[0].write_tmcnt_l(3, data);
+			break;
+		case 0x0400010E:
+			nds->timers[0].write_tmcnt_h(3, data);
+			break;
 		case 0x04000180:
 			nds->ipc.write_ipcsync7(data);
 			break;
