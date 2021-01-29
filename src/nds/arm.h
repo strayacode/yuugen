@@ -24,6 +24,8 @@ public:
 	// causes the arm9 to halt and set ie to 0 so that interrupts are only accpeted if they are enabled after the arm9 is halted
 	void halt();
 
+	int counter = 0;
+
 private:
 	NDS *nds;
 
@@ -44,7 +46,7 @@ private:
 
 	} regs;
 
-	int counter = 0;
+	
 
 	
 	

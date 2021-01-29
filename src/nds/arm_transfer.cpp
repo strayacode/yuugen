@@ -130,7 +130,6 @@ void ARM::arm_ldr_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
-
     u32 data = read_word(address);
 
     if (address & 0x3) {
@@ -142,6 +141,10 @@ void ARM::arm_ldr_pre(u32 op2) {
     if (get_bit(21, opcode) && (rd != rn)) {
         // write back to rn
         regs.r[rn] = address;
+    }
+
+    if (rd == 15) {
+        log_fatal("handle");
     }
 
     regs.r[rd] = data;

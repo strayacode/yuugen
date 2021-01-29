@@ -10,27 +10,28 @@ void IPC::reset() {
 
 void IPC::write_ipcsync7(u16 data) {
 	// mask bits correctly
-	IPCSYNC7 = (data & 0x6F00);
+	IPCSYNC7 = (data & 0x4F00) | (IPCSYNC7 & ~0x4F00);
+
+	// now store data output specified by bits 8..11 in ipcsync of other cpu for bits 0..3
+	IPCSYNC9 = (IPCSYNC9 & ~0xF) | ((data >> 8) & 0xF);
+
 	// check if other cpu allows for irq to be sent for fifo and if the current cpu will send an irq
 	if (get_bit(13, IPCSYNC7) && get_bit(14, IPCSYNC9)) {
 		nds->interrupt[0].request_interrupt(16);
 	}
-
-	// now store data output specified by bits 8..11 in ipcsync of other cpu for bits 0..3
-	IPCSYNC9 = (IPCSYNC9 & ~0xF) | ((data >> 8) & 0xF);
 }
 
 void IPC::write_ipcsync9(u16 data) {
 	// mask bits correctly
-	IPCSYNC9 = (data & 0x6F00);
+	IPCSYNC9 = (data & 0x4F00) | (IPCSYNC9 & ~0x4F00);
+
+	// now store data output specified by bits 8..11 in ipcsync of other cpu for bits 0..3
+	IPCSYNC7 = (IPCSYNC7 & ~0xF) | ((data >> 8) & 0xF);
 
 	// check if other cpu allows for irq to be sent for fifo and if the current cpu will send an irq
 	if (get_bit(13, IPCSYNC9) && get_bit(14, IPCSYNC7)) {
 		nds->interrupt[1].request_interrupt(16);
 	}
-
-	// now store data output specified by bits 8..11 in ipcsync of other cpu for bits 0..3
-	IPCSYNC7 = (IPCSYNC7 & ~0xF) | ((data >> 8) & 0xF);
 }
 
 void IPC::write_ipcfifocnt7(u16 data) {
