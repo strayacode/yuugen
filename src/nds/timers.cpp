@@ -33,16 +33,14 @@ void Timers::write_tmcnt_h(u8 index, u16 data) {
 	}
 
 	// set tmcnt_h
-	tmcnt_h[index] = data & 0xC7;
-
+	tmcnt_h[index] = (tmcnt_h[index] & ~0xC7) | (data & 0xC7);
 	// set enable bits
 	// but a counter in count up mode is disabled as the previous timer when it overflows will cause an increment in this timer
-	if ((tmcnt_h[index] && (1 << 7)) && (index == 0 || !(tmcnt_l[index] && (1 << 2)))) {
+	if ((tmcnt_h[index] && (1 << 7)) && (index == 0 || !(get_bit(2, tmcnt_h[index])))) {
 		enabled |= (1 << index);
 	} else {
 		enabled &= ~(1 << index);
 	}
-
 }
 
 bool Timers::get_timer_enabled() {
@@ -50,11 +48,16 @@ bool Timers::get_timer_enabled() {
 }
 
 void Timers::tick(int cycles) {
+	// if (enabled == 9) {
+	// 	log_fatal("end");
+	// }
 	// iterate through all 4 timers for a cpu and tick only if enabled
 	for (int i = 0; i < 4; i++) {
 		if (!get_bit(7, tmcnt_h[i])) {
-			return;
+			continue;
 		}
+
+		
 
 		// this will be decremented each time until finally when it reaches 0 the actual timer is incremented
 		cycles_left[i] -= cycles;
@@ -80,7 +83,7 @@ void Timers::tick(int cycles) {
 void Timers::overflow(u8 index) {
 	// on overflow the reload value is copied into the selected tmcnt_l
 	tmcnt_l[index] = reload_value[index];
-
+	
 	// check if timer overflow irqs are enabled
 	if (get_bit(6, tmcnt_h[index])) {
 		nds->interrupt[cpu_id].request_interrupt(3 + index);

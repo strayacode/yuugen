@@ -75,9 +75,11 @@ void ARM::arm_subs(u32 op2) {
     regs.r[rd] = result;
     
     if (rd == 15) {
-        log_fatal("handle pls");
-        // copy the spsr of the current mode to the cpsr
+        update_mode(regs.spsr & 0x1F);
+
+        // update spsr after otherwise update_mode() thinks there is no mode switch
         regs.cpsr = regs.spsr;
+        arm_flush_pipeline(); // shrug idk what im doing lmao
     } else {
         set_condition_flag(N_FLAG, result >> 31);
         set_condition_flag(Z_FLAG, result == 0);

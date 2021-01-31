@@ -13,6 +13,8 @@ public:
 	bool initialise();
 	
 	void cleanup();
+
+	
 private:
 	SDL_Window* window = nullptr;
 	SDL_Renderer* renderer = nullptr;
@@ -31,5 +33,14 @@ private:
 
 	char window_title[30];
 
+	enum rom_types {
+		NDS_ROM,
+		GBA_ROM,
+	};
+
+	int rom_type;
+
 	NDS nds;
+
+	void set_rom_type(std::string rom_path);
 };

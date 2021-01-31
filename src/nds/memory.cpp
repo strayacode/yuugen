@@ -122,6 +122,10 @@ u16 Memory::arm7_read_halfword(u32 addr) {
 			return nds->ipc.read_ipcsync7();
 		case 0x04000184:
 			return nds->ipc.IPCFIFOCNT7;
+		case 0x040001C0:
+			return nds->spi.SPICNT;
+		case 0x040001C2:
+			return nds->spi.SPIDATA;
 		default:
 			log_fatal("unimplemented 16 bit arm7 io read at address 0x%08x", addr);
 		}
@@ -344,6 +348,7 @@ void Memory::arm7_write_halfword(u32 addr, u16 data) {
 			nds->timers[0].write_tmcnt_l(3, data);
 			break;
 		case 0x0400010E:
+			printf("jew\n");
 			nds->timers[0].write_tmcnt_h(3, data);
 			break;
 		case 0x04000180:
@@ -409,7 +414,7 @@ void Memory::arm7_write_word(u32 addr, u32 data) {
 		log_warn("arm7 writing data 0x%08x to address 0x%08x", data, addr);
 		#endif
 		switch (addr) {
-		case 0x04000000:
+		// case 0x04000000:
 
 		case 0x04000100:
 			nds->timers[0].write_tmcnt_l(0, data & 0xFFFF);
@@ -453,14 +458,14 @@ u8 Memory::arm9_read_byte(u32 addr) {
 		log_warn("arm9 reading data from address 0x%08x", addr);
 		#endif
 		switch (addr) {
-			case 0x04000208:
-				return nds->interrupt[1].IME;
-			case 0x04000300:
-				return POSTFLG9;
-			case 0x04004000:
-				return 0;
-			default:
-				log_fatal("unimplemented 8 bit arm9 io read at address 0x%08x", addr);
+		case 0x04000208:
+			return nds->interrupt[1].IME;
+		case 0x04000300:
+			return POSTFLG9;
+		case 0x04004000:
+			return 0;
+		default:
+			log_fatal("unimplemented 8 bit arm9 io read at address 0x%08x", addr);
 		}
 	
 	default:
@@ -581,6 +586,8 @@ u32 Memory::arm9_read_word(u32 addr) {
 				return nds->interrupt[1].IF;
 			case 0x04000240:
 				return (nds->gpu.vramcnt_d << 24 | nds->gpu.vramcnt_c << 16 | nds->gpu.vramcnt_b << 8 | nds->gpu.vramcnt_a);
+			case 0x04004000:
+            	return 0;
 			case 0x04004008:
 				return 0;
 			default:
@@ -1117,7 +1124,7 @@ void Memory::arm9_write_word(u32 addr, u32 data) {
 			}
 			break;
 		default:
-			log_warn("unimplemented 32 bit arm9 write at address 0x%08x with data 0x%08x", addr, data);
+			log_fatal("unimplemented 32 bit arm9 write at address 0x%08x with data 0x%08x", addr, data);
 			return;
 		}
 	}

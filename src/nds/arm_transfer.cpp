@@ -76,43 +76,6 @@ void ARM::arm_ldrb_post(u32 op2) {
  
 }
 
-// URGENT: something was wrong with this instruction before ill investigate later
-
-// void ARM::arm_ldr_pre(u32 op2) {
-//     u8 rd = (opcode >> 12) & 0xF;
-//     u8 rn = (opcode >> 16) & 0xF;
-//     u32 address = regs.r[rn] + op2;
-//     if (get_bit(21, opcode)) {
-//         // writeback to rn
-//         regs.r[rn] += op2;
-//     }
-//     regs.r[rd] = read_word(address);
-
-//     if (regs.r[rn] & 0x3) {
-//         u8 shift_amount = (regs.r[rn] & 0x3) * 8;
-//         regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
-//     }
-
-//     if (rd == 15) {
-//         log_fatal("handle");
-//         if ((cpu_id == ARMv5) && (opcode & 0x1)) {
-//             // switch to thumb
-//             regs.r[15] &= ~1;
-
-//             // set t bit
-//             regs.cpsr |= (1 << 5);
-
-//             thumb_flush_pipeline();
-//         } else {
-//             // just flush normally
-//             regs.r[15] &= ~3;
-//             arm_flush_pipeline();
-//         }
-//     }
-    
-//     regs.r[15] += 4;
-// }
-
 void ARM::arm_ldrsb_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -144,7 +107,27 @@ void ARM::arm_ldr_pre(u32 op2) {
     }
 
     if (rd == 15) {
-        log_fatal("handle");
+        // TODO: optimise later
+        if (cpu_id == ARMv4) {
+            // in armv4 this is sort of just treated as a mov pc so we just flush the pipeline
+            regs.r[15] &= ~3;
+
+            arm_flush_pipeline();
+        } else {
+            // arm9 specific
+            if (regs.r[15] & 0x1) {
+                // switch to thumb
+                regs.cpsr |= (1 << 5);
+
+                // halfword align the address
+                regs.r[15] &= ~1;
+
+                thumb_flush_pipeline();
+            } else {
+                regs.r[15] &= ~3;
+                arm_flush_pipeline();
+            }
+        }
     }
 
     regs.r[rd] = data;
@@ -163,6 +146,7 @@ void ARM::arm_ldr_post(u32 op2) {
         // TODO: optimise later
         if (cpu_id == ARMv4) {
             // in armv4 this is sort of just treated as a mov pc so we just flush the pipeline
+            regs.r[15] &= ~3;
             arm_flush_pipeline();
         } else {
             // arm9 specific
@@ -175,6 +159,7 @@ void ARM::arm_ldr_post(u32 op2) {
 
                 thumb_flush_pipeline();
             } else {
+                regs.r[15] &= ~3;
                 arm_flush_pipeline();
             }
         }
@@ -1131,6 +1116,7 @@ void ARM::thumb_ldrb_imm5() {
 
 
     u32 address = regs.r[rn] + immediate;
+
     regs.r[rd] = read_byte(address);
 
     regs.r[15] += 2;
@@ -1206,9 +1192,9 @@ void ARM::thumb_stmia_reg() {
 }
 
 void ARM::thumb_ldmia_reg() {
-    u8 rn = (opcode >> 8) & 0x3;
+    u8 rn = (opcode >> 8) & 0x7;
     u32 address = regs.r[rn];
-
+    
     for (int i = 0; i < 8; i++) {
         if (get_bit(i, opcode)) {
             regs.r[i] = read_word(address);
@@ -1216,9 +1202,13 @@ void ARM::thumb_ldmia_reg() {
         }
     }
 
-    // writeback to rn
-
-    regs.r[rn] = address;
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+    
+    if (!(opcode & (1 << rn)) ||(cpu_id == ARMv5 && ((opcode & 0xFF) == (1 << rn)) || !(((opcode & 0xFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
 
     regs.r[15] += 2;
 }
@@ -1264,6 +1254,22 @@ void ARM::thumb_ldrb_reg() {
     }
 
     regs.r[rd] = read_byte(address);
+
+    regs.r[15] += 2;
+}
+
+void ARM::thumb_strb_reg() {
+    u8 rd = opcode & 0x7;
+    u8 rn = (opcode >> 3) & 0x7;
+    u8 rm = (opcode >> 6) & 0x7;
+
+    u32 address = regs.r[rn] + regs.r[rm];
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    write_byte(address, regs.r[rd]);
 
     regs.r[15] += 2;
 }

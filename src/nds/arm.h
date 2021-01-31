@@ -321,4 +321,5 @@ private:
 	void thumb_ldr_reg();
 	void thumb_strh_reg();
 	void thumb_ldrb_reg();
+	void thumb_strb_reg();
 };

@@ -13,7 +13,6 @@ bool HostInterface::initialise() {
 	// set the window size multiplier
 	window_size = 2;
 
-
 	// create window
 	// TODO: maybe add possibility for opengl context later?
 	u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -74,7 +73,16 @@ void HostInterface::cleanup() {
 }
 
 void HostInterface::run(std::string rom_path) {
-	nds.firmware_boot();
+    // first set the rom type of what rom is being used so that we can set things up accordingly
+    set_rom_type(rom_path);
+    if (rom_type == NDS_ROM) {
+        SDL_SetWindowSize(window, 256, 384);
+    } else if (rom_type == GBA_ROM) {
+        SDL_SetWindowSize(window, 240, 160);
+    }
+
+    exit(1);
+	nds.direct_boot(rom_path);
 
 	u32 frame_time_start = SDL_GetTicks();
 	while (true) {
@@ -151,4 +159,12 @@ void HostInterface::run(std::string rom_path) {
             frames = 0;
         }
 	}
+}
+
+void HostInterface::set_rom_type(std::string rom_path) {
+    if (rom_path.substr(rom_path.find_last_of(".") + 1) == "nds") {
+        rom_type = NDS_ROM;
+    } else {
+        rom_type = GBA_ROM;
+    }
 }

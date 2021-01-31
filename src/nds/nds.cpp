@@ -42,7 +42,9 @@ void NDS::run_nds_frame() {
             
         
             arm7.step();
+
             if (timers[0].get_timer_enabled()) {
+                
                 // tick arm7 timers by 2 cycles
                 timers[0].tick(2);
             }
