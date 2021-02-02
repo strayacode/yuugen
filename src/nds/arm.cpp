@@ -267,72 +267,46 @@ void ARM::halt() {
     
 }
 
+void ARM::dispatch_irq() {
+    halted = false;
+
+    
+    // store the address of the next instruction after the swi in lr_irq
+    regs.r_banked[BANK_IRQ][6] = regs.r[15] - 4;
+
+    // store the cpsr in spsr_irq
+    regs.spsr_banked[BANK_IRQ] = regs.cpsr;
+
+    // enter IRQ mode
+    update_mode(IRQ);
+
+    // always execute in arm state
+    regs.cpsr &= ~(1 << 5);
+
+    // fiq interrupts state is unchanged
+
+    // disable normal interrupts
+    regs.cpsr |= (1 << 7);
+    
+
+    // check the exception base and jump to the correct address in the bios
+    regs.r[15] = ((cpu_id) ? nds->cp15.get_exception_base() : 0x00000000) + 0x18;
+    arm_flush_pipeline();
+    
+    opcode = pipeline[0];
+}
+
 void ARM::execute_instruction() {
     // check if arm is halted first
-
     if (halted) {
-        // printf("ie: 0x%08x if: 0x%08x\n", nds->interrupt[cpu_id].IE, nds->interrupt[cpu_id].IF);
+        // handle an interrupt
+        if (nds->interrupt[cpu_id].IME && (nds->interrupt[cpu_id].IE & nds->interrupt[cpu_id].IF) && !get_bit(7, regs.cpsr)) {
+            dispatch_irq();
+        }
+        
         return;
     }
 
-    // counter++;
-    // check for interrupts first
-    // for an interrupt service to occur ime must be set, at least 1 interrupt must be enabled and requested and interrupts must be enabled in the cpsr
-    if (nds->interrupt[cpu_id].IME && (nds->interrupt[cpu_id].IE & nds->interrupt[cpu_id].IF) && !get_bit(7, regs.cpsr)) {
-        // store the address of the next instruction after the swi in lr_irq
-        regs.r_banked[BANK_IRQ][6] = regs.r[15] - 4;
-
-        // store the cpsr in spsr_irq
-        regs.spsr_banked[BANK_IRQ] = regs.cpsr;
-
-        // enter IRQ mode
-        update_mode(IRQ);
-
-        // always execute in arm state
-        regs.cpsr &= ~(1 << 5);
-
-        // fiq interrupts state is unchanged
-
-        // disable normal interrupts
-        regs.cpsr |= (1 << 7);
-        
-
-        // check the exception base and jump to the correct address in the bios
-        regs.r[15] = ((cpu_id) ? nds->cp15.get_exception_base() : 0x00000000) + 0x18;
-        
-        arm_flush_pipeline();
-    }
-    // if ((cpu_id == 0) && (counter > 20000000)) {
-    // if ((cpu_id == 0)) {
-    // fprintf(buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x\n", regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], regs.r[8],
-    // regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13]
-    // , regs.r[14], regs.r[15], opcode);
-    // }
-    
-    // // } 
-
-    // if ((counter == 500000) && (cpu_id == 0)) {
-    //     exit(1);
-    // }
-    
-    // // if (counter == 0)
-    // // if (cpu_id == 1) {
-    // //     fprintf(buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x: r5: %08x r6: %08x: r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x\n", regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], regs.r[8],
-    // //         regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13]
-    // //     , regs.r[14], regs.r[15], opcode);
-    // // }
-    // // // if (counter == 1413964) {
-    // // //     exit(1);
-    // // // }   
-    // if (counter == 2) {
-    //     exit(1);
-    // }
-    // if ()
-    // if (cpu_id == 0) {
-    //     printf("%08x\n", opcode);
-    // }
-    
-    
 	if (is_arm()) {
         
         
@@ -1189,5 +1163,10 @@ void ARM::execute_instruction() {
             log_fatal("arm%d opcode 0x%04x with identifier 0x%02x is unimplemented!", cpu_id ? 9: 7, opcode, index);
         }
 	}
+
+    // check for interrupts at the end
+    if (nds->interrupt[cpu_id].IME && (nds->interrupt[cpu_id].IE & nds->interrupt[cpu_id].IF) && !get_bit(7, regs.cpsr)) {
+        dispatch_irq();
+    }
 }
 

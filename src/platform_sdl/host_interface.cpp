@@ -3,50 +3,62 @@
 
 
 bool HostInterface::initialise() {
-	// initialise sdl video
-	if (SDL_Init(SDL_INIT_VIDEO) > 0) {
-		printf("error initialising SDL!");
-		return false;
-	}
-	SDL_Init(SDL_INIT_VIDEO);
+	if (rom_type == NDS_ROM) {
+        return initialise_nds();
+    } else if (rom_type == GBA_ROM) {
+        return initialise_gba();
+    } else {
+        return false;
+    }
 
-	// set the window size multiplier
-	window_size = 2;
+    
+}
 
-	// create window
-	// TODO: maybe add possibility for opengl context later?
-	u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
+bool HostInterface::initialise_nds() {
+    // initialise sdl video
+    if (SDL_Init(SDL_INIT_VIDEO) > 0) {
+        printf("error initialising SDL!");
+        return false;
+    }
+    SDL_Init(SDL_INIT_VIDEO);
 
-	window = SDL_CreateWindow("ChronoDS", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 256 * window_size, 384 * window_size, window_flags);
+    // set the window size multiplier
+    window_size = 2;
 
-	if (window == NULL) {
-		printf("error initialising SDL_Window!\n");
-		return false;
-	}
+    // create window
+    // TODO: maybe add possibility for opengl context later?
+    u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 
-	// create renderer
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    window = SDL_CreateWindow("ChronoDS", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 256 * window_size, 384 * window_size, window_flags);
 
-	if (renderer == NULL) {
-		printf("error initialising SDL_Renderer\n");
-		return false;
-	}
+    if (window == NULL) {
+        printf("error initialising SDL_Window!\n");
+        return false;
+    }
 
-	// create the top and bottom textures
-	top_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 256, 192);
-	bottom_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 256, 192);
+    // create renderer
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	if (top_screen_texture == NULL) {
-		printf("error initialising SDL_Texture for the top screen\n");
-		return false;
-	}
+    if (renderer == NULL) {
+        printf("error initialising SDL_Renderer\n");
+        return false;
+    }
 
-	if (bottom_screen_texture == NULL) {
-		printf("error initialising SDL_Texture for the bottom screen\n");
-		return false;
-	}
+    // create the top and bottom textures
+    top_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 256, 192);
+    bottom_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 256, 192);
 
-	top_texture_area = {
+    if (top_screen_texture == NULL) {
+        printf("error initialising SDL_Texture for the top screen\n");
+        return false;
+    }
+
+    if (bottom_screen_texture == NULL) {
+        printf("error initialising SDL_Texture for the bottom screen\n");
+        return false;
+    }
+
+    top_texture_area = {
         .x = 0,
         .y = 0,
         .w = 256 * window_size,
@@ -60,8 +72,61 @@ bool HostInterface::initialise() {
     };
 
 
-	// if the function has reached this far it has successfully initialised
-	return true;
+    // if the function has reached this far it has successfully initialised
+    return true;
+}
+
+bool HostInterface::initialise_gba() {
+    // initialise sdl video
+    if (SDL_Init(SDL_INIT_VIDEO) > 0) {
+        printf("error initialising SDL!");
+        return false;
+    }
+    SDL_Init(SDL_INIT_VIDEO);
+
+    // set the window size multiplier
+    window_size = 2;
+
+    // create window
+    // TODO: maybe add possibility for opengl context later?
+    u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
+
+    window = SDL_CreateWindow("ChronoGBA", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 240 * window_size, 160 * window_size, window_flags);
+
+    if (window == NULL) {
+        printf("error initialising SDL_Window!\n");
+        return false;
+    }
+
+    // create renderer
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+    if (renderer == NULL) {
+        printf("error initialising SDL_Renderer\n");
+        return false;
+    }
+
+    // create the top and bottom textures
+    top_screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 240, 160);
+
+    // for gba bottom texture is meaningless
+
+    if (top_screen_texture == NULL) {
+        printf("error initialising SDL_Texture for the top screen\n");
+        return false;
+    }
+
+    top_texture_area = {
+        .x = 0,
+        .y = 0,
+        .w = 240 * window_size,
+        .h = 160 * window_size,
+    };
+    
+
+
+    // if the function has reached this far it has successfully initialised
+    return true;
 }
 
 void HostInterface::cleanup() {
@@ -73,30 +138,29 @@ void HostInterface::cleanup() {
 }
 
 void HostInterface::run(std::string rom_path) {
-    // first set the rom type of what rom is being used so that we can set things up accordingly
-    set_rom_type(rom_path);
     if (rom_type == NDS_ROM) {
-        SDL_SetWindowSize(window, 256, 384);
+        run_nds(rom_path);
     } else if (rom_type == GBA_ROM) {
-        SDL_SetWindowSize(window, 240, 160);
+        run_gba(rom_path);
     }
+}
 
-    exit(1);
-	nds.direct_boot(rom_path);
+void HostInterface::run_nds(std::string rom_path) {
+    nds.direct_boot(rom_path);
 
-	u32 frame_time_start = SDL_GetTicks();
-	while (true) {
-		nds.run_nds_frame();
+    u32 frame_time_start = SDL_GetTicks();
+    while (true) {
+        nds.run_frame();
 
-		SDL_UpdateTexture(top_screen_texture, nullptr, nds.gpu.get_framebuffer(nds.gpu.TOP_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_screen_texture, nullptr, nds.gpu.get_framebuffer(nds.gpu.TOP_SCREEN), sizeof(u32) * 256);
         SDL_UpdateTexture(bottom_screen_texture, nullptr, nds.gpu.get_framebuffer(nds.gpu.BOTTOM_SCREEN), sizeof(u32) * 256);
 
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, top_screen_texture, nullptr, &top_texture_area);
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, top_screen_texture, nullptr, &top_texture_area);
         SDL_RenderCopy(renderer, bottom_screen_texture, nullptr, &bottom_texture_area);
-		SDL_RenderPresent(renderer);
+        SDL_RenderPresent(renderer);
 
-		while (SDL_PollEvent(&event) != 0) {
+        while (SDL_PollEvent(&event) != 0) {
             if (event.type == SDL_QUIT) {
                 cleanup();
                 return;
@@ -158,7 +222,11 @@ void HostInterface::run(std::string rom_path) {
             frame_time_start = SDL_GetTicks();
             frames = 0;
         }
-	}
+    }
+}
+
+void HostInterface::run_gba(std::string rom_path) {
+    log_fatal("running gba not supported yet!");
 }
 
 void HostInterface::set_rom_type(std::string rom_path) {

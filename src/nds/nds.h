@@ -16,14 +16,15 @@
 #include <nds/maths_unit.h>
 #include <string>
 #include <common/log.h>
+#include <common/emu_core.h>
 
 
-class NDS {
+class NDS : virtual public EmuCore {
 public:
 	NDS();
 	void firmware_boot();
 	void direct_boot(std::string rom_path);
-	void run_nds_frame();
+	void run_frame();
 	void reset();
 	CP15 cp15;
 	Memory memory;

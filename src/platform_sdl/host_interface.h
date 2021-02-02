@@ -14,7 +14,7 @@ public:
 	
 	void cleanup();
 
-	
+	void set_rom_type(std::string rom_path);
 private:
 	SDL_Window* window = nullptr;
 	SDL_Renderer* renderer = nullptr;
@@ -42,5 +42,11 @@ private:
 
 	NDS nds;
 
-	void set_rom_type(std::string rom_path);
+	
+
+	bool initialise_nds();
+	bool initialise_gba();
+
+	void run_nds(std::string rom_path);
+	void run_gba(std::string rom_path);
 };

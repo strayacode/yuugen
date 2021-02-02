@@ -26,13 +26,4 @@ void Interrupt::write_if(u32 value) {
 
 void Interrupt::request_interrupt(u8 bit) {
 	IF |= (1 << bit);
-
-	// check if any interrupts are both enabled and requested, since this will cause the arm9 to unhalt itself and continue executing instructions
-	if (IE & IF) {
-		if (cpu_id) {
-			nds->arm9.halted = false;
-		} else {
-			nds->arm7.halted = false;
-		}
-	}
 }

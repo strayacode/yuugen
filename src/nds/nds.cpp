@@ -19,7 +19,7 @@ void NDS::firmware_boot() {
     arm7.firmware_boot();
 }
 
-void NDS::run_nds_frame() {
+void NDS::run_frame() {
 	// quick sidenote
     // in 1 frame of the nds executing
     // there are 263 scanlines with 192 visible and 71 for vblank

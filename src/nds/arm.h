@@ -121,7 +121,7 @@ private:
 
 	bool is_arm();
 
-	
+	void dispatch_irq();
 
 	// arm instructions
 
