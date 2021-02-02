@@ -1,6 +1,6 @@
 #include <gba/arm.h>
 
-void ARM::direct_boot() {
+void GBA_ARM::direct_boot() {
 	regs.r[0] = 0x08000000;
 	regs.r[1] = 0xEA;
 

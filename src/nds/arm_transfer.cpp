@@ -2,12 +2,12 @@
 #include <nds/arm.h>
 #include <nds/nds.h>
 
-u32 ARM::arm_imm_single_data_transfer() {
+u32 NDS_ARM::arm_imm_single_data_transfer() {
 	return opcode & 0xFFF;
 }
 
 
-void ARM::arm_ldrb_pre(u32 op2) {
+void NDS_ARM::arm_ldrb_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
@@ -32,7 +32,7 @@ void ARM::arm_ldrb_pre(u32 op2) {
 }
 // this didnt work it seems lol
 
-// void ARM::arm_ldrb_pre(u32 op2) {
+// void NDS_ARM::arm_ldrb_pre(u32 op2) {
 // 	u8 rd = (opcode >> 12) & 0xF;
 //     u8 rn = (opcode >> 16) & 0xF;
 
@@ -62,7 +62,7 @@ void ARM::arm_ldrb_pre(u32 op2) {
 //     regs.r[15] += 4;
 // }
 
-void ARM::arm_ldrb_post(u32 op2) {
+void NDS_ARM::arm_ldrb_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     regs.r[rd] = read_byte(regs.r[rn]);
@@ -76,7 +76,7 @@ void ARM::arm_ldrb_post(u32 op2) {
  
 }
 
-void ARM::arm_ldrsb_pre(u32 op2) {
+void NDS_ARM::arm_ldrsb_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
 
@@ -89,7 +89,7 @@ void ARM::arm_ldrsb_pre(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARM::arm_ldr_pre(u32 op2) {
+void NDS_ARM::arm_ldr_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
@@ -136,7 +136,7 @@ void ARM::arm_ldr_pre(u32 op2) {
     
 }
 
-void ARM::arm_ldr_post(u32 op2) {
+void NDS_ARM::arm_ldr_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
@@ -181,7 +181,7 @@ void ARM::arm_ldr_post(u32 op2) {
     
 }
 
-void ARM::arm_strb_pre(u32 op2) {
+void NDS_ARM::arm_strb_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     if (rd == 15) {
@@ -202,7 +202,7 @@ void ARM::arm_strb_pre(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARM::arm_strb_post(u32 op2) {
+void NDS_ARM::arm_strb_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     if (rd == 15) {
@@ -219,7 +219,7 @@ void ARM::arm_strb_post(u32 op2) {
     
 }
 
-void ARM::arm_str_pre(u32 op2) {
+void NDS_ARM::arm_str_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
@@ -240,7 +240,7 @@ void ARM::arm_str_pre(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARM::arm_str_post(u32 op2) {
+void NDS_ARM::arm_str_post(u32 op2) {
     
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
@@ -258,7 +258,7 @@ void ARM::arm_str_post(u32 op2) {
     
 }
 
-void ARM::arm_msr_reg() {
+void NDS_ARM::arm_msr_reg() {
     // user programs cant change cpsr
     u8 rm = opcode & 0xF;
     u32 mask = 0;
@@ -302,7 +302,7 @@ void ARM::arm_msr_reg() {
 
 }
 
-void ARM::arm_msr_imm() {
+void NDS_ARM::arm_msr_imm() {
     // user programs cant change cpsr
     u32 immediate = arm_imm_data_processing();
     u32 mask = 0;
@@ -347,7 +347,7 @@ void ARM::arm_msr_imm() {
 
 }
 
-void ARM::arm_mrs_cpsr() {
+void NDS_ARM::arm_mrs_cpsr() {
     u8 rd = (opcode >> 12) & 0xF;
     // move the cpsr to the register rd
     regs.r[rd] = regs.cpsr;
@@ -355,7 +355,7 @@ void ARM::arm_mrs_cpsr() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_mrs_spsr() {
+void NDS_ARM::arm_mrs_spsr() {
     u8 rd = (opcode >> 12) & 0xF;
     // move the spsr into the register rd
     regs.r[rd] = regs.spsr;
@@ -364,7 +364,7 @@ void ARM::arm_mrs_spsr() {
 }
 
 
-void ARM::arm_strh_pre(u32 op2) {
+void NDS_ARM::arm_strh_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
@@ -382,7 +382,7 @@ void ARM::arm_strh_pre(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARM::arm_strh_post(u32 op2) {
+void NDS_ARM::arm_strh_post(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     if (rd == 15) {
@@ -397,7 +397,7 @@ void ARM::arm_strh_post(u32 op2) {
     regs.r[15] += 4;
 }
 
-void ARM::arm_ldrh_pre(u32 op2) {
+void NDS_ARM::arm_ldrh_pre(u32 op2) {
     u8 rd = (opcode >> 12) & 0xF;
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn] + op2;
@@ -414,11 +414,11 @@ void ARM::arm_ldrh_pre(u32 op2) {
     regs.r[15] += 4;
 }
 
-u32 ARM::arm_imm_halfword_signed_data_transfer() {
+u32 NDS_ARM::arm_imm_halfword_signed_data_transfer() {
     return ((opcode >> 4) & 0xF0) | (opcode & 0xF);
 }
 
-void ARM::arm_mcr_reg() {
+void NDS_ARM::arm_mcr_reg() {
     // arm9 exclusive as it involves coprocessor transfers
     if (cpu_id == ARMv4) {
         return;
@@ -433,7 +433,7 @@ void ARM::arm_mcr_reg() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_mrc_reg() {
+void NDS_ARM::arm_mrc_reg() {
     // arm9 exclusive as it involves coprocessor transfers
     if (cpu_id == ARMv4) {
         return;
@@ -455,7 +455,7 @@ void ARM::arm_mrc_reg() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_stmiaw() {
+void NDS_ARM::arm_stmiaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -475,7 +475,7 @@ void ARM::arm_stmiaw() {
 }
 
 // fine
-void ARM::arm_stmibw() {
+void NDS_ARM::arm_stmibw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -496,7 +496,7 @@ void ARM::arm_stmibw() {
 }
 
 // fine
-void ARM::arm_stmdbw() {
+void NDS_ARM::arm_stmdbw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -529,7 +529,7 @@ void ARM::arm_stmdbw() {
 }
 
 // fine
-void ARM::arm_stmdaw() {
+void NDS_ARM::arm_stmdaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -561,7 +561,7 @@ void ARM::arm_stmdaw() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_ldmiaw() {
+void NDS_ARM::arm_ldmiaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
     
@@ -609,7 +609,7 @@ void ARM::arm_ldmiaw() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_ldmia() {
+void NDS_ARM::arm_ldmia() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -629,7 +629,7 @@ void ARM::arm_ldmia() {
 
 
 
-void ARM::arm_ldmibw() {
+void NDS_ARM::arm_ldmibw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -658,7 +658,7 @@ void ARM::arm_ldmibw() {
 
 
 
-void ARM::arm_ldmdbw() {
+void NDS_ARM::arm_ldmdbw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -692,7 +692,7 @@ void ARM::arm_ldmdbw() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_ldmdaw() {
+void NDS_ARM::arm_ldmdaw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -727,7 +727,7 @@ void ARM::arm_ldmdaw() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_ldmiauw() {
+void NDS_ARM::arm_ldmiauw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
     
@@ -762,7 +762,7 @@ void ARM::arm_ldmiauw() {
     
 }
 
-void ARM::arm_ldmdauw() {
+void NDS_ARM::arm_ldmdauw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -803,7 +803,7 @@ void ARM::arm_ldmdauw() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_ldmibuw() {
+void NDS_ARM::arm_ldmibuw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -836,7 +836,7 @@ void ARM::arm_ldmibuw() {
     regs.r[15] += 4;
 }
 
-void ARM::arm_ldmdbuw() {
+void NDS_ARM::arm_ldmdbuw() {
     u8 rn = (opcode >> 16) & 0xF;
     u32 address = regs.r[rn];
 
@@ -878,19 +878,19 @@ void ARM::arm_ldmdbuw() {
 
 
 
-u32 ARM::arm_reg_halfword_signed_data_transfer() {
+u32 NDS_ARM::arm_reg_halfword_signed_data_transfer() {
     return regs.r[opcode & 0xF];
 }
 
 
-u32 ARM::arm_rpll() {
+u32 NDS_ARM::arm_rpll() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
     
     return regs.r[rm] << shift_amount;
 }
 
-u32 ARM::arm_rplr() {
+u32 NDS_ARM::arm_rplr() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
     if (shift_amount == 0) {
@@ -900,7 +900,7 @@ u32 ARM::arm_rplr() {
     }
 }
 
-u32 ARM::arm_rpar() {
+u32 NDS_ARM::arm_rpar() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
     u8 msb = opcode >> 31;
@@ -912,7 +912,7 @@ u32 ARM::arm_rpar() {
     }
 }
 
-u32 ARM::arm_rprr() {
+u32 NDS_ARM::arm_rprr() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
 
@@ -934,7 +934,7 @@ u32 ARM::arm_rprr() {
 
 // thumb instructions start here
 
-void ARM::thumb_ldrpc_imm() {
+void NDS_ARM::thumb_ldrpc_imm() {
     u32 immediate = (opcode & 0xFF) << 2;
     u8 rd = (opcode >> 8) & 0x7;
     // in this instruction pc is word aligned (pc & 0xFFFFFFFC)
@@ -949,7 +949,7 @@ void ARM::thumb_ldrpc_imm() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_str_reg() {
+void NDS_ARM::thumb_str_reg() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u8 rm = (opcode >> 6) & 0x7;
@@ -961,7 +961,7 @@ void ARM::thumb_str_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_push_lr() {
+void NDS_ARM::thumb_push_lr() {
     // - 4 from r13 as lr is always going to be pushed in this instruction
     u32 address = regs.r[13];
 
@@ -992,7 +992,7 @@ void ARM::thumb_push_lr() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_strh_imm5() {
+void NDS_ARM::thumb_strh_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
 
@@ -1003,7 +1003,7 @@ void ARM::thumb_strh_imm5() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_ldrh_imm5() {
+void NDS_ARM::thumb_ldrh_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u32 immediate_5 = (opcode >> 6) & 0x1F;
@@ -1014,7 +1014,7 @@ void ARM::thumb_ldrh_imm5() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_str_imm5() {
+void NDS_ARM::thumb_str_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u32 immediate = (opcode >> 6) & 0x1F;
@@ -1025,7 +1025,7 @@ void ARM::thumb_str_imm5() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_strb_imm5() {
+void NDS_ARM::thumb_strb_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
 
@@ -1038,7 +1038,7 @@ void ARM::thumb_strb_imm5() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_strsp_reg() {
+void NDS_ARM::thumb_strsp_reg() {
     u8 rd = (opcode >> 8) & 0x7;
     u32 immediate = opcode & 0xFF;
     u32 address = regs.r[13] + (immediate << 2);
@@ -1047,7 +1047,7 @@ void ARM::thumb_strsp_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_pop() {
+void NDS_ARM::thumb_pop() {
     u32 address = regs.r[13];
 
     for (int i = 0; i < 8; i++) {
@@ -1063,7 +1063,7 @@ void ARM::thumb_pop() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_pop_pc() {
+void NDS_ARM::thumb_pop_pc() {
     u32 address = regs.r[13];
 
     for (int i = 0; i < 8; i++) {
@@ -1095,7 +1095,7 @@ void ARM::thumb_pop_pc() {
     }
 }
 
-void ARM::thumb_ldrsp_reg() {
+void NDS_ARM::thumb_ldrsp_reg() {
     u32 immediate = opcode & 0xFF;
     u8 rd = (opcode >> 8) & 0x7;
     u32 address = regs.r[13] + (immediate << 2);
@@ -1108,7 +1108,7 @@ void ARM::thumb_ldrsp_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_ldrb_imm5() {
+void NDS_ARM::thumb_ldrb_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
 
@@ -1122,7 +1122,7 @@ void ARM::thumb_ldrb_imm5() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_push() {
+void NDS_ARM::thumb_push() {
     u32 address = regs.r[13];
 
     for (int i = 0; i < 8; i++) {
@@ -1144,7 +1144,7 @@ void ARM::thumb_push() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_ldrh_reg() {
+void NDS_ARM::thumb_ldrh_reg() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u8 rm = (opcode >> 6) & 0x7;
@@ -1156,7 +1156,7 @@ void ARM::thumb_ldrh_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_ldr_imm5() {
+void NDS_ARM::thumb_ldr_imm5() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u32 immediate = (opcode >> 6) & 0x1F;
@@ -1173,7 +1173,7 @@ void ARM::thumb_ldr_imm5() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_stmia_reg() {
+void NDS_ARM::thumb_stmia_reg() {
     u8 rn = (opcode >> 8) & 0x7;
     u32 address = regs.r[rn];
 
@@ -1191,7 +1191,7 @@ void ARM::thumb_stmia_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_ldmia_reg() {
+void NDS_ARM::thumb_ldmia_reg() {
     u8 rn = (opcode >> 8) & 0x7;
     u32 address = regs.r[rn];
     
@@ -1213,7 +1213,7 @@ void ARM::thumb_ldmia_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_ldr_reg() {
+void NDS_ARM::thumb_ldr_reg() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u8 rm = (opcode >> 6) & 0x7;
@@ -1230,7 +1230,7 @@ void ARM::thumb_ldr_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_strh_reg() {
+void NDS_ARM::thumb_strh_reg() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u8 rm = (opcode >> 6) & 0x7;
@@ -1242,7 +1242,7 @@ void ARM::thumb_strh_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_ldrb_reg() {
+void NDS_ARM::thumb_ldrb_reg() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u8 rm = (opcode >> 6) & 0x7;
@@ -1258,7 +1258,7 @@ void ARM::thumb_ldrb_reg() {
     regs.r[15] += 2;
 }
 
-void ARM::thumb_strb_reg() {
+void NDS_ARM::thumb_strb_reg() {
     u8 rd = opcode & 0x7;
     u8 rn = (opcode >> 3) & 0x7;
     u8 rm = (opcode >> 6) & 0x7;

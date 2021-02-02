@@ -2,13 +2,16 @@
 
 #include <SDL2/SDL.h>
 #include <common/types.h>
+#include <common/emu_core.h>
 #include <nds/nds.h>
+#include <gba/gba.h>
 #include <stdio.h>
 #include <string>
+#include <memory>
 
 class HostInterface {
 public:
-	void run(std::string rom_path);
+	void run_core(std::string rom_path);
 	// use bool so that we can return true or false whether the initialisation process was successful or not and exit efficiently 
 	bool initialise();
 	
@@ -40,13 +43,8 @@ private:
 
 	int rom_type;
 
-	NDS nds;
-
-	
+	std::unique_ptr<EmuCore> emu_core;
 
 	bool initialise_nds();
 	bool initialise_gba();
-
-	void run_nds(std::string rom_path);
-	void run_gba(std::string rom_path);
 };

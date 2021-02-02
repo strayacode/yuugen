@@ -26,14 +26,16 @@ public:
 	void direct_boot(std::string rom_path);
 	void run_frame();
 	void reset();
+	void handle_input();
+	const u32* get_framebuffer(int screen);
 	CP15 cp15;
 	Memory memory;
-	Cartridge cartridge;
+	NDS_Cartridge cartridge;
 
 	// 2 sets of interrupt registers. 0 is for arm7 and 1 is for arm9
 	Interrupt interrupt[2];
 	IPC ipc;
-	GPU gpu;
+	NDS_GPU gpu;
 	RTC rtc;
 	// 2 timers. 0 is for arm7 and 1 is for arm9
 	Timers timers[2];
@@ -44,11 +46,11 @@ public:
 
 	SPI spi;
 
-	ARM arm9, arm7;
+	NDS_ARM arm9, arm7;
 
 	SPU spu;
 	
-	Input input;
+	NDS_Input input;
 
 	MathsUnit maths_unit;
 

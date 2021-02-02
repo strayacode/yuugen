@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 		host_interface->cleanup();
 	}
     
-	host_interface->run(argv[i]);
+	host_interface->run_core(argv[i]);
 
 	return EXIT_SUCCESS;
 }

@@ -1,18 +1,18 @@
 #include <nds/nds.h>
 #include <nds/cartridge.h>
 
-Cartridge::Cartridge(NDS *nds) : nds(nds) {
+NDS_Cartridge::NDS_Cartridge(NDS *nds) : nds(nds) {
 
 }
 
-Cartridge::~Cartridge() {
+NDS_Cartridge::~NDS_Cartridge() {
 	// delete only if not a nullptr
 	if (rom) {
 		delete[] rom;
 	}
 }
 
-void Cartridge::load_cartridge(std::string rom_path) {
+void NDS_Cartridge::load_cartridge(std::string rom_path) {
 	printf("rom path is %s\n", rom_path.c_str());
     FILE *file_buffer = fopen(rom_path.c_str(), "rb");
     if (file_buffer == NULL) {
@@ -28,7 +28,7 @@ void Cartridge::load_cartridge(std::string rom_path) {
     load_header_data();
 }
 
-void Cartridge::load_header_data() {
+void NDS_Cartridge::load_header_data() {
     // load the game title
     for (int i = 0; i < 12; i++) {
         header.game_title[i] = rom[i];
@@ -56,7 +56,7 @@ void Cartridge::load_header_data() {
     log_debug("[Cartridge] header data loaded successfully!");
 }
 
-void Cartridge::transfer_rom() {
+void NDS_Cartridge::transfer_rom() {
     // first transfer header data to main memory
     for (u32 i = 0; i < 0x170; i++) {
         nds->memory.arm9_write_byte(0x027FFE00 + i, rom[i]);
@@ -75,7 +75,7 @@ void Cartridge::transfer_rom() {
     // exit(1);
 }
 
-void Cartridge::write_romctrl(u32 value) {
+void NDS_Cartridge::write_romctrl(u32 value) {
 	bool old_block_start = ROMCTRL >> 31;
 
 	ROMCTRL = value & 0xDF7F7FFF;
@@ -94,7 +94,7 @@ void Cartridge::write_romctrl(u32 value) {
 	
 }
 
-void Cartridge::do_command() {
+void NDS_Cartridge::do_command() {
 	// check data block size
 	u32 block_size;
 	switch ((ROMCTRL >> 24) & 0x7) {
@@ -156,16 +156,16 @@ void Cartridge::do_command() {
 	ROMCTRL &= ~(1 << 31);
 }
 
-void Cartridge::write_auxspicnt(u16 value) {
+void NDS_Cartridge::write_auxspicnt(u16 value) {
 	// preserve not used bits and bit 7 as that cant be changed on writes shrug
 	AUXSPICNT = (AUXSPICNT & 0x80) | (value & 0xE043);
 }
 
-void Cartridge::write_hi_auxspicnt(u16 value) {
+void NDS_Cartridge::write_hi_auxspicnt(u16 value) {
 	AUXSPICNT = (AUXSPICNT & 0xFF) | ((value << 8) & 0xE043);
 }
 
-void Cartridge::write_auxspidata(u16 value) {
+void NDS_Cartridge::write_auxspidata(u16 value) {
 	// set the busy flag in auxspicnt
 	AUXSPICNT |= (1 << 7);
 

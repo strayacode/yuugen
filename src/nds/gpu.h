@@ -7,9 +7,9 @@
 
 class NDS;
 
-class GPU {
+class NDS_GPU {
 public:
-	GPU(NDS *nds);
+	NDS_GPU(NDS *nds);
 
 
 	const u32* get_framebuffer(int screen);

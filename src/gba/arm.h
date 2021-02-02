@@ -2,7 +2,7 @@
 
 #include <common/types.h>
 
-class ARM {
+class GBA_ARM {
 public:
 	void direct_boot();
 private:

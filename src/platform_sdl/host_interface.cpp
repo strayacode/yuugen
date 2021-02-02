@@ -25,6 +25,9 @@ bool HostInterface::initialise_nds() {
     // set the window size multiplier
     window_size = 2;
 
+    // set the core to nds
+    emu_core = std::make_unique<NDS>();
+
     // create window
     // TODO: maybe add possibility for opengl context later?
     u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -87,6 +90,9 @@ bool HostInterface::initialise_gba() {
     // set the window size multiplier
     window_size = 2;
 
+    // set the core to gba
+    emu_core = std::make_unique<GBA>();
+
     // create window
     // TODO: maybe add possibility for opengl context later?
     u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -137,82 +143,22 @@ void HostInterface::cleanup() {
 	SDL_Quit();
 }
 
-void HostInterface::run(std::string rom_path) {
-    if (rom_type == NDS_ROM) {
-        run_nds(rom_path);
-    } else if (rom_type == GBA_ROM) {
-        run_gba(rom_path);
-    }
-}
-
-void HostInterface::run_nds(std::string rom_path) {
-    nds.direct_boot(rom_path);
+void HostInterface::run_core(std::string rom_path) {
+    emu_core->direct_boot(rom_path);
 
     u32 frame_time_start = SDL_GetTicks();
     while (true) {
-        nds.run_frame();
+        emu_core->run_frame();
 
-        SDL_UpdateTexture(top_screen_texture, nullptr, nds.gpu.get_framebuffer(nds.gpu.TOP_SCREEN), sizeof(u32) * 256);
-        SDL_UpdateTexture(bottom_screen_texture, nullptr, nds.gpu.get_framebuffer(nds.gpu.BOTTOM_SCREEN), sizeof(u32) * 256);
-
+        SDL_UpdateTexture(top_screen_texture, nullptr, emu_core->get_framebuffer(emu_core->TOP_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(bottom_screen_texture, nullptr, emu_core->get_framebuffer(emu_core->BOTTOM_SCREEN), sizeof(u32) * 256);
+        
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, top_screen_texture, nullptr, &top_texture_area);
         SDL_RenderCopy(renderer, bottom_screen_texture, nullptr, &bottom_texture_area);
         SDL_RenderPresent(renderer);
 
-        while (SDL_PollEvent(&event) != 0) {
-            if (event.type == SDL_QUIT) {
-                cleanup();
-                return;
-            }
-            if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
-                bool key_pressed = event.type == SDL_KEYDOWN;
-                switch (event.key.keysym.sym) {
-                case SDLK_u:
-                    // A
-                    nds.input.handle_keypress(0, key_pressed);
-                    break;
-                case SDLK_i:
-                    // B
-                    nds.input.handle_keypress(1, key_pressed);
-                    break;
-                // should handle X and Y later (not in keyinput)
-                case SDLK_RSHIFT:
-                    // select
-                    nds.input.handle_keypress(2, key_pressed);
-                    break;
-                case SDLK_RETURN:
-                    // start
-                    nds.input.handle_keypress(3, key_pressed);
-                    break;
-                case SDLK_RIGHT:
-                    // right
-                    nds.input.handle_keypress(4, key_pressed);
-                    break;
-                case SDLK_LEFT:
-                    // left 
-                    nds.input.handle_keypress(5, key_pressed);
-                    break;
-                case SDLK_UP:
-                    // up
-                    nds.input.handle_keypress(6, key_pressed);
-                    break;
-                case SDLK_DOWN:
-                    // down
-                    nds.input.handle_keypress(7, key_pressed);
-                    break;
-                case SDLK_e:
-                    // Button R
-                    nds.input.handle_keypress(8, key_pressed);
-                    break;
-                case SDLK_q:
-                    // Button L
-                    nds.input.handle_keypress(9, key_pressed);
-                    break;
-
-                }
-            }
-        }
+        emu_core->handle_input();
         u32 frame_time_end = SDL_GetTicks();
         frames++;
         if (frame_time_end - frame_time_start >= 1000) {
@@ -223,10 +169,8 @@ void HostInterface::run_nds(std::string rom_path) {
             frames = 0;
         }
     }
-}
 
-void HostInterface::run_gba(std::string rom_path) {
-    log_fatal("running gba not supported yet!");
+    cleanup();
 }
 
 void HostInterface::set_rom_type(std::string rom_path) {

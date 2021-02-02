@@ -10,6 +10,7 @@
 #include <string.h>
 #include <chrono>
 #include <nds/nds.h>
+// #include <>
 
 class MainWindow : public QMainWindow {
 Q_OBJECT
@@ -22,7 +23,7 @@ public:
 	void keyReleaseEvent(QKeyEvent *event);
 
 private:
-	NDS nds;
+	EmuCore* emu_core;
 
 	bool ready = false;
 
