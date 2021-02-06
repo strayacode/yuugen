@@ -783,8 +783,8 @@ void NDS_ARM::thumb_mov_imm() {
     regs.r[rd] = opcode & 0xFF;
     
     // set flags
-    set_condition_flag(N_FLAG, regs.r[0] >> 31);
-    set_condition_flag(Z_FLAG, regs.r[0] == 0);
+    set_condition_flag(N_FLAG, regs.r[rd] >> 31);
+    set_condition_flag(Z_FLAG, regs.r[rd] == 0);
 
     regs.r[15] += 2;
 }
