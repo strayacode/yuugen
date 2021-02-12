@@ -3,14 +3,14 @@
 #include <nds/nds.h>
 #include <nds/arm.h>
 
-void NDS_ARM::arm_b() {
+void ARM::arm_b() {
 	u32 offset = (get_bit(23, opcode) ? 0xFF000000: 0) | ((opcode & 0xFFFFFF) << 2);
     // r15 is assumed to be 2 instructions in front
     regs.r[15] += offset;
     arm_flush_pipeline();
 }
 
-void NDS_ARM::arm_blx_offset() {
+void ARM::arm_blx_offset() {
 	// arm9 specific instruction
 	if (cpu_id == ARMv4) {
 		return;
@@ -28,7 +28,7 @@ void NDS_ARM::arm_blx_offset() {
 }
 
 
-void NDS_ARM::arm_bl() {
+void ARM::arm_bl() {
     u32 offset = (get_bit(23, opcode) ? 0xFF000000: 0) | ((opcode & 0xFFFFFF) << 2);
     // store the address of the instruction after the branch into the link register
     regs.r[14] = regs.r[15] - 4;
@@ -40,7 +40,7 @@ void NDS_ARM::arm_bl() {
 }
 
 
-void NDS_ARM::arm_bx() {
+void ARM::arm_bx() {
     u8 rm = opcode & 0xF;
     if ((regs.r[rm] & 0x1) == 1) {
         // set bit 5 of cpsr to switch to thumb state
@@ -55,7 +55,7 @@ void NDS_ARM::arm_bx() {
     }
 }
 
-void NDS_ARM::arm_blx_reg() {
+void ARM::arm_blx_reg() {
 	// arm9 exclusive instruction
 
 	if (cpu_id == ARMv4) {
@@ -81,7 +81,7 @@ void NDS_ARM::arm_blx_reg() {
 	}
 }
 
-void NDS_ARM::arm_swi() {
+void ARM::arm_swi() {
     // store the address of the next instruction after the swi in lr_svc
     regs.r_banked[BANK_SVC][6] = regs.r[15] - 4;
 
@@ -113,7 +113,7 @@ void NDS_ARM::arm_swi() {
 
 // start of thumb instructions
 
-void NDS_ARM::thumb_bl_setup() {
+void ARM::thumb_bl_setup() {
     u32 immediate_11 = (get_bit(10, opcode) ? 0xFFFFF000 : 0) | ((opcode & 0x7FF) << 1);
 
     regs.r[14] = regs.r[15] + (immediate_11 << 11);
@@ -121,7 +121,7 @@ void NDS_ARM::thumb_bl_setup() {
     regs.r[15] += 2;
 }
 
-void NDS_ARM::thumb_bl_offset() {
+void ARM::thumb_bl_offset() {
     u32 offset_11 = (opcode & 0x7FF) << 1;
     u32 next_instruction_address = regs.r[15] - 2;
     regs.r[15] = (regs.r[14] + offset_11) & ~1;
@@ -130,7 +130,7 @@ void NDS_ARM::thumb_bl_offset() {
 }
 
 
-void NDS_ARM::thumb_bgt() {
+void ARM::thumb_bgt() {
 	// only branch if z cleared AND (n equals v)
     if ((!get_condition_flag(Z_FLAG) && (get_condition_flag(N_FLAG) == get_condition_flag(V_FLAG)))) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -141,7 +141,7 @@ void NDS_ARM::thumb_bgt() {
     }
 }
 
-void NDS_ARM::thumb_blt() {
+void ARM::thumb_blt() {
 	// only branch if n not equal to v
     if (get_condition_flag(N_FLAG) != get_condition_flag(V_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -152,7 +152,7 @@ void NDS_ARM::thumb_blt() {
     }
 }
 
-void NDS_ARM::thumb_bne() {
+void ARM::thumb_bne() {
     // only branch if zero flag clear
     if (!get_condition_flag(Z_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -163,7 +163,7 @@ void NDS_ARM::thumb_bne() {
     }
 }
 
-void NDS_ARM::thumb_blx_reg() {
+void ARM::thumb_blx_reg() {
 	// arm9 specific instruction
     if (cpu_id == ARMv4) {
         return;
@@ -179,7 +179,7 @@ void NDS_ARM::thumb_blx_reg() {
     arm_flush_pipeline();
 }
 
-void NDS_ARM::thumb_bx_reg() {
+void ARM::thumb_bx_reg() {
     u8 rm = (opcode >> 3) & 0xF;
     if (regs.r[rm] & 0x1) {
         // just load rm into r15 normally in thumb
@@ -194,7 +194,7 @@ void NDS_ARM::thumb_bx_reg() {
     }
 }
 
-void NDS_ARM::thumb_blx_offset() {
+void ARM::thumb_blx_offset() {
     // arm9 specific instruction
     if (cpu_id == ARMv4) {
         return;
@@ -210,13 +210,13 @@ void NDS_ARM::thumb_blx_offset() {
     arm_flush_pipeline();
 }
 
-void NDS_ARM::thumb_b() {
+void ARM::thumb_b() {
     u32 offset = (get_bit(10, opcode) ? 0xFFFFF000 : 0) | ((opcode & 0x7FF) << 1);
     regs.r[15] += offset;
     thumb_flush_pipeline();   
 }
 
-void NDS_ARM::thumb_bcc() {
+void ARM::thumb_bcc() {
     // only branch if carry flag cleared
     if (!get_condition_flag(C_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -227,7 +227,7 @@ void NDS_ARM::thumb_bcc() {
     }
 }
 
-void NDS_ARM::thumb_beq() {
+void ARM::thumb_beq() {
     // only branch if zero flag set
     if (get_condition_flag(Z_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -238,7 +238,7 @@ void NDS_ARM::thumb_beq() {
     }
 }
 
-void NDS_ARM::thumb_bhi() {
+void ARM::thumb_bhi() {
     // only branch if c flag set and z flag cleared
     if (get_condition_flag(C_FLAG) && !get_condition_flag(Z_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -249,7 +249,7 @@ void NDS_ARM::thumb_bhi() {
     }
 }
 
-void NDS_ARM::thumb_bpl() {
+void ARM::thumb_bpl() {
     // only branch if negative flag clear
     if (!get_condition_flag(N_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -260,7 +260,7 @@ void NDS_ARM::thumb_bpl() {
     }
 }
 
-void NDS_ARM::thumb_bcs() {
+void ARM::thumb_bcs() {
     // only branch if carry flag set
     if (get_condition_flag(C_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -271,7 +271,7 @@ void NDS_ARM::thumb_bcs() {
     }
 }
 
-void NDS_ARM::thumb_bmi() {
+void ARM::thumb_bmi() {
     // only branch if negative flag set
     if (get_condition_flag(N_FLAG)) {
         u32 offset = (get_bit(7, opcode) ? 0xFFFFFE00 : 0) | ((opcode & 0xFF) << 1);
@@ -282,7 +282,7 @@ void NDS_ARM::thumb_bmi() {
     }
 }
 
-void NDS_ARM::thumb_ble() {
+void ARM::thumb_ble() {
     
     // only branch on condition
     if ((get_condition_flag(Z_FLAG) || (get_condition_flag(N_FLAG) != get_condition_flag(V_FLAG)))) {
@@ -294,7 +294,7 @@ void NDS_ARM::thumb_ble() {
     }
 }
 
-void NDS_ARM::thumb_bge() {
+void ARM::thumb_bge() {
     
     // only branch on condition
     if (get_condition_flag(N_FLAG) == get_condition_flag(V_FLAG)) {
@@ -306,7 +306,7 @@ void NDS_ARM::thumb_bge() {
     }
 }
 
-void NDS_ARM::thumb_bls() {
+void ARM::thumb_bls() {
     
     // only branch on condition
     if (!get_condition_flag(C_FLAG) || get_condition_flag(Z_FLAG)) {
@@ -318,7 +318,7 @@ void NDS_ARM::thumb_bls() {
     }
 }
 
-void NDS_ARM::thumb_swi() {
+void ARM::thumb_swi() {
     // store the address of the next instruction after the swi in lr_svc
     regs.r_banked[BANK_SVC][6] = regs.r[15] - 2;
 

@@ -16,26 +16,23 @@
 #include <nds/maths_unit.h>
 #include <string>
 #include <common/log.h>
-#include <common/emu_core.h>
 
 
-class NDS : virtual public EmuCore {
+class NDS {
 public:
 	NDS();
 	void firmware_boot();
 	void direct_boot(std::string rom_path);
-	void run_frame();
+	void run_nds_frame();
 	void reset();
-	void handle_input();
-	const u32* get_framebuffer(int screen);
 	CP15 cp15;
 	Memory memory;
-	NDS_Cartridge cartridge;
+	Cartridge cartridge;
 
 	// 2 sets of interrupt registers. 0 is for arm7 and 1 is for arm9
 	Interrupt interrupt[2];
 	IPC ipc;
-	NDS_GPU gpu;
+	GPU gpu;
 	RTC rtc;
 	// 2 timers. 0 is for arm7 and 1 is for arm9
 	Timers timers[2];
@@ -46,11 +43,11 @@ public:
 
 	SPI spi;
 
-	NDS_ARM arm9, arm7;
+	ARM arm9, arm7;
 
 	SPU spu;
 	
-	NDS_Input input;
+	Input input;
 
 	MathsUnit maths_unit;
 

@@ -2,14 +2,14 @@
 
 // TODO: add cpu id to dma later
 NDS::NDS() : spi(this), cp15(this), maths_unit(this), spu(this), dma {DMA(this, 0), DMA(this, 1)}, arm9(this, 1), arm7(this, 0), timers {Timers(this, 0), Timers(this, 1)}, gpu(this), memory(this), cartridge(this), interrupt {Interrupt(this, 0), Interrupt(this, 0)}, ipc(this), rtc(this) {
-	
+    
 }
 
 // TODO: add rom path later but we will try to boot the firmware without a cartridge inserted for now
 void NDS::firmware_boot() {
     reset();
 
-	// load the 2 bioses and the firmware
+    // load the 2 bioses and the firmware
     memory.load_arm9_bios();
     memory.load_arm7_bios();
     spi.load_firmware();
@@ -19,8 +19,8 @@ void NDS::firmware_boot() {
     arm7.firmware_boot();
 }
 
-void NDS::run_frame() {
-	// quick sidenote
+void NDS::run_nds_frame() {
+    // quick sidenote
     // in 1 frame of the nds executing
     // there are 263 scanlines with 192 visible and 71 for vblank
     // in each scanline there are 355 dots in total with 256 visible and 99 for hblank
@@ -42,9 +42,7 @@ void NDS::run_frame() {
             
         
             arm7.step();
-
             if (timers[0].get_timer_enabled()) {
-                
                 // tick arm7 timers by 2 cycles
                 timers[0].tick(2);
             }
@@ -111,64 +109,4 @@ void NDS::direct_boot(std::string rom_path) {
     arm9.direct_boot();
     arm7.direct_boot();
     spi.direct_boot();
-}
-
-void NDS::handle_input() {
-    while (SDL_PollEvent(&event) != 0) {
-        if (event.type == SDL_QUIT) {
-            exit(1);
-            return;
-        }
-        if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
-            bool key_pressed = event.type == SDL_KEYDOWN;
-            switch (event.key.keysym.sym) {
-            case SDLK_u:
-                // A
-                input.handle_keypress(0, key_pressed);
-                break;
-            case SDLK_i:
-                // B
-                input.handle_keypress(1, key_pressed);
-                break;
-            // should handle X and Y later (not in keyinput)
-            case SDLK_RSHIFT:
-                // select
-                input.handle_keypress(2, key_pressed);
-                break;
-            case SDLK_RETURN:
-                // start
-                input.handle_keypress(3, key_pressed);
-                break;
-            case SDLK_RIGHT:
-                // right
-                input.handle_keypress(4, key_pressed);
-                break;
-            case SDLK_LEFT:
-                // left 
-                input.handle_keypress(5, key_pressed);
-                break;
-            case SDLK_UP:
-                // up
-                input.handle_keypress(6, key_pressed);
-                break;
-            case SDLK_DOWN:
-                // down
-                input.handle_keypress(7, key_pressed);
-                break;
-            case SDLK_e:
-                // Button R
-                input.handle_keypress(8, key_pressed);
-                break;
-            case SDLK_q:
-                // Button L
-                input.handle_keypress(9, key_pressed);
-                break;
-
-            }
-        }
-    }
-}
-
-const u32* NDS::get_framebuffer(int screen) {
-    return gpu.get_framebuffer(screen);
 }

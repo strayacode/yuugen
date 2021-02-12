@@ -68,6 +68,8 @@ u8 Memory::arm7_read_byte(u32 addr) {
 	default:
 		log_fatal("unimplemented 8 bit arm7 read at address 0x%08x", addr);
 	}
+
+	return 0;
 }
 
 u16 Memory::arm7_read_halfword(u32 addr) {
@@ -514,6 +516,8 @@ u16 Memory::arm9_read_halfword(u32 addr) {
 			switch (addr) {
 			case 0x04000004:
 				return nds->gpu.DISPSTAT9;
+			case 0x04000006:
+				return nds->gpu.VCOUNT;
 			case 0x04000130:
 				return nds->input.KEYINPUT;
 			case 0x04000180:

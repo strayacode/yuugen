@@ -23,7 +23,7 @@ public:
 	void keyReleaseEvent(QKeyEvent *event);
 
 private:
-	EmuCore* emu_core;
+	NDS nds;
 
 	bool ready = false;
 

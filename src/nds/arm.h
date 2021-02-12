@@ -7,9 +7,9 @@
 
 class NDS;
 
-class NDS_ARM {
+class ARM {
 public:
-	NDS_ARM(NDS *nds, int cpu_id);
+	ARM(NDS *nds, int cpu_id);
 
 	void firmware_boot();
 	void direct_boot();

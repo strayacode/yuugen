@@ -10,10 +10,10 @@
 
 class NDS;
 
-class NDS_Cartridge {
+class Cartridge {
 public:
-	NDS_Cartridge(NDS *nds);
-	~NDS_Cartridge();
+	Cartridge(NDS *nds);
+	~Cartridge();
 
 	void write_romctrl(u32 value);
 	void write_auxspicnt(u16 value);

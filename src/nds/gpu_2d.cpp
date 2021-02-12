@@ -1,7 +1,7 @@
 #include <nds/gpu.h>
 #include <nds/gpu_2d.h>
 
-GPU2D::GPU2D(NDS_GPU *gpu, int engine_id) : gpu(gpu), engine_id(engine_id) {
+GPU2D::GPU2D(GPU *gpu, int engine_id) : gpu(gpu), engine_id(engine_id) {
 	
 }
 

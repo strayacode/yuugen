@@ -4,11 +4,11 @@
 #include <common/log.h>
 #include <string.h>
 
-class NDS_GPU;
+class GPU;
 
 class GPU2D {
 public:
-	GPU2D(NDS_GPU *gpu, int engine_id);
+	GPU2D(GPU *gpu, int engine_id);
 
 	u32 DISPCNT = 0;
 
@@ -70,7 +70,7 @@ public:
 	void write_palette_ram(u32 addr, u16 data);
 	void write_oam(u32 addr, u16 data);
 private:
-	NDS_GPU *gpu;
+	GPU *gpu;
 
 	// 0 = engine A, 1 = engine B
 	int engine_id;

@@ -2,21 +2,21 @@
 #include <nds/nds.h>
 
 
-NDS_GPU::NDS_GPU(NDS *nds) : nds(nds), engine_a(this, 0), engine_b(this, 1) {
+GPU::GPU(NDS *nds) : nds(nds), engine_a(this, 0), engine_b(this, 1) {
 
 }
 
-void NDS_GPU::write_dispstat9(u16 data) {
+void GPU::write_dispstat9(u16 data) {
 	// make sure to only change bits which are writeable
 	DISPSTAT9 = (data & 0xFFB8);
 }
 
-void NDS_GPU::write_dispstat7(u16 data) {
+void GPU::write_dispstat7(u16 data) {
     // make sure to only change bits which are writeable
     DISPSTAT7 = (data & 0xFFB8);
 }
 
-void NDS_GPU::render_scanline_begin() {
+void GPU::render_scanline_begin() {
     if (VCOUNT < 192) {
         engine_a.render_scanline(VCOUNT);
         engine_b.render_scanline(VCOUNT);
@@ -38,7 +38,7 @@ void NDS_GPU::render_scanline_begin() {
 
 }
 
-void NDS_GPU::render_scanline_end() {
+void GPU::render_scanline_end() {
     if ((DISPSTAT7 >> 8) == VCOUNT) {
         // set the v counter flag
         DISPSTAT7 |= (1 << 2);
@@ -101,7 +101,7 @@ void NDS_GPU::render_scanline_end() {
     
 }
 
-const u32* NDS_GPU::get_framebuffer(int screen) {
+const u32* GPU::get_framebuffer(int screen) {
     switch (screen) {
     case TOP_SCREEN:
         return (get_bit(15, POWCNT1) ? engine_a.get_framebuffer() : engine_b.get_framebuffer());
@@ -110,7 +110,7 @@ const u32* NDS_GPU::get_framebuffer(int screen) {
     }
 }
 
-void NDS_GPU::write_lcdc_vram(u32 addr, u16 data) {
+void GPU::write_lcdc_vram(u32 addr, u16 data) {
 	if (in_range(0x06800000, 0x0681FFFF, addr) && !get_vram_bank_mst(vramcnt_a)) {
         if (get_vram_bank_enabled(vramcnt_a)) {
             memcpy(&vram_a[addr & 0x1FFFF], &data, 2);
@@ -150,10 +150,10 @@ void NDS_GPU::write_lcdc_vram(u32 addr, u16 data) {
     } 
 }
 
-bool NDS_GPU::get_vram_bank_enabled(u8 vramcnt) {
+bool GPU::get_vram_bank_enabled(u8 vramcnt) {
 	return (vramcnt & (1 << 7));
 }
 
-bool NDS_GPU::get_vram_bank_mst(u8 vramcnt) {
+bool GPU::get_vram_bank_mst(u8 vramcnt) {
 	return vramcnt & 0x7;
 }

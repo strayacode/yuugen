@@ -1,32 +1,32 @@
 #include <nds/arm.h>
 #include <nds/nds.h>
 
-NDS_ARM::NDS_ARM(NDS *nds, int cpu_id): nds(nds), cpu_id(cpu_id) {
+ARM::ARM(NDS *nds, int cpu_id): nds(nds), cpu_id(cpu_id) {
 	buffer = fopen("boot2.log", "w");
 }
 
-u8 NDS_ARM::read_byte(u32 addr) {
+u8 ARM::read_byte(u32 addr) {
 	if (cpu_id == ARMv5) {
 		return nds->memory.arm9_read_byte(addr);
 	}
 	return nds->memory.arm7_read_byte(addr);
 }
 
-u16 NDS_ARM::read_halfword(u32 addr) {
+u16 ARM::read_halfword(u32 addr) {
 	if (cpu_id == ARMv5) {
 		return nds->memory.arm9_read_halfword(addr);
 	}
 	return nds->memory.arm7_read_halfword(addr);
 }
 
-u32 NDS_ARM::read_word(u32 addr) {
+u32 ARM::read_word(u32 addr) {
 	if (cpu_id == ARMv5) {
 		return nds->memory.arm9_read_word(addr);
 	}
 	return nds->memory.arm7_read_word(addr);
 }
 
-void NDS_ARM::write_byte(u32 addr, u8 data) {
+void ARM::write_byte(u32 addr, u8 data) {
 	if (cpu_id == ARMv5) {
 		nds->memory.arm9_write_byte(addr, data);
 	} else {
@@ -34,7 +34,7 @@ void NDS_ARM::write_byte(u32 addr, u8 data) {
 	}
 }
 
-void NDS_ARM::write_halfword(u32 addr, u16 data) {
+void ARM::write_halfword(u32 addr, u16 data) {
 	if (cpu_id == ARMv5) {
 		nds->memory.arm9_write_halfword(addr, data);
 	} else {
@@ -42,7 +42,7 @@ void NDS_ARM::write_halfword(u32 addr, u16 data) {
 	}
 }
 
-void NDS_ARM::write_word(u32 addr, u32 data) {
+void ARM::write_word(u32 addr, u32 data) {
 	if (cpu_id == ARMv5) {
 		nds->memory.arm9_write_word(addr, data);
 	} else {
@@ -50,7 +50,7 @@ void NDS_ARM::write_word(u32 addr, u32 data) {
 	}
 }
 
-u8 NDS_ARM::get_register_bank(u8 cpu_mode) {
+u8 ARM::get_register_bank(u8 cpu_mode) {
 	switch (cpu_mode) {
 	case USR: case SYS:
 		return BANK_USR;
@@ -70,7 +70,7 @@ u8 NDS_ARM::get_register_bank(u8 cpu_mode) {
 	}
 }
 
-void NDS_ARM::update_mode(u8 cpu_mode) {
+void ARM::update_mode(u8 cpu_mode) {
 	u8 old_bank = get_register_bank(regs.cpsr & 0x1F);
 	u8 new_bank = get_register_bank(cpu_mode);
 
@@ -102,29 +102,29 @@ void NDS_ARM::update_mode(u8 cpu_mode) {
 	regs.cpsr = (regs.cpsr & ~0x1F) | (cpu_mode);
 }
 
-void NDS_ARM::arm_flush_pipeline() {
+void ARM::arm_flush_pipeline() {
 	pipeline[0] = read_word(regs.r[15]);
 	pipeline[1] = read_word(regs.r[15] + 4);
 
 	regs.r[15] += 8;
 }
 
-void NDS_ARM::thumb_flush_pipeline() {
+void ARM::thumb_flush_pipeline() {
 	pipeline[0] = read_halfword(regs.r[15]);
 	pipeline[1] = read_halfword(regs.r[15] + 2);
 
 	regs.r[15] += 4;
 }
 
-bool NDS_ARM::is_arm() {
+bool ARM::is_arm() {
 	return (get_bit(5, regs.cpsr) == 0);
 }
 
-bool NDS_ARM::get_condition_flag(int condition_flag) {
+bool ARM::get_condition_flag(int condition_flag) {
     return (get_bit(condition_flag, regs.cpsr));
 }
 
-bool NDS_ARM::condition_evaluate() {
+bool ARM::condition_evaluate() {
 	bool n_flag = get_condition_flag(N_FLAG);
 	bool z_flag = get_condition_flag(Z_FLAG);
 	bool c_flag = get_condition_flag(C_FLAG);
@@ -174,7 +174,7 @@ bool NDS_ARM::condition_evaluate() {
 	}
 }
 
-void NDS_ARM::set_condition_flag(int condition_flag, bool data) {
+void ARM::set_condition_flag(int condition_flag, bool data) {
     if (data) {
         regs.cpsr |= (1 << condition_flag);
     } else {
@@ -182,7 +182,7 @@ void NDS_ARM::set_condition_flag(int condition_flag, bool data) {
     }
 }
 
-void NDS_ARM::direct_boot() {
+void ARM::direct_boot() {
     // common between arm7 and arm9
     regs.r[0] = regs.r[1] = regs.r[2] = regs.r[3] = regs.r[4] = regs.r[5] = regs.r[6] = regs.r[7] = regs.r[8] = regs.r[9] = regs.r[10] = regs.r[11] = 0;
 
@@ -217,7 +217,7 @@ void NDS_ARM::direct_boot() {
     arm_flush_pipeline();
 }
 
-void NDS_ARM::firmware_boot() {
+void ARM::firmware_boot() {
 	if (cpu_id == ARMv5) {
         // where the reset exception vector for the arm9 is located
         regs.r[15] = 0xFFFF0000;
@@ -238,7 +238,7 @@ void NDS_ARM::firmware_boot() {
     }
 }
 
-void NDS_ARM::step() {
+void ARM::step() {
 	// stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
     opcode = pipeline[0]; // store the current executing instruction 
     
@@ -254,7 +254,7 @@ void NDS_ARM::step() {
     execute_instruction();
 }
 
-void NDS_ARM::halt() {
+void ARM::halt() {
     halted = true;
 
     // // set IE to 0 so that only interrupts enabled after the arm9 is halted are detected
@@ -267,7 +267,7 @@ void NDS_ARM::halt() {
     
 }
 
-void NDS_ARM::dispatch_irq() {
+void ARM::dispatch_irq() {
     halted = false;
 
     
@@ -296,7 +296,7 @@ void NDS_ARM::dispatch_irq() {
     opcode = pipeline[0];
 }
 
-void NDS_ARM::execute_instruction() {
+void ARM::execute_instruction() {
     // check if arm is halted first
     if (halted) {
         // handle an interrupt
@@ -306,6 +306,11 @@ void NDS_ARM::execute_instruction() {
         
         return;
     }
+
+    if (nds->interrupt[cpu_id].IME && (nds->interrupt[cpu_id].IE & nds->interrupt[cpu_id].IF) && !get_bit(7, regs.cpsr)) {
+        dispatch_irq();
+    }
+
 
 	if (is_arm()) {
         
