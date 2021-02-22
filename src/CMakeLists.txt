@@ -1,5 +1,5 @@
-set(PLATFORM_SDL ON)
-set(PLATFORM_QT OFF)
+set(PLATFORM_SDL OFF)
+set(PLATFORM_QT ON)
 
 add_subdirectory(common)
 add_subdirectory(nds)

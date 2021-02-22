@@ -7,6 +7,11 @@
 
 class NDS;
 
+enum cpu_arch {
+	ARMv4 = 0,
+	ARMv5 = 1,
+};
+
 class ARM {
 public:
 	ARM(NDS *nds, int cpu_id);
@@ -54,10 +59,7 @@ private:
 	// 0 = arm7, 1 = arm9
 	int cpu_id;
 
-	enum cpu_architectures {
-		ARMv4 = 0,
-		ARMv5 = 1,
-	};
+	
 
 	enum cpu_modes {
 		USR = 0x10,
@@ -102,11 +104,15 @@ private:
 	void thumb_flush_pipeline();
 
 	u8 read_byte(u32 addr);
+
 	u16 read_halfword(u32 addr);
+
 	u32 read_word(u32 addr);
 
 	void write_byte(u32 addr, u8 data);
+
 	void write_halfword(u32 addr, u16 data);
+
 	void write_word(u32 addr, u32 data);
 
 

@@ -43,7 +43,8 @@ public:
 
 	SPI spi;
 
-	ARM arm9, arm7;
+	ARM arm9;
+	ARM arm7;
 
 	SPU spu;
 	

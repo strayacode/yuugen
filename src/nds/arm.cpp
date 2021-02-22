@@ -1,53 +1,58 @@
 #include <nds/arm.h>
 #include <nds/nds.h>
 
+
+
 ARM::ARM(NDS *nds, int cpu_id): nds(nds), cpu_id(cpu_id) {
 	buffer = fopen("boot2.log", "w");
 }
 
 u8 ARM::read_byte(u32 addr) {
-	if (cpu_id == ARMv5) {
-		return nds->memory.arm9_read_byte(addr);
-	}
-	return nds->memory.arm7_read_byte(addr);
+    if (cpu_id == ARMv5) {
+        return nds->memory.arm9_read_byte(addr);
+    } else {
+        return nds->memory.arm7_read_byte(addr);
+    }
 }
 
 u16 ARM::read_halfword(u32 addr) {
-	if (cpu_id == ARMv5) {
-		return nds->memory.arm9_read_halfword(addr);
-	}
-	return nds->memory.arm7_read_halfword(addr);
+    if (cpu_id == ARMv5) {
+        return nds->memory.arm9_read_halfword(addr);
+    } else {
+        return nds->memory.arm7_read_halfword(addr);
+    }
 }
 
 u32 ARM::read_word(u32 addr) {
-	if (cpu_id == ARMv5) {
-		return nds->memory.arm9_read_word(addr);
-	}
-	return nds->memory.arm7_read_word(addr);
+    if (cpu_id == ARMv5) {
+        return nds->memory.arm9_read_word(addr);
+    } else {
+        return nds->memory.arm7_read_word(addr);
+    }
 }
 
 void ARM::write_byte(u32 addr, u8 data) {
-	if (cpu_id == ARMv5) {
-		nds->memory.arm9_write_byte(addr, data);
-	} else {
-		nds->memory.arm7_write_byte(addr, data);
-	}
+    if (cpu_id == ARMv5) {
+        nds->memory.arm9_write_byte(addr, data);
+    } else if (cpu_id == ARMv5) {
+        nds->memory.arm7_write_byte(addr, data);
+    }
 }
 
 void ARM::write_halfword(u32 addr, u16 data) {
-	if (cpu_id == ARMv5) {
-		nds->memory.arm9_write_halfword(addr, data);
-	} else {
-		nds->memory.arm7_write_halfword(addr, data);
-	}
+    if (cpu_id == ARMv5) {
+        nds->memory.arm9_write_halfword(addr, data);
+    } else {
+        nds->memory.arm7_write_halfword(addr, data);
+    }
 }
 
 void ARM::write_word(u32 addr, u32 data) {
-	if (cpu_id == ARMv5) {
-		nds->memory.arm9_write_word(addr, data);
-	} else {
-		nds->memory.arm7_write_word(addr, data);
-	}
+    if (cpu_id == ARMv5) {
+        nds->memory.arm9_write_word(addr, data);
+    } else {
+        nds->memory.arm7_write_word(addr, data);
+    }
 }
 
 u8 ARM::get_register_bank(u8 cpu_mode) {
