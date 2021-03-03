@@ -244,6 +244,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_ADC(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x0B0: case 0x0B8:
                 return ARM_ADCS(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x0B9:
+                return ARM_UMLALS();
             case 0x0CB: case 0x0EB:
                 return ARM_STRH_POST(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x0D0: case 0x0D8:
@@ -252,12 +254,16 @@ void ARM::ExecuteInstruction() {
                 return ARM_SMULLS();
             case 0x0F0: case 0x0F8:
                 return ARM_RSCS(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x0F9:
+                return ARM_SMLALS();
             case 0x100:
                 return ARM_MRS_CPSR();
             case 0x105:
                 return ARM_QADD();
             case 0x108:
                 return ARM_SMLABB();
+            case 0x109:
+                return ARM_SWP();
             case 0x10A:
                 return ARM_SMLATB();
             case 0x10C:
@@ -272,6 +278,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_BLX_REG();
             case 0x140:
                 return ARM_MRS_SPSR();
+            case 0x149:
+                return ARM_SWPB();
             case 0x150: case 0x158:
                 return ARM_CMPS(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x15B:
@@ -344,6 +352,11 @@ void ARM::ExecuteInstruction() {
             case 0x288: case 0x289: case 0x28A: case 0x28B: 
             case 0x28C: case 0x28D: case 0x28E: case 0x28F:
                 return ARM_ADD(ARM_DATA_PROCESSING_IMM());
+            case 0x290: case 0x291: case 0x292: case 0x293: 
+            case 0x294: case 0x295: case 0x296: case 0x297: 
+            case 0x298: case 0x299: case 0x29A: case 0x29B: 
+            case 0x29C: case 0x29D: case 0x29E: case 0x29F:
+                return ARM_ADDS(ARM_DATA_PROCESSING_IMM());
             case 0x2D0: case 0x2D1: case 0x2D2: case 0x2D3: 
             case 0x2D4: case 0x2D5: case 0x2D6: case 0x2D7: 
             case 0x2D8: case 0x2D9: case 0x2DA: case 0x2DB: 
@@ -379,6 +392,11 @@ void ARM::ExecuteInstruction() {
             case 0x3A8: case 0x3A9: case 0x3AA: case 0x3AB: 
             case 0x3AC: case 0x3AD: case 0x3AE: case 0x3AF:
                 return ARM_MOV(ARM_DATA_PROCESSING_IMM());
+            case 0x3B0: case 0x3B1: case 0x3B2: case 0x3B3: 
+            case 0x3B4: case 0x3B5: case 0x3B6: case 0x3B7: 
+            case 0x3B8: case 0x3B9: case 0x3BA: case 0x3BB: 
+            case 0x3BC: case 0x3BD: case 0x3BE: case 0x3BF:
+                return ARM_MOVS(ARM_DATA_PROCESSING_IMMS());
             case 0x3C0: case 0x3C1: case 0x3C2: case 0x3C3: 
             case 0x3C4: case 0x3C5: case 0x3C6: case 0x3C7: 
             case 0x3C8: case 0x3C9: case 0x3CA: case 0x3CB: 

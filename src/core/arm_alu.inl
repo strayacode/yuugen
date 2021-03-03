@@ -137,11 +137,40 @@ INSTRUCTION(ARM_ADDS, u32 op2) {
     } else {
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-        // TODO: remove op2 from argument as it is not needed in the calculation
-        // SetConditionFlag(C_FLAG, ADD_CARRY(regs.r[rn], op2, regs.r[rd]));
         SetConditionFlag(C_FLAG, result64 >> 32);
         SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rn], op2, regs.r[rd]));
     }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SWP) {
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    u32 address = regs.r[rn];
+    u32 data = ReadWord(address);
+    if (address & 0x3) {
+        int shift_amount = (address & 0x3) * 8;
+        data = (data << (32 - shift_amount)) | (data >> shift_amount);
+    }
+
+    WriteWord(address, regs.r[rm]);
+    regs.r[rd] = data;
+
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SWPB) {
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    u8 data = ReadByte(regs.r[rn]);
+    WriteByte(regs.r[rn], regs.r[rm]);
+    regs.r[rd] = data;
 
     regs.r[15] += 4;
 }
@@ -465,6 +494,39 @@ INSTRUCTION(ARM_SMULLS) {
     SetConditionFlag(N_FLAG, regs.r[rdhi] >> 31);
     SetConditionFlag(Z_FLAG, result == 0);
     
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_UMLALS) {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    u64 rdhilo = ((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]);
+    u64 result = (u64)regs.r[rm] * (u64)regs.r[rs] + rdhilo;
+    SetConditionFlag(N_FLAG, result >> 63);
+    SetConditionFlag(Z_FLAG, result == 0);
+    regs.r[rdlo] = result & 0xFFFFFFFF;
+
+    regs.r[rdhi] = result >> 32;
+
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMLALS) {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    s64 rdhilo = (s64)(((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]));
+    s64 result = ((s64)(s32)regs.r[rm] * (s64)(s32)regs.r[rs]);
+    result += rdhilo;
+    regs.r[rdlo] = result;
+    regs.r[rdhi] = result >> 32;
+    SetConditionFlag(N_FLAG, regs.r[rdhi] >> 31);
+    SetConditionFlag(Z_FLAG, result == 0);
 
     regs.r[15] += 4;
 }

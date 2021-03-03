@@ -12,7 +12,7 @@ bool HostInterface::Initialise() {
 
     u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 
-    int window_size = 1;
+    int window_size = 2;
 
     window = SDL_CreateWindow("yuugen", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 256 * window_size, 384 * window_size, window_flags);
 
