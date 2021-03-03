@@ -1,7 +1,7 @@
-add_executable(ChronoDS main.cpp host_interface.cpp)
+add_executable(yuugen main.cpp host_interface.cpp)
 
 find_package(SDL2 REQUIRED)
-include_directories(ChronoDS ${SDL2_INCLUDE_DIRS})
-message(STATUS ${SDL2_INCLUDE_DIRS})
 
-target_link_libraries(ChronoDS PRIVATE nds common ${SDL2_LIBRARIES})
+include_directories(yuugen ${SDL2_INCLUDE_DIRS})
+
+target_link_libraries(yuugen PRIVATE core common ${SDL2_LIBRARIES})

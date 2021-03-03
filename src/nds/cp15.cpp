@@ -44,8 +44,10 @@ void CP15::write_reg(u32 cn, u32 cm, u32 cp, u32 data) {
 		break;
     case 0x020000:
         // PU Cachability Bits for Data/Unified Protection Region
+        break;
     case 0x020001:
         // PU Cachability Bits for Instruction Protection Region
+        break;
     case 0x030000:
         // PU Cache Write-Bufferability Bits for Data Protection Regions
         break;

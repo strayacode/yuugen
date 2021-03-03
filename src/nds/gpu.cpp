@@ -39,7 +39,7 @@ void GPU::render_scanline_begin() {
 }
 
 void GPU::render_scanline_end() {
-    if ((DISPSTAT7 >> 8) == VCOUNT) {
+    if (((DISPSTAT7 >> 8) | ((DISPSTAT7 & (1 << 7)) << 1)) == VCOUNT) {
         // set the v counter flag
         DISPSTAT7 |= (1 << 2);
 
@@ -52,9 +52,9 @@ void GPU::render_scanline_end() {
         DISPSTAT7 &= ~(1 << 2);
     }
 
-    if ((DISPSTAT9 >> 8) == VCOUNT) {
+    if (((DISPSTAT9 >> 8) | ((DISPSTAT9 & (1 << 7)) << 1)) == VCOUNT) {
         // set the v counter flag
-        DISPSTAT7 |= (1 << 2);
+        DISPSTAT9 |= (1 << 2);
 
         // also request a v counter irq if enabled
         if (get_bit(5, DISPSTAT9)) {
@@ -156,4 +156,27 @@ bool GPU::get_vram_bank_enabled(u8 vramcnt) {
 
 bool GPU::get_vram_bank_mst(u8 vramcnt) {
 	return vramcnt & 0x7;
+}
+
+int GPU::get_vram_bank_offset(u8 vramcnt) {
+    return (vramcnt >> 3) & 0x3;
+}
+
+u16 GPU::read_arm7(u32 addr) {
+    u16 return_value = 0;
+    if (get_vram_bank_enabled(vramcnt_c)) {
+        if (in_range(0x06000000 + (get_vram_bank_offset(vramcnt_c) * 0x20000), 0x06000000 + (get_vram_bank_offset(vramcnt_c) * 0x20000) + 0x20000, addr) && get_vram_bank_mst(vramcnt_c) == 2) {
+            memcpy(&return_value, &vram_c[addr & 0x1FFFF], 2);
+        }
+
+    }
+
+    if (get_vram_bank_enabled(vramcnt_d)) {
+        if (in_range(0x06000000 + (get_vram_bank_offset(vramcnt_d) * 0x20000), 0x06000000 + (get_vram_bank_offset(vramcnt_d) * 0x20000) + 0x20000, addr) && get_vram_bank_mst(vramcnt_d) == 2) {
+            memcpy(&return_value, &vram_d[addr & 0x1FFFF], 2);
+        }
+
+    }
+
+    return return_value;
 }

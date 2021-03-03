@@ -133,6 +133,9 @@ u16 Memory::arm7_read_halfword(u32 addr) {
 		}
 
 		break;
+	case 0x06000000:
+		return nds->gpu.read_arm7(addr);
+		break;
 	default:
 		log_fatal("unimplemented 16 bit arm7 read at address 0x%08x", addr);
 	}
@@ -192,6 +195,8 @@ u32 Memory::arm7_read_word(u32 addr) {
 			return nds->interrupt[0].IME;
 		case 0x04000210:
 			return nds->interrupt[0].IE;
+		case 0x04000214:
+			return nds->interrupt[0].IF;
 		case 0x04100010:
 			return nds->cartridge.data_output;
 		default:

@@ -16,22 +16,65 @@ bool MainWindow::initialise() {
 
 	load_rom_action = new QAction("Load ROM...", this);
 	quit_action = new QAction("Quit", this);
+    set_1x_action = new QAction("Scale 1x", this);
+    set_2x_action = new QAction("Scale 2x", this);
+    set_4x_action = new QAction("Scale 4x", this);
 	// TODO: add ctrl+O keybind
 	connect(load_rom_action, &QAction::triggered, this, &MainWindow::load_rom);
 	connect(quit_action, &QAction::triggered, this, &MainWindow::shutdown);
+    connect(set_1x_action, &QAction::triggered, this, &MainWindow::set_1x);
+    connect(set_2x_action, &QAction::triggered, this, &MainWindow::set_2x);
+    connect(set_4x_action, &QAction::triggered, this, &MainWindow::set_4x);
 
 	file_menu = menuBar()->addMenu("File");
 	file_menu->addAction(load_rom_action);
 	file_menu->addAction(quit_action);
 
+    options_menu = menuBar()->addMenu("Options");
+    options_menu->addAction(set_1x_action);
+    options_menu->addAction(set_2x_action);
+    options_menu->addAction(set_4x_action);
+
 	menuBar()->show();
 	setWindowTitle("ChronoDS");
-	resize(256, 384);
-	setMinimumSize(256, 384);
+	resize(512, 768);
+	setMinimumSize(512, 768);
 	show();
 
 	// indicates intialisation was successful
 	return true;
+}
+
+void MainWindow::set_1x() {
+    top_screen_image = QImage(256, 192, QImage::Format_RGB32);
+    bottom_screen_image = QImage(256, 192, QImage::Format_RGB32);
+    resize(256, 384);
+    setMinimumSize(256, 384);
+    update();
+    show();
+}
+
+void MainWindow::set_2x() {
+    top_screen_image = QImage(256, 192, QImage::Format_RGB32);
+    bottom_screen_image = QImage(256, 192, QImage::Format_RGB32);
+    resize(512, 768);
+    setMinimumSize(512, 768);
+    update();
+    show();
+}
+
+void MainWindow::set_4x() {
+    top_screen_image = QImage(256, 192, QImage::Format_RGB32);
+    bottom_screen_image = QImage(256, 192, QImage::Format_RGB32);
+    resize(1024, 1536);
+    setMinimumSize(1024, 1536);
+}
+
+void MainWindow::set_8x() {
+    top_screen_image = QImage(256, 192, QImage::Format_RGB32);
+    bottom_screen_image = QImage(256, 192, QImage::Format_RGB32);
+    resize(256, 384);
+    setMinimumSize(256, 384);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -163,8 +206,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 
 void MainWindow::load_rom() {
 	printf("loading rom...\n");
-
-	rom_path = QFileDialog::getOpenFileName(this, tr("Load NDS ROM"), rom_path, "NDS ROMs (*.nds)");
+    // m_imageFile = QFileDialog::getOpenFileName(this, tr("Load NDS"), QDir::homePath(), tr("Image Files (*.png *.jpg *.bmp)"), 0, QFileDialog::DontUseNativeDialog); //works
+	rom_path = QFileDialog::getOpenFileName(this, tr("Load NDS ROM"), rom_path, "NDS ROMs (*.nds)", 0, QFileDialog::DontUseNativeDialog);
 	nds.direct_boot(rom_path.toStdString());
 
 	ready = true;

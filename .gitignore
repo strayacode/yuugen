@@ -1,8 +1,6 @@
 /bios
 /build
-/firmware
 /roms
+/firmware
 .*
 !/.gitignore
-TODO.txt
-PLANS.txt

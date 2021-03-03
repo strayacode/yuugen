@@ -40,6 +40,7 @@ public:
     u8 vram_i[0x4000] = {};
 
     void write_lcdc_vram(u32 addr, u16 data);
+    u16 read_arm7(u32 addr);
 
     // render scanline begin is executed when 256 * 3 have passed in a scanline (when hblank starts)
     // it renders the scanline to the relative framebuffer
@@ -69,6 +70,7 @@ private:
 
 	bool get_vram_bank_enabled(u8 vramcnt);
     bool get_vram_bank_mst(u8 vramcnt);
+    int get_vram_bank_offset(u8 vramcnt);
 
 	
 };

@@ -16,7 +16,7 @@ void Interrupt::write_ie9(u32 value) {
 
 void Interrupt::write_ie7(u32 value) {
 	// set the appropriate bits
-	IE = (IE & 0x1DF3FFF) | (value & 0x1DF3FFF);
+	IE = (IE & ~0x1DF3FFF) | (value & 0x1DF3FFF);
 }
 
 void Interrupt::write_if(u32 value) {

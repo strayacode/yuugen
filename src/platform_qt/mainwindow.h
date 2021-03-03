@@ -29,12 +29,16 @@ private:
 
 	// menus
 	QMenu* file_menu;
+	QMenu* options_menu;
 
 	QString window_title;
 
 	// actions for the menus
 	QAction* load_rom_action;
 	QAction* quit_action;
+	QAction* set_1x_action;
+	QAction* set_2x_action;
+	QAction* set_4x_action;
 
 	// strings
 	QString rom_path;
@@ -44,6 +48,8 @@ private:
 	int frames = 0;
 	std::chrono::steady_clock::time_point last_frame_time;
 
+	int screen_size_multiplier = 1;
+
 signals:
 
 public slots:
@@ -51,4 +57,8 @@ public slots:
 private slots:
 	void load_rom();
 	void shutdown();
+	void set_1x();
+	void set_2x();
+	void set_4x();
+	void set_8x();
 };

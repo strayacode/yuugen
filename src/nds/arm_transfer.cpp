@@ -209,7 +209,7 @@ void ARM::arm_strb_post(u32 op2) {
         log_fatal("handle");
     }
 
-    write_word(regs.r[rn], regs.r[rd]);
+    write_byte(regs.r[rn], regs.r[rd]);
 
     // always writeback in post transfer
     regs.r[rn] += op2;
@@ -263,7 +263,7 @@ void ARM::arm_msr_reg() {
     u8 rm = opcode & 0xF;
     u32 mask = 0;
     for (int i = 0; i < 4; i++) {
-        if (get_bit(i + 16, regs.r[rm])) {
+        if (get_bit(i + 16, opcode)) {
             mask |= (0xFF << (i << 3));
         }
     }
@@ -307,7 +307,7 @@ void ARM::arm_msr_imm() {
     u32 immediate = arm_imm_data_processing();
     u32 mask = 0;
     for (int i = 0; i < 4; i++) {
-        if (get_bit(i + 16, immediate)) {
+        if (get_bit(i + 16, opcode)) {
             mask |= (0xFF << (i << 3));
         }
     }
@@ -903,7 +903,7 @@ u32 ARM::arm_rplr() {
 u32 ARM::arm_rpar() {
     u8 rm = opcode & 0xF;
     u8 shift_amount = (opcode >> 7) & 0x1F;
-    u8 msb = opcode >> 31;
+    u8 msb = regs.r[rm] >> 31;
 
     if (shift_amount == 0) {
         return 0xFFFFFFFF * msb;

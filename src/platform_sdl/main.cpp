@@ -1,25 +1,22 @@
-#include <stdio.h>
-#include "host_interface.h"
 #include <memory>
+#include "host_interface.h"
 #include <common/log.h>
 
 int main(int argc, char *argv[]) {
-	std::unique_ptr<HostInterface> host_interface = std::make_unique<HostInterface>();
-
-	if (argc < 2) {
-        log_fatal("no rom argument or other arguments were specified!");
+    if (argc < 2) {
+        log_fatal("no arguments were given!");
     }
 
-	if (!host_interface->initialise()) {
-		// do cleanup and shutdown emulator
-		host_interface->cleanup();
-	}
-	int i;
-	for (i = 1; i < argc - 1; i++) {
+    std::unique_ptr<HostInterface> host_interface = std::make_unique<HostInterface>();
+   
+    if (!host_interface->Initialise()) {
+        host_interface->Cleanup();
+    }
+    int i = 1;
+    for (int i = 1; i < argc - 1; i++) {
         printf("%s\n", argv[i]);
     }
-    
-	host_interface->run(argv[i]);
+    host_interface->Run(argv[i]);
 
-	return EXIT_SUCCESS;
+    return 0;
 }
