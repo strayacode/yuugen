@@ -246,6 +246,22 @@ INSTRUCTION(ARM_RSB, u32 op2) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_RSBS, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+    regs.r[rd] = op2 - regs.r[rn];
+    
+    if (rd == 15) {
+        log_fatal("handle");
+    } else {
+        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+        SetConditionFlag(C_FLAG, SUB_CARRY(op2, regs.r[rn]));
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, regs.r[rn], regs.r[rd]));
+        regs.r[15] += 4;
+    } 
+}
+
 INSTRUCTION(ARM_ORR, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;

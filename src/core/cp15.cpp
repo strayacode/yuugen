@@ -23,11 +23,29 @@ u32 CP15::Read(u32 cn, u32 cm, u32 cp) {
     switch ((cn << 16) | (cm << 8) | cp) {
     case 0x000001:
         return 0x0F0D2112; // this is the value used on the nds
+    case 0x020000:
+        // pu cachability bits for data/unified protection region
+        return 0;
+    case 0x020001:
+        // pu cachability bits for instruction protection region
+        return 0;
+    case 0x030000:
+        // pu cache write-bufferability bits for data protection regions
+        return 0;
+    case 0x050000:
+        return 0;
+    case 0x050001: case 0x050002: case 0x050003:
+        return 0;
+    case 0x060000: case 0x060100: case 0x060200: case 0x060300: case 0x060400: case 0x060500: case 0x060600: case 0x060700:
+        // dont do anything lol this is just protection unit region stuff which we dont need to emulate
+        return 0;
     case 0x010000:
         return control_register;
         break;
     case 0x090100:
         return dtcm_reg;
+    case 0x090101:
+        return itcm_reg;
     default:
         log_fatal("undefined register read C%d, C%d, C%d", cn, cm, cp);
     }
@@ -61,11 +79,17 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
     case 0x070500:
         // invalidate entire instruction cache
         break;
+    case 0x070501:
+        // invalidate instruction cache line
+        break;
     case 0x070600:
         // invalidate entire data cache
         break;
     case 0x070A04:
         // drain write buffer
+        break;
+    case 0x070E01:
+        // clean and invalidate data cache line
         break;
     case 0x090100:
         // write to raw register

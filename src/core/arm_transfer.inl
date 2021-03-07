@@ -132,6 +132,34 @@ INSTRUCTION(ARM_LDR_PRE, u32 op2) {
     
 }
 
+// with writeback
+INSTRUCTION(ARM_LDR_PRE_WRITEBACK, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    u32 data = ReadWord(regs.r[rn] + op2);
+
+    regs.r[rd] = data;
+
+    regs.r[rn] += op2;
+
+    if (rd == 15) {
+        // for armv5, bit 5 of cpsr is changed to bit 0 of data and pipeline is flushed accordingly
+        // for armv4, just flush the pipeline
+        if ((arch == ARMv5) && (data & 1)) {
+            // switch to thumb mode
+            regs.cpsr |= 1 << 5;
+            regs.r[15] &= ~1;
+            ThumbFlushPipeline();
+        } else {
+            regs.r[15] &= ~3;
+            ARMFlushPipeline();
+        }
+    } else {
+        regs.r[15] += 4;
+    }
+}
+
 INSTRUCTION(ARM_LDR_POST, u32 op2) {
     // if (instruction == 0xE4903004) {
     //     log_fatal("finish");
@@ -193,6 +221,17 @@ INSTRUCTION(ARM_LDRH_PRE, u32 op2) {
     u8 rn = (instruction >> 16) & 0xF;
     
     regs.r[rd] = ReadHalfword(regs.r[rn] + op2);
+
+    regs.r[15] += 4;
+}
+
+// with writeback
+INSTRUCTION(ARM_LDRH_PRE_WRITEBACK, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+    
+    regs.r[rd] = ReadHalfword(regs.r[rn] + op2);
+    regs.r[rn] += op2;
 
     regs.r[15] += 4;
 }
@@ -399,6 +438,33 @@ INSTRUCTION(ARM_STM_DECREMENT_BEFORE_WRITEBACK) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            regs.r[i] = ReadWord(address);
+        }
+    }
+
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(instruction & (1 << rn)) || ((arch == ARMv5) && ((instruction & 0xFFFF) == (1 << rn)) || !((instruction & 0xFFFF) >> rn))) {
+        regs.r[rn] = address;
+    }
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {
     u8 rn = (instruction >> 16) & 0xF;
     u32 address = regs.r[rn];
@@ -420,29 +486,29 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {
     }
     
     if (instruction & (1 << 15)) {
-        log_fatal("handle");
-        // // handle arm9 behaviour
-        // if (arch == ARMv5) {
-        //     if (regs.r[15] & 0x1) {
-        //         // switch to thumb mode
-        //         regs.cpsr |= (1 << 5);
+        // log_fatal("handle");
+        // handle arm9 behaviour
+        if (arch == ARMv5) {
+            if (regs.r[15] & 0x1) {
+                // switch to thumb mode
+                regs.cpsr |= (1 << 5);
 
-        //         // halfword align the address
-        //         regs.r[15] &= ~1;
+                // halfword align the address
+                regs.r[15] &= ~1;
 
-        //         thumb_flush_pipeline();
-        //     } else {
-        //         // word align the address
-        //         regs.r[15] &= ~3;
+                ThumbFlushPipeline();
+            } else {
+                // word align the address
+                regs.r[15] &= ~3;
 
-        //         arm_flush_pipeline();
-        //     }
-        // } else {
-        //     // word align the address
-        //     regs.r[15] &= ~3;
+                ARMFlushPipeline();
+            }
+        } else {
+            // word align the address
+            regs.r[15] &= ~3;
 
-        //     arm_flush_pipeline();
-        // }
+            ARMFlushPipeline();
+        }
     }
 
     regs.r[15] += 4;

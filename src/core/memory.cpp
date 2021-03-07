@@ -58,6 +58,8 @@ u8 Memory::ARM7ReadByte(u32 addr) {
 }
 
 u16 Memory::ARM7ReadHalfword(u32 addr) {
+    addr &= ~1;
+
     u16 return_value = 0;
 
     switch (addr >> 24) {
@@ -99,6 +101,10 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
             return core->gpu.DISPSTAT7;
         case 0x04000130:
             return core->input.KEYINPUT;
+        case 0x04000180:
+            return core->ipc.ReadIPCSYNC7();
+        case 0x04000184:
+            return core->ipc.IPCFIFOCNT7;
         default:
             log_fatal("unimplemented arm7 halfword io read at address 0x%08x", addr);
         }
@@ -111,6 +117,8 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
 }
 
 u32 Memory::ARM7ReadWord(u32 addr) {
+    addr &= ~3;
+
     u32 return_value = 0;
 
     switch (addr >> 24) {
@@ -150,6 +158,15 @@ u32 Memory::ARM7ReadWord(u32 addr) {
         switch (addr) {
         case 0x04000180:
             return core->ipc.ReadIPCSYNC7();
+        case 0x04000208:
+            return core->interrupt[0].IME & 0x1;
+        case 0x04000210:
+            return core->interrupt[0].IE;
+        case 0x04000214:
+            return core->interrupt[0].IF;
+        case 0x04100000:
+            // just return the first item in the fifo xd
+            return core->ipc.fifo7[0];
         default:
             log_fatal("unimplemented arm7 word io read at address 0x%08x", addr);
         }
@@ -201,12 +218,17 @@ void Memory::ARM7WriteByte(u32 addr, u8 data) {
 }
 
 void Memory::ARM7WriteHalfword(u32 addr, u16 data) {
+    addr &= ~1;
+
     switch (addr >> 24) {
     case REGION_MAIN_MEMORY:
         memcpy(&main_memory[addr & 0x3FFFFF], &data, 2);
         break;
     case REGION_IO:
         switch (addr) {
+        case 0x04000184:
+            core->ipc.WriteIPCFIFOCNT7(data);
+            break;
         case 0x04000208:
             core->interrupt[0].IME = data & 0x1;
             break;
@@ -220,6 +242,8 @@ void Memory::ARM7WriteHalfword(u32 addr, u16 data) {
 }
 
 void Memory::ARM7WriteWord(u32 addr, u32 data) {
+    addr &= ~3;
+
     switch (addr >> 24) {
     case REGION_MAIN_MEMORY:
         memcpy(&main_memory[addr & 0x3FFFFF], &data, 4);
@@ -261,6 +285,12 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
         case 0x04000208:
             core->interrupt[0].IME = data & 0x1;
             break;
+        case 0x04000210:
+            core->interrupt[0].IE = data;
+            break;
+        case 0x04000214:
+            core->interrupt[0].IF = ~(data);
+            break;
         default:
             log_fatal("unimplemented arm7 word io write at address 0x%08x with data 0x%08x", addr, data);
         }
@@ -290,6 +320,8 @@ u8 Memory::ARM9ReadByte(u32 addr) {
 }
 
 u16 Memory::ARM9ReadHalfword(u32 addr) {
+    addr &= ~1;
+
     u16 return_value = 0;
 
     switch (addr >> 24) {
@@ -304,6 +336,8 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
             return core->input.KEYINPUT;
         case 0x04000180:
             return core->ipc.ReadIPCSYNC9();
+        case 0x04000184:
+            return core->ipc.IPCFIFOCNT9;
         default:
             log_fatal("unimplemented arm9 halfword io read at address 0x%08x", addr);
         }
@@ -319,9 +353,12 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
 }
 
 u32 Memory::ARM9ReadWord(u32 addr) {
+    addr &= ~3;
+
     u32 return_value = 0;
-
-
+    // printf("itcm enabled %d dtcm enabled %d\n", core->cp15.GetITCMEnabled(), core->cp15.GetDTCMEnabled());
+    // printf("itcm size: %08x\n", core->cp15.GetITCMSize());
+    // printf("dtcm base: %08x\n", core->cp15.GetDTCMBase());
     if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&return_value, &core->cp15.itcm[addr & 0x7FFF], 4);
     } else if (core->cp15.GetDTCMEnabled() && 
@@ -369,6 +406,9 @@ u32 Memory::ARM9ReadWord(u32 addr) {
                 return core->interrupt[1].IF;
             case 0x04000240:
                 return ((core->gpu.VRAMCNT_D << 24) | (core->gpu.VRAMCNT_C << 16) | (core->gpu.VRAMCNT_B << 8) | (core->gpu.VRAMCNT_A));
+            case 0x04100000:
+                // just return the first item in the fifo xd
+                return core->ipc.fifo9[0];
             case 0x04004000:
                 return 0;
             case 0x04004008:
@@ -435,6 +475,8 @@ void Memory::ARM9WriteByte(u32 addr, u8 data) {
 }
 
 void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
+    addr &= ~1;
+
     switch (addr >> 24) {
     case REGION_MAIN_MEMORY:
         memcpy(&main_memory[addr & 0x3FFFFF], &data, 2);
@@ -500,6 +542,8 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
 }
 
 void Memory::ARM9WriteWord(u32 addr, u32 data) {
+    addr &= ~3;
+
     if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&core->cp15.itcm[addr & 0x7FFF], &data, 4);
         // done with the write

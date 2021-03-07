@@ -24,8 +24,8 @@ struct IPC {
 
     u16 IPCSYNC7;
     u16 IPCSYNC9;
-    u32 IPCFIFOCNT7;
-    u32 IPCFIFOCNT9;
+    u16 IPCFIFOCNT7;
+    u16 IPCFIFOCNT9;
 
     u32 fifo7[16];
     u32 fifo9[16];
