@@ -26,6 +26,17 @@ INSTRUCTION(THUMB_BLE) {
     }
 }
 
+INSTRUCTION(THUMB_BCC) {
+    // only branch if c flag is cleared
+    if (!GetConditionFlag(C_FLAG)) {
+        u32 offset = ((instruction & (1 << 7)) ? 0xFFFFFE00 : 0) | ((instruction & 0xFF) << 1);
+        regs.r[15] += offset;
+        ThumbFlushPipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}
+
 INSTRUCTION(THUMB_BHI) {
     // only branch if condition is true
     if (GetConditionFlag(C_FLAG) && !GetConditionFlag(Z_FLAG)) {

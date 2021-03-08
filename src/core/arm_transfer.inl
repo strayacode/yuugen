@@ -108,8 +108,13 @@ INSTRUCTION(ARM_STR_POST, u32 op2) {
 INSTRUCTION(ARM_LDR_PRE, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn] + op2;
+    u32 data = ReadWord(address);
 
-    u32 data = ReadWord(regs.r[rn] + op2);
+    if (address & 0x3) {
+        u8 shift_amount = (address & 0x3) * 8;
+        data = (data << (32 - shift_amount)) | (data >> shift_amount);
+    }
 
     regs.r[rd] = data;
 
@@ -136,12 +141,21 @@ INSTRUCTION(ARM_LDR_PRE, u32 op2) {
 INSTRUCTION(ARM_LDR_PRE_WRITEBACK, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn] + op2;
+    u32 data = ReadWord(address);
 
-    u32 data = ReadWord(regs.r[rn] + op2);
+    if (address & 0x3) {
+        u8 shift_amount = (address & 0x3) * 8;
+        data = (data << (32 - shift_amount)) | (data >> shift_amount);
+    }
+
+    if (rd != rn) {
+        regs.r[rn] += op2;
+    }
 
     regs.r[rd] = data;
 
-    regs.r[rn] += op2;
+    
 
     if (rd == 15) {
         // for armv5, bit 5 of cpsr is changed to bit 0 of data and pipeline is flushed accordingly
@@ -161,13 +175,14 @@ INSTRUCTION(ARM_LDR_PRE_WRITEBACK, u32 op2) {
 }
 
 INSTRUCTION(ARM_LDR_POST, u32 op2) {
-    // if (instruction == 0xE4903004) {
-    //     log_fatal("finish");
-    // }
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
-    
     u32 data = ReadWord(regs.r[rn]);
+
+    if (regs.r[rn] & 0x3) {
+        u8 shift_amount = (regs.r[rn] & 0x3) * 8;
+        data = (data << (32 - shift_amount)) | (data >> shift_amount);
+    }
 
     regs.r[rd] = data;  
 
@@ -193,9 +208,10 @@ INSTRUCTION(ARM_LDR_POST, u32 op2) {
         regs.r[rd] = (regs.r[rd] << (32 - shift_amount)) | (regs.r[rd] >> shift_amount);
     }
 
-    
-    // always writeback in post indexing
-    regs.r[rn] += op2;
+    // only writeback if rn is not rd
+    if (rd != rn) {
+        regs.r[rn] += op2;
+    }
 
     regs.r[15] += 4;
 }
@@ -229,9 +245,12 @@ INSTRUCTION(ARM_LDRH_PRE, u32 op2) {
 INSTRUCTION(ARM_LDRH_PRE_WRITEBACK, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
-    
-    regs.r[rd] = ReadHalfword(regs.r[rn] + op2);
+    u32 address = regs.r[rn] + op2;
+
     regs.r[rn] += op2;
+    
+    regs.r[rd] = ReadHalfword(address);
+    
 
     regs.r[15] += 4;
 }

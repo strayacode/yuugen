@@ -253,3 +253,19 @@ INSTRUCTION(THUMB_LDR_IMM5) {
 
     regs.r[15] += 2;
 }
+
+INSTRUCTION(THUMB_LDRB_IMM5) {
+    u8 rd = instruction & 0x7;
+    u8 rn = (instruction >> 3) & 0x7;
+    u32 immediate = (instruction >> 6) & 0x1F;
+    u32 address = regs.r[rn] + (immediate << 2);
+
+    regs.r[rd] = ReadByte(address);
+    // deal with misaligned reads
+    if (address & 0x3) {
+        int shift_amount = (address & 0x3) * 8;
+        regs.r[rd] = (regs.r[rd] << (32 - shift_amount)) | (regs.r[rd] >> shift_amount);
+    }
+
+    regs.r[15] += 2;
+}

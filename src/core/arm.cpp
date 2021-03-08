@@ -200,7 +200,7 @@ void ARM::ExecuteInstruction() {
     // TODO: maybe change arm instructions to SyntaxLikeThis instead of all caps
     // counter++;
 
-    // if (counter == 50000) {
+    // if (counter == 150000) {
     //     exit(1);
     // }
     if (core->interrupt[arch].IME && ((core->interrupt[arch].IE & core->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
@@ -211,6 +211,7 @@ void ARM::ExecuteInstruction() {
     //     DebugRegisters();
     // }
     // if (arch == ARMv5) {
+    //     // printf("counter: %d\n", counter);
     //     LogRegisters();
     //     // log_warn("spsr: %08x", regs.spsr);
 
@@ -946,6 +947,9 @@ void ARM::ExecuteInstruction() {
         case 0x70: case 0x71: case 0x72: case 0x73: 
         case 0x74: case 0x75: case 0x76: case 0x77:
             return THUMB_STRB_IMM5();
+        case 0x78: case 0x79: case 0x7A: case 0x7B: 
+        case 0x7C: case 0x7D: case 0x7E: case 0x7F:
+            return THUMB_LDRB_IMM5();
         case 0x80: case 0x81: case 0x82: case 0x83: 
         case 0x84: case 0x85: case 0x86: case 0x87:
             return THUMB_STRH_IMM5();
@@ -974,6 +978,8 @@ void ARM::ExecuteInstruction() {
             return THUMB_BNE();
         case 0xD2:
             return THUMB_BCS();
+        case 0xD3:
+            return THUMB_BCC();
         case 0xD5:
             return THUMB_BPL();
         case 0xD8:
