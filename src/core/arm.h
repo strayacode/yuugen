@@ -135,6 +135,8 @@ struct ARM {
     void ARM_MCR();
     void ARM_SWI();
 
+    void THUMB_SWI();
+
     FILE* log_buffer;
     int counter = 0;
 

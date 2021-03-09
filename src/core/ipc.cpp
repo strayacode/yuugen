@@ -21,12 +21,12 @@ void IPC::WriteIPCSYNC7(u16 data) {
 
     // then send the output of ipcsync7 (bits 8..11) to bits 0..3 of ipcsync9
     IPCSYNC9 = (IPCSYNC9 & ~((0x6F00 >> 8) & 0xF)) | (((data & 0x6F00) >> 8) & 0xF);
-    printf("counter: %d\n", core->arm7.counter);
-    printf("write ipcsync7\n");
-    printf("ipcsync7: %08x ipcsync9: %08x\n", IPCSYNC7, IPCSYNC9);
+    // printf("counter: %d\n", core->arm7.counter);
+    // printf("write ipcsync7\n");
+    // printf("ipcsync7: %08x ipcsync9: %08x\n", IPCSYNC7, IPCSYNC9);
     // if ipcsync 7 is sending an interrupt and interrupts are enabled on ipcsync9
     if ((IPCSYNC7 & (1 << 13)) && (IPCSYNC9 & (1 << 14))) {
-        log_fatal("handle ipcsync irqs");
+        core->arm9.SendInterrupt(16);
     }
 }
 
@@ -38,12 +38,12 @@ void IPC::WriteIPCSYNC9(u16 data) {
 
     // then send the output of ipcsync9 (bits 8..11) to bits 0..3 of ipcsync7
     IPCSYNC7 = (IPCSYNC7 & ~((0x6F00 >> 8) & 0xF)) | (((data & 0x6F00) >> 8) & 0xF);
-    printf("counter: %d opcode: %08x\n", core->arm9.counter, core->arm9.instruction);
-    printf("write ipcsync9\n");
-    printf("ipcsync7: %08x ipcsync9: %08x\n", IPCSYNC7, IPCSYNC9);
+    // printf("counter: %d opcode: %08x\n", core->arm9.counter, core->arm9.instruction);
+    // printf("write ipcsync9\n");
+    // printf("ipcsync7: %08x ipcsync9: %08x\n", IPCSYNC7, IPCSYNC9);
     // if ipcsync 9 is sending an interrupt and interrupts are enabled on ipcsync 7
     if ((IPCSYNC9 & (1 << 13)) && (IPCSYNC7 & (1 << 14))) {
-        log_fatal("handle ipcsync irqs");
+        core->arm7.SendInterrupt(16);
     }
 }
 

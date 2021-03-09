@@ -16,6 +16,8 @@ void Memory::Reset() {
     LoadARM9BIOS();
 
     WRAMCNT = 3;
+    POWCNT2 = 0;
+    HALTCNT = 0;
 }
 
 u8 Memory::ARM7ReadByte(u32 addr) {
@@ -52,8 +54,16 @@ u8 Memory::ARM7ReadByte(u32 addr) {
             break;
         }
         break;
+    case REGION_IO:
+        switch (addr) {
+        case 0x04000138:
+            return core->rtc.RTC_REG;
+        default:
+            log_fatal("unimplemented arm7 byte io read at address 0x%08x", addr);
+        }
+        break;
     default:
-        log_fatal("unimplemented arm7 byte read at address 0x%08x\n", addr);
+        log_fatal("unimplemented arm7 byte read at address 0x%08x", addr);
     }
 }
 
@@ -63,6 +73,9 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
     u16 return_value = 0;
 
     switch (addr >> 24) {
+    case REGION_ARM7_BIOS:
+        memcpy(&return_value, &arm7_bios[addr & 0x3FFF], 2);
+        break;
     case REGION_MAIN_MEMORY:
         memcpy(&return_value, &main_memory[addr & 0x3FFFFF], 2);
         break;
@@ -105,6 +118,8 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
             return core->ipc.ReadIPCSYNC7();
         case 0x04000184:
             return core->ipc.IPCFIFOCNT7;
+        case 0x04000208:
+            return core->interrupt[0].IME & 0x1;
         default:
             log_fatal("unimplemented arm7 halfword io read at address 0x%08x", addr);
         }
@@ -122,6 +137,9 @@ u32 Memory::ARM7ReadWord(u32 addr) {
     u32 return_value = 0;
 
     switch (addr >> 24) {
+    case REGION_ARM7_BIOS:
+        memcpy(&return_value, &arm7_bios[addr & 0x3FFF], 4);
+        break;
     case REGION_MAIN_MEMORY:
         memcpy(&return_value, &main_memory[addr & 0x3FFFFF], 4);
         break;
@@ -212,6 +230,18 @@ void Memory::ARM7WriteByte(u32 addr, u8 data) {
             break;
         }
         break;
+    case REGION_IO:
+        switch (addr) {
+        case 0x04000138:
+            core->rtc.RTC_REG = data;
+            break;
+        case 0x04000301:
+            WriteHALTCNT(data);
+            break;
+        default:
+            log_fatal("unimplemented arm7 byte io write at address 0x%08x with data 0x%02x", addr, data);
+        }
+        break;
     default:
         log_fatal("unimplemented arm7 byte write at address 0x%08x with data 0x%02x\n", addr, data);
     }
@@ -224,13 +254,78 @@ void Memory::ARM7WriteHalfword(u32 addr, u16 data) {
     case REGION_MAIN_MEMORY:
         memcpy(&main_memory[addr & 0x3FFFFF], &data, 2);
         break;
+    case REGION_SHARED_WRAM:
+        if (addr < 0x03800000) {
+            switch (WRAMCNT) {
+            case 0:
+                // 32kb allocated to arm9 and none to arm7 so in this case we write to arm7 wram
+                memcpy(&arm7_wram[addr & 0xFFFF], &data, 2);
+                break;
+            case 1:
+                // in a 32kb block the first 16kb are allocated to the arm7 and the next 16kb are allocated to the arm9
+                memcpy(&shared_wram[addr & 0x3FFF], &data, 2);
+                break;
+            case 2:
+                // in a 32kb block the first 16kb are allocated to the arm9 and the next 16kb are allocated to the arm7
+                memcpy(&shared_wram[(addr & 0x3FFF) + 0x4000], &data, 2);
+                break;
+            case 3:
+                // 0 kb is allocated to arm9 and 32kb is allocated to arm7
+                memcpy(&shared_wram[addr & 0x7FFF], &data, 2);
+                break;
+            default:
+                log_fatal("handle");
+            }
+            break;
+        } else {
+            // write to arm7 wram as addr >= 0x03800000
+            memcpy(&arm7_wram[addr & 0xFFFF], &data, 2);
+            break;
+        }
+        break;
     case REGION_IO:
         switch (addr) {
+        case 0x04000004:
+            core->gpu.WriteDISPSTAT7(data);
+            break;
+        case 0x04000100:
+            core->timers[0].WriteCounter(0, data);
+            break;
+        case 0x04000102:
+            core->timers[0].WriteControl(0, data);
+            break;
+        case 0x04000104:
+            core->timers[0].WriteCounter(1, data);
+            break;
+        case 0x04000106:
+            core->timers[0].WriteControl(1, data);
+            break;
+        case 0x04000108:
+            core->timers[0].WriteCounter(2, data);
+            break;
+        case 0x0400010A:
+            core->timers[0].WriteControl(2, data);
+            break;
+        case 0x0400010C:
+            core->timers[0].WriteCounter(3, data);
+            break;
+        case 0x0400010E:
+            core->timers[0].WriteControl(3, data);
+            break;
+        case 0x04000180:
+            core->ipc.WriteIPCSYNC7(data);
+            break;
         case 0x04000184:
             core->ipc.WriteIPCFIFOCNT7(data);
             break;
         case 0x04000208:
             core->interrupt[0].IME = data & 0x1;
+            break;
+        case 0x04000304:
+            POWCNT2 = data;
+            break;
+        case 0x04000500:
+            core->spu.SOUNDCNT = data;
             break;
         default:
             log_fatal("unimplemented arm7 halfword io write at address 0x%08x with data 0x%04x", addr, data);
@@ -338,6 +433,8 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
             return core->ipc.ReadIPCSYNC9();
         case 0x04000184:
             return core->ipc.IPCFIFOCNT9;
+        case 0x04000304:
+            return core->gpu.POWCNT1;
         default:
             log_fatal("unimplemented arm9 halfword io read at address 0x%08x", addr);
         }
@@ -459,6 +556,9 @@ void Memory::ARM9WriteByte(u32 addr, u8 data) {
         case 0x04000246:
             core->gpu.VRAMCNT_G = data;
             break;
+        case 0x04000247:
+            WRAMCNT = data;
+            break;
         case 0x04000248:
             core->gpu.VRAMCNT_H = data;
             break;
@@ -559,6 +659,27 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
         switch (addr >> 24) {
         case REGION_MAIN_MEMORY:
             memcpy(&main_memory[addr & 0x3FFFFF], &data, 4);
+            break;
+        case REGION_SHARED_WRAM:
+            switch (WRAMCNT) {
+            case 0:
+                // 32 kb is allocated to arm9 and 0kb is allocated to arm7
+                memcpy(&shared_wram[addr & 0x7FFF], &data, 4);
+                break;
+            case 1:
+                // in a 32kb block the first 16kb are allocated to the arm7 and the next 16kb are allocated to the arm9
+                memcpy(&shared_wram[(addr & 0x3FFF) + 0x4000], &data, 4);
+                break;
+            case 2:
+                // in a 32kb block the first 16kb are allocated to the arm9 and the next 16kb are allocated to the arm7
+                memcpy(&shared_wram[addr & 0x3FFF], &data, 4);
+                break;
+            case 3:
+                // in this case the wram area is empty (undefined)
+                break;
+            default:
+                log_fatal("handle");
+            }
             break;
         case REGION_IO:
             switch (addr) {
@@ -848,4 +969,18 @@ void Memory::LoadARM9BIOS() {
     log_debug("arm9 bios loaded successfully!");
 }
 
+void Memory::WriteHALTCNT(u8 data) {
+    HALTCNT = data & 0xC0;
 
+    u8 power_down_mode = (HALTCNT >> 6) & 0x3;
+
+    // check bits 6..7 to see what to do
+    switch (power_down_mode) {
+    case 2:
+        core->arm7.Halt();
+        break;
+    default:
+        log_fatal("power down mode %d is not implemented!", power_down_mode);
+        break;
+    }
+}

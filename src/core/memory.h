@@ -8,6 +8,7 @@
 
 
 enum MemoryRegion {
+    REGION_ARM7_BIOS = 0x00,
     REGION_MAIN_MEMORY = 0x02,
     REGION_SHARED_WRAM = 0x03,
     REGION_IO = 0x04,
@@ -52,4 +53,13 @@ struct Memory {
     Core* core;
 
     u8 WRAMCNT;
+
+    // used for enabling sound speakers and wifi 
+    // TODO: put in a better place
+    u8 POWCNT2;
+
+    // used to halt the arm7
+    u8 HALTCNT;
+
+    void WriteHALTCNT(u8 data);
 };

@@ -10,7 +10,9 @@ Core::Core() :
     interrupt {Interrupt(this, 0), Interrupt(this, 1)},
     cp15(this),
     ipc(this),
-    timers {Timers(this, 0), Timers(this, 1)} {
+    timers {Timers(this, 0), Timers(this, 1)},
+    rtc(this),
+    spu(this) {
     
 }
 
@@ -32,6 +34,10 @@ void Core::Reset() {
     interrupt[1].Reset();
 
     ipc.Reset();
+
+    rtc.Reset();
+
+    spu.Reset();
 }
 
 void Core::DirectBoot() {

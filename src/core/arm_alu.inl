@@ -603,6 +603,40 @@ INSTRUCTION(ARM_QADD) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_QSUB) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    u32 result = regs.r[rm] - regs.r[rn];
+
+    if (SUB_OVERFLOW(regs.r[rm], regs.r[rn], result)) {
+        // set q flag
+        SetConditionFlag(Q_FLAG, true);
+
+        // since a signed overflow occured with saturated arithmetic, we set the result to the max value
+        // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
+        // if greater than the largest positive value (2^31 - 1)
+        if (result & 0x80000000) {
+            // then set to 2^31 - 1
+            result = 0x7FFFFFFF;
+        } else {
+            // this implies that we overflowed above the largest negative value (-2^31)
+            // then set to -2^31
+            result = 0x80000000;
+        }
+    }
+
+    regs.r[rd] = result;
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_SMLABB) {
     // ARMv5 exclusive
     if (arch == ARMv4) {

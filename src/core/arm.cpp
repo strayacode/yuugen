@@ -154,6 +154,8 @@ bool ARM::ConditionEvaluate() {
         return !v_flag; // VC
     case 8:
         return (c_flag && !z_flag); // HI
+    case 9:
+        return (!c_flag || z_flag); // LS
     case 10:
         return (n_flag == v_flag); // GE
     case 11:
@@ -292,6 +294,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_BX();
             case 0x123:
                 return ARM_BLX_REG();
+            case 0x125:
+                return ARM_QSUB();
             case 0x140:
                 return ARM_MRS_SPSR();
             case 0x149:
@@ -990,6 +994,8 @@ void ARM::ExecuteInstruction() {
             return THUMB_BGT();
         case 0xDD:
             return THUMB_BLE();
+        case 0xDF:
+            return THUMB_SWI();
         case 0xE0: case 0xE1: case 0xE2: case 0xE3: 
         case 0xE4: case 0xE5: case 0xE6: case 0xE7:
             return THUMB_B(); 
@@ -1201,6 +1207,28 @@ void ARM::ARM_SWI() {
     regs.r[14] = regs.r[15] - 4;
     // check the exception base and jump to the correct address in the bios
     // also only use cp15 exception base from control register if arm9
+    regs.r[15] = ((arch) ? core->cp15.GetExceptionBase() : 0x00000000) + 0x08;
+    
+    ARMFlushPipeline();
+}
+
+void ARM::THUMB_SWI() {
+    // store the cpsr in spsr_svc
+    regs.spsr_banked[BANK_SVC] = regs.cpsr;
+
+    // enter supervisor mode
+    UpdateMode(SVC);
+
+    // fiq interrupts state is unchanged
+
+    // always execute in arm state
+    regs.cpsr &= ~(1 << 5);
+
+    // disable normal interrupts
+    regs.cpsr |= (1 << 7);
+    
+    regs.r[14] = regs.r[15] - 2;
+    // check the exception base and jump to the correct address in the bios
     regs.r[15] = ((arch) ? core->cp15.GetExceptionBase() : 0x00000000) + 0x08;
     
     ARMFlushPipeline();

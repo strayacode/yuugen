@@ -11,6 +11,8 @@
 #include <core/interrupt.h>
 #include <core/ipc.h>
 #include <core/timers.h>
+#include <core/rtc.h>
+#include <core/spu.h>
 #include <string.h>
 
 struct Core {
@@ -43,6 +45,10 @@ struct Core {
     IPC ipc;
 
     Timers timers[2];
+
+    RTC rtc;
+
+    SPU spu;
 
     const char* rom_path = nullptr;
 };
