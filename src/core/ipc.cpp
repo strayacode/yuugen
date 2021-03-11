@@ -8,8 +8,8 @@ IPC::IPC(Core* core) : core(core) {
 void IPC::Reset() {
     IPCSYNC7 = 0;
     IPCSYNC9 = 0;
-    IPCFIFOCNT7 = 0;
-    IPCFIFOCNT9 = 0;
+    IPCFIFOCNT7 = 0x101;
+    IPCFIFOCNT9 = 0x101;
     memset(fifo7, 0, 16 * sizeof(u32));
     memset(fifo9, 0, 16 * sizeof(u32));
 }
@@ -56,7 +56,7 @@ u16 IPC::ReadIPCSYNC9() {
 }
 
 void IPC::WriteIPCFIFOCNT7(u16 data) {
-    IPCFIFOCNT7 = data & 0xC40C;
+    IPCFIFOCNT7 = (IPCFIFOCNT7 & ~0x840C) | (data & 0x840C);
 
     if (IPCFIFOCNT7 & (1 << 3)) {
         memset(fifo7, 0, 16 * sizeof(u32));
@@ -65,10 +65,15 @@ void IPC::WriteIPCFIFOCNT7(u16 data) {
     if ((IPCFIFOCNT7 & (1 << 2)) || (IPCFIFOCNT7 & (1 << 10))) {
         log_fatal("handle ipcfifocnt irqs");
     }
+
+    // if bit 14 is set then this signifies that the error has been acknowledged
+    if (data & (1 << 14)) {
+        IPCFIFOCNT7 &= ~(1 << 14);
+    }
 }
 
 void IPC::WriteIPCFIFOCNT9(u16 data) {
-    IPCFIFOCNT9 = data & 0xC40C;
+    IPCFIFOCNT9 = (IPCFIFOCNT9 & ~0x840C) | (data & 0x840C);
 
     if (IPCFIFOCNT9 & (1 << 3)) {
         memset(fifo9, 0, 16 * sizeof(u32));
@@ -76,5 +81,10 @@ void IPC::WriteIPCFIFOCNT9(u16 data) {
 
     if ((IPCFIFOCNT9 & (1 << 2)) || (IPCFIFOCNT9 & (1 << 10))) {
         log_fatal("handle ipcfifocnt irqs");
+    }
+
+    // if bit 14 is set then this signifies that the error has been acknowledged
+    if (data & (1 << 14)) {
+        IPCFIFOCNT9 &= ~(1 << 14);
     }
 }

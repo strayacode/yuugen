@@ -73,8 +73,8 @@ void ARM::Reset() {
     halted = false;
 
     // enter supervisor mode
-    regs.cpsr = 0x13;
-    UpdateMode(0x13);
+    regs.cpsr = 0xD3;
+    UpdateMode(SVC);
 
     pipeline[0] = pipeline[1] = 0;
 }
@@ -106,8 +106,8 @@ void ARM::DirectBoot() {
     }
 
     // enter system mode
-    regs.cpsr = 0x1F;
-    UpdateMode(0x1F);
+    regs.cpsr = 0xDF;
+    UpdateMode(SYS);
 
     ARMFlushPipeline();
 
@@ -288,6 +288,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_SMLABT();
             case 0x10E:
                 return ARM_SMLATT();
+            case 0x11B:
+                return ARM_LDRH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x120:
                 return ARM_MSR_CPSR_REG();
             case 0x121:
@@ -314,12 +316,18 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDRH_PRE_WRITEBACK(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x180: case 0x188:
                 return ARM_ORR(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x18B:
+                return ARM_STRH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
+            case 0x192: case 0x19A:
+                return ARM_ORRS(ARM_LOGICAL_SHIFT_RIGHT_IMMS());
             case 0x196: case 0x19E:
                 return ARM_ORRS(ARM_ROTATE_RIGHT_IMMS());
             case 0x19B:
                 return ARM_LDRH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x1A0: case 0x1A8:
                 return ARM_MOV(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x1A1:
+                return ARM_MOV(ARM_LOGICAL_SHIFT_LEFT_REG());
             case 0x1A2: case 0x1AA:
                 return ARM_MOV(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x1A4: case 0x1AC:
@@ -373,6 +381,11 @@ void ARM::ExecuteInstruction() {
             case 0x258: case 0x259: case 0x25A: case 0x25B: 
             case 0x25C: case 0x25D: case 0x25E: case 0x25F:
                 return ARM_SUBS(ARM_DATA_PROCESSING_IMM());
+            case 0x260: case 0x261: case 0x262: case 0x263: 
+            case 0x264: case 0x265: case 0x266: case 0x267: 
+            case 0x268: case 0x269: case 0x26A: case 0x26B: 
+            case 0x26C: case 0x26D: case 0x26E: case 0x26F:
+                return ARM_RSB(ARM_DATA_PROCESSING_IMM());
             case 0x270: case 0x271: case 0x272: case 0x273: 
             case 0x274: case 0x275: case 0x276: case 0x277: 
             case 0x278: case 0x279: case 0x27A: case 0x27B: 
@@ -488,6 +501,11 @@ void ARM::ExecuteInstruction() {
             case 0x538: case 0x539: case 0x53A: case 0x53B:
             case 0x53C: case 0x53D: case 0x53E: case 0x53F:
                 return ARM_LDR_PRE_WRITEBACK(-ARM_SINGLE_DATA_TRANSFER_IMM());
+            case 0x550: case 0x551: case 0x552: case 0x553:
+            case 0x554: case 0x555: case 0x556: case 0x557:
+            case 0x558: case 0x559: case 0x55A: case 0x55B:
+            case 0x55C: case 0x55D: case 0x55E: case 0x55F:
+                return ARM_LDRB_PRE(-ARM_SINGLE_DATA_TRANSFER_IMM());
             case 0x580: case 0x581: case 0x582: case 0x583:
             case 0x584: case 0x585: case 0x586: case 0x587:
             case 0x588: case 0x589: case 0x58A: case 0x58B:

@@ -199,7 +199,7 @@ INSTRUCTION(ARM_LDR_POST, u32 op2) {
             ARMFlushPipeline();
         }
     } else {
-
+        regs.r[15] += 4;
     }
     // // TODO: make sure this is correct later
     // // i.e. not word aligned
@@ -212,8 +212,6 @@ INSTRUCTION(ARM_LDR_POST, u32 op2) {
     if (rd != rn) {
         regs.r[rn] += op2;
     }
-
-    regs.r[15] += 4;
 }
 
 // without writeback
@@ -235,7 +233,13 @@ INSTRUCTION(ARM_STRH_PRE, u32 op2) {
 INSTRUCTION(ARM_LDRH_PRE, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
-    
+    if (rn == 15) {
+        log_fatal("handle");
+    }
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
     regs.r[rd] = ReadHalfword(regs.r[rn] + op2);
 
     regs.r[15] += 4;
@@ -403,6 +407,8 @@ INSTRUCTION(ARM_LDRB_PRE, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
 
+    // printf("reading from address %08x\n", regs.r[rn] + op2);
+
     regs.r[rd] = ReadByte(regs.r[rn] + op2);
 
     if (rd == 15) {
@@ -416,6 +422,7 @@ INSTRUCTION(ARM_LDRB_PRE, u32 op2) {
 INSTRUCTION(ARM_LDRB_POST, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
+    
     regs.r[rd] = ReadByte(regs.r[rn]);
 
     regs.r[rn] += op2;
@@ -528,9 +535,9 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {
 
             ARMFlushPipeline();
         }
-    }
-
-    regs.r[15] += 4;
+    } else {
+        regs.r[15] += 4;
+    }  
 }
 
 INSTRUCTION(ARM_LDM_INCREMENT_AFTER) {

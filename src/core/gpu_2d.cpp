@@ -59,6 +59,9 @@ void GPU2D::RenderScanline(u16 line) {
         // display off (screen becomes white)
         RenderBlankScreen(line);
         break;
+    case 1:
+        RenderGraphicsDisplay(line);
+        break;
     case 2:
         // render using vram display mode
         RenderVRAMDisplay(line);
@@ -93,4 +96,13 @@ void GPU2D::RenderVRAMDisplay(u16 line) {
         }
         framebuffer[(256 * line) + i] = Convert15To24(data);
     }
+}
+
+void GPU2D::RenderGraphicsDisplay(u16 line) {
+    u8 bg_mode = DISPCNT & 0x7;
+    switch (bg_mode) {
+    default:
+        log_fatal("bg mode %d is not implemented yet!", bg_mode);
+    }
+    log_fatal("dispcnt is %08x for reference lol", DISPCNT);
 }

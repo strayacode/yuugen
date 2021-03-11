@@ -48,6 +48,7 @@ struct GPU2D {
 
     void RenderBlankScreen(u16 line);
     void RenderVRAMDisplay(u16 line);
+    void RenderGraphicsDisplay(u16 line);
 
     GPU* gpu;
 };

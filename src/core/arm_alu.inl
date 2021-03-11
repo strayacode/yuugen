@@ -753,6 +753,17 @@ u32 ARM_LOGICAL_SHIFT_LEFT_IMMS() {
     return regs.r[rm] << shift_amount;
 }
 
+u32 ARM_LOGICAL_SHIFT_LEFT_REG() {
+    u8 shift_amount = regs.r[(instruction >> 8) & 0xF] & 0xFF;
+    u32 rm = regs.r[instruction & 0xF] + (((instruction & 0xF) == 15) ? 4 : 0);
+    
+    u32 result = 0;
+
+    result = rm << shift_amount;
+
+    return result;
+}
+
 u32 ARM_LOGICAL_SHIFT_LEFT_REGS() {
     u8 shift_amount = regs.r[(instruction >> 8) & 0xF] & 0xFF;
     u32 rm = regs.r[instruction & 0xF] + (((instruction & 0xF) == 15) ? 4 : 0);
