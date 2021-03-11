@@ -226,6 +226,8 @@ void ARM::ExecuteInstruction() {
             switch (index) {
             case 0x000: case 0x008:
                 return ARM_AND(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x009:
+                return ARM_MUL();
             case 0x010: case 0x018:
                 return ARM_ANDS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
             case 0x012: case 0x01A:
@@ -242,6 +244,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_MLAS();
             case 0x040: case 0x048:
                 return ARM_SUB(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x042: case 0x04A:
+                return ARM_SUB(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x04D: case 0x06D:
                 return ARM_LDRD_POST(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x050: case 0x058:
@@ -288,6 +292,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_SMLABT();
             case 0x10E:
                 return ARM_SMLATT();
+            case 0x110: case 0x118:
+                return ARM_TSTS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
             case 0x11B:
                 return ARM_LDRH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x120:
@@ -303,6 +309,8 @@ void ARM::ExecuteInstruction() {
             case 0x149:
                 return ARM_SWPB();
             case 0x150: case 0x158:
+                return ARM_CMPS(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x152: case 0x15A:
                 return ARM_CMPS(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x15B:
                 return ARM_LDRH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
@@ -316,6 +324,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDRH_PRE_WRITEBACK(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x180: case 0x188:
                 return ARM_ORR(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x182: case 0x18A:
+                return ARM_ORR(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x18B:
                 return ARM_STRH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x192: case 0x19A:
@@ -887,11 +897,11 @@ void ARM::ExecuteInstruction() {
             case 0:
                 return THUMB_AND_DATA_PROCESSING();
             case 1:
-                log_fatal("40-1");
+                return THUMB_EOR_DATA_PROCESSING();
             case 2:
                 log_fatal("40-2");
             case 3:
-                log_fatal("40-3");
+                return THUMB_LSR_DATA_PROCESSING();
             default:
                 log_fatal("arm%d instruction 0x%04x with index 0x%02x is unimplemented!", arch ? 9 : 7, instruction, index);
             }
@@ -932,7 +942,7 @@ void ARM::ExecuteInstruction() {
             case 0:
                 return THUMB_ORR_DATA_PROCESSING();
             case 1:
-                log_fatal("43-1");
+                return THUMB_MUL_DATA_PROCESSING();
             case 2:
                 return THUMB_BIC_DATA_PROCESSING();
             case 3:
@@ -960,6 +970,8 @@ void ARM::ExecuteInstruction() {
             return THUMB_LDR_REG();
         case 0x5A: case 0x5B:
             return THUMB_LDRH_REG();
+        case 0x5E: case 0x5F:
+            return THUMB_LDRSH_REG();
         case 0x60: case 0x61: case 0x62: case 0x63: 
         case 0x64: case 0x65: case 0x66: case 0x67:
             return THUMB_STR_IMM5();
@@ -984,6 +996,9 @@ void ARM::ExecuteInstruction() {
         case 0x98: case 0x99: case 0x9A: case 0x9B: 
         case 0x9C: case 0x9D: case 0x9E: case 0x9F:
             return THUMB_LDR_SP();
+        case 0xA8: case 0xA9: case 0xAA: case 0xAB: 
+        case 0xAC: case 0xAD: case 0xAE: case 0xAF:
+            return THUMB_ADD_SP_REG();
         case 0xB0:
             return THUMB_ADD_SP_IMM();
         case 0xB4:
@@ -994,6 +1009,9 @@ void ARM::ExecuteInstruction() {
             return THUMB_POP();
         case 0xBD:
             return THUMB_POP_PC();
+        case 0xC8: case 0xC9: case 0xCA: case 0xCB: 
+        case 0xCC: case 0xCD: case 0xCE: case 0xCF:
+            return THUMB_LDMIA_REG();
         case 0xD0:
             return THUMB_BEQ();
         case 0xD1:

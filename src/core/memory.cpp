@@ -15,9 +15,11 @@ void Memory::Reset() {
     LoadARM7BIOS();
     LoadARM9BIOS();
 
+    // TODO: check later or add to a direct boot function
     WRAMCNT = 3;
     POWCNT2 = 0;
     HALTCNT = 0;
+    RCNT = 0x8000;
 }
 
 u8 Memory::ARM7ReadByte(u32 addr) {
@@ -118,8 +120,16 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
             return core->ipc.ReadIPCSYNC7();
         case 0x04000184:
             return core->ipc.IPCFIFOCNT7;
+        case 0x040001C0:
+            return core->spi.SPICNT;
+        case 0x040001C2:
+            return core->spi.SPIDATA;
         case 0x04000208:
             return core->interrupt[0].IME & 0x1;
+        case 0x04000304:
+            return POWCNT2;
+        case 0x04000500:
+            return core->spu.SOUNDCNT;
         default:
             log_fatal("unimplemented arm7 halfword io read at address 0x%08x", addr);
         }
@@ -174,6 +184,8 @@ u32 Memory::ARM7ReadWord(u32 addr) {
         break;
     case REGION_IO:
         switch (addr) {
+        case 0x040000DC:
+            return core->dma[0].ReadLength(3);
         case 0x04000180:
             return core->ipc.ReadIPCSYNC7();
         case 0x04000208:
@@ -312,11 +324,21 @@ void Memory::ARM7WriteHalfword(u32 addr, u16 data) {
         case 0x0400010E:
             core->timers[0].WriteControl(3, data);
             break;
+        case 0x04000134:
+            RCNT = data;
+            break;
         case 0x04000180:
             core->ipc.WriteIPCSYNC7(data);
             break;
         case 0x04000184:
             core->ipc.WriteIPCFIFOCNT7(data);
+            break;
+        case 0x040001C0:
+            core->spi.WriteSPICNT(data);
+            break;
+        case 0x040001C2:
+            // TODO: handle properly!
+            core->spi.WriteSPIDATA(data);
             break;
         case 0x04000208:
             core->interrupt[0].IME = data & 0x1;
@@ -374,6 +396,15 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
         break;
     case REGION_IO:
         switch (addr) {
+        case 0x040000D4:
+            core->dma[0].channel[3].source = data;
+            break;
+        case 0x040000D8:
+            core->dma[0].channel[3].destination = data;
+            break;
+        case 0x040000DC:
+            core->dma[0].WriteLength(3, data);
+            break;
         case 0x04000180:
             core->ipc.WriteIPCSYNC7(data);
             break;

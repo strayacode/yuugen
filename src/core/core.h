@@ -13,6 +13,7 @@
 #include <core/timers.h>
 #include <core/rtc.h>
 #include <core/spu.h>
+#include <core/spi.h>
 #include <string.h>
 
 struct Core {
@@ -49,6 +50,8 @@ struct Core {
     RTC rtc;
 
     SPU spu;
+
+    SPI spi;
 
     const char* rom_path = nullptr;
 };

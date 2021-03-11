@@ -13,6 +13,7 @@ add_library(core
     timers.h timers.cpp
     rtc.h rtc.cpp
     spu.h spu.cpp
+    spi.h spi.cpp
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")

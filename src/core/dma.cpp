@@ -172,3 +172,8 @@ void DMA::WriteDMACNT(int channel_index, u32 data) {
     WriteLength(channel_index, data & 0x1FFFFF);
     WriteControl(channel_index, data);
 }
+
+u32 DMA::ReadLength(int channel_index) {
+    // the length is occupied by bits 0..20
+    return channel[channel_index].DMACNT & 0x1FFFFF;
+}

@@ -61,5 +61,8 @@ struct Memory {
     // used to halt the arm7
     u8 HALTCNT;
 
+    // not too sure what this is lol
+    u16 RCNT;
+
     void WriteHALTCNT(u8 data);
 };

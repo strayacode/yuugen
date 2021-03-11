@@ -48,6 +48,32 @@ INSTRUCTION(THUMB_PUSH) {
     regs.r[15] += 2;
 }
 
+INSTRUCTION(THUMB_LDMIA_REG) {
+    u8 rn = (instruction >> 8) & 0x7;
+    u32 address = regs.r[rn];
+    
+    for (int i = 0; i < 8; i++) {
+        if (instruction & (1 << i)) {
+            regs.r[i] = ReadWord(address);
+            address += 4;
+        }
+    }
+
+    // if (instruction & (1 << 15)) {
+    //     log_fatal("handle");
+    // }
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+    
+    if (!(instruction & (1 << rn)) ||(arch == ARMv5 && ((instruction & 0xFF) == (1 << rn)) || !(((instruction & 0xFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+
+    regs.r[15] += 2;
+}
+
 INSTRUCTION(THUMB_POP_PC) {
     u32 address = regs.r[13];
 
@@ -145,6 +171,10 @@ INSTRUCTION(THUMB_LDR_REG) {
 
     regs.r[rd] = ReadWord(address);
 
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
     // deal with misaligned reads
     if (address & 0x3) {
         int shift_amount = (address & 0x3) * 8;
@@ -163,8 +193,30 @@ INSTRUCTION(THUMB_LDRH_REG) {
 
     regs.r[rd] = ReadHalfword(address);
 
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
     regs.r[15] += 2;
 }
+
+INSTRUCTION(THUMB_LDRSH_REG) {
+    u8 rd = instruction & 0x7;
+    u8 rn = (instruction >> 3) & 0x7;
+    u8 rm = (instruction >> 6) & 0x7;
+
+    u32 address = regs.r[rn] + regs.r[rm];
+
+    regs.r[rd] = (s16)ReadHalfword(address);
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[15] += 2;
+}
+
+
 
 INSTRUCTION(THUMB_STR_REG) {
     u8 rd = instruction & 0x7;

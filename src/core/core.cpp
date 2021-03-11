@@ -12,7 +12,8 @@ Core::Core() :
     ipc(this),
     timers {Timers(this, 0), Timers(this, 1)},
     rtc(this),
-    spu(this) {
+    spu(this),
+    spi(this) {
     
 }
 

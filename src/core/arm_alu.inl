@@ -471,6 +471,16 @@ INSTRUCTION(ARM_MLAS) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_MUL) {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = regs.r[rm] * regs.r[rs];
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_MULS) {
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;

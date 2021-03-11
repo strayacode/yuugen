@@ -39,4 +39,6 @@ struct DMA {
     void WriteControl(int channel_index, u32 data);
     void WriteDMACNT(int channel_index, u32 data);
 
+    u32 ReadLength(int channel_index);
+
 };

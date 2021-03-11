@@ -120,6 +120,53 @@ INSTRUCTION(THUMB_AND_DATA_PROCESSING) {
     regs.r[15] += 2;
 }
 
+INSTRUCTION(THUMB_EOR_DATA_PROCESSING) {
+    u8 rd = instruction & 0x7;
+    u8 rm = (instruction >> 3) & 0x7;
+    regs.r[rd] ^= regs.r[rm];
+
+    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+
+
+    regs.r[15] += 2;
+}
+
+INSTRUCTION(THUMB_LSR_DATA_PROCESSING) {
+    u8 rd = instruction & 0x7;
+    u8 rs = (instruction >> 3) & 0x7;
+
+    // TODO: make cleaner
+    u8 shift_amount = regs.r[rs] & 0xFF;
+    if (shift_amount < 32) {
+        SetConditionFlag(C_FLAG, regs.r[rd] && (1 << (shift_amount - 1)));
+        regs.r[rd] >>= shift_amount;
+    } else if (shift_amount == 32) {
+        SetConditionFlag(C_FLAG, regs.r[rd] >> 31);
+        regs.r[rd] = 0;
+    } else {
+        // shift amount > 32
+        SetConditionFlag(C_FLAG, false);
+        regs.r[rd] = 0;
+    }
+
+    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+}
+
+INSTRUCTION(THUMB_MUL_DATA_PROCESSING) {
+    u8 rd = instruction & 0x7;
+    u8 rm = (instruction >> 3) & 0x7;
+
+    regs.r[rd] *= regs.r[rm];
+    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+}
+
 INSTRUCTION(THUMB_MOVH) {
     u8 rd = ((instruction & (1 << 7)) >> 4) | (instruction & 0x7);
 
@@ -328,5 +375,14 @@ INSTRUCTION(THUMB_LSR_IMM) {
     }
     SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
     SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+    regs.r[15] += 2;
+}
+
+INSTRUCTION(THUMB_ADD_SP_REG) {
+    u32 immediate = instruction & 0xFF;
+    u8 rd = (instruction >> 8) & 0x7;
+
+    regs.r[rd] = regs.r[13] + (immediate << 2);
+
     regs.r[15] += 2;
 }

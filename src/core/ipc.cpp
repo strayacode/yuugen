@@ -62,8 +62,13 @@ void IPC::WriteIPCFIFOCNT7(u16 data) {
         memset(fifo7, 0, 16 * sizeof(u32));
     }
 
-    if ((IPCFIFOCNT7 & (1 << 2)) || (IPCFIFOCNT7 & (1 << 10))) {
-        log_fatal("handle ipcfifocnt irqs");
+    // TODO: check behaviour later
+    if ((IPCFIFOCNT7 & (1 << 2)) && (IPCFIFOCNT7 & 1)) {
+        core->arm9.SendInterrupt(17);
+    }
+
+    if ((IPCFIFOCNT7 & (1 << 10)) && !(IPCFIFOCNT7 & (1 << 8))) {
+        core->arm9.SendInterrupt(18);
     }
 
     // if bit 14 is set then this signifies that the error has been acknowledged
@@ -79,8 +84,13 @@ void IPC::WriteIPCFIFOCNT9(u16 data) {
         memset(fifo9, 0, 16 * sizeof(u32));
     }
 
-    if ((IPCFIFOCNT9 & (1 << 2)) || (IPCFIFOCNT9 & (1 << 10))) {
-        log_fatal("handle ipcfifocnt irqs");
+    // TODO: check behaviour later
+    if ((IPCFIFOCNT9 & (1 << 2)) && (IPCFIFOCNT9 & 1)) {
+        core->arm9.SendInterrupt(17);
+    }
+
+    if ((IPCFIFOCNT9 & (1 << 10)) && !(IPCFIFOCNT9 & (1 << 8))) {
+        core->arm9.SendInterrupt(18);
     }
 
     // if bit 14 is set then this signifies that the error has been acknowledged
