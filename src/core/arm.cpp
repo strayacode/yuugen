@@ -541,11 +541,11 @@ void ARM::ExecuteInstruction() {
             case 0x5D8: case 0x5D9: case 0x5DA: case 0x5DB: 
             case 0x5DC: case 0x5DD: case 0x5DE: case 0x5DF:
                 return ARM_LDRB_PRE(ARM_SINGLE_DATA_TRANSFER_IMM());
-            // case 0x5F0: case 0x5F1: case 0x5F2: case 0x5F3:
-            // case 0x5F4: case 0x5F5: case 0x5F6: case 0x5F7:
-            // case 0x5F8: case 0x5F9: case 0x5FA: case 0x5FB:
-            // case 0x5FC: case 0x5FD: case 0x5FE: case 0x5FF:
-            //     return ARM_LDRB_PRE_WRITEBACK(ARM_SINGLE_DATA_TRANSFER_IMM());
+            case 0x5F0: case 0x5F1: case 0x5F2: case 0x5F3:
+            case 0x5F4: case 0x5F5: case 0x5F6: case 0x5F7:
+            case 0x5F8: case 0x5F9: case 0x5FA: case 0x5FB:
+            case 0x5FC: case 0x5FD: case 0x5FE: case 0x5FF:
+                return ARM_LDRB_PRE_WRITEBACK(ARM_SINGLE_DATA_TRANSFER_IMM());
             case 0x610: case 0x618:
                 return ARM_LDR_POST(-ARM_RPLL());
             case 0x612: case 0x61A:

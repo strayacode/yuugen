@@ -419,6 +419,23 @@ INSTRUCTION(ARM_LDRB_PRE, u32 op2) {
     regs.r[15] += 4;
 }
 
+// with writeback
+INSTRUCTION(ARM_LDRB_PRE_WRITEBACK, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    // printf("reading from address %08x\n", regs.r[rn] + op2);
+
+    regs.r[rd] = ReadByte(regs.r[rn] + op2);
+    regs.r[rn] += op2;
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+    // TODO: maybe ldrb and strb use the rn == rd edgecase ill check later
+    
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_LDRB_POST, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;

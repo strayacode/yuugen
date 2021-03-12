@@ -247,6 +247,9 @@ void Memory::ARM7WriteByte(u32 addr, u8 data) {
         case 0x04000138:
             core->rtc.RTC_REG = data;
             break;
+        case 0x04000208:
+            core->interrupt[0].IME = data & 0x1;
+            break;
         case 0x04000301:
             WriteHALTCNT(data);
             break;
@@ -458,6 +461,8 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
         switch (addr) {
         case 0x04000004:
             return core->gpu.DISPSTAT9;
+        case 0x04000006:
+            return core->gpu.VCOUNT;
         case 0x04000130:
             return core->input.KEYINPUT;
         case 0x04000180:
@@ -490,7 +495,7 @@ u32 Memory::ARM9ReadWord(u32 addr) {
     if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&return_value, &core->cp15.itcm[addr & 0x7FFF], 4);
     } else if (core->cp15.GetDTCMEnabled() && 
-        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMBase() + core->cp15.GetDTCMSize(), addr)) {
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
         memcpy(&return_value, &core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], 4);
     } else {
         switch (addr >> 24) {
@@ -660,6 +665,17 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
             log_fatal("unimplemented arm9 halfword io write at address 0x%08x with data 0x%04x", addr, data);
         }
         break;
+    case REGION_PALETTE_RAM:
+        // write to palette ram
+        // check depending on the address which engines palette ram to write to
+        if ((addr & 0x3FF) < 400) {
+            // this is the first block which is assigned to engine a
+            core->gpu.engine_a.WritePaletteRAM(addr, data & 0xFFFF);
+        } else {
+            // write to engine b's palette ram
+            core->gpu.engine_b.WritePaletteRAM(addr, data & 0xFFFF);
+        }
+        break;
     case REGION_VRAM:
         if (addr >= 0x06800000) {
             core->gpu.WriteLCDC(addr, data);
@@ -680,7 +696,7 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
         // done with the write
         return;
     } else if (core->cp15.GetDTCMEnabled() && 
-        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMBase() + core->cp15.GetDTCMSize(), addr)) {
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
 
         memcpy(&core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], &data, 4);
         
@@ -850,6 +866,13 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
                 core->gpu.VRAMCNT_C = (data >> 16) & 0xFF;
                 core->gpu.VRAMCNT_D = (data >> 24) & 0xFF;
                 break;
+            case 0x04000244:
+                // sets vramcnt_e, vramcnt_f, vramcnt_g and wramcnt
+                core->gpu.VRAMCNT_E = data & 0xFF;
+                core->gpu.VRAMCNT_F = (data >> 8) & 0xFF;
+                core->gpu.VRAMCNT_G = (data >> 16) & 0xFF;
+                WRAMCNT = (data >> 24) & 0xFF;
+                break;
             case 0x04000304:
                 core->gpu.POWCNT1 = data;
                 break;
@@ -937,7 +960,6 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
             }
             break;
         case REGION_PALETTE_RAM:
-            case 0x05000000:
             // write to palette ram
             // check depending on the address which engines palette ram to write to
             if ((addr & 0x3FF) < 400) {
@@ -954,8 +976,11 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
             if (addr >= 0x06800000) {
                 core->gpu.WriteLCDC(addr, data & 0xFFFF);
                 core->gpu.WriteLCDC(addr + 2, data >> 16);
+            } else if (in_range(0x06000000, 0x400000, addr)) {
+                core->gpu.WriteBGA(addr, data & 0xFFFF);
+                core->gpu.WriteBGA(addr + 2, data >> 16);
             } else {
-                log_fatal("handle at address 0x%08x", addr);
+                log_fatal("handle at word write at address %08x", addr);
             }
             break;
         case REGION_OAM:
