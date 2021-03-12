@@ -541,6 +541,11 @@ void ARM::ExecuteInstruction() {
             case 0x5D8: case 0x5D9: case 0x5DA: case 0x5DB: 
             case 0x5DC: case 0x5DD: case 0x5DE: case 0x5DF:
                 return ARM_LDRB_PRE(ARM_SINGLE_DATA_TRANSFER_IMM());
+            // case 0x5F0: case 0x5F1: case 0x5F2: case 0x5F3:
+            // case 0x5F4: case 0x5F5: case 0x5F6: case 0x5F7:
+            // case 0x5F8: case 0x5F9: case 0x5FA: case 0x5FB:
+            // case 0x5FC: case 0x5FD: case 0x5FE: case 0x5FF:
+            //     return ARM_LDRB_PRE_WRITEBACK(ARM_SINGLE_DATA_TRANSFER_IMM());
             case 0x610: case 0x618:
                 return ARM_LDR_POST(-ARM_RPLL());
             case 0x612: case 0x61A:
@@ -591,6 +596,11 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDR_PRE_WRITEBACK(ARM_RPRR());
             case 0x7D2: case 0x7DA:
                 return ARM_LDRB_PRE(ARM_RPLR());
+            case 0x880: case 0x881: case 0x882: case 0x883:
+            case 0x884: case 0x885: case 0x886: case 0x887:
+            case 0x888: case 0x889: case 0x88A: case 0x88B:
+            case 0x88C: case 0x88D: case 0x88E: case 0x88F:
+                return ARM_STM_INCREMENT_AFTER();
             case 0x890: case 0x891: case 0x892: case 0x893:
             case 0x894: case 0x895: case 0x896: case 0x897:
             case 0x898: case 0x899: case 0x89A: case 0x89B:
@@ -914,7 +924,7 @@ void ARM::ExecuteInstruction() {
             case 1:
                 return THUMB_ADC_DATA_PROCESSING();
             case 2:
-                log_fatal("41-2");
+                return THUMB_SBC_DATA_PROCESSING();
             case 3:
                 log_fatal("41-3");
             default:

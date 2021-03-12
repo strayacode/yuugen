@@ -56,6 +56,7 @@ struct GPU {
     void WriteDISPSTAT9(u16 data);
 
     void WriteLCDC(u32 addr, u16 data);
+    void WriteBGA(u32 addr, u16 data);
 
     void RenderScanlineStart();
     void RenderScanlineFinish();

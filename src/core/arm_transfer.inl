@@ -574,6 +574,20 @@ INSTRUCTION(ARM_STM_INCREMENT_AFTER_WRITEBACK) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_STM_INCREMENT_AFTER) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            WriteWord(address, regs.r[i]);
+            address += 4;
+        }
+    }
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_LDRD_POST, u32 op2) {
     // armv5 exclusive
     if (arch == ARMv4) {
