@@ -3,6 +3,7 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <string.h>
+#include <queue>
 
 struct Core;
 
@@ -27,8 +28,11 @@ struct IPC {
     u16 IPCFIFOCNT7;
     u16 IPCFIFOCNT9;
 
-    u32 fifo7[16];
-    u32 fifo9[16];
+    std::queue<u32> fifo7;
+    std::queue<u32> fifo9;
+
+    void EmptyFIFO7();
+    void EmptyFIFO9();
 
     Core* core;
 };

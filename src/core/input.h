@@ -17,6 +17,7 @@ enum ButtonInput {
 
 struct Input {
     u16 KEYINPUT;
+    u16 EXTKEYIN;
 
     void Reset();
     void HandleInput(int button, bool pressed);

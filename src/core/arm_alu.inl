@@ -38,11 +38,13 @@ INSTRUCTION(ARM_MOVS, u32 op2) {
 
     if (rd == 15) {
         // store the current spsr in cpsr
-
+        // TODO:
+        // only update cpsr with spsr if not in usr or sys
         UpdateMode(regs.spsr & 0x1F);
 
         
         regs.cpsr = regs.spsr;
+        
 
         if (IsARM()) {
             // word align first
@@ -121,7 +123,10 @@ INSTRUCTION(ARM_ADD, u32 op2) {
     u8 rn = (instruction >> 16) & 0xF;
     regs.r[rd] = regs.r[rn] + op2;
     if (rd == 15) {
-        log_fatal("handle");
+        // word align first
+        regs.r[15] &= ~3;
+
+        ARMFlushPipeline();
     }
 
     regs.r[15] += 4;
@@ -389,6 +394,21 @@ INSTRUCTION(ARM_EORS, u32 op2) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_TEQS, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 result = regs.r[rn] ^ op2;
+    if (rd == 15) {
+        log_fatal("handle");
+    } else {
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(Z_FLAG, result == 0);
+        // c flag is changed by shifter carry out
+    }
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_ANDS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
@@ -471,6 +491,17 @@ INSTRUCTION(ARM_MLAS) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_MLA) {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rn = (instruction >> 12) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = (regs.r[rm] * regs.r[rs]) + regs.r[rn];
+    
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_MUL) {
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;
@@ -521,6 +552,19 @@ INSTRUCTION(ARM_SMULLS) {
     SetConditionFlag(Z_FLAG, result == 0);
     
 
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMULL) {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    s64 result = (s32)(regs.r[rm]);
+    result *= (s32)(regs.r[rs]);
+    regs.r[rdhi] = result >> 32;
+    regs.r[rdlo] = result;
+    
     regs.r[15] += 4;
 }
 

@@ -39,6 +39,8 @@ void Core::Reset() {
     rtc.Reset();
 
     spu.Reset();
+
+    spi.Reset();
 }
 
 void Core::DirectBoot() {
@@ -49,6 +51,7 @@ void Core::DirectBoot() {
     arm7.DirectBoot();
 
     cp15.DirectBoot();
+    spi.DirectBoot();
 }
 
 void Core::FirmwareBoot() {

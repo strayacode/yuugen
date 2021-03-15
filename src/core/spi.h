@@ -1,5 +1,7 @@
 #pragma once
 #include <common/types.h>
+#include <common/log.h>
+#include <stdio.h>
 
 
 struct Core;
@@ -10,9 +12,16 @@ struct SPI {
     void WriteSPICNT(u16 data);
     void WriteSPIDATA(u8 data);
 
+    // used to transfer firmware data into main memory
+    void DirectBoot();
+
+    void LoadFirmware();
+
 
     u16 SPICNT;
     u8 SPIDATA;
+
+    u8 firmware[0x40000];
 
 
     Core* core;

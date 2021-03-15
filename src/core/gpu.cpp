@@ -1,7 +1,7 @@
 #include <core/core.h>
 #include <core/gpu.h>
 
-GPU::GPU(Core* core) : core(core), engine_a(this), engine_b(this) {
+GPU::GPU(Core* core) : core(core), engine_a(this, 1), engine_b(this, 0) {
 
 }
 
@@ -254,4 +254,76 @@ void GPU::WriteBGA(u32 addr, u16 data) {
             memcpy(&VRAM_G[addr & 0x3FFF], &data, 2);
         }
     }
+}
+
+u16 GPU::ReadBGA(u32 addr) {
+    u16 return_value = 0;
+
+    if (GetVRAMCNTEnabled(VRAMCNT_A)) {
+        if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_A)), 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_A) == 1)) {
+            memcpy(&return_value, &VRAM_A[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_B)) {
+        if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_B)), 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_B) == 1)) {
+            memcpy(&return_value, &VRAM_B[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
+        if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_C)), 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_C) == 1)) {
+            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
+        if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_D)), 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_D) == 1)) {
+            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_E)) {
+        if (in_range(0x06000000, 0x10000, addr) && (GetVRAMCNTMST(VRAMCNT_D) == 1)) {
+            memcpy(&return_value, &VRAM_E[addr & 0xFFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
+        if (in_range(0x06000000 + (0x4000 * (GetVRAMCNTOffset(VRAMCNT_F) & 0x1)) + (0x10000 * (GetVRAMCNTOffset(VRAMCNT_F) & 0x2)), 0x3FFF, addr) && (GetVRAMCNTMST(VRAMCNT_F) == 1)) {
+            memcpy(&return_value, &VRAM_F[addr & 0x3FFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+        if (in_range(0x06000000 + (0x4000 * (GetVRAMCNTOffset(VRAMCNT_G) & 0x1)) + (0x10000 * (GetVRAMCNTOffset(VRAMCNT_G) & 0x2)), 0x3FFF, addr) && (GetVRAMCNTMST(VRAMCNT_G) == 1)) {
+            memcpy(&return_value, &VRAM_G[addr & 0x3FFF], 2);
+        }
+    }
+
+    return return_value;
+}
+
+u16 GPU::ReadBGB(u32 addr) {
+    u16 return_value = 0;
+
+    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
+        if (in_range(0x06200000, 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_C) == 4)) {
+            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_H)) {
+        if (in_range(0x06200000, 0x8000, addr) && (GetVRAMCNTMST(VRAMCNT_H) == 1)) {
+            memcpy(&return_value, &VRAM_H[addr & 0x7FFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
+        if (in_range(0x06208000, 0x4000, addr) && (GetVRAMCNTMST(VRAMCNT_I) == 1)) {
+            memcpy(&return_value, &VRAM_I[addr & 0x3FFF], 2);
+        }
+    }
+
+    return return_value;
 }

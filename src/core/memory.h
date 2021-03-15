@@ -64,5 +64,8 @@ struct Memory {
     // not too sure what this is lol
     u16 RCNT;
 
+    // not too sure what everything in this does
+    u16 EXMEMCNT;
+
     void WriteHALTCNT(u8 data);
 };

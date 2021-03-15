@@ -10,8 +10,6 @@ void IPC::Reset() {
     IPCSYNC9 = 0;
     IPCFIFOCNT7 = 0x101;
     IPCFIFOCNT9 = 0x101;
-    memset(fifo7, 0, 16 * sizeof(u32));
-    memset(fifo9, 0, 16 * sizeof(u32));
 }
 
 void IPC::WriteIPCSYNC7(u16 data) {
@@ -59,7 +57,7 @@ void IPC::WriteIPCFIFOCNT7(u16 data) {
     IPCFIFOCNT7 = (IPCFIFOCNT7 & ~0x840C) | (data & 0x840C);
 
     if (IPCFIFOCNT7 & (1 << 3)) {
-        memset(fifo7, 0, 16 * sizeof(u32));
+        EmptyFIFO7();
     }
 
     // TODO: check behaviour later
@@ -81,7 +79,7 @@ void IPC::WriteIPCFIFOCNT9(u16 data) {
     IPCFIFOCNT9 = (IPCFIFOCNT9 & ~0x840C) | (data & 0x840C);
 
     if (IPCFIFOCNT9 & (1 << 3)) {
-        memset(fifo9, 0, 16 * sizeof(u32));
+        EmptyFIFO9();
     }
 
     // TODO: check behaviour later
@@ -97,4 +95,17 @@ void IPC::WriteIPCFIFOCNT9(u16 data) {
     if (data & (1 << 14)) {
         IPCFIFOCNT9 &= ~(1 << 14);
     }
+}
+
+void IPC::EmptyFIFO7() {
+    // create an empty queue and swap it
+    std::queue<u32> empty_queue;
+    fifo7.swap(empty_queue);
+}
+
+
+void IPC::EmptyFIFO9() {
+    // create an empty queue and swap it
+    std::queue<u32> empty_queue;
+    fifo9.swap(empty_queue);
 }

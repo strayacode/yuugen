@@ -407,8 +407,6 @@ INSTRUCTION(ARM_LDRB_PRE, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
 
-    // printf("reading from address %08x\n", regs.r[rn] + op2);
-
     regs.r[rd] = ReadByte(regs.r[rn] + op2);
 
     if (rd == 15) {
@@ -511,9 +509,14 @@ INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_WRITEBACK) {
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
-
-    if (!(instruction & (1 << rn)) ||(arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
-        regs.r[rn] = address;
+    if (arch == ARMv5) {
+        if ((instruction & 0xFFFF == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
+            regs.r[rn] = address;
+        }
+    } else {
+        if (!(instruction & (1 << rn))) {
+            regs.r[rn] = address;
+        }
     }
     
     if (instruction & (1 << 15)) {
@@ -538,9 +541,14 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
-
-    if (!(instruction & (1 << rn)) ||(arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
-        regs.r[rn] = address;
+    if (arch == ARMv5) {
+        if ((instruction & 0xFFFF == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
+            regs.r[rn] = address;
+        }
+    } else {
+        if (!(instruction & (1 << rn))) {
+            regs.r[rn] = address;
+        }
     }
     
     if (instruction & (1 << 15)) {
@@ -666,9 +674,14 @@ INSTRUCTION(ARM_LDM_DECREMENT_BEFORE_WRITEBACK) {
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
-
-    if (!(instruction & (1 << rn)) || (arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
-        regs.r[rn] = writeback;
+    if (arch == ARMv5) {
+        if ((instruction & 0xFFFF == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
+            regs.r[rn] = writeback;
+        }
+    } else {
+        if (!(instruction & (1 << rn))) {
+            regs.r[rn] = writeback;
+        }
     }
     
     if (instruction & (1 << 15)) {
@@ -702,8 +715,14 @@ INSTRUCTION(ARM_LDM_DECREMENT_AFTER_WRITEBACK) {
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
 
-    if (!(instruction & (1 << rn)) || (arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
-        regs.r[rn] = writeback;
+    if (arch == ARMv5) {
+        if ((instruction & 0xFFFF == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
+            regs.r[rn] = writeback;
+        }
+    } else {
+        if (!(instruction & (1 << rn))) {
+            regs.r[rn] = writeback;
+        }
     }
     
     if (instruction & (1 << 15)) {
@@ -734,9 +753,14 @@ INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_USER_WRITEBACK) {
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
-
-    if (!(instruction & (1 << rn)) ||((arch == ARMv5) && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
-        regs.r[rn] = address;
+    if (arch == ARMv5) {
+        if ((instruction & 0xFFFF == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
+            regs.r[rn] = address;
+        }
+    } else {
+        if (!(instruction & (1 << rn))) {
+            regs.r[rn] = address;
+        }
     }
     
     if (instruction & (1 << 15)) {
@@ -768,8 +792,14 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER_USER_WRITEBACK) {
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
-    if (!(instruction & (1 << rn)) ||(arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
-        regs.r[rn] = address;
+    if (arch == ARMv5) {
+        if ((instruction & 0xFFFF == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
+            regs.r[rn] = address;
+        }
+    } else {
+        if (!(instruction & (1 << rn))) {
+            regs.r[rn] = address;
+        }
     }
 
     if (instruction & (1 << 15)) {
@@ -832,9 +862,14 @@ INSTRUCTION(ARM_LDM_DECREMENT_BEFORE_USER_WRITEBACK) {
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
-
-    if (!(instruction & (1 << rn)) || ((arch == ARMv5) && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
-        regs.r[rn] = writeback;
+    if (arch == ARMv5) {
+        if ((instruction & 0xFFFF == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
+            regs.r[rn] = writeback;
+        }
+    } else {
+        if (!(instruction & (1 << rn))) {
+            regs.r[rn] = writeback;
+        }
     }
     
     if (instruction & (1 << 15)) {
@@ -873,9 +908,14 @@ INSTRUCTION(ARM_LDM_DECREMENT_AFTER_USER_WRITEBACK) {
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
-
-    if (!(instruction & (1 << rn)) || (arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
-        regs.r[rn] = writeback;
+    if (arch == ARMv5) {
+        if ((instruction & 0xFFFF == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
+            regs.r[rn] = writeback;
+        }
+    } else {
+        if (!(instruction & (1 << rn))) {
+            regs.r[rn] = writeback;
+        }
     }
     
     if (instruction & (1 << 15)) {
@@ -932,14 +972,15 @@ INSTRUCTION(ARM_STM_DECREMENT_AFTER_WRITEBACK) {
 }
 
 INSTRUCTION(ARM_LDRD_POST, u32 op2) {
+    u8 rn = (instruction >> 16) & 0xF;
+    regs.r[rn] += op2;
+
     // armv5 exclusive
     if (arch == ARMv4) {
         return;
     }
-
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-
+    
     if (rd == 15) {
         log_fatal("handle because we cant store data in so called r16");
         
@@ -947,8 +988,6 @@ INSTRUCTION(ARM_LDRD_POST, u32 op2) {
 
     regs.r[rd] = ReadWord(regs.r[rn]);
     regs.r[rd + 1] = ReadWord(regs.r[rn] + 4);
-
-    regs.r[rn] += op2;
 
     regs.r[15] += 4;
 }

@@ -202,7 +202,7 @@ void ARM::ExecuteInstruction() {
     // TODO: maybe change arm instructions to SyntaxLikeThis instead of all caps
     // counter++;
 
-    // if (counter == 150000) {
+    // if ((counter == 10000) && (arch == ARMv4)) {
     //     exit(1);
     // }
     if (core->interrupt[arch].IME && ((core->interrupt[arch].IE & core->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
@@ -212,7 +212,7 @@ void ARM::ExecuteInstruction() {
     // if (arch == ARMv5) {
     //     DebugRegisters();
     // }
-    // if (arch == ARMv5) {
+    // if (arch == ARMv4) {
     //     // printf("counter: %d\n", counter);
     //     LogRegisters();
     //     // log_warn("spsr: %08x", regs.spsr);
@@ -238,8 +238,12 @@ void ARM::ExecuteInstruction() {
                 return ARM_MULS();
             case 0x020: case 0x028:
                 return ARM_EOR(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x029:
+                return ARM_MLA();
             case 0x030: case 0x038:
                 return ARM_EORS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
+            case 0x034: case 0x03C:
+                return ARM_EORS(ARM_ARITHMETIC_SHIFT_RIGHT_IMMS());
             case 0x039:
                 return ARM_MLAS();
             case 0x040: case 0x048:
@@ -250,14 +254,30 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDRD_POST(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x050: case 0x058:
                 return ARM_SUBS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
+            case 0x052: case 0x05A:
+                return ARM_SUBS(ARM_LOGICAL_SHIFT_RIGHT_IMMS());
+            case 0x054: case 0x05C:
+                return ARM_SUBS(ARM_ARITHMETIC_SHIFT_RIGHT_IMMS());
             case 0x060: case 0x068:
                 return ARM_RSB(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x062: case 0x06A:
+                return ARM_RSB(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x064: case 0x06C:
+                return ARM_RSB(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
+            case 0x070: case 0x078:
+                return ARM_RSBS(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x072: case 0x07A:
+                return ARM_RSBS(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x080: case 0x088:
                 return ARM_ADD(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x082: case 0x08A:
                 return ARM_ADD(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x084: case 0x08C:
+                return ARM_ADD(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x090: case 0x098:
                 return ARM_ADDS(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x094: case 0x09C:
+                return ARM_ADDS(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x099:
                 return ARM_UMULLS();
             case 0x0A0: case 0x0A8:
@@ -268,6 +288,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_ADCS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x0B9:
                 return ARM_UMLALS();
+            case 0x0C9:
+                return ARM_SMULL();
             case 0x0CB: case 0x0EB:
                 return ARM_STRH_POST(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x0D0: case 0x0D8:
@@ -306,6 +328,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_BLX_REG();
             case 0x125:
                 return ARM_QSUB();
+            case 0x130: case 0x138:
+                return ARM_TEQS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
             case 0x140:
                 return ARM_MRS_SPSR();
             case 0x149:
@@ -334,6 +358,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_ORR(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x18B:
                 return ARM_STRH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
+            case 0x190: case 0x198:
+                return ARM_ORRS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
             case 0x192: case 0x19A:
                 return ARM_ORRS(ARM_LOGICAL_SHIFT_RIGHT_IMMS());
             case 0x196: case 0x19E:
@@ -442,6 +468,11 @@ void ARM::ExecuteInstruction() {
             case 0x328: case 0x329: case 0x32A: case 0x32B: 
             case 0x32C: case 0x32D: case 0x32E: case 0x32F:
                 return ARM_MSR_CPSR_IMM();
+            case 0x330: case 0x331: case 0x332: case 0x333: 
+            case 0x334: case 0x335: case 0x336: case 0x337: 
+            case 0x338: case 0x339: case 0x33A: case 0x33B: 
+            case 0x33C: case 0x33D: case 0x33E: case 0x33F:
+                return ARM_TEQS(ARM_DATA_PROCESSING_IMMS());
             case 0x350: case 0x351: case 0x352: case 0x353: 
             case 0x354: case 0x355: case 0x356: case 0x357: 
             case 0x358: case 0x359: case 0x35A: case 0x35B: 
@@ -604,6 +635,10 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDR_PRE_WRITEBACK(-ARM_RPAR());
             case 0x736: case 0x73E:
                 return ARM_LDR_PRE_WRITEBACK(-ARM_RPRR());
+            case 0x770: case 0x778:
+                return ARM_LDRB_PRE_WRITEBACK(-ARM_RPLL());
+            case 0x780: case 0x788:
+                return ARM_STR_PRE(ARM_RPLL());
             case 0x790: case 0x798:
                 return ARM_LDR_PRE(ARM_RPLL());
             case 0x792: case 0x79A:
@@ -620,6 +655,10 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDR_PRE_WRITEBACK(ARM_RPAR());
             case 0x7B6: case 0x7BE:
                 return ARM_LDR_PRE_WRITEBACK(ARM_RPRR());
+            case 0x7C0: case 0x7C8:
+                return ARM_STRB_PRE(ARM_RPLL());
+            case 0x7D0: case 0x7D8:
+                return ARM_LDRB_PRE(ARM_RPLL());
             case 0x7D2: case 0x7DA:
                 return ARM_LDRB_PRE(ARM_RPLR());
             case 0x820: case 0x821: case 0x822: case 0x823:
@@ -1191,16 +1230,18 @@ void ARM::UpdateMode(int new_mode) {
     int new_bank = GetRegisterBank(new_mode);
     
 
-    // slight optimisation
-    if (old_bank == new_bank) {
-        return;
-    }
-
     // only restore spsr with a banked spsr if that an spsr exists for that mode (not usr or sys)
     if ((new_mode != 0x1F) && (new_mode != 0x10)) {
         regs.spsr = regs.spsr_banked[new_bank];
         // log_debug("stored spsr with %08x from bank %08x", regs.spsr, new_bank);
     }
+
+    // slight optimisation
+    if (old_bank == new_bank) {
+        return;
+    }
+
+    
     
     if ((old_bank == BANK_FIQ) || (new_bank == BANK_FIQ)) {
         for (int i = 0; i < 7; i++) {

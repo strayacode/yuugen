@@ -2,6 +2,8 @@
 
 void Input::Reset() {
     KEYINPUT = 0x3FF;
+    // TODO: handle correctly
+    EXTKEYIN = 0x7F;
 }
 
 void Input::HandleInput(int button, bool pressed) {

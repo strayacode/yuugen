@@ -20,6 +20,7 @@ void Memory::Reset() {
     POWCNT2 = 0;
     HALTCNT = 0;
     RCNT = 0x8000;
+    EXMEMCNT = 0;
 }
 
 u8 Memory::ARM7ReadByte(u32 addr) {
@@ -116,6 +117,8 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
             return core->gpu.DISPSTAT7;
         case 0x04000130:
             return core->input.KEYINPUT;
+        case 0x04000136:
+            return core->input.EXTKEYIN;
         case 0x04000180:
             return core->ipc.ReadIPCSYNC7();
         case 0x04000184:
@@ -196,7 +199,7 @@ u32 Memory::ARM7ReadWord(u32 addr) {
             return core->interrupt[0].IF;
         case 0x04100000:
             // just return the first item in the fifo xd
-            return core->ipc.fifo7[0];
+            return core->ipc.fifo7.front();
         default:
             log_fatal("unimplemented arm7 word io read at address 0x%08x", addr);
         }
@@ -430,21 +433,28 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
 }
 
 u8 Memory::ARM9ReadByte(u32 addr) {
-    switch (addr >> 24) {
-    case REGION_MAIN_MEMORY:
-        return main_memory[addr & 0x3FFFFF];
-    case REGION_IO:
-        switch (addr) {
-        case 0x04000208:
-            return core->interrupt[1].IME & 0x1;
-        case 0x04004000:
-            return 0;
+    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+        return core->cp15.itcm[addr & 0x7FFF];
+    } else if (core->cp15.GetDTCMEnabled() && 
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
+        return core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF];
+    } else {
+        switch (addr >> 24) {
+        case REGION_MAIN_MEMORY:
+            return main_memory[addr & 0x3FFFFF];
+        case REGION_IO:
+            switch (addr) {
+            case 0x04000208:
+                return core->interrupt[1].IME & 0x1;
+            case 0x04004000:
+                return 0;
+            default:
+                log_fatal("unimplemented arm9 byte io read at address 0x%08x", addr);
+            }
+            break;
         default:
-            log_fatal("unimplemented arm9 byte io read at address 0x%08x", addr);
+            log_fatal("unimplemented arm9 byte read at address 0x%08x\n", addr);
         }
-        break;
-    default:
-        log_fatal("unimplemented arm9 byte read at address 0x%08x\n", addr);
     }
 }
 
@@ -459,6 +469,8 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
         break;
     case REGION_IO:
         switch (addr) {
+        case 0x04000000:
+            return core->gpu.engine_a.DISPCNT & 0xFFFF;
         case 0x04000004:
             return core->gpu.DISPSTAT9;
         case 0x04000006:
@@ -469,10 +481,25 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
             return core->ipc.ReadIPCSYNC9();
         case 0x04000184:
             return core->ipc.IPCFIFOCNT9;
+        case 0x04000204:
+            return EXMEMCNT;
         case 0x04000304:
             return core->gpu.POWCNT1;
+        case 0x04001000:
+            return core->gpu.engine_b.DISPCNT & 0xFFFF;
         default:
             log_fatal("unimplemented arm9 halfword io read at address 0x%08x", addr);
+        }
+        break;
+    case REGION_PALETTE_RAM:
+        // write to palette ram
+        // check depending on the address which engines palette ram to write to
+        if ((addr & 0x3FF) < 400) {
+            // this is the first block which is assigned to engine a
+            memcpy(&return_value, &core->gpu.engine_a.palette_ram[addr & 0x3FF], 2);
+        } else {
+            // write to engine b's palette ram
+            memcpy(&return_value, &core->gpu.engine_b.palette_ram[addr & 0x3FF], 2);
         }
         break;
     case REGION_ARM9_BIOS:
@@ -525,6 +552,8 @@ u32 Memory::ARM9ReadWord(u32 addr) {
             break;
         case REGION_IO:
             switch (addr) {
+            case 0x04000000:
+                return core->gpu.engine_a.DISPCNT;
             case 0x040000DC:
                 return core->dma[1].channel[3].DMACNT;
             case 0x040000EC:
@@ -539,9 +568,11 @@ u32 Memory::ARM9ReadWord(u32 addr) {
                 return core->interrupt[1].IF;
             case 0x04000240:
                 return ((core->gpu.VRAMCNT_D << 24) | (core->gpu.VRAMCNT_C << 16) | (core->gpu.VRAMCNT_B << 8) | (core->gpu.VRAMCNT_A));
+            case 0x04001000:
+                return core->gpu.engine_b.DISPCNT;
             case 0x04100000:
                 // just return the first item in the fifo xd
-                return core->ipc.fifo9[0];
+                return core->ipc.fifo9.front();
             case 0x04004000:
                 return 0;
             case 0x04004008:
@@ -619,8 +650,26 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
         break;
     case REGION_IO:
         switch (addr) {
+        case 0x04000000:
+            // just alter the low 16 bits
+            // TODO: put in method for GPU2D
+            core->gpu.engine_a.DISPCNT = (core->gpu.engine_a.DISPCNT & ~0xFFFF) | (data & 0xFFFF);
+            break;
         case 0x04000004:
             core->gpu.WriteDISPSTAT9(data);
+            break;
+        case 0x0400000C:
+            core->gpu.engine_a.BGCNT[2] = data;
+            break;
+        case 0x04000018:
+            core->gpu.engine_a.BGHOFS[2] = data;
+            break;
+        case 0x0400001A:
+            core->gpu.engine_a.BGVOFS[2] = data;
+            break;
+        case 0x0400006C:
+            // TODO: handle brightness properly later
+            core->gpu.engine_a.MASTER_BRIGHT = data;
             break;
         case 0x040000D0:
             core->dma[1].WriteLength(2, data);
@@ -655,11 +704,38 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
         case 0x04000184:
             core->ipc.WriteIPCFIFOCNT9(data);
             break;
+        case 0x04000204:
+            EXMEMCNT = data;
+            break;
         case 0x04000208:
             core->interrupt[1].IME = data & 0x1;
             break;
         case 0x04000304:
             core->gpu.POWCNT1 = data;
+            break;
+        case 0x04001000:
+            // just alter the low 16 bits
+            // TODO: put in method for GPU2D
+            core->gpu.engine_b.DISPCNT = (core->gpu.engine_b.DISPCNT & ~0xFFFF) | (data & 0xFFFF);
+            break;
+        case 0x0400100E:
+            core->gpu.engine_b.BGCNT[3] = data;
+            break;
+        case 0x04001030:
+            core->gpu.engine_b.BG3P[0] = data;
+            break;
+        case 0x04001032:
+            core->gpu.engine_b.BG3P[1] = data;
+            break;
+        case 0x04001034:
+            core->gpu.engine_b.BG3P[2] = data;
+            break;
+        case 0x04001036:
+            core->gpu.engine_b.BG3P[3] = data;
+            break;
+        case 0x0400106C:
+            // TODO: handle brightness properly later
+            core->gpu.engine_b.MASTER_BRIGHT = data;
             break;
         default:
             log_fatal("unimplemented arm9 halfword io write at address 0x%08x with data 0x%04x", addr, data);
@@ -679,8 +755,20 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
     case REGION_VRAM:
         if (addr >= 0x06800000) {
             core->gpu.WriteLCDC(addr, data);
+        } else if (in_range(0x06000000, 0x400000, addr)) {
+            core->gpu.WriteBGA(addr, data);
         } else {
             log_fatal("handle at address 0x%08x", addr);
+        }
+        break;
+    case REGION_OAM:
+        // check memory address to see which engine to write to oam
+        if ((addr & 0x3FF) < 0x400) {
+            // this is the first block of oam which is 1kb and is assigned to engine a
+            core->gpu.engine_a.WriteOAM(addr, data);
+        } else {
+            // write to engine b's palette ram
+            core->gpu.engine_b.WriteOAM(addr, data);
         }
         break;
     default:
@@ -1004,7 +1092,7 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
 void Memory::LoadARM7BIOS() {
     FILE* file_buffer = fopen("../bios/bios7.bin", "rb");
     if (file_buffer == NULL) {
-        log_fatal("error when opening arm7 bios! make sure the file bios7.bin exists in the bios folder");
+        log_fatal("error when opening the arm7 bios! make sure the file bios7.bin exists in the bios folder");
     }
     fseek(file_buffer, 0, SEEK_END);
     fseek(file_buffer, 0, SEEK_SET);
@@ -1016,7 +1104,7 @@ void Memory::LoadARM7BIOS() {
 void Memory::LoadARM9BIOS() {
     FILE* file_buffer = fopen("../bios/bios9.bin", "rb");
     if (file_buffer == NULL) {
-        log_fatal("error when opening arm9 bios! make sure the file bios9.bin exists in the bios folder");
+        log_fatal("error when opening the arm9 bios! make sure the file bios9.bin exists in the bios folder");
     }
     fseek(file_buffer, 0, SEEK_END);
     fseek(file_buffer, 0, SEEK_SET);

@@ -1,7 +1,7 @@
 #include <core/gpu.h>
 #include <core/gpu_2d.h>
 
-GPU2D::GPU2D(GPU* gpu) : gpu(gpu) {
+GPU2D::GPU2D(GPU* gpu, int engine_id) : gpu(gpu), engine_id(engine_id) {
 
 }
 
@@ -28,6 +28,7 @@ void GPU2D::Reset() {
     BLDCNT = 0;
     BLDALPHA = 0;
     BLDY = 0;
+    MASTER_BRIGHT = 0;
 }
 
 void GPU2D::WritePaletteRAM(u32 addr, u16 data) {
@@ -100,9 +101,113 @@ void GPU2D::RenderVRAMDisplay(u16 line) {
 
 void GPU2D::RenderGraphicsDisplay(u16 line) {
     u8 bg_mode = DISPCNT & 0x7;
+    
     switch (bg_mode) {
+    case 0:
+        // in bg mode 0 all bg layers are rendering text except for bg0 which can render 3d
+        if (DISPCNT & (1 << 8)) {
+            RenderText(0, line);
+        }
+        if (DISPCNT & (1 << 9)) {
+            RenderText(1, line);
+        }
+        if (DISPCNT & (1 << 10)) {
+            RenderText(2, line);
+        }
+        if (DISPCNT & (1 << 11)) {
+            RenderText(3, line);
+        }
+        break;
+    case 3:
+        // in bg mode 0 all bg layers are rendering text except for bg0 which can render 3d and also bg3 which renders only extended
+        if (DISPCNT & (1 << 8)) {
+            RenderText(0, line);
+        }
+        if (DISPCNT & (1 << 9)) {
+            RenderText(1, line);
+        }
+        if (DISPCNT & (1 << 10)) {
+            RenderText(2, line);
+        }
+        if (DISPCNT & (1 << 11)) {
+            RenderExtended(3, line);
+        }
+        break;
     default:
         log_fatal("bg mode %d is not implemented yet!", bg_mode);
     }
-    log_fatal("dispcnt is %08x for reference lol", DISPCNT);
+    // log_warn("dispcnt is %08x for reference lol", DISPCNT);
+}
+
+void GPU2D::RenderText(int bg_index, u16 line) {
+    u32 character_base = (((BGCNT[bg_index] >> 2) & 0x3) * 0x4000) + (((DISPCNT >> 24) & 0x7) * 0x10000);
+    u32 screen_base = (((BGCNT[bg_index] >> 8) & 0x1F) * 0x800) + (((DISPCNT >> 27) & 0x7) * 0x10000);
+
+    u8 screen_size = (BGCNT[bg_index] >> 14) & 0x3;
+
+    if (BGCNT[bg_index] & (1 << 7)) {
+        // 256 colours / 1 palette
+        // 1 tile occupies 64 bytes with 1 row occupying 8 bytes
+        for (int i = 0; i < 256; i += 8) {
+            // iterate through each row of tiles
+            u32 screen_addr = 0x06000000 + screen_base + (i * 2);
+            // iterate through each pixel in that row
+            u32 tile_info;
+            if (engine_id == 1) {
+                tile_info = gpu->ReadBGA(screen_addr);
+            } else {
+                tile_info = gpu->ReadBGB(screen_addr);
+            }
+
+            // now we need to decode what the tile info means
+            // Bit   Expl.
+            // 0-9   Tile Number     (0-1023) (a bit less in 256 color mode, because
+            //                  there'd be otherwise no room for the bg map)
+            // 10    Horizontal Flip (0=Normal, 1=Mirrored)
+            // 11    Vertical Flip   (0=Normal, 1=Mirrored)
+            //12-15 Palette Number  (0-15)    (Not used in 256 color/1 palette mode)
+            u32 tile_number = tile_info & 0x3FF;
+            u8 horizontal_flip = (tile_info >> 10) & 0x1;
+            u8 vertical_flip = (tile_info >> 11) & 0x1;
+            // times by 64 as each tile is 64 bytes long
+            u32 character_addr = 0x06000000 + character_base + (tile_number * 64);
+
+            // TODO: actually use palettes later lmao
+            for (int j = 0; j < 8; j++) {
+                // now get the individual pixels from the tile
+                u16 data;
+                if (engine_id == 1) {
+                    data = gpu->ReadBGA(character_base + ((line % 8) * 8) + j);
+                } else {
+                    data = gpu->ReadBGB(character_base + ((line % 8) * 8) + j);
+                }
+
+                framebuffer[(256 * line) + i] = Convert15To24(data);
+            }
+        }
+    }
+    
+    // log_debug("colours/palettes: %d", (BGCNT[bg_index] >> 7) & 0x1);
+    // log_debug("screen size: %d", screen_size);
+    // log_debug("char base %08x screen base %08x", character_base, screen_base);
+    // log_debug("baaa");
+}
+
+void GPU2D::RenderExtended(int bg_index, u16 line) {
+    u32 screen_base = ((BGCNT[bg_index] >> 8) & 0x1F) * 0x800;
+    // log_fatal("screen base %08x", screen_base * 0x4000);
+    for (int i = 0; i < 256; i++) {
+        // just print out colour values
+        u16 data;
+        u32 addr = 0x06000000 + screen_base + (((256 * line) + i) * 2);
+        // TODO: add proper bg layers later
+        if (engine_id == 1) {
+            data = gpu->ReadBGA(addr);
+        } else {
+            data = gpu->ReadBGB(addr);
+        }
+        framebuffer[(256 * line) + i] = Convert15To24(data);
+        
+    }
+    // log_fatal("handle bit2 %d bit7 %d", bit2, bit7);
 }

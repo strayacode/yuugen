@@ -7,7 +7,7 @@
 struct GPU;
 
 struct GPU2D {
-    GPU2D(GPU* gpu);
+    GPU2D(GPU* gpu, int engine_id);
 
     u32 framebuffer[256 * 192];
 
@@ -31,6 +31,8 @@ struct GPU2D {
     u16 BLDALPHA;
     u32 BLDY;
 
+    u16 MASTER_BRIGHT;
+
     // each gpu engine holds 1kb of palette ram with the first 512 bytes for bg palette and the remaining memory for obj palette
     u16 palette_ram[0x400];
 
@@ -49,6 +51,10 @@ struct GPU2D {
     void RenderBlankScreen(u16 line);
     void RenderVRAMDisplay(u16 line);
     void RenderGraphicsDisplay(u16 line);
+    void RenderText(int bg_index, u16 line);
+    void RenderExtended(int bg_index, u16 line);
 
     GPU* gpu;
+
+    int engine_id;
 };
