@@ -1,19 +1,19 @@
 #include <core/core.h>
 
-Core::Core() : 
-    memory(this),
+Core::Core() :
+    cartridge(this),
     arm9(this, ARMv5), 
     arm7(this, ARMv4),
-    cartridge(this),
     gpu(this),
     dma {DMA(this, 0), DMA(this, 1)},
-    interrupt {Interrupt(this, 0), Interrupt(this, 1)},
     cp15(this),
+    interrupt {Interrupt(this, 0), Interrupt(this, 1)},
     ipc(this),
     timers {Timers(this, 0), Timers(this, 1)},
     rtc(this),
     spu(this),
-    spi(this) {
+    spi(this),
+    memory(this) {
     
 }
 

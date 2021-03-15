@@ -28,8 +28,7 @@ struct Core {
 
     
     Cartridge cartridge;
-    Memory memory;
-
+    
     ARM arm9;
     ARM arm7;
 
@@ -52,6 +51,8 @@ struct Core {
     SPU spu;
 
     SPI spi;
+
+    Memory memory;
 
     const char* rom_path = nullptr;
 };

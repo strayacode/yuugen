@@ -816,6 +816,17 @@ u32 ARM_LOGICAL_SHIFT_RIGHT_IMMS() {
     return result;
 }
 
+u32 ARM_LOGICAL_SHIFT_RIGHT_REG() {
+    u8 shift_amount = regs.r[(instruction >> 8) & 0xF] & 0xFF;
+    u32 rm = regs.r[instruction & 0xF] + (((instruction & 0xF) == 15) ? 4 : 0);
+    
+    u32 result = 0;
+
+    result = rm >> shift_amount;
+
+    return result;
+}
+
 u32 ARM_ARITHMETIC_SHIFT_RIGHT_IMMS() {
     u8 shift_amount = (instruction >> 7) & 0x1F;
     u8 rm = instruction & 0xF;
@@ -875,6 +886,31 @@ u32 ARM_ARITHMETIC_SHIFT_RIGHT_REGS() {
         // shift amount > 32
         result = 0xFFFFFFFF * msb;
         SetConditionFlag(C_FLAG, msb);
+    }
+    return result;
+}
+
+u32 ARM_ARITHMETIC_SHIFT_RIGHT_REG() {
+    u8 shift_amount = regs.r[(instruction >> 8) & 0xF] & 0xFF;
+    u32 rm = regs.r[instruction & 0xF];
+    if ((instruction & 0xF) == 15) {
+        log_fatal("handle");
+        // prefetch due to how register shifting executes after the prefetch
+        rm += 4;
+    }
+    u32 result = 0;
+    u8 msb = rm >> 31;
+
+    if (shift_amount == 0) {
+        result = rm;
+    } else if (shift_amount < 32) {
+        // shift amount > 0
+        // perform asr
+        // what happens is that rm gets shifted normally to the right but then the bits not set are set with the msb
+        result = (rm >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
+    } else {
+        // shift amount > 32
+        result = 0xFFFFFFFF * msb;
     }
     return result;
 }

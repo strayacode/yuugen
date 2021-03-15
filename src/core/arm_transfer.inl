@@ -605,6 +605,55 @@ INSTRUCTION(ARM_STM_INCREMENT_AFTER) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_LDM_DECREMENT_BEFORE) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address -= 4;
+        }
+    }
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            regs.r[i] = ReadWord(address);
+            address += 4;
+        }
+    }
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_STM_DECREMENT_BEFORE) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address -= 4;
+        }
+    }
+
+    // subtract offset from base
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) { 
+            // write register to address
+            WriteWord(address, regs.r[i]);
+            // pre decrement the address
+            address += 4;
+        }
+    }
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_LDRD_POST, u32 op2) {
     // armv5 exclusive
     if (arch == ARMv4) {

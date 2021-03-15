@@ -54,3 +54,19 @@ INSTRUCTION(ARM_BLX_REG) {
     }
 }
 
+INSTRUCTION(ARM_BLX) {
+    // arm9 specific instruction
+    if (arch == ARMv4) {
+        return;
+    }
+
+    // store address of instruction after blx instruction into lr
+    regs.r[14] = regs.r[15] - 4;
+    // set the t flag to 1 (switch to thumb mode)
+    regs.cpsr |= (1 << 5);
+
+    u32 offset = (((instruction & (1 << 23)) ? 0xFF000000: 0) | ((instruction & 0xFFFFFF) << 2)) + ((instruction & (1 << 24)) << 1);
+    regs.r[15] += offset;
+    // since we switched to thumb mode do a 16 bit pipeline flush
+    ThumbFlushPipeline();
+}
