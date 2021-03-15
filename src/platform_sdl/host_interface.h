@@ -27,5 +27,5 @@ struct HostInterface {
     SDL_Event event;
 
     int frames = 0;
-    char window_title[30];
+    char window_title[40];
 };

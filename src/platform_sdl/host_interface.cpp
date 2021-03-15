@@ -133,7 +133,7 @@ void HostInterface::Run(const char* path) {
         u32 frame_time_end = SDL_GetTicks();
         frames++;
         if ((frame_time_end - frame_time_start) >= 1000) {
-            snprintf(window_title, 30, "yuugen - %d FPS", frames);
+            snprintf(window_title, 30, "yuugen [%d FPS | %0.2f ms]", frames, 1000.0 / frames);
             SDL_SetWindowTitle(window, window_title);
             frame_time_start = SDL_GetTicks();
             frames = 0;
