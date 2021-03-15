@@ -142,7 +142,7 @@ void GPU2D::RenderGraphicsDisplay(u16 line) {
 void GPU2D::RenderText(int bg_index, u16 line) {
     u32 character_base = (((BGCNT[bg_index] >> 2) & 0x3) * 0x4000) + (((DISPCNT >> 24) & 0x7) * 0x10000);
     u32 screen_base = (((BGCNT[bg_index] >> 8) & 0x1F) * 0x800) + (((DISPCNT >> 27) & 0x7) * 0x10000);
-
+    screen_base += ((line / 8) % 32) * 64;
     u8 screen_size = (BGCNT[bg_index] >> 14) & 0x3;
 
     if (BGCNT[bg_index] & (1 << 7)) {
@@ -150,7 +150,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
         // 1 tile occupies 64 bytes with 1 row occupying 8 bytes
         for (int i = 0; i < 256; i += 8) {
             // iterate through each row of tiles
-            u32 screen_addr = 0x06000000 + screen_base + (i * 2);
+            u32 screen_addr = 0x06000000 + screen_base + ((i / 8) * 2);
             // iterate through each pixel in that row
             u32 tile_info;
             if (engine_id == 1) {
@@ -177,12 +177,12 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                 // now get the individual pixels from the tile
                 u16 data;
                 if (engine_id == 1) {
-                    data = gpu->ReadBGA(character_base + ((line % 8) * 8) + j);
+                    data = gpu->ReadBGA(character_addr + ((line % 8) * 8) + j);
                 } else {
-                    data = gpu->ReadBGB(character_base + ((line % 8) * 8) + j);
+                    data = gpu->ReadBGB(character_addr + ((line % 8) * 8) + j);
                 }
 
-                framebuffer[(256 * line) + i] = Convert15To24(data);
+                framebuffer[(256 * line) + i + j] = Convert15To24(data);
             }
         }
     }
