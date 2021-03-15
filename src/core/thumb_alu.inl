@@ -108,6 +108,42 @@ INSTRUCTION(THUMB_ORR_DATA_PROCESSING) {
     regs.r[15] += 2;
 }
 
+INSTRUCTION(THUMB_ROR_DATA_PROCESSING) {
+    u8 rd = instruction & 0x7;
+    u8 rs = (instruction >> 3) & 0x7;
+
+    u8 shift_amount = regs.r[rs] & 0x1F;
+    // TODO: optimise
+    if ((regs.r[rs] & 0xFF) == 0) {
+        // do nothing lol
+    } else if (shift_amount == 0) {
+        SetConditionFlag(C_FLAG, regs.r[rd] >> 31);
+    } else {
+        // shift amount > 0
+        SetConditionFlag(C_FLAG, regs.r[rd] & (1 << (shift_amount - 1)));
+        regs.r[rd] = (regs.r[rd] >> shift_amount) | (regs.r[rd] << (32 - shift_amount));
+    }
+    
+    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+
+    
+
+    regs.r[15] += 2;
+}
+
+INSTRUCTION(THUMB_MVN_DATA_PROCESSING) {
+    u8 rd = instruction & 0x7;
+    u8 rm = (instruction >> 3) & 0x7;
+
+    regs.r[rd] = ~regs.r[rm];
+
+    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+}
+
 INSTRUCTION(THUMB_AND_DATA_PROCESSING) {
     u8 rd = instruction & 0x7;
     u8 rm = (instruction >> 3) & 0x7;
@@ -146,6 +182,31 @@ INSTRUCTION(THUMB_LSR_DATA_PROCESSING) {
         regs.r[rd] = 0;
     } else {
         // shift amount > 32
+        SetConditionFlag(C_FLAG, false);
+        regs.r[rd] = 0;
+    }
+
+    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+
+    regs.r[15] += 2;
+}
+
+INSTRUCTION(THUMB_LSL_DATA_PROCESSING) {
+    u8 rd = instruction & 0x7;
+    u8 rs = (instruction >> 3) & 0x7;
+    u8 shift_amount = regs.r[rs] & 0xFF;
+    // TODO: optimise later
+    if (shift_amount == 0) {
+        // do nothing lol
+    } else if (shift_amount < 32) {
+        SetConditionFlag(C_FLAG, regs.r[rd] & (1 << (32 - shift_amount)));
+        regs.r[rd] <<= shift_amount;
+    } else if (shift_amount == 32) {
+        SetConditionFlag(C_FLAG, regs.r[rd] & 0x1);
+        regs.r[rd] = 0;
+    } else {
+        // shift_amount > 32
         SetConditionFlag(C_FLAG, false);
         regs.r[rd] = 0;
     }
@@ -405,6 +466,15 @@ INSTRUCTION(THUMB_ADD_SP_REG) {
     u8 rd = (instruction >> 8) & 0x7;
 
     regs.r[rd] = regs.r[13] + (immediate << 2);
+
+    regs.r[15] += 2;
+}
+
+INSTRUCTION(THUMB_ADD_PC_REG) {
+    u32 immediate = instruction & 0xFF;
+    u8 rd = (instruction >> 8) & 0x7;
+
+    regs.r[rd] = (regs.r[15] & ~0x3) + (immediate << 2);
 
     regs.r[15] += 2;
 }

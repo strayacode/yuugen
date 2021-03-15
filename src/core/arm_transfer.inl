@@ -419,19 +419,34 @@ INSTRUCTION(ARM_LDRB_PRE, u32 op2) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_LDRSB_PRE, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    u32 address = regs.r[rn] + op2;
+    // first we cast to s8 to read the data as a signed byte and then cast to s32 to sign extend to a 32 bit integer
+    u32 data = (s32)(s8)ReadByte(address);
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[rd] = data;
+
+    regs.r[15] += 4;
+}
+
 // with writeback
 INSTRUCTION(ARM_LDRB_PRE_WRITEBACK, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
 
-    // printf("reading from address %08x\n", regs.r[rn] + op2);
-
-    regs.r[rd] = ReadByte(regs.r[rn] + op2);
     regs.r[rn] += op2;
+    regs.r[rd] = ReadByte(regs.r[rn]);
+    
     if (rd == 15) {
         log_fatal("handle");
     }
-    // TODO: maybe ldrb and strb use the rn == rd edgecase ill check later
     
     regs.r[15] += 4;
 }
@@ -497,7 +512,7 @@ INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_WRITEBACK) {
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
 
-    if (!(instruction & (1 << rn)) || ((arch == ARMv5) && ((instruction & 0xFFFF) == (1 << rn)) || !((instruction & 0xFFFF) >> rn))) {
+    if (!(instruction & (1 << rn)) ||(arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
         regs.r[rn] = address;
     }
     
@@ -524,7 +539,7 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
 
-    if ((!(instruction & (1 << rn))) || ((arch == ARMv5) && ((instruction & 0xFFFF) == (1 << rn)) || !((instruction & 0xFFFF) >> rn))) {
+    if (!(instruction & (1 << rn)) ||(arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
         regs.r[rn] = address;
     }
     
@@ -629,6 +644,141 @@ INSTRUCTION(ARM_LDM_DECREMENT_BEFORE) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_LDM_DECREMENT_BEFORE_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address -= 4;
+        }
+    }
+
+    u32 writeback = address;
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            regs.r[i] = ReadWord(address);
+            address += 4;
+        }
+    }
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(instruction & (1 << rn)) || (arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = writeback;
+    }
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_LDM_DECREMENT_AFTER_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address -= 4;
+        }
+    }
+
+    u32 writeback = address;
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            regs.r[i] = ReadWord(address);
+            
+        }
+    }
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(instruction & (1 << rn)) || (arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = writeback;
+    }
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_USER_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    u8 old_mode = regs.cpsr & 0x1F;
+
+    UpdateMode(SYS);
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            regs.r[i] = ReadWord(address);
+        }
+    }
+
+    UpdateMode(old_mode);
+
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(instruction & (1 << rn)) ||((arch == ARMv5) && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_LDM_INCREMENT_AFTER_USER_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+    
+    u8 old_mode = regs.cpsr & 0x1F;
+    
+    // first we must switch to user mode so that we can change the values of usr mode registers
+    UpdateMode(SYS);
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            regs.r[i] = ReadWord(address);
+            address += 4;
+        }
+    }
+
+    // switching back to to old mode is my guess
+    UpdateMode(old_mode);
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+    if (!(instruction & (1 << rn)) ||(arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = address;
+    }
+
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_STM_DECREMENT_BEFORE) {
     u8 rn = (instruction >> 16) & 0xF;
     u32 address = regs.r[rn];
@@ -650,6 +800,133 @@ INSTRUCTION(ARM_STM_DECREMENT_BEFORE) {
             address += 4;
         }
     }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_LDM_DECREMENT_BEFORE_USER_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    u8 old_mode = regs.cpsr & 0x1F;
+
+    UpdateMode(SYS);
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address -= 4;
+        }
+    }
+
+    u32 writeback = address;
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            regs.r[i] = ReadWord(address);
+            address += 4;
+        }
+    }
+
+    UpdateMode(old_mode);
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(instruction & (1 << rn)) || ((arch == ARMv5) && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = writeback;
+    }
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_LDM_DECREMENT_AFTER_USER_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    u8 old_mode = regs.cpsr & 0x1F;
+
+    UpdateMode(SYS);
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address -= 4;
+        }
+    }
+
+    u32 writeback = address;
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            regs.r[i] = ReadWord(address);
+            
+        }
+    }
+
+    UpdateMode(old_mode);
+
+    // if rn is in rlist:
+    // if arm9 writeback if rn is the only register or not the last register in rlist
+    // if arm7 then no writeback if rn in rlist
+
+    if (!(instruction & (1 << rn)) || (arch == ARMv5 && ((instruction & 0xFFFF) == (1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1))) {
+        regs.r[rn] = writeback;
+    }
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_STM_INCREMENT_BEFORE_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            WriteWord(address, regs.r[i]);
+        }
+    }
+
+    regs.r[rn] = address;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_STM_DECREMENT_AFTER_WRITEBACK) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address -= 4;
+        }
+    }
+
+    u32 writeback = address;
+    
+    // subtract offset from base
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) { 
+            // post decrement the address
+            address += 4;
+            // write register to address
+            WriteWord(address, regs.r[i]);
+            
+        }
+    }
+
+    // writeback to base register
+    regs.r[rn] = writeback;
 
     regs.r[15] += 4;
 }

@@ -932,3 +932,19 @@ u32 ARM_ROTATE_RIGHT_IMMS() {
 
     return result;
 }
+
+u32 ARM_ROTATE_RIGHT_IMM() {
+    u8 shift_amount = (instruction >> 7) & 0x1F;
+    u8 rm = instruction & 0xF;
+
+    u32 result = 0;
+    if (shift_amount == 0) {
+        // perform rotate right extend
+        result = (GetConditionFlag(C_FLAG) << 31) | (regs.r[rm] >> 1);
+    } else {
+        // shift amount > 0
+        result = (regs.r[rm] >> shift_amount) | (regs.r[rm] << (32 - shift_amount));
+    }
+
+    return result;
+}
