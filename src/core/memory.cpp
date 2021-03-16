@@ -487,6 +487,8 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
             return core->gpu.POWCNT1;
         case 0x04001000:
             return core->gpu.engine_b.DISPCNT & 0xFFFF;
+        case 0x04001008:
+            return core->gpu.engine_b.BGCNT[0];
         default:
             log_fatal("unimplemented arm9 halfword io read at address 0x%08x", addr);
         }
@@ -658,6 +660,9 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
         case 0x04000004:
             core->gpu.WriteDISPSTAT9(data);
             break;
+        case 0x04000008:
+            core->gpu.engine_a.BGCNT[0] = data;
+            break;
         case 0x0400000C:
             core->gpu.engine_a.BGCNT[2] = data;
             break;
@@ -718,8 +723,17 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
             // TODO: put in method for GPU2D
             core->gpu.engine_b.DISPCNT = (core->gpu.engine_b.DISPCNT & ~0xFFFF) | (data & 0xFFFF);
             break;
+        case 0x04001008:
+            core->gpu.engine_b.BGCNT[0] = data;
+            break;
         case 0x0400100E:
             core->gpu.engine_b.BGCNT[3] = data;
+            break;
+        case 0x04001010:
+            core->gpu.engine_b.BGHOFS[0] = data;
+            break;
+        case 0x04001012:
+            core->gpu.engine_b.BGVOFS[0] = data;
             break;
         case 0x04001030:
             core->gpu.engine_b.BG3P[0] = data;

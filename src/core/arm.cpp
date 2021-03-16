@@ -404,6 +404,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDRH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x1DD:
                 return ARM_LDRSB_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
+            case 0x1DF:
+                return ARM_LDRSH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x1E0: case 0x1E8:
                 return ARM_MVN(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x1FB:
@@ -598,6 +600,11 @@ void ARM::ExecuteInstruction() {
             case 0x5D8: case 0x5D9: case 0x5DA: case 0x5DB: 
             case 0x5DC: case 0x5DD: case 0x5DE: case 0x5DF:
                 return ARM_LDRB_PRE(ARM_SINGLE_DATA_TRANSFER_IMM());
+            case 0x5E0: case 0x5E1: case 0x5E2: case 0x5E3: 
+            case 0x5E4: case 0x5E5: case 0x5E6: case 0x5E7: 
+            case 0x5E8: case 0x5E9: case 0x5EA: case 0x5EB: 
+            case 0x5EC: case 0x5ED: case 0x5EE: case 0x5EF:
+                return ARM_STRB_PRE_WRITEBACK(ARM_SINGLE_DATA_TRANSFER_IMM());
             case 0x5F0: case 0x5F1: case 0x5F2: case 0x5F3:
             case 0x5F4: case 0x5F5: case 0x5F6: case 0x5F7:
             case 0x5F8: case 0x5F9: case 0x5FA: case 0x5FB:
@@ -1091,10 +1098,14 @@ void ARM::ExecuteInstruction() {
             return THUMB_STR_REG();
         case 0x52: case 0x53:
             return THUMB_STRH_REG();
+        case 0x54: case 0x55:
+            return THUMB_STRB_REG();
         case 0x58: case 0x59:
             return THUMB_LDR_REG();
         case 0x5A: case 0x5B:
             return THUMB_LDRH_REG();
+        case 0x5C: case 0x5D:
+            return THUMB_LDRB_REG();
         case 0x5E: case 0x5F:
             return THUMB_LDRSH_REG();
         case 0x60: case 0x61: case 0x62: case 0x63: 
@@ -1154,6 +1165,8 @@ void ARM::ExecuteInstruction() {
             return THUMB_BPL();
         case 0xD8:
             return THUMB_BHI();
+        case 0xDA:
+            return THUMB_BGE();
         case 0xDB:
             return THUMB_BLT();
         case 0xDC:

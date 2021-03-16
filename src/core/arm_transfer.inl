@@ -403,6 +403,18 @@ INSTRUCTION(ARM_STRB_PRE, u32 op2) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_STRB_PRE_WRITEBACK, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+    regs.r[rn] += op2;
+    WriteByte(regs.r[rn], regs.r[rd]);
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_LDRB_PRE, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
@@ -424,6 +436,23 @@ INSTRUCTION(ARM_LDRSB_PRE, u32 op2) {
     u32 address = regs.r[rn] + op2;
     // first we cast to s8 to read the data as a signed byte and then cast to s32 to sign extend to a 32 bit integer
     u32 data = (s32)(s8)ReadByte(address);
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[rd] = data;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_LDRSH_PRE, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    u32 address = regs.r[rn] + op2;
+    // first we cast to s8 to read the data as a signed byte and then cast to s32 to sign extend to a 32 bit integer
+    u32 data = (s32)(s16)ReadHalfword(address);
 
     if (rd == 15) {
         log_fatal("handle");

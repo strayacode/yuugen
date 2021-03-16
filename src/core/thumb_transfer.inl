@@ -200,6 +200,22 @@ INSTRUCTION(THUMB_LDRH_REG) {
     regs.r[15] += 2;
 }
 
+INSTRUCTION(THUMB_LDRB_REG) {
+    u8 rd = instruction & 0x7;
+    u8 rn = (instruction >> 3) & 0x7;
+    u8 rm = (instruction >> 6) & 0x7;
+
+    u32 address = regs.r[rn] + regs.r[rm];
+
+    regs.r[rd] = ReadByte(address);
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[15] += 2;
+}
+
 INSTRUCTION(THUMB_LDRSH_REG) {
     u8 rd = instruction & 0x7;
     u8 rn = (instruction >> 3) & 0x7;
@@ -238,6 +254,18 @@ INSTRUCTION(THUMB_STRH_REG) {
     u32 address = regs.r[rn] + regs.r[rm];
 
     WriteHalfword(address, regs.r[rd]);
+
+    regs.r[15] += 2;
+}
+
+INSTRUCTION(THUMB_STRB_REG) {
+    u8 rd = instruction & 0x7;
+    u8 rn = (instruction >> 3) & 0x7;
+    u8 rm = (instruction >> 6) & 0x7;
+
+    u32 address = regs.r[rn] + regs.r[rm];
+
+    WriteByte(address, regs.r[rd]);
 
     regs.r[15] += 2;
 }

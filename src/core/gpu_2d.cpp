@@ -32,11 +32,15 @@ void GPU2D::Reset() {
 }
 
 void GPU2D::WritePaletteRAM(u32 addr, u16 data) {
-    palette_ram[addr & 0x3FF] = data;
+    memcpy(&palette_ram[addr & 0x3FF], &data, 2);
+}
+
+u16 GPU2D::ReadPaletteRAM(u32 addr) {
+    return ((palette_ram[(addr & 0x3FF) + 1] << 8) | (palette_ram[addr & 0x3FF]));
 }
 
 void GPU2D::WriteOAM(u32 addr, u16 data) {
-    oam[addr & 0x3FF] = data;
+    memcpy(&oam[addr & 0x3FF], &data, 2);
 }
 
 
@@ -172,17 +176,25 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             // times by 64 as each tile is 64 bytes long
             u32 character_addr = 0x06000000 + character_base + (tile_number * 64);
 
-            // TODO: actually use palettes later lmao
-            for (int j = 0; j < 8; j++) {
-                // now get the individual pixels from the tile
+            // for 256 colour / 1 palette mode each byte represents an index to a 16 colour in palette_ram
+            for (int j = 0; j < 8; j += 2) {
                 u16 data;
+                // this now gives us the index in palette_ram, and we will then use the first byte for the first pixel and 2nd byte for 2nd pixel
                 if (engine_id == 1) {
                     data = gpu->ReadBGA(character_addr + ((line % 8) * 8) + j);
                 } else {
                     data = gpu->ReadBGB(character_addr + ((line % 8) * 8) + j);
                 }
-
-                framebuffer[(256 * line) + i + j] = Convert15To24(data);
+                
+                
+                
+                // now get the actual colour from the palette for 2 pixels
+                u16 colour1 = ReadPaletteRAM(data && 0xFF);
+                u16 colour2 = ReadPaletteRAM(data >> 8);
+            
+                // write to the framebuffer
+                framebuffer[(256 * line) + i + j] = Convert15To24(colour1);
+                framebuffer[(256 * line) + i + j + 1] = Convert15To24(colour2);
             }
         }
     }

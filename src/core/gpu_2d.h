@@ -42,6 +42,8 @@ struct GPU2D {
     void WritePaletteRAM(u32 addr, u16 data);
     void WriteOAM(u32 addr, u16 data);
 
+    u16 ReadPaletteRAM(u32 addr);
+
     void Reset();
     const u32* GetFramebuffer();
     u32 Convert15To24(u32 colour);
