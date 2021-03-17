@@ -1,8 +1,8 @@
 #pragma once
 
-#include <common/types.h>
-#include <common/log.h>
-#include <common/memory_helpers.h>
+#include <util/types.h>
+#include <util/log.h>
+#include <util/memory_helpers.h>
 #include <stdlib.h>
 #include <string.h>
 

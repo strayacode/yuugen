@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/types.h>
-#include <common/memory_helpers.h>
+#include <util/types.h>
+#include <util/memory_helpers.h>
 #include <core/gpu_2d.h>
 #include <string.h>
 
@@ -57,6 +57,7 @@ struct GPU {
 
     void WriteLCDC(u32 addr, u16 data);
     void WriteBGA(u32 addr, u16 data);
+    void WriteBGB(u32 addr, u16 data);
 
     u16 ReadBGA(u32 addr);
     u16 ReadBGB(u32 addr);

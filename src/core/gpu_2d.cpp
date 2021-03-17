@@ -200,9 +200,10 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                 framebuffer[(256 * line) + i + j] = Convert15To24(colour);
             }
         }
-    } else {
-        log_fatal("hsandle");
     }
+    // } else {
+    //     log_fatal("hsandle");
+    // }
 }
 
 void GPU2D::RenderExtended(int bg_index, u16 line) {

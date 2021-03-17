@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string.h>
-#include <common/log.h>
+#include <util/log.h>
 
 struct Core;
 

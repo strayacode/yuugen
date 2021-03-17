@@ -1,6 +1,6 @@
 #include <memory>
 #include "host_interface.h"
-#include <common/log.h>
+#include <util/log.h>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {

@@ -304,6 +304,26 @@ u16 GPU::ReadBGA(u32 addr) {
     return return_value;
 }
 
+void GPU::WriteBGB(u32 addr, u16 data) {
+    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
+        if (in_range(0x06200000, 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_C) == 4)) {
+            memcpy(&VRAM_C[addr & 0x1FFFF], &data, 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_H)) {
+        if (in_range(0x06200000, 0x8000, addr) && (GetVRAMCNTMST(VRAMCNT_H) == 1)) {
+            memcpy(&VRAM_H[addr & 0x7FFF], &data, 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
+        if (in_range(0x06208000, 0x4000, addr) && (GetVRAMCNTMST(VRAMCNT_I) == 1)) {
+            memcpy(&VRAM_I[addr & 0x3FFF], &data, 2);
+        }
+    }
+}
+
 u16 GPU::ReadBGB(u32 addr) {
     u16 return_value = 0;
 

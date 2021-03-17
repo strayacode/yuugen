@@ -192,6 +192,30 @@ INSTRUCTION(THUMB_LSR_DATA_PROCESSING) {
     regs.r[15] += 2;
 }
 
+INSTRUCTION(THUMB_ASR_DATA_PROCESSING) {
+    u8 shift_amount = regs.r[(instruction >> 3) & 0x7] & 0xFF;
+    u8 rd = instruction & 0x7;
+    
+    u8 msb = regs.r[rd] >> 31;
+
+    if (shift_amount == 0) {
+        // unaffected
+    } else if (shift_amount < 32) {
+        // shift amount > 0
+        SetConditionFlag(C_FLAG, regs.r[rd] & (1 << (shift_amount - 1)));
+        // perform asr
+        // what happens is that rm gets shifted normally to the right but then the bits not set are set with the msb
+        regs.r[rd] = (regs.r[rd] >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
+    } else {
+        // shift amount > 32
+        regs.r[rd] = 0xFFFFFFFF * msb;
+        SetConditionFlag(C_FLAG, msb);
+    }
+    
+    regs.r[15] += 2;
+}
+
+
 INSTRUCTION(THUMB_LSL_DATA_PROCESSING) {
     u8 rd = instruction & 0x7;
     u8 rs = (instruction >> 3) & 0x7;

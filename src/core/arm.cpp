@@ -1042,7 +1042,7 @@ void ARM::ExecuteInstruction() {
             // using the data processing opcode table with bits
             switch ((instruction >> 6) & 0x3) {
             case 0:
-                log_fatal("41-0");
+                return THUMB_ASR_DATA_PROCESSING();
             case 1:
                 return THUMB_ADC_DATA_PROCESSING();
             case 2:
@@ -1165,6 +1165,8 @@ void ARM::ExecuteInstruction() {
             return THUMB_BPL();
         case 0xD8:
             return THUMB_BHI();
+        case 0xD9:
+            return THUMB_BLS();
         case 0xDA:
             return THUMB_BGE();
         case 0xDB:

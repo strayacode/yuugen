@@ -18,4 +18,4 @@ add_library(core
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
-target_link_libraries(core PRIVATE common)
+target_link_libraries(core PRIVATE util)

@@ -194,22 +194,6 @@ INSTRUCTION(ARM_ADC, u32 op2) {
 }
 
 INSTRUCTION(ARM_ADCS, u32 op2) {
-    // u8 rd = (instruction >> 12) & 0xF;
- //    u8 rn = (instruction >> 16) & 0xF;
- //    u32 temporary_result = regs.r[rn] + op2;
- //    regs.r[rd] = temporary_result + GetConditionFlag(C_FLAG);
-    
- //    if (rd == 15) {
- //     log_fatal("handle");
- //    } else {
- //     SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
- //     SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
- //     // maybe look at how c flag is accounted for
- //     SetConditionFlag(C_FLAG, ADD_CARRY(regs.r[rn], op2) | ADD_CARRY(temporary_result, GetConditionFlag(C_FLAG)));
- //     SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rn], op2, temporary_result) | ADD_OVERFLOW(temporary_result, GetConditionFlag(C_FLAG), regs.r[rd]));
- //    }
-
- //    regs.r[15] += 4;
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
     u64 result64 = (u64)regs.r[rn] + (u64)op2 + (u64)GetConditionFlag(C_FLAG);

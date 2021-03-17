@@ -4,4 +4,4 @@ find_package(SDL2 REQUIRED)
 
 include_directories(yuugen ${SDL2_INCLUDE_DIRS})
 
-target_link_libraries(yuugen PRIVATE core common ${SDL2_LIBRARIES})
+target_link_libraries(yuugen PRIVATE core util ${SDL2_LIBRARIES})

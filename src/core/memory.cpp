@@ -1078,10 +1078,15 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
             if (addr >= 0x06800000) {
                 core->gpu.WriteLCDC(addr, data & 0xFFFF);
                 core->gpu.WriteLCDC(addr + 2, data >> 16);
-            } else if (in_range(0x06000000, 0x400000, addr)) {
+            } else if (in_range(0x06000000, 0x200000, addr)) {
                 core->gpu.WriteBGA(addr, data & 0xFFFF);
                 core->gpu.WriteBGA(addr + 2, data >> 16);
-            } else {
+            } else if (in_range(0x06200000, 0x200000, addr)) {
+                core->gpu.WriteBGB(addr, data & 0xFFFF);
+                core->gpu.WriteBGB(addr + 2, data >> 16);
+            } 
+
+            else {
                 log_fatal("handle at word write at address %08x", addr);
             }
             break;

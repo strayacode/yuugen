@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <core/core.h>
-#include <common/log.h>
+#include <util/log.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 

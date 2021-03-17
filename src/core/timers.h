@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/types.h>
-#include <common/log.h>
+#include <util/types.h>
+#include <util/log.h>
 #include <string.h>
 
 struct Core;
