@@ -163,6 +163,10 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                 tile_info = gpu->ReadBGB(screen_addr);
             }
 
+            if (DISPCNT & (1 << 30)) {
+                log_fatal("handle");
+            }
+
             // now we need to decode what the tile info means
             // Bit   Expl.
             // 0-9   Tile Number     (0-1023) (a bit less in 256 color mode, because
@@ -173,36 +177,32 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             u32 tile_number = tile_info & 0x3FF;
             u8 horizontal_flip = (tile_info >> 10) & 0x1;
             u8 vertical_flip = (tile_info >> 11) & 0x1;
+            if (vertical_flip) {
+                log_fatal("handle");
+            }
             // times by 64 as each tile is 64 bytes long
             u32 character_addr = 0x06000000 + character_base + (tile_number * 64);
 
-            // for 256 colour / 1 palette mode each byte represents an index to a 16 colour in palette_ram
-            for (int j = 0; j < 8; j += 2) {
+            // TODO: make this faster
+            for (int j = 0; j < 8; j++) {
+                // now get the individual pixels from the tile
+                u32 offset = character_addr + ((line % 8) * 8) + ((horizontal_flip) ? (7 - j) : j);
+                // u32 offset = character_addr + ((line % 8) * 8) + j;
                 u16 data;
-                // this now gives us the index in palette_ram, and we will then use the first byte for the first pixel and 2nd byte for 2nd pixel
                 if (engine_id == 1) {
-                    data = gpu->ReadBGA(character_addr + ((line % 8) * 8) + j);
+                    data = gpu->ReadBGA(offset);
                 } else {
-                    data = gpu->ReadBGB(character_addr + ((line % 8) * 8) + j);
+                    data = gpu->ReadBGB(offset);
                 }
-                
-                
-                
-                // now get the actual colour from the palette for 2 pixels
-                u16 colour1 = ReadPaletteRAM(data && 0xFF);
-                u16 colour2 = ReadPaletteRAM(data >> 8);
-            
-                // write to the framebuffer
-                framebuffer[(256 * line) + i + j] = Convert15To24(colour1);
-                framebuffer[(256 * line) + i + j + 1] = Convert15To24(colour2);
+
+                u16 colour = ReadPaletteRAM(data & 0xFF);
+
+                framebuffer[(256 * line) + i + j] = Convert15To24(colour);
             }
         }
+    } else {
+        log_fatal("hsandle");
     }
-    
-    // log_debug("colours/palettes: %d", (BGCNT[bg_index] >> 7) & 0x1);
-    // log_debug("screen size: %d", screen_size);
-    // log_debug("char base %08x screen base %08x", character_base, screen_base);
-    // log_debug("baaa");
 }
 
 void GPU2D::RenderExtended(int bg_index, u16 line) {
