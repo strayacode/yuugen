@@ -666,11 +666,26 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
         case 0x0400000C:
             core->gpu.engine_a.BGCNT[2] = data;
             break;
+        case 0x0400000E:
+            core->gpu.engine_a.BGCNT[3] = data;
+            break;
         case 0x04000018:
             core->gpu.engine_a.BGHOFS[2] = data;
             break;
         case 0x0400001A:
             core->gpu.engine_a.BGVOFS[2] = data;
+            break;
+        case 0x04000030:
+            core->gpu.engine_a.BG3P[0] = data;
+            break;
+        case 0x04000032:
+            core->gpu.engine_a.BG3P[1] = data;
+            break;
+        case 0x04000034:
+            core->gpu.engine_a.BG3P[2] = data;
+            break;
+        case 0x04000036:
+            core->gpu.engine_a.BG3P[3] = data;
             break;
         case 0x0400006C:
             // TODO: handle brightness properly later

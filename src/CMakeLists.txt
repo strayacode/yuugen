@@ -1,5 +1,5 @@
-set(PLATFORM_SDL OFF)
-set(PLATFORM_QT ON)
+set(PLATFORM_SDL ON)
+set(PLATFORM_QT OFF)
 
 add_subdirectory(util)
 add_subdirectory(core)

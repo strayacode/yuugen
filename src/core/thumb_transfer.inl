@@ -74,6 +74,24 @@ INSTRUCTION(THUMB_LDMIA_REG) {
     regs.r[15] += 2;
 }
 
+INSTRUCTION(THUMB_STMIA_REG) {
+    u8 rn = (instruction >> 8) & 0x7;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 8; i++) {
+        if (instruction & (1 << i)) {
+            WriteWord(address, regs.r[i]);
+            address += 4;
+        }
+    }
+
+    // writeback to rn
+
+    regs.r[rn] = address;
+
+    regs.r[15] += 2;
+}
+
 INSTRUCTION(THUMB_POP_PC) {
     u32 address = regs.r[13];
 

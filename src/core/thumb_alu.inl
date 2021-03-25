@@ -281,7 +281,6 @@ INSTRUCTION(THUMB_MOVH) {
     regs.r[rd] = regs.r[rm];
 
     if (rd == 15) {
-        log_fatal("handle");
         // halfword align
         regs.r[15] &= ~1;
         ThumbFlushPipeline();

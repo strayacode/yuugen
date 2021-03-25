@@ -618,6 +618,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDR_POST(-ARM_RPAR());
             case 0x616: case 0x61E:
                 return ARM_LDR_POST(-ARM_RPRR());
+            // case 0x620: case 0x628:
+            //     return ARM_STR
             case 0x690: case 0x698:
                 return ARM_LDR_POST(ARM_RPLL());
             case 0x692: case 0x69A:
@@ -1148,6 +1150,9 @@ void ARM::ExecuteInstruction() {
             return THUMB_POP();
         case 0xBD:
             return THUMB_POP_PC();
+        case 0xC0: case 0xC1: case 0xC2: case 0xC3: 
+        case 0xC4: case 0xC5: case 0xC6: case 0xC7:
+            return THUMB_STMIA_REG();
         case 0xC8: case 0xC9: case 0xCA: case 0xCB: 
         case 0xCC: case 0xCD: case 0xCE: case 0xCF:
             return THUMB_LDMIA_REG();
