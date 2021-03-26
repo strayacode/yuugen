@@ -43,6 +43,10 @@ void GPU2D::WriteOAM(u32 addr, u16 data) {
     memcpy(&oam[addr & 0x3FF], &data, 2);
 }
 
+u16 GPU2D::ReadOAM(u32 addr) {
+    return ((oam[(addr & 0x3FF) + 1] << 8) | (oam[addr & 0x3FF]));
+}
+
 
 const u32* GPU2D::GetFramebuffer() {
     return &framebuffer[0];

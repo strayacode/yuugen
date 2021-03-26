@@ -15,6 +15,9 @@ enum MemoryRegion {
     REGION_PALETTE_RAM = 0x05,
     REGION_VRAM = 0x06,
     REGION_OAM = 0x07,
+    REGION_GBA_ROM_L = 0x08,
+    REGION_GBA_ROM_H = 0x09,
+    REGION_GBA_RAM = 0x0A,
     REGION_ARM9_BIOS = 0xFF,
 };
 

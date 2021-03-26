@@ -43,19 +43,15 @@ bool HostInterface::Initialise() {
         return false;
     }
 
-    top_texture_area = {
-        .x = 0,
-        .y = 0,
-        .w = 256 * window_size,
-        .h = 192 * window_size,
-    };
-    bottom_texture_area = {
-        .x = 0,
-        .y = 192 * window_size,
-        .w = 256 * window_size,
-        .h = 192 * window_size,
-    };
-
+    top_texture_area.x = 0;
+    top_texture_area.y = 0;
+    top_texture_area.w = 256 * window_size;
+    top_texture_area.h = 192 * window_size;
+    
+    bottom_texture_area.x = 0;
+    bottom_texture_area.y = 192 * window_size;
+    bottom_texture_area.w = 256 * window_size;
+    bottom_texture_area.h = 192 * window_size;
 
     // if the function has reached this far it has successfully initialised
     return true;

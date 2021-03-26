@@ -43,6 +43,7 @@ struct GPU2D {
     void WriteOAM(u32 addr, u16 data);
 
     u16 ReadPaletteRAM(u32 addr);
+    u16 ReadOAM(u32 addr);
 
     void Reset();
     const u32* GetFramebuffer();

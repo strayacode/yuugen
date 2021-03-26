@@ -449,6 +449,24 @@ u8 Memory::ARM9ReadByte(u32 addr) {
         switch (addr >> 24) {
         case REGION_MAIN_MEMORY:
             return main_memory[addr & 0x3FFFFF];
+        case REGION_SHARED_WRAM:
+            switch (WRAMCNT) {
+            case 0:
+                // 32 kb is allocated to arm9 and 0kb is allocated to arm7
+                return shared_wram[addr & 0x7FFF];
+            case 1:
+                // in a 32kb block the first 16kb are allocated to the arm7 and the next 16kb are allocated to the arm9
+                return shared_wram[(addr & 0x3FFF) + 0x4000];
+            case 2:
+                // in a 32kb block the first 16kb are allocated to the arm9 and the next 16kb are allocated to the arm7
+                return shared_wram[addr & 0x3FFF];
+            case 3:
+                // in this case the wram area is empty (undefined)
+                return 0;
+            default:
+                log_fatal("handle");
+            }
+            break;
         case REGION_IO:
             switch (addr) {
             case 0x04000208:
@@ -469,53 +487,69 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
     addr &= ~1;
 
     u16 return_value = 0;
-
-    switch (addr >> 24) {
-    case REGION_MAIN_MEMORY:
-        memcpy(&return_value, &main_memory[addr & 0x3FFFFF], 2);
-        break;
-    case REGION_IO:
-        switch (addr) {
-        case 0x04000000:
-            return core->gpu.engine_a.DISPCNT & 0xFFFF;
-        case 0x04000004:
-            return core->gpu.DISPSTAT9;
-        case 0x04000006:
-            return core->gpu.VCOUNT;
-        case 0x04000130:
-            return core->input.KEYINPUT;
-        case 0x04000180:
-            return core->ipc.ReadIPCSYNC9();
-        case 0x04000184:
-            return core->ipc.IPCFIFOCNT9;
-        case 0x04000204:
-            return EXMEMCNT;
-        case 0x04000304:
-            return core->gpu.POWCNT1;
-        case 0x04001000:
-            return core->gpu.engine_b.DISPCNT & 0xFFFF;
-        case 0x04001008:
-            return core->gpu.engine_b.BGCNT[0];
+    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+        memcpy(&return_value, &core->cp15.itcm[addr & 0x7FFF], 2);
+    } else if (core->cp15.GetDTCMEnabled() && 
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
+        memcpy(&return_value, &core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], 2);
+    } else {
+        switch (addr >> 24) {
+        case REGION_MAIN_MEMORY:
+            memcpy(&return_value, &main_memory[addr & 0x3FFFFF], 2);
+            break;
+        case REGION_IO:
+            switch (addr) {
+            case 0x04000000:
+                return core->gpu.engine_a.DISPCNT & 0xFFFF;
+            case 0x04000004:
+                return core->gpu.DISPSTAT9;
+            case 0x04000006:
+                return core->gpu.VCOUNT;
+            case 0x04000130:
+                return core->input.KEYINPUT;
+            case 0x04000180:
+                return core->ipc.ReadIPCSYNC9();
+            case 0x04000184:
+                return core->ipc.IPCFIFOCNT9;
+            case 0x04000204:
+                return EXMEMCNT;
+            case 0x04000304:
+                return core->gpu.POWCNT1;
+            case 0x04001000:
+                return core->gpu.engine_b.DISPCNT & 0xFFFF;
+            case 0x04001008:
+                return core->gpu.engine_b.BGCNT[0];
+            default:
+                log_fatal("unimplemented arm9 halfword io read at address 0x%08x", addr);
+            }
+            break;
+        case REGION_PALETTE_RAM:
+            // write to palette ram
+            // check depending on the address which engines palette ram to write to
+            if ((addr & 0x3FF) < 400) {
+                // this is the first block which is assigned to engine a
+                memcpy(&return_value, &core->gpu.engine_a.palette_ram[addr & 0x3FF], 2);
+            } else {
+                // write to engine b's palette ram
+                memcpy(&return_value, &core->gpu.engine_b.palette_ram[addr & 0x3FF], 2);
+            }
+            break;
+        case REGION_OAM:
+            // check memory address to see which engine to write to oam
+            if ((addr & 0x3FF) < 0x400) {
+                // this is the first block of oam which is 1kb and is assigned to engine a
+                memcpy(&return_value, &core->gpu.engine_a.oam[addr & 0x3FF], 2);
+            } else {
+                // write to engine b's palette ram
+                memcpy(&return_value, &core->gpu.engine_a.oam[addr & 0x3FF], 2);
+            }
+            break;
+        case REGION_ARM9_BIOS:
+            memcpy(&return_value, &arm9_bios[addr & 0x7FFF], 2);
+            break;
         default:
-            log_fatal("unimplemented arm9 halfword io read at address 0x%08x", addr);
+            log_fatal("unimplemented arm9 halfword read at address 0x%08x\n", addr);
         }
-        break;
-    case REGION_PALETTE_RAM:
-        // write to palette ram
-        // check depending on the address which engines palette ram to write to
-        if ((addr & 0x3FF) < 400) {
-            // this is the first block which is assigned to engine a
-            memcpy(&return_value, &core->gpu.engine_a.palette_ram[addr & 0x3FF], 2);
-        } else {
-            // write to engine b's palette ram
-            memcpy(&return_value, &core->gpu.engine_b.palette_ram[addr & 0x3FF], 2);
-        }
-        break;
-    case REGION_ARM9_BIOS:
-        memcpy(&return_value, &arm9_bios[addr & 0x7FFF], 2);
-        break;
-    default:
-        log_fatal("unimplemented arm9 halfword read at address 0x%08x\n", addr);
     }
 
     return return_value;
@@ -590,6 +624,22 @@ u32 Memory::ARM9ReadWord(u32 addr) {
                 log_fatal("unimplemented arm9 word io read at address 0x%08x", addr);
             }
             break;
+        case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+            // check if the arm9 has access rights to the gba slot
+            // if not return 0
+            if (EXMEMCNT & (1 << 7)) {
+                return 0;
+            }
+            // otherwise return openbus (0xFFFFFFFF)
+            return 0xFFFFFFFF;
+        case REGION_GBA_RAM:
+            // check if the arm9 has access rights to the gba slot
+            // if not return 0
+            if (EXMEMCNT & (1 << 7)) {
+                return 0;
+            }
+            // otherwise return openbus (0xFFFFFFFF)
+            return 0xFFFFFFFF;
         case REGION_ARM9_BIOS:
             memcpy(&return_value, &arm9_bios[addr & 0x7FFF], 4);
             break;
@@ -605,6 +655,27 @@ void Memory::ARM9WriteByte(u32 addr, u8 data) {
     switch (addr >> 24) {
     case REGION_MAIN_MEMORY:
         main_memory[addr & 0x3FFFFF] = data;
+        break;
+    case REGION_SHARED_WRAM:
+        switch (WRAMCNT) {
+        case 0:
+            // 32 kb is allocated to arm9 and 0kb is allocated to arm7
+            shared_wram[addr & 0x7FFF] = data;
+            break;
+        case 1:
+            // in a 32kb block the first 16kb are allocated to the arm7 and the next 16kb are allocated to the arm9
+            shared_wram[(addr & 0x3FFF) + 0x4000] = data;
+            break;
+        case 2:
+            // in a 32kb block the first 16kb are allocated to the arm9 and the next 16kb are allocated to the arm7
+            shared_wram[addr & 0x3FFF] = data;
+            break;
+        case 3:
+            // in this case the wram area is empty (undefined)
+            break;
+        default:
+            log_fatal("handle");
+        }
         break;
     case REGION_IO:
         switch (addr) {
@@ -652,163 +723,175 @@ void Memory::ARM9WriteByte(u32 addr, u8 data) {
 
 void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
     addr &= ~1;
+    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+        memcpy(&core->cp15.itcm[addr & 0x7FFF], &data, 2);
+        // done with the write
+        return;
+    } else if (core->cp15.GetDTCMEnabled() && 
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
 
-    switch (addr >> 24) {
-    case REGION_MAIN_MEMORY:
-        memcpy(&main_memory[addr & 0x3FFFFF], &data, 2);
-        break;
-    case REGION_IO:
-        switch (addr) {
-        case 0x04000000:
-            // just alter the low 16 bits
-            // TODO: put in method for GPU2D
-            core->gpu.engine_a.DISPCNT = (core->gpu.engine_a.DISPCNT & ~0xFFFF) | (data & 0xFFFF);
+        memcpy(&core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], &data, 2);
+        
+        // done with the write
+        return;
+    } else {
+        switch (addr >> 24) {
+        case REGION_MAIN_MEMORY:
+            memcpy(&main_memory[addr & 0x3FFFFF], &data, 2);
             break;
-        case 0x04000004:
-            core->gpu.WriteDISPSTAT9(data);
+        case REGION_IO:
+            switch (addr) {
+            case 0x04000000:
+                // just alter the low 16 bits
+                // TODO: put in method for GPU2D
+                core->gpu.engine_a.DISPCNT = (core->gpu.engine_a.DISPCNT & ~0xFFFF) | (data & 0xFFFF);
+                break;
+            case 0x04000004:
+                core->gpu.WriteDISPSTAT9(data);
+                break;
+            case 0x04000008:
+                core->gpu.engine_a.BGCNT[0] = data;
+                break;
+            case 0x0400000C:
+                core->gpu.engine_a.BGCNT[2] = data;
+                break;
+            case 0x0400000E:
+                core->gpu.engine_a.BGCNT[3] = data;
+                break;
+            case 0x04000018:
+                core->gpu.engine_a.BGHOFS[2] = data;
+                break;
+            case 0x0400001A:
+                core->gpu.engine_a.BGVOFS[2] = data;
+                break;
+            case 0x04000030:
+                core->gpu.engine_a.BG3P[0] = data;
+                break;
+            case 0x04000032:
+                core->gpu.engine_a.BG3P[1] = data;
+                break;
+            case 0x04000034:
+                core->gpu.engine_a.BG3P[2] = data;
+                break;
+            case 0x04000036:
+                core->gpu.engine_a.BG3P[3] = data;
+                break;
+            case 0x0400006C:
+                // TODO: handle brightness properly later
+                core->gpu.engine_a.MASTER_BRIGHT = data;
+                break;
+            case 0x040000D0:
+                core->dma[1].WriteLength(2, data);
+                break;
+            case 0x04000100:
+                core->timers[1].WriteCounter(0, data);
+                break;
+            case 0x04000102:
+                core->timers[1].WriteControl(0, data);
+                break;
+            case 0x04000104:
+                core->timers[1].WriteCounter(1, data);
+                break;
+            case 0x04000106:
+                core->timers[1].WriteControl(1, data);
+                break;
+            case 0x04000108:
+                core->timers[1].WriteCounter(2, data);
+                break;
+            case 0x0400010A:
+                core->timers[1].WriteControl(2, data);
+                break;
+            case 0x0400010C:
+                core->timers[1].WriteCounter(3, data);
+                break;
+            case 0x0400010E:
+                core->timers[1].WriteControl(3, data);
+                break;
+            case 0x04000180:
+                core->ipc.WriteIPCSYNC9(data);
+                break;
+            case 0x04000184:
+                core->ipc.WriteIPCFIFOCNT9(data);
+                break;
+            case 0x04000204:
+                EXMEMCNT = data;
+                break;
+            case 0x04000208:
+                core->interrupt[1].IME = data & 0x1;
+                break;
+            case 0x04000304:
+                core->gpu.POWCNT1 = data;
+                break;
+            case 0x04001000:
+                // just alter the low 16 bits
+                // TODO: put in method for GPU2D
+                core->gpu.engine_b.DISPCNT = (core->gpu.engine_b.DISPCNT & ~0xFFFF) | (data & 0xFFFF);
+                break;
+            case 0x04001008:
+                core->gpu.engine_b.BGCNT[0] = data;
+                break;
+            case 0x0400100E:
+                core->gpu.engine_b.BGCNT[3] = data;
+                break;
+            case 0x04001010:
+                core->gpu.engine_b.BGHOFS[0] = data;
+                break;
+            case 0x04001012:
+                core->gpu.engine_b.BGVOFS[0] = data;
+                break;
+            case 0x04001030:
+                core->gpu.engine_b.BG3P[0] = data;
+                break;
+            case 0x04001032:
+                core->gpu.engine_b.BG3P[1] = data;
+                break;
+            case 0x04001034:
+                core->gpu.engine_b.BG3P[2] = data;
+                break;
+            case 0x04001036:
+                core->gpu.engine_b.BG3P[3] = data;
+                break;
+            case 0x0400106C:
+                // TODO: handle brightness properly later
+                core->gpu.engine_b.MASTER_BRIGHT = data;
+                break;
+            default:
+                log_fatal("unimplemented arm9 halfword io write at address 0x%08x with data 0x%04x", addr, data);
+            }
             break;
-        case 0x04000008:
-            core->gpu.engine_a.BGCNT[0] = data;
+        case REGION_PALETTE_RAM:
+            // write to palette ram
+            // check depending on the address which engines palette ram to write to
+            if ((addr & 0x3FF) < 400) {
+                // this is the first block which is assigned to engine a
+                core->gpu.engine_a.WritePaletteRAM(addr, data & 0xFFFF);
+            } else {
+                // write to engine b's palette ram
+                core->gpu.engine_b.WritePaletteRAM(addr, data & 0xFFFF);
+            }
             break;
-        case 0x0400000C:
-            core->gpu.engine_a.BGCNT[2] = data;
+        case REGION_VRAM:
+            if (addr >= 0x06800000) {
+                core->gpu.WriteLCDC(addr, data);
+            } else if (in_range(0x06000000, 0x400000, addr)) {
+                core->gpu.WriteBGA(addr, data);
+            } else {
+                log_fatal("handle at address 0x%08x", addr);
+            }
             break;
-        case 0x0400000E:
-            core->gpu.engine_a.BGCNT[3] = data;
-            break;
-        case 0x04000018:
-            core->gpu.engine_a.BGHOFS[2] = data;
-            break;
-        case 0x0400001A:
-            core->gpu.engine_a.BGVOFS[2] = data;
-            break;
-        case 0x04000030:
-            core->gpu.engine_a.BG3P[0] = data;
-            break;
-        case 0x04000032:
-            core->gpu.engine_a.BG3P[1] = data;
-            break;
-        case 0x04000034:
-            core->gpu.engine_a.BG3P[2] = data;
-            break;
-        case 0x04000036:
-            core->gpu.engine_a.BG3P[3] = data;
-            break;
-        case 0x0400006C:
-            // TODO: handle brightness properly later
-            core->gpu.engine_a.MASTER_BRIGHT = data;
-            break;
-        case 0x040000D0:
-            core->dma[1].WriteLength(2, data);
-            break;
-        case 0x04000100:
-            core->timers[1].WriteCounter(0, data);
-            break;
-        case 0x04000102:
-            core->timers[1].WriteControl(0, data);
-            break;
-        case 0x04000104:
-            core->timers[1].WriteCounter(1, data);
-            break;
-        case 0x04000106:
-            core->timers[1].WriteControl(1, data);
-            break;
-        case 0x04000108:
-            core->timers[1].WriteCounter(2, data);
-            break;
-        case 0x0400010A:
-            core->timers[1].WriteControl(2, data);
-            break;
-        case 0x0400010C:
-            core->timers[1].WriteCounter(3, data);
-            break;
-        case 0x0400010E:
-            core->timers[1].WriteControl(3, data);
-            break;
-        case 0x04000180:
-            core->ipc.WriteIPCSYNC9(data);
-            break;
-        case 0x04000184:
-            core->ipc.WriteIPCFIFOCNT9(data);
-            break;
-        case 0x04000204:
-            EXMEMCNT = data;
-            break;
-        case 0x04000208:
-            core->interrupt[1].IME = data & 0x1;
-            break;
-        case 0x04000304:
-            core->gpu.POWCNT1 = data;
-            break;
-        case 0x04001000:
-            // just alter the low 16 bits
-            // TODO: put in method for GPU2D
-            core->gpu.engine_b.DISPCNT = (core->gpu.engine_b.DISPCNT & ~0xFFFF) | (data & 0xFFFF);
-            break;
-        case 0x04001008:
-            core->gpu.engine_b.BGCNT[0] = data;
-            break;
-        case 0x0400100E:
-            core->gpu.engine_b.BGCNT[3] = data;
-            break;
-        case 0x04001010:
-            core->gpu.engine_b.BGHOFS[0] = data;
-            break;
-        case 0x04001012:
-            core->gpu.engine_b.BGVOFS[0] = data;
-            break;
-        case 0x04001030:
-            core->gpu.engine_b.BG3P[0] = data;
-            break;
-        case 0x04001032:
-            core->gpu.engine_b.BG3P[1] = data;
-            break;
-        case 0x04001034:
-            core->gpu.engine_b.BG3P[2] = data;
-            break;
-        case 0x04001036:
-            core->gpu.engine_b.BG3P[3] = data;
-            break;
-        case 0x0400106C:
-            // TODO: handle brightness properly later
-            core->gpu.engine_b.MASTER_BRIGHT = data;
+        case REGION_OAM:
+            // check memory address to see which engine to write to oam
+            if ((addr & 0x3FF) < 0x400) {
+                // this is the first block of oam which is 1kb and is assigned to engine a
+                core->gpu.engine_a.WriteOAM(addr, data);
+            } else {
+                // write to engine b's palette ram
+                core->gpu.engine_b.WriteOAM(addr, data);
+            }
             break;
         default:
-            log_fatal("unimplemented arm9 halfword io write at address 0x%08x with data 0x%04x", addr, data);
+            log_fatal("unimplemented arm9 halfword write at address 0x%08x with data 0x%04x", addr, data);
         }
-        break;
-    case REGION_PALETTE_RAM:
-        // write to palette ram
-        // check depending on the address which engines palette ram to write to
-        if ((addr & 0x3FF) < 400) {
-            // this is the first block which is assigned to engine a
-            core->gpu.engine_a.WritePaletteRAM(addr, data & 0xFFFF);
-        } else {
-            // write to engine b's palette ram
-            core->gpu.engine_b.WritePaletteRAM(addr, data & 0xFFFF);
-        }
-        break;
-    case REGION_VRAM:
-        if (addr >= 0x06800000) {
-            core->gpu.WriteLCDC(addr, data);
-        } else if (in_range(0x06000000, 0x400000, addr)) {
-            core->gpu.WriteBGA(addr, data);
-        } else {
-            log_fatal("handle at address 0x%08x", addr);
-        }
-        break;
-    case REGION_OAM:
-        // check memory address to see which engine to write to oam
-        if ((addr & 0x3FF) < 0x400) {
-            // this is the first block of oam which is 1kb and is assigned to engine a
-            core->gpu.engine_a.WriteOAM(addr, data);
-        } else {
-            // write to engine b's palette ram
-            core->gpu.engine_b.WriteOAM(addr, data);
-        }
-        break;
-    default:
-        log_fatal("unimplemented arm9 halfword write at address 0x%08x with data 0x%04x", addr, data);
     }
 }
 
