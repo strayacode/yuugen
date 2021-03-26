@@ -21,6 +21,13 @@ void Memory::Reset() {
     HALTCNT = 0;
     RCNT = 0x8000;
     EXMEMCNT = 0;
+
+    // set the chip id 1 and 2
+    ARM9WriteWord(0x27FF800, 0x1FC2);
+    ARM9WriteWord(0x27FF804, 0x1FC2);
+
+    // set the correct boot status (relied on by some commercial games)
+    ARM9WriteHalfword(0x27FFC40, 1);
 }
 
 u8 Memory::ARM7ReadByte(u32 addr) {

@@ -666,6 +666,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDR_PRE_WRITEBACK(ARM_RPRR());
             case 0x7C0: case 0x7C8:
                 return ARM_STRB_PRE(ARM_RPLL());
+            case 0x7C2: case 0x7CA:
+                return ARM_STRB_PRE(ARM_RPLR());
             case 0x7D0: case 0x7D8:
                 return ARM_LDRB_PRE(ARM_RPLL());
             case 0x7D2: case 0x7DA:

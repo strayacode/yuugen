@@ -1,29 +1,38 @@
 #include "imgui.h"
 #include "imgui-SFML.h"
 
-#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window.hpp>
+#include <stdlib.h>
+#include <string.h>
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(640, 480), "yuugen");
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
 
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
-
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_NoTitleBar |
                     ImGuiWindowFlags_MenuBar           |
                     ImGuiWindowFlags_NoMove            |
-                    ImGuiWindowFlags_NoResize          |
+                    // ImGuiWindowFlags_NoResize          |
                     ImGuiWindowFlags_NoScrollbar       |
                     ImGuiWindowFlags_NoScrollWithMouse |
                     ImGuiWindowFlags_NoBackground;
 
     sf::Clock deltaClock;
+
+    sf::Uint8* pixels = new sf::Uint8[256 * 192 * 4];
+    memset(pixels, 0xFF, 256 * 192 * 4);
+    sf::Texture texture;
+    texture.create(256, 192);
+    texture.update(pixels);
+    sf::Sprite sprite(texture);
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -68,7 +77,7 @@ int main() {
         // ImGui::End();
 
         window.clear();
-        window.draw(shape);
+        window.draw(sprite);
         ImGui::SFML::Render(window);
         window.display();
     }

@@ -1,4 +1,4 @@
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/imgui" "${CMAKE_CURRENT_SOURCE_DIR}/imgui-sfml")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/addons" "${CMAKE_CURRENT_SOURCE_DIR}/imgui" "${CMAKE_CURRENT_SOURCE_DIR}/imgui-sfml")
 
 set(IMGUI_SOURCES
     imgui/imgui.cpp
@@ -9,7 +9,7 @@ set(IMGUI_SOURCES
     imgui-sfml/imgui-SFML.cpp
 )
 
-add_executable(yuugen main.cpp ${IMGUI_SOURCES})
+add_executable(yuugen main.cpp host_interface.cpp ${IMGUI_SOURCES})
 
 find_package(OpenGL REQUIRED)
 include_directories(${OpenGL_INCLUDE_DIRS})
