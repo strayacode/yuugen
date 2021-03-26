@@ -14,6 +14,15 @@ int main() {
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Green);
 
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoTitleBar |
+                    ImGuiWindowFlags_MenuBar           |
+                    ImGuiWindowFlags_NoMove            |
+                    ImGuiWindowFlags_NoResize          |
+                    ImGuiWindowFlags_NoScrollbar       |
+                    ImGuiWindowFlags_NoScrollWithMouse |
+                    ImGuiWindowFlags_NoBackground;
+
     sf::Clock deltaClock;
     while (window.isOpen()) {
         sf::Event event;
@@ -27,9 +36,36 @@ int main() {
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        ImGui::Begin("Hello, world!");
-        ImGui::Button("Look at this pretty button");
-        ImGui::End();
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
+        
+        if (ImGui::Begin("MainWindow", 0, window_flags)) {
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Load ROM")) {
+                        printf("open rom\n");
+                    }
+
+                    if (ImGui::MenuItem("Quit")) {
+                        window.close();
+                    }
+                    ImGui::EndMenu();
+                }
+                
+                ImGui::EndMenuBar();
+            }
+            ImGui::End();
+        }
+        
+
+
+        
+
+        // ImGui::Begin("Hello, world!");
+        // ImGui::Button("Look at this pretty button");
+        // ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+        // ImGui::Text("Welcome to this Dear ImGui & SFML boilerplate.");
+        // ImGui::End();
 
         window.clear();
         window.draw(shape);
