@@ -782,8 +782,29 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
                 // TODO: handle brightness properly later
                 core->gpu.engine_a.MASTER_BRIGHT = data;
                 break;
+            case 0x040000B8:
+                core->dma[1].WriteLength(0, data);
+                break;
+            case 0x040000BA:
+                core->dma[1].WriteControl(0, data);
+                break;
+            case 0x040000C4:
+                core->dma[1].WriteLength(1, data);
+                break;
+            case 0x040000C6:
+                core->dma[1].WriteControl(1, data);
+                break;
             case 0x040000D0:
                 core->dma[1].WriteLength(2, data);
+                break;
+            case 0x040000D2:
+                core->dma[1].WriteControl(2, data);
+                break;
+            case 0x040000DC:
+                core->dma[1].WriteLength(3, data);
+                break;
+            case 0x040000DE:
+                core->dma[1].WriteControl(3, data);
                 break;
             case 0x04000100:
                 core->timers[1].WriteCounter(0, data);
