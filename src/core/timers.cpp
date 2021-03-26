@@ -45,7 +45,7 @@ void Timers::WriteControl(int timer_index, u16 data) {
     // set enable bits
     // but a counter in count up mode is disabled as the previous timer when it overflows will cause an increment in this timer
     if ((timer[timer_index].control && (1 << 7)) && ((timer_index == 0) || !(timer[timer_index].control & (1 << 2)))) {
-        log_fatal("lol we should tick stuff now");
+        log_warn("lol we should tick stuff now");
         enabled |= (1 << timer_index);
     } else {
         enabled &= ~(1 << timer_index);

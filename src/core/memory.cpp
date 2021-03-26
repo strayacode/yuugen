@@ -505,6 +505,8 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
                 return core->gpu.DISPSTAT9;
             case 0x04000006:
                 return core->gpu.VCOUNT;
+            case 0x0400000E:
+                return core->gpu.engine_a.BGCNT[3];
             case 0x04000130:
                 return core->input.KEYINPUT;
             case 0x04000180:
