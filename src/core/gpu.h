@@ -59,6 +59,7 @@ struct GPU {
     void WriteBGA(u32 addr, u16 data);
     void WriteBGB(u32 addr, u16 data);
 
+    u16 ReadLCDC(u32 addr);
     u16 ReadBGA(u32 addr);
     u16 ReadBGB(u32 addr);
 

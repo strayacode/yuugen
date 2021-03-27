@@ -182,7 +182,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             }
 
             if (DISPCNT & (1 << 30)) {
-                log_fatal("handle");
+                log_warn("implement support for bg extended palettes");
             }
 
             // now we need to decode what the tile info means

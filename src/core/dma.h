@@ -35,10 +35,15 @@ struct DMA {
 
     void Transfer();
 
-    void WriteLength(int channel_index, u32 data);
-    void WriteControl(int channel_index, u32 data);
-    void WriteDMACNT(int channel_index, u32 data);
+    void Trigger(u8 mode);
 
-    u32 ReadLength(int channel_index);
+    void WriteDMACNT_L(int channel_index, u16 data);
+    void WriteDMACNT_H(int channel_index, u16 data);
+
+    void WriteDMACNT(int channel_index, u32 data);
+    u32 ReadDMACNT(int channel_index);
+
+    u16 ReadDMACNT_L(int channel_index);
+    u16 ReadDMACNT_H(int channel_index);
 
 };

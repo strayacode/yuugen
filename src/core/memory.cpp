@@ -195,7 +195,7 @@ u32 Memory::ARM7ReadWord(u32 addr) {
     case REGION_IO:
         switch (addr) {
         case 0x040000DC:
-            return core->dma[0].ReadLength(3);
+            return core->dma[0].ReadDMACNT_L(3);
         case 0x04000180:
             return core->ipc.ReadIPCSYNC7();
         case 0x04000208:
@@ -416,7 +416,7 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
             core->dma[0].channel[3].destination = data;
             break;
         case 0x040000DC:
-            core->dma[0].WriteLength(3, data);
+            core->dma[0].WriteDMACNT_L(3, data);
             break;
         case 0x04000180:
             core->ipc.WriteIPCSYNC7(data);
@@ -507,6 +507,14 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
                 return core->gpu.VCOUNT;
             case 0x0400000E:
                 return core->gpu.engine_a.BGCNT[3];
+            case 0x040000BA:
+                return core->dma[1].ReadDMACNT_H(0);
+            case 0x040000C6:
+                return core->dma[1].ReadDMACNT_H(1);
+            case 0x040000D2:
+                return core->dma[1].ReadDMACNT_H(2);
+            case 0x040000DE:
+                return core->dma[1].ReadDMACNT_H(3);
             case 0x04000130:
                 return core->input.KEYINPUT;
             case 0x04000180:
@@ -600,7 +608,13 @@ u32 Memory::ARM9ReadWord(u32 addr) {
             case 0x04000000:
                 return core->gpu.engine_a.DISPCNT;
             case 0x040000DC:
-                return core->dma[1].channel[3].DMACNT;
+                return core->dma[1].ReadDMACNT(3);
+            case 0x040000E0:
+                return core->dma[1].DMAFILL[0];
+            case 0x040000E4:
+                return core->dma[1].DMAFILL[1];
+            case 0x040000E8:
+                return core->dma[1].DMAFILL[2];
             case 0x040000EC:
                 return core->dma[1].DMAFILL[3];
             case 0x04000180:
@@ -624,6 +638,13 @@ u32 Memory::ARM9ReadWord(u32 addr) {
                 return 0;
             default:
                 log_fatal("unimplemented arm9 word io read at address 0x%08x", addr);
+            }
+            break;
+        case REGION_VRAM:
+            if (addr >= 0x06800000) {
+                return (core->gpu.ReadLCDC(addr + 2) << 16) | (core->gpu.ReadLCDC(addr));
+            } else {
+                log_fatal("handle at word write at address %08x", addr);
             }
             break;
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
@@ -783,28 +804,28 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
                 core->gpu.engine_a.MASTER_BRIGHT = data;
                 break;
             case 0x040000B8:
-                core->dma[1].WriteLength(0, data);
+                core->dma[1].WriteDMACNT_L(0, data);
                 break;
             case 0x040000BA:
-                core->dma[1].WriteControl(0, data);
+                core->dma[1].WriteDMACNT_H(0, data);
                 break;
             case 0x040000C4:
-                core->dma[1].WriteLength(1, data);
+                core->dma[1].WriteDMACNT_L(1, data);
                 break;
             case 0x040000C6:
-                core->dma[1].WriteControl(1, data);
+                core->dma[1].WriteDMACNT_H(1, data);
                 break;
             case 0x040000D0:
-                core->dma[1].WriteLength(2, data);
+                core->dma[1].WriteDMACNT_L(2, data);
                 break;
             case 0x040000D2:
-                core->dma[1].WriteControl(2, data);
+                core->dma[1].WriteDMACNT_H(2, data);
                 break;
             case 0x040000DC:
-                core->dma[1].WriteLength(3, data);
+                core->dma[1].WriteDMACNT_L(3, data);
                 break;
             case 0x040000DE:
-                core->dma[1].WriteControl(3, data);
+                core->dma[1].WriteDMACNT_H(3, data);
                 break;
             case 0x04000100:
                 core->timers[1].WriteCounter(0, data);
@@ -1072,6 +1093,15 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
                 break;
             case 0x040000DC:
                 core->dma[1].WriteDMACNT(3, data);
+                break;
+            case 0x040000E0:
+                core->dma[1].DMAFILL[0] = data;
+                break;
+            case 0x040000E4:
+                core->dma[1].DMAFILL[1] = data;
+                break;
+            case 0x040000E8:
+                core->dma[1].DMAFILL[2] = data;
                 break;
             case 0x040000EC:
                 core->dma[1].DMAFILL[3] = data;

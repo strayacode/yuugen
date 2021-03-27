@@ -23,12 +23,12 @@ void DMA::Transfer() {
             // make variables to make things easier
             u8 destination_control = (channel[i].DMACNT >> 21) & 0x7;
             u8 source_control = (channel[i].DMACNT >> 23) & 0x7;
-            if ((channel[i].DMACNT & (1 << 25)) || (channel[i].DMACNT & (1 << 30))) {
-                log_fatal("repeat bit or irq request bit not implemented!");
+            if (channel[i].DMACNT & (1 << 25)) {
+                log_fatal("implement support for dma repeat");
             }
 
             // loop through all the data units specified by internal length
-            for (int j = 0; j < channel[i].internal_length; j++) {
+            for (u32 j = 0; j < channel[i].internal_length; j++) {
                 // check the transfer type (either halfwords or words)
                 if (channel[i].DMACNT & (1 << 26)) {
                     // word transfer
@@ -109,6 +109,17 @@ void DMA::Transfer() {
 
 
             }
+            // request dma irq upon end of word count if enabled 
+            if (channel[i].DMACNT & (1 << 30)) {
+                if (arch == 1) {
+                    // arm9
+                    core->arm9.SendInterrupt(8 + i);
+                } else {
+                    // arm7
+                    core->arm7.SendInterrupt(8 + i);
+                }
+            }
+
             // disable the dma channel after the transfer is finished
             enabled &= ~(1 << i);
             channel[i].DMACNT &= ~(1 << 31);
@@ -117,7 +128,26 @@ void DMA::Transfer() {
     }
 }
 
-void DMA::WriteLength(int channel_index, u32 data) {
+void DMA::Trigger(u8 mode) {
+    // check each channels start_timing to see if any are equal to mode
+    for (int channel_index = 0; channel_index < 4; channel_index++) {
+        u8 start_timing;
+        if (arch == 1) {
+            // for arm9 dma we use bits 27..29
+            start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
+        } else {
+            // for arm7 dma we use bits 28..29
+            start_timing = (channel[channel_index].DMACNT >> 28) & 0x3;
+        }
+        if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == mode)) {
+            // activate that dma channel
+            enabled |= (1 << channel_index);
+        }
+    }
+}
+
+void DMA::WriteDMACNT_L(int channel_index, u16 data) {
+    // write to the lower 16 bits of DMACNT
     if (arch == 1) {
         // arm9 dma
         if (data == 0) {
@@ -130,17 +160,23 @@ void DMA::WriteLength(int channel_index, u32 data) {
     } else {
         // arm7 dma
         if (data == 0) {
+            // 0 = 0x10000 on channel 3 and 0x4000 on all other channels
             channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0xFFE00000) | ((channel_index == 3) ? 0x10000 : 0x4000);
         } else {
+            // 0x1..0xFFFF on channel 3 and 0x1..0x3FFF on all other channels
             channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0xFFFF) | (data & ((channel_index == 3) ? 0xFFFF : 0x3FFF));
         }
     }
 }
 
-void DMA::WriteControl(int channel_index, u32 data) {
+
+
+void DMA::WriteDMACNT_H(int channel_index, u16 data) {
+    // write to the upper 16 bits of DMACNT
+    // so this will include bits 16..20 of the Length and then all the bits of Control
     u32 old_DMACNT = channel[channel_index].DMACNT;
 
-    channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0xFFE00000) | (data & 0xFFE00000);
+    channel[channel_index].DMACNT = (channel[channel_index].DMACNT & 0xFFFF) | (data << 16);
 
     u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
 
@@ -159,21 +195,25 @@ void DMA::WriteControl(int channel_index, u32 data) {
     channel[channel_index].internal_destination = channel[channel_index].destination;
     channel[channel_index].internal_length = channel[channel_index].DMACNT & 0x1FFFFF;
 
-    // enable channel immediately if start timing is 0 so a dma transfer will occur on the next cpu step
     if (start_timing == 0) {
         enabled |= (1 << channel_index);
-    } else {
-        log_fatal("start timing %d has not been implemented yet for channel %d", start_timing, channel_index);
     }
 }
 
 void DMA::WriteDMACNT(int channel_index, u32 data) {
     // do a write length but only give bits 0..20 as that is what the word count occupies in dmacnt
-    WriteLength(channel_index, data & 0x1FFFFF);
-    WriteControl(channel_index, data);
+    WriteDMACNT_L(channel_index, data & 0xFFFF);
+    WriteDMACNT_H(channel_index, data >> 16);
 }
 
-u32 DMA::ReadLength(int channel_index) {
-    // the length is occupied by bits 0..20
-    return channel[channel_index].DMACNT & 0x1FFFFF;
+u32 DMA::ReadDMACNT(int channel_index) {
+    return channel[channel_index].DMACNT;
+}
+
+u16 DMA::ReadDMACNT_L(int channel_index) {
+    return channel[channel_index].DMACNT & 0xFFFF;
+}
+
+u16 DMA::ReadDMACNT_H(int channel_index) {
+    return channel[channel_index].DMACNT >> 16;
 }

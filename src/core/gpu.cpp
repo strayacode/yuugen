@@ -63,7 +63,8 @@ void GPU::RenderScanlineStart() {
         engine_a.RenderScanline(VCOUNT);
         engine_b.RenderScanline(VCOUNT);
 
-        // TODO: add hblank dmas once we need them
+        // trigger an arm9 dma transfer on hblank (only for visible scanlines)
+        core->dma[1].Trigger(2);
     }
 
     // set the hblank flag as hblank has started
@@ -80,7 +81,6 @@ void GPU::RenderScanlineStart() {
     }
 }
 
-
 void GPU::RenderScanlineFinish() {
     switch (++VCOUNT) {
     case 192:
@@ -91,11 +91,17 @@ void GPU::RenderScanlineFinish() {
             core->arm7.SendInterrupt(0);
         }
 
+        // trigger an arm7 vblank dma transfer
+        core->dma[0].Trigger(1);
+
         DISPSTAT9 |= 1;
 
         if (DISPSTAT9 & (1 << 3)) {
             core->arm9.SendInterrupt(0);
         }
+
+        // trigger an arm9 vblank dma transfer
+        core->dma[1].Trigger(1);
         break;
     case 262:
         // last scanline so we clear vblank flag because end of vblank
@@ -105,7 +111,6 @@ void GPU::RenderScanlineFinish() {
         break;
     case 263:
         // end of frame so reset VCOUNT
-
         VCOUNT = 0;
         break;
     }
@@ -155,10 +160,8 @@ bool GPU::GetVRAMCNTEnabled(u8 vramcnt) {
 
 void GPU::WriteLCDC(u32 addr, u16 data) {
     // small optimisation by checking enabled first instead of in a range as it should be faster?
-    // log_debug("data %08x addr %08x", data, addr);
     if (GetVRAMCNTEnabled(VRAMCNT_A)) {
         if (in_range(0x06800000, 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_A) == 0)) {
-            // log_warn("good");
             memcpy(&VRAM_A[addr & 0x1FFFF], &data, 2);
         }
     }
@@ -210,6 +213,67 @@ void GPU::WriteLCDC(u32 addr, u16 data) {
             memcpy(&VRAM_I[addr & 0x3FFF], &data, 2);
         }
     }
+}
+
+u16 GPU::ReadLCDC(u32 addr) {
+    u16 return_value = 0;
+
+    // small optimisation by checking enabled first instead of in a range as it should be faster?
+    if (GetVRAMCNTEnabled(VRAMCNT_A)) {
+        if (in_range(0x06800000, 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_A) == 0)) {
+            memcpy(&return_value, &VRAM_A[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_B)) {
+        if (in_range(0x06820000, 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_B) == 0)) {
+            memcpy(&return_value, &VRAM_B[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
+        if (in_range(0x06840000, 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_C) == 0)) {
+            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
+        if (in_range(0x06860000, 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_D) == 0)) {
+            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_E)) {
+        if (in_range(0x06880000, 0x10000, addr) && (GetVRAMCNTMST(VRAMCNT_E) == 0)) {
+            memcpy(&return_value, &VRAM_E[addr & 0xFFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
+        if (in_range(0x06890000, 0x4000, addr) && (GetVRAMCNTMST(VRAMCNT_F) == 0)) {
+            memcpy(&return_value, &VRAM_F[addr & 0x3FFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+        if (in_range(0x06894000, 0x4000, addr) && (GetVRAMCNTMST(VRAMCNT_G) == 0)) {
+            memcpy(&return_value, &VRAM_G[addr & 0x3FFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_H)) {
+        if (in_range(0x06898000, 0x8000, addr) && (GetVRAMCNTMST(VRAMCNT_H) == 0)) {
+            memcpy(&return_value, &VRAM_H[addr & 0x7FFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
+        if (in_range(0x068A0000, 0x4000, addr) && (GetVRAMCNTMST(VRAMCNT_I) == 0)) {
+            memcpy(&return_value, &VRAM_I[addr & 0x3FFF], 2);
+        }
+    }
+
+    return return_value;
 }
 
 void GPU::WriteBGA(u32 addr, u16 data) {
