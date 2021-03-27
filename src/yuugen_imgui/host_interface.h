@@ -9,6 +9,7 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window.hpp>
+// #include <SFML/Keyboard.hpp>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
@@ -18,6 +19,7 @@
 #include <core/core.h>
 #include "addons/imfilebrowser.h"
 #include <memory>
+#include <vector>
 #include <array>
 
 struct HostInterface {
@@ -30,11 +32,12 @@ struct HostInterface {
 
     bool core_running = false;
 
-    u8* top_framebuffer = new u8[256 * 192 * 4];
-    u8* bottom_framebuffer = new u8[256 * 192 * 4];
+    sf::Uint8* top_framebuffer;
+    sf::Uint8* bottom_framebuffer;
 
     void Loop();
     void UpdateTextures();
+    void HandleInput();
 
     sf::Texture top_texture;
     sf::Texture bottom_texture;
