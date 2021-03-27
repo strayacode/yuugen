@@ -79,6 +79,14 @@ void GPU::RenderScanlineStart() {
     if (DISPSTAT9 & (1 << 4)) {
         core->arm9.SendInterrupt(1);
     }
+
+    // ARM9 DMA exclusive
+    // check if scanline is between 2 and 193 inclusive
+    // if so trigger a start of display dma transfer
+    // TODO: on scanline 194 automatically clear the enable bit in DMA
+    if ((VCOUNT > 1) && (VCOUNT < 194)) {
+        core->dma[1].Trigger(3);
+    }
 }
 
 void GPU::RenderScanlineFinish() {
