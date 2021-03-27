@@ -6,10 +6,11 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window.hpp>
-// #include <SFML/Keyboard.hpp>
+#include <SFML/Window/Keyboard.hpp>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
@@ -32,15 +33,21 @@ struct HostInterface {
 
     bool core_running = false;
 
-    sf::Uint8* top_framebuffer;
-    sf::Uint8* bottom_framebuffer;
+    bool show_cartridge_window = false;
+
+    sf::Uint8* framebuffer;
+
+    sf::View view;
 
     void Loop();
     void UpdateTextures();
     void HandleInput();
 
-    sf::Texture top_texture;
-    sf::Texture bottom_texture;
-    
-    
+    // void ScaleViewport();
+
+    void GetLetterboxView(int windowWidth, int windowHeight);
+
+    // void SetScreenSize(int muliplier);
+
+    sf::Texture texture;  
 };
