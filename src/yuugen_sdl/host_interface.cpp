@@ -66,6 +66,7 @@ void HostInterface::Run(const char* path) {
     while (true) {
         core->RunFrame();
 
+        // TODO: update this to work for u8 array
         SDL_UpdateTexture(top_texture, nullptr, core->gpu.GetFramebuffer(Screen::TOP_SCREEN), sizeof(u32) * 256);
         SDL_UpdateTexture(bottom_texture, nullptr, core->gpu.GetFramebuffer(Screen::BOTTOM_SCREEN), sizeof(u32) * 256);
 

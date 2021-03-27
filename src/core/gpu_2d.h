@@ -48,6 +48,7 @@ struct GPU2D {
     void Reset();
     const u32* GetFramebuffer();
     u32 Convert15To24(u32 colour);
+    void UpdatePixel(u32 pixel, u32 colour);
 
     void RenderScanline(u16 line);
 

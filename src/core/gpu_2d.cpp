@@ -60,6 +60,13 @@ u32 GPU2D::Convert15To24(u32 colour) {
     return (b << 16) | (g << 8) | r;
 }
 
+void GPU2D::UpdatePixel(u32 pixel, u32 colour) {
+    for (int offset = 0; offset < 4; offset++) {
+        framebuffer[(pixel * 4) + offset] = colour & 0xFF;
+        colour >>= 8;
+    }
+}
+
 void GPU2D::RenderScanline(u16 line) {
     // get the display mode (bits 16..17)
     u8 display_mode = (DISPCNT >> 16) & 0x3;
