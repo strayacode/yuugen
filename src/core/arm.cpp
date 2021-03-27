@@ -618,8 +618,6 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDR_POST(-ARM_RPAR());
             case 0x616: case 0x61E:
                 return ARM_LDR_POST(-ARM_RPRR());
-            // case 0x620: case 0x628:
-            //     return ARM_STR
             case 0x690: case 0x698:
                 return ARM_LDR_POST(ARM_RPLL());
             case 0x692: case 0x69A:
@@ -1104,6 +1102,8 @@ void ARM::ExecuteInstruction() {
             return THUMB_STRH_REG();
         case 0x54: case 0x55:
             return THUMB_STRB_REG();
+        case 0x56: case 0x57:
+            return THUMB_LDRSB_REG();
         case 0x58: case 0x59:
             return THUMB_LDR_REG();
         case 0x5A: case 0x5B:
@@ -1346,14 +1346,23 @@ void ARM::HandleInterrupt() {
 
 void ARM::ARM_MRC() {
     // armv5 exclusive as it involves coprocessor transfers
-    if (arch == ARMv4) {
-        return;
-    }
-
+    u8 cp = (instruction >> 8) & 0xF;
     u8 crm = instruction & 0xF;
     u8 crn = (instruction >> 16) & 0xF;
     u8 opcode2 = (instruction >> 5) & 0x7;
     u8 rd = (instruction >> 12) & 0xF;
+
+    if (arch == ARMv4) {
+        if (cp == 15) {
+            // generate an undefined exception
+            return ARM_UND();
+        } else {
+            log_warn("arm7 cp%d, c%d, c%d, c%d", cp, crn, crm, opcode2);
+            return;
+        }
+    }
+
+    
     u32 data = core->cp15.Read(crn, crm, opcode2);
 
     if (rd == 15) {
@@ -1420,6 +1429,26 @@ void ARM::THUMB_SWI() {
     regs.r[14] = regs.r[15] - 2;
     // check the exception base and jump to the correct address in the bios
     regs.r[15] = ((arch) ? core->cp15.GetExceptionBase() : 0x00000000) + 0x08;
+    
+    ARMFlushPipeline();
+}
+
+void ARM::ARM_UND() {
+    // store the cpsr in spsr_und
+    regs.spsr_banked[BANK_UND] = regs.cpsr;
+
+    // enter undefined mode
+    UpdateMode(UND);
+
+    // fiq interrupts state is unchanged
+
+    // disable normal interrupts
+    regs.cpsr |= (1 << 7);
+
+    regs.r[14] = regs.r[15] - 4;
+    // check the exception base and jump to the correct address in the bios
+    // also only use cp15 exception base from control register if arm9
+    regs.r[15] = ((arch) ? core->cp15.GetExceptionBase() : 0x00000000) + 0x04;
     
     ARMFlushPipeline();
 }

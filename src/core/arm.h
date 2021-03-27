@@ -134,6 +134,7 @@ struct ARM {
     void ARM_MRC();
     void ARM_MCR();
     void ARM_SWI();
+    void ARM_UND();
 
     void THUMB_SWI();
 
