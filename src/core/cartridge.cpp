@@ -22,12 +22,27 @@ void Cartridge::LoadHeaderData() {
     memcpy(&header.arm7_entrypoint, &rom[0x34], 4);
     memcpy(&header.arm7_ram_address, &rom[0x38], 4);
     memcpy(&header.arm7_size, &rom[0x3C], 4);
-
+    memcpy(&header.icon_title_offset, &rom[0x68], 4);
+    // LoadIconTitle();
     log_debug("arm9 offset: 0x%08x arm9 entrypoint: 0x%08x arm9 ram address: 0x%08x arm9 size: 0x%08x", header.arm9_rom_offset, header.arm9_entrypoint, header.arm9_ram_address, header.arm9_size);
     log_debug("arm7 offset: 0x%08x arm7 entrypoint: 0x%08x arm7 ram address: 0x%08x arm7 size: 0x%08x", header.arm7_rom_offset, header.arm7_entrypoint, header.arm7_ram_address, header.arm7_size);
 
     log_debug("header data loaded successfully!");
 }
+
+// void Cartridge::LoadIconTitle() {
+//     if (header.icon_title_offset != 0) {
+//         memcpy(icon_title.icon_bitmap, &rom[header.icon_title_offset + 0x20], 0x200);
+//         memcpy(icon_title.icon_palette, &rom[header.icon_title_offset + 0x220], 0x20);
+//         for (int i = 0; i < 0x100; i++) {
+//             icon_title.english_title[i] = rom[header.icon_title_offset + 0x340 + i];
+//         }
+//         printf("%s\0\n", icon_title.english_title);
+//         for (int i = 0; i < 0x100; i++) {
+//             printf("%c ", icon_title.english_title[i]);
+//         }
+//     }
+// }
 
 void Cartridge::LoadROM(const char* rom_path) {
     FILE* buffer = fopen(rom_path, "rb");

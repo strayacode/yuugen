@@ -21,7 +21,20 @@ struct Cartridge {
         u32 arm7_entrypoint; // specifies where r15 (program counter) will be set to in memory
         u32 arm7_ram_address; // specifies where in memory data from the cartridge will be transferred to
         u32 arm7_size; // specifies the amount of bytes to be transferred from the cartridge to memory
+
+        u32 icon_title_offset; // specifies the offset in the rom image to where the icon and title is
+        // 0 = None
     } header;
+
+    // struct IconTitle {
+    //     u8 icon_bitmap[0x200];
+    //     u8 icon_palette[0x20];
+    //     // TODO: add japanese title
+    //     // const char* japanese_title;
+    //     char english_title[0x100];
+    // } icon_title;
+
+    // void LoadIconTitle();
 
     void LoadHeaderData();
     void DirectBoot();

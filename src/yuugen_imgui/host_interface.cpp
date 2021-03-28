@@ -14,6 +14,7 @@ void HostInterface::Loop() {
 
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
+    SetupStyle();
 
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_NoTitleBar |
@@ -24,26 +25,18 @@ void HostInterface::Loop() {
                     ImGuiWindowFlags_NoBringToFrontOnFocus |
                     ImGuiWindowFlags_NoSavedSettings |
                     ImGuiWindowFlags_AlwaysAutoResize |
+                    ImGuiWindowFlags_AlwaysUseWindowPadding |
                     ImGuiWindowFlags_NoBackground;
 
     sf::Clock deltaClock;
-    
-    
-    // view.setSize(480, 640);
-    // view.setCenter(view.getSize().x / 2, view.getSize().y / 2);
-    // GetLetterboxView(480, 640);
 
     while (window.isOpen()) {
         if (core_running) {
             core->RunFrame();
             UpdateTextures();
-            // const float lowest_scale_factor = GetLowestScaleFactor();
-
         }
 
         HandleInput();
-
-        
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
@@ -64,7 +57,7 @@ void HostInterface::Loop() {
 
             if (ImGui::BeginMenu("View")) {
                 if (ImGui::MenuItem("Fit to DS Screen Size")) {
-                    printf("resize window to fit ds screen\n");
+                    SetToContentSize();
                 }
 
                 ImGui::EndMenu();
@@ -84,9 +77,10 @@ void HostInterface::Loop() {
         }
 
         sf::Vector2f window_dimensions(window.getSize());
+        // ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin("MainWindow", 0, window_flags);
         ImGui::Image(texture, ImVec2(512, 768));
-        ImGui::SetWindowPos(ImVec2((window_dimensions.x - 512) / 2, (window_dimensions.y - 768) / 2), true);
+        ImGui::SetWindowPos(ImVec2((window_dimensions.x - 525) / 2, (window_dimensions.y - 749) / 2), true);
         ImGui::End();
 
         file_dialog.Display();
@@ -102,6 +96,14 @@ void HostInterface::Loop() {
 
         if (show_cartridge_window) {
             ImGui::Begin("Cartridge");
+            ImGui::Text("ARM9 rom_offset: %08x", core->cartridge.header.arm9_rom_offset);
+            ImGui::Text("ARM9 rom_offset: %08x", core->cartridge.header.arm9_entrypoint);
+            ImGui::Text("ARM9 rom_offset: %08x", core->cartridge.header.arm9_ram_address);
+            ImGui::Text("ARM9 rom_offset: %08x", core->cartridge.header.arm9_size);
+            ImGui::Text("ARM7 rom_offset: %08x", core->cartridge.header.arm7_rom_offset);
+            ImGui::Text("ARM7 rom_offset: %08x", core->cartridge.header.arm7_entrypoint);
+            ImGui::Text("ARM7 rom_offset: %08x", core->cartridge.header.arm7_ram_address);
+            ImGui::Text("ARM7 rom_offset: %08x", core->cartridge.header.arm7_size);
             ImGui::End();
         }
 
@@ -113,13 +115,7 @@ void HostInterface::Loop() {
 
         ImGui::End();
 
-
-        
-        // sprite.setScale(sf::Vector2f(1.0f, 1.0f)); // absolute scale factor
-        // sprite.scale(sf::Vector2f(1.0f, 1.0f));
         window.clear();
-
-        // window.draw(sprite);
         ImGui::SFML::Render(window);
         window.display();
     }
@@ -160,8 +156,6 @@ void HostInterface::HandleInput() {
             window.close();
             break;
         // case sf::Event::Resized:
-
-        //     GetLetterboxView(event.size.width, event.size.height);
         //     break;
         case sf::Event::KeyPressed: case sf::Event::KeyReleased:
             bool key_pressed = event.type == sf::Event::KeyPressed;
@@ -213,46 +207,10 @@ void HostInterface::HandleInput() {
     }
 }
 
-// void HostInterface::ScaleViewport() {
-//     const sf::Vector2f window_dimensions(window.getSize());
-//     printf("x: %f y: %f\n", window_dimensions.x, window_dimensions.y);
-//     const float lowest_scale_factor;
-//     if ((window_dimensions.x / 256) >= (window_dimensions.y / 384)) {
-//         lowest_scale_factor = window_dimensions.x / 256;
-//     } else {
-//         lowest_scale_factor = window_dimensions.y / 384;
-//     }
-// }
+void HostInterface::SetupStyle() {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6.0f);
+}
 
-void HostInterface::GetLetterboxView(int windowWidth, int windowHeight) {
-
-    // Compares the aspect ratio of the window to the aspect ratio of the view,
-    // and sets the view's viewport accordingly in order to archieve a letterbox effect.
-    // A new view (with a new viewport set) is returned.
-
-    float windowRatio = windowWidth / (float) windowHeight;
-    float viewRatio = view.getSize().x / (float) view.getSize().y;
-    float sizeX = 1;
-    float sizeY = 1;
-    float posX = 0;
-    float posY = 0;
-
-    bool horizontalSpacing = true;
-    if (windowRatio < viewRatio)
-        horizontalSpacing = false;
-
-    // If horizontalSpacing is true, the black bars will appear on the left and right side.
-    // Otherwise, the black bars will appear on the top and bottom.
-
-    if (horizontalSpacing) {
-        sizeX = viewRatio / windowRatio;
-        posX = (1 - sizeX) / 2.f;
-    }
-
-    else {
-        sizeY = windowRatio / viewRatio;
-        posY = (1 - sizeY) / 2.f;
-    }
-
-    view.setViewport( sf::FloatRect(posX, posY, sizeX, sizeY) );
+void HostInterface::SetToContentSize() {
+    window.setSize(sf::Vector2u(525, 768));
 }

@@ -43,11 +43,9 @@ struct HostInterface {
     void UpdateTextures();
     void HandleInput();
 
-    // void ScaleViewport();
+    void SetupStyle();
 
-    void GetLetterboxView(int windowWidth, int windowHeight);
-
-    // void SetScreenSize(int muliplier);
+    void SetToContentSize();
 
     sf::Texture texture;  
 };
