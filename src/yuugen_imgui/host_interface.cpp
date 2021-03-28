@@ -24,7 +24,7 @@ void HostInterface::Loop() {
                     ImGuiWindowFlags_NoScrollWithMouse |
                     ImGuiWindowFlags_NoBringToFrontOnFocus |
                     ImGuiWindowFlags_NoSavedSettings |
-                    ImGuiWindowFlags_AlwaysAutoResize |
+                    // ImGuiWindowFlags_AlwaysAutoResize |
                     ImGuiWindowFlags_AlwaysUseWindowPadding |
                     ImGuiWindowFlags_NoBackground;
 
@@ -77,11 +77,12 @@ void HostInterface::Loop() {
         }
 
         sf::Vector2f window_dimensions(window.getSize());
-        // ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin("MainWindow", 0, window_flags);
         ImGui::Image(texture, ImVec2(512, 768));
-        ImGui::SetWindowPos(ImVec2((window_dimensions.x - 525) / 2, (window_dimensions.y - 749) / 2), true);
+        ImGui::SetWindowPos(ImVec2((window_dimensions.x - 514) / 2, (window_dimensions.y - 768 + 30) / 2), true);
         ImGui::End();
+        ImGui::PopStyleVar();
 
         file_dialog.Display();
         if (file_dialog.HasSelected()) {
@@ -97,13 +98,13 @@ void HostInterface::Loop() {
         if (show_cartridge_window) {
             ImGui::Begin("Cartridge");
             ImGui::Text("ARM9 rom_offset: %08x", core->cartridge.header.arm9_rom_offset);
-            ImGui::Text("ARM9 rom_offset: %08x", core->cartridge.header.arm9_entrypoint);
-            ImGui::Text("ARM9 rom_offset: %08x", core->cartridge.header.arm9_ram_address);
-            ImGui::Text("ARM9 rom_offset: %08x", core->cartridge.header.arm9_size);
+            ImGui::Text("ARM9 rom_entrypoint: %08x", core->cartridge.header.arm9_entrypoint);
+            ImGui::Text("ARM9 rom_ram_address: %08x", core->cartridge.header.arm9_ram_address);
+            ImGui::Text("ARM9 rom_size: %08x", core->cartridge.header.arm9_size);
             ImGui::Text("ARM7 rom_offset: %08x", core->cartridge.header.arm7_rom_offset);
-            ImGui::Text("ARM7 rom_offset: %08x", core->cartridge.header.arm7_entrypoint);
-            ImGui::Text("ARM7 rom_offset: %08x", core->cartridge.header.arm7_ram_address);
-            ImGui::Text("ARM7 rom_offset: %08x", core->cartridge.header.arm7_size);
+            ImGui::Text("ARM7 rom_entrypoint: %08x", core->cartridge.header.arm7_entrypoint);
+            ImGui::Text("ARM7 rom_ram_address: %08x", core->cartridge.header.arm7_ram_address);
+            ImGui::Text("ARM7 rom_size: %08x", core->cartridge.header.arm7_size);
             ImGui::End();
         }
 
@@ -212,5 +213,5 @@ void HostInterface::SetupStyle() {
 }
 
 void HostInterface::SetToContentSize() {
-    window.setSize(sf::Vector2u(525, 768));
+    window.setSize(sf::Vector2u(509, 768));
 }
