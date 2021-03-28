@@ -1,4 +1,6 @@
 #include "host_interface.h"
+#include <iostream>
+
 
 HostInterface::HostInterface() {
     core = std::make_unique<Core>();
@@ -67,6 +69,9 @@ void HostInterface::Loop() {
                 if (ImGui::MenuItem("Cartridge", nullptr, show_cartridge_window)) { 
                     show_cartridge_window = !show_cartridge_window; 
                 }
+                if (ImGui::MenuItem("Interrupts", nullptr, show_interrupts_window)) { 
+                    show_interrupts_window = !show_interrupts_window; 
+                }
 
                 ImGui::EndMenu();
             }
@@ -105,6 +110,24 @@ void HostInterface::Loop() {
             ImGui::Text("ARM7 rom_entrypoint: %08x", core->cartridge.header.arm7_entrypoint);
             ImGui::Text("ARM7 rom_ram_address: %08x", core->cartridge.header.arm7_ram_address);
             ImGui::Text("ARM7 rom_size: %08x", core->cartridge.header.arm7_size);
+            ImGui::End();
+        }
+
+        if (show_interrupts_window) {
+            ImGui::Begin("Interrupts");
+            bool ime_set = core->interrupt[1].IME & 0x1;
+            bool vblank_irq_enable = core->interrupt[1].IE & 0x1;
+            bool vblank_irq_request = core->interrupt[1].IF & 0x1;
+            if (ImGui::CollapsingHeader("ARM9 Interrupts")) {
+                ImGui::Checkbox("IME", &ime_set);
+                ImGui::Columns(2, nullptr, false);
+                ImGui::SetColumnOffset(1, 30);
+                ImGui::Text("IE");
+                ImGui::Checkbox("", &vblank_irq_enable);
+                ImGui::NextColumn();
+                ImGui::Text("IF");
+                ImGui::Checkbox("VBlank", &vblank_irq_request);
+            }
             ImGui::End();
         }
 

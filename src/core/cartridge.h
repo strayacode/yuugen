@@ -31,7 +31,10 @@ struct Cartridge {
     //     u8 icon_palette[0x20];
     //     // TODO: add japanese title
     //     // const char* japanese_title;
-    //     char english_title[0x100];
+    //     // just use u16string later if possible
+    //     u16 english_title_raw[0x80];
+    //     std::u16string english_title;
+
     // } icon_title;
 
     // void LoadIconTitle();

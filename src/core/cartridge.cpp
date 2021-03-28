@@ -34,13 +34,10 @@ void Cartridge::LoadHeaderData() {
 //     if (header.icon_title_offset != 0) {
 //         memcpy(icon_title.icon_bitmap, &rom[header.icon_title_offset + 0x20], 0x200);
 //         memcpy(icon_title.icon_palette, &rom[header.icon_title_offset + 0x220], 0x20);
-//         for (int i = 0; i < 0x100; i++) {
-//             icon_title.english_title[i] = rom[header.icon_title_offset + 0x340 + i];
+//         for (int i = 0; i < 0x80; i += 2) {
+//             icon_title.english_title_raw[i] = (rom[header.icon_title_offset + 0x340 + i + 1] << 8) | (rom[header.icon_title_offset + 0x340 + i]);
 //         }
-//         printf("%s\0\n", icon_title.english_title);
-//         for (int i = 0; i < 0x100; i++) {
-//             printf("%c ", icon_title.english_title[i]);
-//         }
+//         icon_title.english_title.assign(icon_title.english_title_raw, icon_title.english_title_raw + 0x80);
 //     }
 // }
 
