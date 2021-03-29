@@ -210,7 +210,7 @@ void ARM::ExecuteInstruction() {
     }
 
     // if (arch == ARMv5) {
-    //     DebugRegisters();
+    //     LogRegisters();
     // }
     // if (arch == ARMv4) {
     //     // printf("counter: %d\n", counter);

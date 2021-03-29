@@ -14,6 +14,7 @@
 #include <core/rtc.h>
 #include <core/spu.h>
 #include <core/spi.h>
+#include <core/maths_unit.h>
 #include <string.h>
 
 struct Core {
@@ -53,6 +54,8 @@ struct Core {
     SPI spi;
 
     Memory memory;
+
+    MathsUnit maths_unit;
 
     const char* rom_path = nullptr;
 };

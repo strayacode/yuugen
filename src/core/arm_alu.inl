@@ -58,12 +58,12 @@ INSTRUCTION(ARM_MOVS, u32 op2) {
             ThumbFlushPipeline();
         }
     } else {
-        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
-        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-        // c flag changed from shifter carry out
-
         regs.r[15] += 4;
     }
+
+    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+    // c flag changed from shifter carry out
 }
 
 INSTRUCTION(ARM_MVN, u32 op2) {
@@ -127,9 +127,9 @@ INSTRUCTION(ARM_ADD, u32 op2) {
         regs.r[15] &= ~3;
 
         ARMFlushPipeline();
+    } else {
+        regs.r[15] += 4;
     }
-
-    regs.r[15] += 4;
 }
 
 INSTRUCTION(ARM_ADDS, u32 op2) {
@@ -305,14 +305,14 @@ INSTRUCTION(ARM_SUBS, u32 op2) {
 
             ThumbFlushPipeline();
         }
+    } else {
+        regs.r[15] += 4;
     }
 
     SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
     SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
     SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rn], op2));
-    SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rn], op2, regs.r[rd]));
-
-    regs.r[15] += 4;
+    SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rn], op2, regs.r[rd]));   
 }
 
 INSTRUCTION(ARM_BIC, u32 op2) {
