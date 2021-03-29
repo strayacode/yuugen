@@ -70,5 +70,8 @@ struct Memory {
     // not too sure what everything in this does
     u16 EXMEMCNT;
 
+    u8 POSTFLG7;
+    u8 POSTFLG9;
+
     void WriteHALTCNT(u8 data);
 };

@@ -209,9 +209,9 @@ void ARM::ExecuteInstruction() {
         HandleInterrupt();
     }
 
-    // if (arch == ARMv5) {
-    //     LogRegisters();
-    // }
+    if (arch == ARMv4) {
+        LogRegisters();
+    }
     // if (arch == ARMv4) {
     //     // printf("counter: %d\n", counter);
     //     LogRegisters();
@@ -408,6 +408,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDRSH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x1E0: case 0x1E8:
                 return ARM_MVN(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x1E1:
+                return ARM_MVN(ARM_LOGICAL_SHIFT_LEFT_REG());
             case 0x1FB:
                 return ARM_LDRH_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x200: case 0x201: case 0x202: case 0x203: 
@@ -505,6 +507,11 @@ void ARM::ExecuteInstruction() {
             case 0x3C8: case 0x3C9: case 0x3CA: case 0x3CB: 
             case 0x3CC: case 0x3CD: case 0x3CE: case 0x3CF:
                 return ARM_BIC(ARM_DATA_PROCESSING_IMM());
+            case 0x3D0: case 0x3D1: case 0x3D2: case 0x3D3: 
+            case 0x3D4: case 0x3D5: case 0x3D6: case 0x3D7: 
+            case 0x3D8: case 0x3D9: case 0x3DA: case 0x3DB: 
+            case 0x3DC: case 0x3DD: case 0x3DE: case 0x3DF:
+                return ARM_BICS(ARM_DATA_PROCESSING_IMMS());
             case 0x3E0: case 0x3E1: case 0x3E2: case 0x3E3: 
             case 0x3E4: case 0x3E5: case 0x3E6: case 0x3E7: 
             case 0x3E8: case 0x3E9: case 0x3EA: case 0x3EB: 
@@ -626,6 +633,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_LDR_POST(ARM_RPAR());
             case 0x696: case 0x69E:
                 return ARM_LDR_POST(ARM_RPRR());
+            case 0x700: case 0x708:
+                return ARM_STR_PRE(-ARM_RPLL());
             case 0x710: case 0x718:
                 return ARM_LDR_PRE(-ARM_RPLL());
             case 0x712: case 0x71A:
@@ -1186,7 +1195,10 @@ void ARM::ExecuteInstruction() {
             return THUMB_SWI();
         case 0xE0: case 0xE1: case 0xE2: case 0xE3: 
         case 0xE4: case 0xE5: case 0xE6: case 0xE7:
-            return THUMB_B(); 
+            return THUMB_B();
+        case 0xE8: case 0xE9: case 0xEA: case 0xEB: 
+        case 0xEC: case 0xED: case 0xEE: case 0xEF:
+            return THUMB_BLX_OFFSET(); 
         case 0xF0: case 0xF1: case 0xF2: case 0xF3: 
         case 0xF4: case 0xF5: case 0xF6: case 0xF7:
             return THUMB_BL_SETUP();

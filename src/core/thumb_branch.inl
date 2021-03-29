@@ -166,3 +166,19 @@ INSTRUCTION(THUMB_BL_OFFSET) {
     regs.r[14] = next_instruction_address;
     ThumbFlushPipeline();
 }
+
+INSTRUCTION(THUMB_BLX_OFFSET) {
+    // arm9 specific instruction
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u32 offset = (instruction & 0x7FF) << 1;
+    u32 next_instruction_address = regs.r[15] - 2;
+    regs.r[15] = (regs.r[14] + offset) & ~0x3;
+    regs.r[14] = next_instruction_address | 1;
+    // set t flag to 0
+    regs.cpsr &= ~(1 << 5);
+    // flush the pipeline
+    ARMFlushPipeline();
+}

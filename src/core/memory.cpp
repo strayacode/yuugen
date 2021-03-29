@@ -22,6 +22,12 @@ void Memory::Reset() {
     RCNT = 0x8000;
     EXMEMCNT = 0;
 
+    // set POSTFLG7 and POSTFLG9 to 1 as the firmware boot
+    // has completed in direct boot
+    // TODO: add direct and firmware boot functions instead
+    POSTFLG7 = 1;
+    POSTFLG9 = 1;
+
     // set the chip id 1 and 2
     ARM9WriteWord(0x27FF800, 0x1FC2);
     ARM9WriteWord(0x27FF804, 0x1FC2);
@@ -136,6 +142,8 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
             return core->spi.SPIDATA;
         case 0x04000208:
             return core->interrupt[0].IME & 0x1;
+        case 0x04000300:
+            return POSTFLG7;
         case 0x04000304:
             return POWCNT2;
         case 0x04000500:
@@ -531,6 +539,10 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
                 return core->ipc.IPCFIFOCNT9;
             case 0x04000204:
                 return EXMEMCNT;
+            case 0x04000208:
+                return core->interrupt[1].IME & 0x1;
+            case 0x04000300:
+                return POSTFLG9;
             case 0x04000304:
                 return core->gpu.POWCNT1;
             case 0x04001000:
