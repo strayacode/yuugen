@@ -515,6 +515,14 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
                 return core->dma[1].ReadDMACNT_H(2);
             case 0x040000DE:
                 return core->dma[1].ReadDMACNT_H(3);
+            case 0x04000100:
+                return core->timers[1].ReadTMCNT_L(0);
+            case 0x04000104:
+                return core->timers[1].ReadTMCNT_L(1);
+            case 0x04000108:
+                return core->timers[1].ReadTMCNT_L(2);
+            case 0x0400010C:
+                return core->timers[1].ReadTMCNT_L(3);
             case 0x04000130:
                 return core->input.KEYINPUT;
             case 0x04000180:
@@ -617,6 +625,8 @@ u32 Memory::ARM9ReadWord(u32 addr) {
                 return core->dma[1].DMAFILL[2];
             case 0x040000EC:
                 return core->dma[1].DMAFILL[3];
+            case 0x04000100:
+                return core->timers[1].ReadTMCNT(0);
             case 0x04000180:
                 return core->ipc.ReadIPCSYNC9();
             case 0x04000208:

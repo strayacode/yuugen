@@ -35,6 +35,8 @@ struct Timers {
     u16 ReadTMCNT_L(int timer_index);
     u16 ReadTMCNT_H(int timer_index);
 
+    u32 ReadTMCNT(int timer_index);
+
     void Tick(int cycles);
     void Overflow(int timer_index);
 };

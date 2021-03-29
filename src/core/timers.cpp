@@ -45,7 +45,7 @@ void Timers::WriteTMCNT_H(int timer_index, u16 data) {
 
 
     // if the timer has gone from disabled to enabled then reload tmcnt_l with the reload value
-    if (!(timer[timer_index].control && (1 << 7)) && (data & (1 << 7))) {
+    if (!(timer[timer_index].control & (1 << 7)) && (data & (1 << 7))) {
         timer[timer_index].counter = timer[timer_index].reload_value;
     }
 
@@ -54,7 +54,7 @@ void Timers::WriteTMCNT_H(int timer_index, u16 data) {
     
     // set enable bits
     // but a counter in count up mode is disabled as the previous timer when it overflows will cause an increment in this timer
-    if ((timer[timer_index].control && (1 << 7)) && ((timer_index == 0) || !(timer[timer_index].control & (1 << 2)))) {
+    if ((timer[timer_index].control & (1 << 7)) && ((timer_index == 0) || !(timer[timer_index].control & (1 << 2)))) {
         enabled |= (1 << timer_index);
     } else {
         enabled &= ~(1 << timer_index);
@@ -66,29 +66,25 @@ void Timers::Tick(int cycles) {
     // if so then increment the counter for that channel
     for (int i = 0; i < 4; i++) {
         if (enabled & (1 << i)) {
-            // first decrement from cycles_left
-            timer[i].cycles_left -= cycles;
+            // only increment timer with prescaler selection if 
+            // count up timing is disabled
+            if (!(timer[i].control & (1 << 2))) {
+                // first decrement from cycles_left
+                timer[i].cycles_left -= cycles;
 
-            // if the required amount of cycles has passed,
-            // then increment the actual counter
-            if (timer[i].cycles_left == 0) {
-                timer[i].counter++;
-                // reset the cycles_left back to the original value
-                timer[i].cycles_left += timer[i].cycles_per_count;
-            }
+                // if the required amount of cycles has passed,
+                // then increment the actual counter
+                if (timer[i].cycles_left == 0) {
+                    timer[i].counter++;
+                    // reset the cycles_left back to the original value
+                    timer[i].cycles_left += timer[i].cycles_per_count;
+                }
 
-            // handle overflow
-            if (timer[i].counter > 0xFFFF) {
-                Overflow(i);
+                // handle overflow
+                if (timer[i].counter > 0xFFFF) {
+                    Overflow(i);
+                }
             }
-
-            if (timer[i].control & (1 << 2)) {
-                // in count up timing the prescaler value is ignored and instead
-                // the timer counter is incremented only when the previous timer counter overflows. can't be used for timer 0
-                // as there's no timer -1
-                log_fatal("implement support for count up timing");
-            }
-            
         }
 
     }
@@ -105,12 +101,33 @@ void Timers::Overflow(int timer_index) {
             core->arm7.SendInterrupt(3 + timer_index);
         }
     }
-    if (timer[timer_index].control & (1 << 2)) {
-        // in count up timing the prescaler value is ignored and instead
-        // the timer counter is incremented only when the previous timer counter overflows. can't be used for timer 0
-        // as there's no timer -1
-        log_fatal("implement support for count up timing");
+    // the index of this timer that overflows cant be 3 as the next index is out of range
+    // also the next timer must have count up timing enabled and the timer itself must be enabled
+    if (timer_index < 3) {
+        if ((timer[timer_index + 1].control & (1 << 2)) && (timer[timer_index + 1].control & (1 << 7))) {
+            // in count up timing the prescaler value is ignored and instead
+            // the timer counter is incremented only when the previous timer counter overflows. can't be used for timer 0
+            // as there's no timer -1
+            // increment the next timer by 1 only if its not 0xFFFF too,
+            // in that case we overflow the next timer afterwards
+            if (timer[timer_index + 1].counter == 0xFFFF) {
+                Overflow(timer_index + 1);
+            } else {
+                // increment next timer by 1
+                timer[timer_index + 1].counter++;
+            }
+        }
     }
+}
 
-    // TODO: add to Overflow
+u16 Timers::ReadTMCNT_L(int timer_index) {
+    return timer[timer_index].counter;
+}
+
+u16 Timers::ReadTMCNT_H(int timer_index) {
+    return timer[timer_index].control;
+}
+
+u32 Timers::ReadTMCNT(int timer_index) {
+    return (ReadTMCNT_H(timer_index) << 8) | (ReadTMCNT_L(timer_index));
 }
