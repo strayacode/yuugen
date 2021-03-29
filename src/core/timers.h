@@ -14,8 +14,12 @@ struct Timers {
 
     struct Timer {
         u16 control;
-        u16 counter;
+        // use u32 so we can detect an overflow
+        u32 counter;
         u16 reload_value;
+        u16 cycles_left;
+        u16 cycles_per_count; // specifies the number of ticks that must pass until counter can
+        // be incremented
     } timer[4];
 
     u8 enabled;
@@ -25,6 +29,12 @@ struct Timers {
     Core* core;
 
 
-    void WriteCounter(int timer_index, u16 data);
-    void WriteControl(int timer_index, u16 data);
+    void WriteTMCNT_L(int timer_index, u16 data);
+    void WriteTMCNT_H(int timer_index, u16 data);
+
+    u16 ReadTMCNT_L(int timer_index);
+    u16 ReadTMCNT_H(int timer_index);
+
+    void Tick(int cycles);
+    void Overflow(int timer_index);
 };

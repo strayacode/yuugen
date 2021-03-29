@@ -314,28 +314,28 @@ void Memory::ARM7WriteHalfword(u32 addr, u16 data) {
             core->gpu.WriteDISPSTAT7(data);
             break;
         case 0x04000100:
-            core->timers[0].WriteCounter(0, data);
+            core->timers[0].WriteTMCNT_L(0, data);
             break;
         case 0x04000102:
-            core->timers[0].WriteControl(0, data);
+            core->timers[0].WriteTMCNT_H(0, data);
             break;
         case 0x04000104:
-            core->timers[0].WriteCounter(1, data);
+            core->timers[0].WriteTMCNT_L(1, data);
             break;
         case 0x04000106:
-            core->timers[0].WriteControl(1, data);
+            core->timers[0].WriteTMCNT_H(1, data);
             break;
         case 0x04000108:
-            core->timers[0].WriteCounter(2, data);
+            core->timers[0].WriteTMCNT_L(2, data);
             break;
         case 0x0400010A:
-            core->timers[0].WriteControl(2, data);
+            core->timers[0].WriteTMCNT_H(2, data);
             break;
         case 0x0400010C:
-            core->timers[0].WriteCounter(3, data);
+            core->timers[0].WriteTMCNT_L(3, data);
             break;
         case 0x0400010E:
-            core->timers[0].WriteControl(3, data);
+            core->timers[0].WriteTMCNT_H(3, data);
             break;
         case 0x04000134:
             RCNT = data;
@@ -828,28 +828,28 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
                 core->dma[1].WriteDMACNT_H(3, data);
                 break;
             case 0x04000100:
-                core->timers[1].WriteCounter(0, data);
+                core->timers[1].WriteTMCNT_L(0, data);
                 break;
             case 0x04000102:
-                core->timers[1].WriteControl(0, data);
+                core->timers[1].WriteTMCNT_H(0, data);
                 break;
             case 0x04000104:
-                core->timers[1].WriteCounter(1, data);
+                core->timers[1].WriteTMCNT_L(1, data);
                 break;
             case 0x04000106:
-                core->timers[1].WriteControl(1, data);
+                core->timers[1].WriteTMCNT_H(1, data);
                 break;
             case 0x04000108:
-                core->timers[1].WriteCounter(2, data);
+                core->timers[1].WriteTMCNT_L(2, data);
                 break;
             case 0x0400010A:
-                core->timers[1].WriteControl(2, data);
+                core->timers[1].WriteTMCNT_H(2, data);
                 break;
             case 0x0400010C:
-                core->timers[1].WriteCounter(3, data);
+                core->timers[1].WriteTMCNT_L(3, data);
                 break;
             case 0x0400010E:
-                core->timers[1].WriteControl(3, data);
+                core->timers[1].WriteTMCNT_H(3, data);
                 break;
             case 0x04000180:
                 core->ipc.WriteIPCSYNC9(data);

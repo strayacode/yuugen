@@ -72,12 +72,18 @@ void Core::RunFrame() {
                 if (dma[1].enabled) {
                     dma[1].Transfer();
                 }
+                if (timers[1].enabled) {
+                    timers[1].Tick(1);
+                }
             }
             
 
             arm7.Step();
             if (dma[0].enabled) {
                 dma[0].Transfer();
+            }
+            if (timers[0].enabled) {
+                timers[0].Tick(2);
             }
 
             if (j == 768) {

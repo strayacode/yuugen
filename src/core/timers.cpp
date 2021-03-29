@@ -13,25 +13,35 @@ void Timers::Reset() {
     enabled = 0;
 }
 
-void Timers::WriteCounter(int timer_index, u16 data) {
+void Timers::WriteTMCNT_L(int timer_index, u16 data) {
+    // writing to tmcnt_l initialises the reload value for the timer
     timer[timer_index].reload_value = data;
 }
 
-void Timers::WriteControl(int timer_index, u16 data) {
+void Timers::WriteTMCNT_H(int timer_index, u16 data) {
     // if count up timing is enabled the prescalar value is ignored so instead the timer increments when the previous counter overflows? hmm
     // count up timing cant be used on timer 0 too
     
-    // set bits 0..1 to the number of cycles left before tmcnt_l can increment
-    // switch (data & 0x3) {
-    // case 0:
-    //     cycles_left[index] = 1;
-    // case 1:
-    //     cycles_left[index] = 64;
-    // case 2:
-    //     cycles_left[index] = 256;
-    // case 3:
-    //     cycles_left[index] = 1024;
-    // }
+    // set bits 0..1 to the number of cycles that must pass before the counter can increment by 1
+    // in a specific timer channel
+    switch (data & 0x3) {
+    case 0:
+        timer[timer_index].cycles_per_count = 1;
+        timer[timer_index].cycles_left = 1;
+        break;
+    case 1:
+        timer[timer_index].cycles_per_count = 64;
+        timer[timer_index].cycles_left = 64;
+        break;
+    case 2:
+        timer[timer_index].cycles_per_count = 256;
+        timer[timer_index].cycles_left = 256;
+        break;
+    case 3:
+        timer[timer_index].cycles_per_count = 1024;
+        timer[timer_index].cycles_left = 1024;
+        break;
+    }
 
 
     // if the timer has gone from disabled to enabled then reload tmcnt_l with the reload value
@@ -45,9 +55,62 @@ void Timers::WriteControl(int timer_index, u16 data) {
     // set enable bits
     // but a counter in count up mode is disabled as the previous timer when it overflows will cause an increment in this timer
     if ((timer[timer_index].control && (1 << 7)) && ((timer_index == 0) || !(timer[timer_index].control & (1 << 2)))) {
-        log_warn("lol we should tick stuff now");
         enabled |= (1 << timer_index);
     } else {
         enabled &= ~(1 << timer_index);
     }
+}
+
+void Timers::Tick(int cycles) {
+    // check each timer and see if they're enabled,
+    // if so then increment the counter for that channel
+    for (int i = 0; i < 4; i++) {
+        if (enabled & (1 << i)) {
+            // first decrement from cycles_left
+            timer[i].cycles_left -= cycles;
+
+            // if the required amount of cycles has passed,
+            // then increment the actual counter
+            if (timer[i].cycles_left == 0) {
+                timer[i].counter++;
+                // reset the cycles_left back to the original value
+                timer[i].cycles_left += timer[i].cycles_per_count;
+            }
+
+            // handle overflow
+            if (timer[i].counter > 0xFFFF) {
+                Overflow(i);
+            }
+
+            if (timer[i].control & (1 << 2)) {
+                // in count up timing the prescaler value is ignored and instead
+                // the timer counter is incremented only when the previous timer counter overflows. can't be used for timer 0
+                // as there's no timer -1
+                log_fatal("implement support for count up timing");
+            }
+            
+        }
+
+    }
+}
+
+void Timers::Overflow(int timer_index) {
+    // on timer overflows the reload value is automatically stored in the counter
+    timer[timer_index].counter = timer[timer_index].reload_value;
+
+    if (timer[timer_index].control & (1 << 6)) {
+        if (arch == 1) {
+            core->arm9.SendInterrupt(3 + timer_index);
+        } else {
+            core->arm7.SendInterrupt(3 + timer_index);
+        }
+    }
+    if (timer[timer_index].control & (1 << 2)) {
+        // in count up timing the prescaler value is ignored and instead
+        // the timer counter is incremented only when the previous timer counter overflows. can't be used for timer 0
+        // as there's no timer -1
+        log_fatal("implement support for count up timing");
+    }
+
+    // TODO: add to Overflow
 }
