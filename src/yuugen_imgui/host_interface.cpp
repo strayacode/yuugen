@@ -73,6 +73,10 @@ void HostInterface::Loop() {
                     show_interrupts_window = !show_interrupts_window; 
                 }
 
+                if (ImGui::MenuItem("Graphics", nullptr, show_graphics_window)) { 
+                    show_graphics_window = !show_graphics_window; 
+                }
+
                 ImGui::EndMenu();
             }
 
@@ -222,6 +226,18 @@ void HostInterface::Loop() {
                 ImGui::Checkbox("DMA 1", &arm7_dma1_irq_request);
                 ImGui::Checkbox("DMA 2", &arm7_dma2_irq_request);
                 ImGui::Checkbox("DMA 3", &arm7_dma3_irq_request);
+            }
+            ImGui::End();
+        }
+
+        if (show_graphics_window) {
+            ImGui::Begin("Graphics");
+            if (ImGui::CollapsingHeader("2D Engine A")) {
+                ImGui::Text("DISPCNT: %08x", core->gpu.engine_a.DISPCNT);
+            }
+
+            if (ImGui::CollapsingHeader("2D Engine B")) {
+                ImGui::Text("DISPCNT: %08x", core->gpu.engine_b.DISPCNT);
             }
             ImGui::End();
         }

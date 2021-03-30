@@ -10,6 +10,8 @@ void IPC::Reset() {
     IPCSYNC9 = 0;
     IPCFIFOCNT7 = 0x101;
     IPCFIFOCNT9 = 0x101;
+    fifo7recv = 0;
+    fifo9recv = 0;
 }
 
 void IPC::WriteIPCSYNC7(u16 data) {
@@ -54,19 +56,37 @@ u16 IPC::ReadIPCSYNC9() {
 }
 
 void IPC::WriteIPCFIFOCNT7(u16 data) {
-    IPCFIFOCNT7 = (IPCFIFOCNT7 & ~0x840C) | (data & 0x840C);
+    IPCFIFOCNT7 = (IPCFIFOCNT7 & ~0x8404) | (data & 0x8404);
 
-    if (IPCFIFOCNT7 & (1 << 3)) {
+    
+
+    // don't set bit 3 in ipcfifocnt
+    // it's purpose is to empty fifo
+    if (data & (1 << 3)) {
         EmptyFIFO7();
+        // set send fifo empty status to set
+        IPCFIFOCNT7 |= 1;
+        // reset send fifo full status to set
+        IPCFIFOCNT7 &= ~(1 << 1);
+
+        IPCFIFOCNT9 |= (1 << 8);
+        IPCFIFOCNT9 &= ~(1 << 9);
+
+        // request a Send Fifo Empty IRQ if bit 2 is set
+        if (IPCFIFOCNT7 & (1 << 2)) {
+            core->arm7.SendInterrupt(17);
+        }
+
     }
 
-    // TODO: check behaviour later
-    if ((IPCFIFOCNT7 & (1 << 2)) && (IPCFIFOCNT7 & 1)) {
-        core->arm9.SendInterrupt(17);
+    // request a send fifo empty irq if (bit 2 and bit 0) goes from 0 to 1
+    if (!(IPCFIFOCNT7 & (1 << 2)) && (IPCFIFOCNT7 & 1) && (data & (1 << 2))) {
+        core->arm7.SendInterrupt(17);
     }
 
-    if ((IPCFIFOCNT7 & (1 << 10)) && !(IPCFIFOCNT7 & (1 << 8))) {
-        core->arm9.SendInterrupt(18);
+    // request a fifo recv not empty irq if (bit 10 and not bit 8) goes from 0 to 1
+    if (!(IPCFIFOCNT7 & (1 << 10)) && !(IPCFIFOCNT7 & (1 << 8)) && (data & (1 << 10))) {
+        core->arm7.SendInterrupt(18);
     }
 
     // if bit 14 is set then this signifies that the error has been acknowledged
@@ -76,18 +96,35 @@ void IPC::WriteIPCFIFOCNT7(u16 data) {
 }
 
 void IPC::WriteIPCFIFOCNT9(u16 data) {
-    IPCFIFOCNT9 = (IPCFIFOCNT9 & ~0x840C) | (data & 0x840C);
+    IPCFIFOCNT9 = (IPCFIFOCNT9 & ~0x8404) | (data & 0x8404);
 
-    if (IPCFIFOCNT9 & (1 << 3)) {
+    
+
+    // don't set bit 3 in ipcfifocnt
+    // it's purpose is to empty fifo
+    if (data & (1 << 3)) {
         EmptyFIFO9();
+        // set send fifo empty status to set
+        IPCFIFOCNT9 |= 1;
+        // reset send fifo full status to set
+        IPCFIFOCNT9 &= ~(1 << 1);
+
+        IPCFIFOCNT7 |= (1 << 8);
+        IPCFIFOCNT7 &= ~(1 << 9);
+
+        // request a Send Fifo Empty IRQ if bit 2 is set
+        if (IPCFIFOCNT9 & (1 << 2)) {
+            core->arm9.SendInterrupt(17);
+        }
     }
 
-    // TODO: check behaviour later
-    if ((IPCFIFOCNT9 & (1 << 2)) && (IPCFIFOCNT9 & 1)) {
+    // request a send fifo empty irq if (bit 2 and bit 0) goes from 0 to 1
+    if (!(IPCFIFOCNT9 & (1 << 2)) && (IPCFIFOCNT9 & 1) && (data & (1 << 2))) {
         core->arm9.SendInterrupt(17);
     }
 
-    if ((IPCFIFOCNT9 & (1 << 10)) && !(IPCFIFOCNT9 & (1 << 8))) {
+    // request a fifo recv not empty irq if (bit 10 and not bit 8) goes from 0 to 1
+    if (!(IPCFIFOCNT9 & (1 << 10)) && !(IPCFIFOCNT9 & (1 << 8)) && (data & (1 << 10))) {
         core->arm9.SendInterrupt(18);
     }
 
@@ -108,4 +145,111 @@ void IPC::EmptyFIFO9() {
     // create an empty queue and swap it
     std::queue<u32> empty_queue;
     fifo9.swap(empty_queue);
+}
+
+u32 IPC::ReadFIFORECV7() {
+    if (!fifo9.empty()) {
+        // get the first word
+        fifo7recv = fifo9.front();
+        if (IPCFIFOCNT7 & (1 << 15)) {
+            // remove the word we recieved from the send fifo
+            // of the other cpu
+            fifo9.pop();
+
+            // check if send fifo of other cpu is empty
+            if (fifo9.empty()) {
+                // set respective bits
+                IPCFIFOCNT9 |= 1;
+                IPCFIFOCNT7 |= (1 << 8);
+            } else if (fifo9.size() == 15) {
+                log_fatal("handle");
+            }
+        }
+    } else {
+        // set the error bit as reading had an empty fifo
+        IPCFIFOCNT7 |= (1 << 14);
+    }
+    return fifo7recv;
+    
+}
+
+u32 IPC::ReadFIFORECV9() {
+    if (!fifo7.empty()) {
+        // get the first word
+        fifo9recv = fifo7.front();
+        if (IPCFIFOCNT9 & (1 << 15)) {
+            // remove the word we recieved from the send fifo
+            // of the other cpu
+            fifo7.pop();
+
+            // check if send fifo of other cpu is empty
+            if (fifo7.empty()) {
+                // set respective bits
+                IPCFIFOCNT7 |= 1;
+                IPCFIFOCNT9 |= (1 << 8);
+            } else if (fifo7.size() == 15) {
+                log_fatal("handle");
+            }
+        }
+    } else {
+        // set the error bit as reading had an empty fifo
+        IPCFIFOCNT9 |= (1 << 14);
+    }
+    return fifo9recv;
+}
+
+void IPC::WriteFIFOSEND7(u32 data) {
+    // only write if send and recieve fifo is enabled
+    if (IPCFIFOCNT7 & (1 << 15)) {
+        if (fifo7.size() < 16) {
+            // push a word to the fifo
+            fifo7.push(data);
+
+            if (fifo7.size() == 1) {
+                // now the send fifo is not empty anymore
+                IPCFIFOCNT7 &= ~1;
+                IPCFIFOCNT9 &= ~(1 << 8);
+                if (IPCFIFOCNT9 & (1 << 10)) {
+                    // send recv fifo not empty irq to other cpu
+                    core->arm9.SendInterrupt(18);
+                }
+            } else if (fifo7.size() == 16) {
+                // set the full bits since fifo is full
+                // set send fifo full status
+                IPCFIFOCNT7 |= (1 << 1);
+                IPCFIFOCNT9 |= (1 << 9);
+            }
+        } else {
+            // set the error fifo send full bit in ipcfifocnt
+            IPCFIFOCNT7 |= (1 << 14);
+        }
+    }
+}
+
+// write a word to the fifo
+void IPC::WriteFIFOSEND9(u32 data) {
+    // only write if send and recieve fifo is enabled
+    if (IPCFIFOCNT9 & (1 << 15)) {
+        if (fifo9.size() < 16) {
+            // push a word to the fifo
+            fifo9.push(data);
+            if (fifo9.size() == 1) {
+                IPCFIFOCNT9 &= ~1;
+                IPCFIFOCNT7 &= ~(1 << 8);
+
+                if (IPCFIFOCNT7 & (1 << 10)) {
+                    // send recv fifo not empty irq to other cpu
+                    core->arm7.SendInterrupt(18);
+                }
+            } else if (fifo9.size() == 16) {
+                // set the full bits since fifo is full
+                // set send fifo full status
+                IPCFIFOCNT9 |= (1 << 1);
+                IPCFIFOCNT7 |= (1 << 9);
+            }
+        } else {
+            // set the error fifo send full bit in ipcfifocnt
+            IPCFIFOCNT9 |= (1 << 14);
+        }
+    }
 }

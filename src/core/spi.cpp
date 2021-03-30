@@ -21,6 +21,10 @@ void SPI::WriteSPICNT(u16 data) {
 void SPI::WriteSPIDATA(u8 data) {
     // TODO: properly handle behaviour of spi
     SPIDATA = data;
+    // check if spi is enabled
+    // if (SPICNT & (1 << 15)) {
+    //     log_fatal("implement support for spi transfers");
+    // }
 }
 
 void SPI::DirectBoot() {

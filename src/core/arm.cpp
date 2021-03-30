@@ -200,9 +200,9 @@ void ARM::ExecuteInstruction() {
     }
     // DebugRegisters();
     // TODO: maybe change arm instructions to SyntaxLikeThis instead of all caps
-    // counter++;
+    counter++;
 
-    // if ((counter == 10000) && (arch == ARMv4)) {
+    // if ((counter == 750000) && (arch == ARMv5)) {
     //     exit(1);
     // }
     if (core->interrupt[arch].IME && ((core->interrupt[arch].IE & core->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
@@ -230,6 +230,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_MUL();
             case 0x010: case 0x018:
                 return ARM_ANDS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
+            case 0x011:
+                return ARM_ANDS(ARM_LOGICAL_SHIFT_LEFT_REGS());
             case 0x012: case 0x01A:
                 return ARM_ANDS(ARM_LOGICAL_SHIFT_RIGHT_IMMS());
             case 0x014: case 0x01C:
@@ -398,6 +400,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_STRH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x1D0: case 0x1D8:
                 return ARM_BICS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
+            case 0x1D3:
+                return ARM_BICS(ARM_LOGICAL_SHIFT_RIGHT_REGS());
             case 0x1D4: case 0x1DC:
                 return ARM_BICS(ARM_ARITHMETIC_SHIFT_RIGHT_IMMS());
             case 0x1DB:
@@ -1267,7 +1271,6 @@ void ARM::UpdateMode(int new_mode) {
     // only restore spsr with a banked spsr if that an spsr exists for that mode (not usr or sys)
     if ((new_mode != 0x1F) && (new_mode != 0x10)) {
         regs.spsr = regs.spsr_banked[new_bank];
-        // log_debug("stored spsr with %08x from bank %08x", regs.spsr, new_bank);
     }
 
     // slight optimisation
@@ -1289,14 +1292,8 @@ void ARM::UpdateMode(int new_mode) {
 
         regs.r_banked[old_bank][5] = regs.r[13];
         regs.r_banked[old_bank][6] = regs.r[14];
-        // log_debug("stored banked r5 with %08x", regs.r[13]);
-        // log_debug("stored banked r6 with %08x", regs.r[14]);
-
         regs.r[13] = regs.r_banked[new_bank][5];
         regs.r[14] = regs.r_banked[new_bank][6];
-
-        // log_debug("restored r13 with %08x", regs.r[13]);
-        // log_debug("restored r14 with %08x", regs.r[14]);
     }
 
     // finally change cpsr to reflect the new cpu mode
@@ -1310,7 +1307,6 @@ void ARM::Halt() {
 void ARM::SendInterrupt(int interrupt) {
     // set the appropriate bit in IF
     core->interrupt[arch].IF |= (1 << interrupt);
-
     // check if the interrupt is enabled too
     if (core->interrupt[arch].IE & (1 << interrupt)) {
         halted = false;

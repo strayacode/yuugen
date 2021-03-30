@@ -152,6 +152,22 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
             log_fatal("unimplemented arm7 halfword io read at address 0x%08x", addr);
         }
         break;
+    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+            // check if the arm9 has access rights to the gba slot
+            // if not return 0
+            if (!EXMEMCNT & (1 << 7)) {
+                return 0;
+            }
+            // otherwise return openbus (0xFFFFFFFF)
+            return 0xFFFF;
+        case REGION_GBA_RAM:
+            // check if the arm9 has access rights to the gba slot
+            // if not return 0
+            if (!EXMEMCNT & (1 << 7)) {
+                return 0;
+            }
+            // otherwise return openbus (0xFFFFFFFF)
+            return 0xFFFF;
     default:
         log_fatal("unimplemented arm7 halfword read at address 0x%08x\n", addr);
     }
@@ -213,8 +229,7 @@ u32 Memory::ARM7ReadWord(u32 addr) {
         case 0x04000214:
             return core->interrupt[0].IF;
         case 0x04100000:
-            // just return the first item in the fifo xd
-            return core->ipc.fifo7.front();
+            return core->ipc.ReadFIFORECV7();
         default:
             log_fatal("unimplemented arm7 word io read at address 0x%08x", addr);
         }
@@ -429,6 +444,9 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
         case 0x04000180:
             core->ipc.WriteIPCSYNC7(data);
             break;
+        case 0x04000188:
+            core->ipc.WriteFIFOSEND7(data);
+            break;
         case 0x04000208:
             core->interrupt[0].IME = data & 0x1;
             break;
@@ -436,7 +454,7 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
             core->interrupt[0].IE = data;
             break;
         case 0x04000214:
-            core->interrupt[0].IF = ~(data);
+            core->interrupt[0].IF &= ~(data);
             break;
         default:
             log_fatal("unimplemented arm7 word io write at address 0x%08x with data 0x%08x", addr, data);
@@ -537,8 +555,14 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
                 return core->ipc.ReadIPCSYNC9();
             case 0x04000184:
                 return core->ipc.IPCFIFOCNT9;
+            case 0x040001C0:
+                return core->spi.SPICNT;
             case 0x04000204:
-                return EXMEMCNT;
+                // for now lets just return 0 because i don't think
+                // we have to emulate it yet
+                // log_warn("exmemcnt is %04x", EXMEMCNT);
+                // return EXMEMCNT;
+                return 0;
             case 0x04000208:
                 return core->interrupt[1].IME & 0x1;
             case 0x04000300:
@@ -574,6 +598,22 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
                 memcpy(&return_value, &core->gpu.engine_a.oam[addr & 0x3FF], 2);
             }
             break;
+        case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+            // check if the arm9 has access rights to the gba slot
+            // if not return 0
+            if (EXMEMCNT & (1 << 7)) {
+                return 0;
+            }
+            // otherwise return openbus (0xFFFFFFFF)
+            return 0xFFFF;
+        case REGION_GBA_RAM:
+            // check if the arm9 has access rights to the gba slot
+            // if not return 0
+            if (EXMEMCNT & (1 << 7)) {
+                return 0;
+            }
+            // otherwise return openbus (0xFFFFFFFF)
+            return 0xFFFF;
         case REGION_ARM9_BIOS:
             memcpy(&return_value, &arm9_bios[addr & 0x7FFF], 2);
             break;
@@ -627,6 +667,28 @@ u32 Memory::ARM9ReadWord(u32 addr) {
             switch (addr) {
             case 0x04000000:
                 return core->gpu.engine_a.DISPCNT;
+            case 0x040000B0:
+                return core->dma[1].channel[0].source;
+            case 0x040000B4:
+                return core->dma[1].channel[0].destination;
+            case 0x040000B8:
+                return core->dma[1].ReadDMACNT(0);
+            case 0x040000BC:
+                return core->dma[1].channel[1].source;
+            case 0x040000C0:
+                return core->dma[1].channel[1].destination;
+            case 0x040000C4:
+                return core->dma[1].ReadDMACNT(1);
+            case 0x040000C8:
+                return core->dma[1].channel[2].source;
+            case 0x040000CC:
+                return core->dma[1].channel[2].destination;
+            case 0x040000D0:
+                return core->dma[1].ReadDMACNT(2);
+            case 0x040000D4:
+                return core->dma[1].channel[3].source;
+            case 0x040000D8:
+                return core->dma[1].channel[3].destination;
             case 0x040000DC:
                 return core->dma[1].ReadDMACNT(3);
             case 0x040000E0:
@@ -652,8 +714,7 @@ u32 Memory::ARM9ReadWord(u32 addr) {
             case 0x04001000:
                 return core->gpu.engine_b.DISPCNT;
             case 0x04100000:
-                // just return the first item in the fifo xd
-                return core->ipc.fifo9.front();
+                return core->ipc.ReadFIFORECV9();
             case 0x04004000:
                 return 0;
             case 0x04004008:
@@ -879,8 +940,14 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
             case 0x04000184:
                 core->ipc.WriteIPCFIFOCNT9(data);
                 break;
+            case 0x040001C0:
+                core->spi.WriteSPICNT(data);
+                break;
             case 0x04000204:
-                EXMEMCNT = data;
+                // for now lets not do anything because
+                // it doesn't seem like we have to emulate it
+                // EXMEMCNT = data;
+                // log_warn("exmemcnt is now %04x", EXMEMCNT);
                 break;
             case 0x04000208:
                 core->interrupt[1].IME = data & 0x1;
@@ -1130,6 +1197,9 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
                 break;
             case 0x04000180:
                 core->ipc.WriteIPCSYNC9(data);
+                break;
+            case 0x04000188:
+                core->ipc.WriteFIFOSEND9(data);
                 break;
             case 0x04000208:
                 core->interrupt[1].IME = data & 0x1;

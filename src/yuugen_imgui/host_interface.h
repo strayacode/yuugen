@@ -35,6 +35,7 @@ struct HostInterface {
 
     bool show_cartridge_window = false;
     bool show_interrupts_window = false;
+    bool show_graphics_window = false;
 
     sf::Uint8* framebuffer;
 

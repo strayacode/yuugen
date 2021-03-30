@@ -844,6 +844,29 @@ u32 ARM_LOGICAL_SHIFT_RIGHT_IMMS() {
     return result;
 }
 
+u32 ARM_LOGICAL_SHIFT_RIGHT_REGS() {
+    u8 shift_amount = regs.r[(instruction >> 8) & 0xF] & 0xFF;
+    u32 rm = regs.r[instruction & 0xF] + (((instruction & 0xF) == 15) ? 4 : 0);
+    
+    u32 result = 0;
+
+    if (shift_amount == 0) {
+        result = rm;
+        // c flag stays the same
+    } else if (shift_amount < 32) {
+        result = rm >> shift_amount;
+        SetConditionFlag(C_FLAG, rm & (1 << (shift_amount - 1)));
+    } else if (shift_amount == 32) {
+        result = 0;
+        SetConditionFlag(C_FLAG, rm >> 31);
+    } else if (shift_amount > 32) {
+        result = 0;
+        SetConditionFlag(C_FLAG, false);
+    }
+
+    return result;
+}
+
 u32 ARM_LOGICAL_SHIFT_RIGHT_REG() {
     u8 shift_amount = regs.r[(instruction >> 8) & 0xF] & 0xFF;
     u32 rm = regs.r[instruction & 0xF] + (((instruction & 0xF) == 15) ? 4 : 0);

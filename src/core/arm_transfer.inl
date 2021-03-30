@@ -233,6 +233,7 @@ INSTRUCTION(ARM_STRH_PRE, u32 op2) {
 INSTRUCTION(ARM_LDRH_PRE, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
+
     if (rn == 15) {
         log_fatal("handle");
     }
@@ -241,7 +242,6 @@ INSTRUCTION(ARM_LDRH_PRE, u32 op2) {
     }
 
     regs.r[rd] = ReadHalfword(regs.r[rn] + op2);
-
     regs.r[15] += 4;
 }
 
@@ -278,7 +278,6 @@ INSTRUCTION(ARM_STRH_POST, u32 op2) {
 INSTRUCTION(ARM_MSR_CPSR_REG) {
     u8 rm = instruction & 0xF;
     bool privileged_mode = (regs.cpsr & 0x1F) != 0x10;
-
     if (instruction & (1 << 16)) {
         // only alter if in a privileged mode (non-user mode)
         if (privileged_mode) {
@@ -565,6 +564,8 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {
             address += 4;
         }
     }
+
+
 
 
     // if rn is in rlist:
