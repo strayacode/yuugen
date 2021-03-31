@@ -242,6 +242,11 @@ u32 Memory::ARM7ReadWord(u32 addr) {
 }
 
 void Memory::ARM7WriteByte(u32 addr, u8 data) {
+    // ignore writes to the double protected region in the arm7 bios
+    if (addr < 0x4000) {
+        return;
+    }
+
     switch (addr >> 24) {
     case REGION_MAIN_MEMORY:
         main_memory[addr & 0x3FFFFF] = data;
@@ -565,6 +570,10 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
                 return 0;
             case 0x04000208:
                 return core->interrupt[1].IME & 0x1;
+            case 0x04000280:
+                return core->maths_unit.DIVCNT;
+            case 0x040002B0:
+                return core->maths_unit.SQRTCNT;
             case 0x04000300:
                 return POSTFLG9;
             case 0x04000304:
@@ -711,6 +720,18 @@ u32 Memory::ARM9ReadWord(u32 addr) {
                 return core->interrupt[1].IF;
             case 0x04000240:
                 return ((core->gpu.VRAMCNT_D << 24) | (core->gpu.VRAMCNT_C << 16) | (core->gpu.VRAMCNT_B << 8) | (core->gpu.VRAMCNT_A));
+            case 0x04000290:
+                return core->maths_unit.DIV_NUMER & 0xFFFFFFFF;
+            case 0x04000294:
+                return core->maths_unit.DIV_NUMER >> 32;
+            case 0x04000298:
+                return core->maths_unit.DIV_DENOM & 0xFFFFFFFF;
+            case 0x0400029C:
+                return core->maths_unit.DIV_DENOM >> 32;
+            case 0x040002B8:
+                return core->maths_unit.SQRT_PARAM & 0xFFFFFFFF;
+            case 0x040002BC:
+                return core->maths_unit.SQRT_PARAM >> 32;
             case 0x04001000:
                 return core->gpu.engine_b.DISPCNT;
             case 0x04100000:

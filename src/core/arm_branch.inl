@@ -1,5 +1,5 @@
 INSTRUCTION(ARM_B) {
-    u32 offset = ((instruction & (1 << 23)) ? 0xFF000000 : 0) | ((instruction & 0xFFFFFF) << 2);
+    u32 offset = ((instruction & (1 << 23)) ? 0xFC000000 : 0) | ((instruction & 0xFFFFFF) << 2);
     // r15 is at instruction address + 8
     regs.r[15] += offset;
 
@@ -7,7 +7,7 @@ INSTRUCTION(ARM_B) {
 }
 
 INSTRUCTION(ARM_BL) {
-    u32 offset = ((instruction & (1 << 23)) ? 0xFF000000 : 0) | ((instruction & 0xFFFFFF) << 2);
+    u32 offset = ((instruction & (1 << 23)) ? 0xFC000000 : 0) | ((instruction & 0xFFFFFF) << 2);
     
     // store the address of the instruction after the current instruction in the link register
     regs.r[14] = regs.r[15] - 4;
@@ -65,7 +65,7 @@ INSTRUCTION(ARM_BLX) {
     // set the t flag to 1 (switch to thumb mode)
     regs.cpsr |= (1 << 5);
 
-    u32 offset = (((instruction & (1 << 23)) ? 0xFF000000: 0) | ((instruction & 0xFFFFFF) << 2)) + ((instruction & (1 << 24)) << 1);
+    u32 offset = (((instruction & (1 << 23)) ? 0xFC000000: 0) | ((instruction & 0xFFFFFF) << 2)) + ((instruction & (1 << 24)) >> 23);
     regs.r[15] += offset;
     // since we switched to thumb mode do a 16 bit pipeline flush
     ThumbFlushPipeline();

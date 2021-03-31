@@ -200,7 +200,7 @@ void ARM::ExecuteInstruction() {
     }
     // DebugRegisters();
     // TODO: maybe change arm instructions to SyntaxLikeThis instead of all caps
-    counter++;
+    // counter++;
 
     // if ((counter == 750000) && (arch == ARMv5)) {
     //     exit(1);
@@ -209,9 +209,9 @@ void ARM::ExecuteInstruction() {
         HandleInterrupt();
     }
 
-    if (arch == ARMv4) {
-        LogRegisters();
-    }
+    // if (arch == ARMv4) {
+    //     LogRegisters();
+    // }
     // if (arch == ARMv4) {
     //     // printf("counter: %d\n", counter);
     //     LogRegisters();
