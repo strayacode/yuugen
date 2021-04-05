@@ -18,13 +18,22 @@ void SPI::WriteSPICNT(u16 data) {
     SPICNT = (SPICNT & ~0xCF03) | (data & 0xCF03);
 }
 
+u8 SPI::ReadSPIDATA() {
+    if (!(SPICNT & (1 << 15))) {
+        return 0;
+    }
+
+    return SPIDATA;
+}
+
 void SPI::WriteSPIDATA(u8 data) {
     // TODO: properly handle behaviour of spi
     SPIDATA = data;
     // check if spi is enabled
-    // if (SPICNT & (1 << 15)) {
-    //     log_fatal("implement support for spi transfers");
-    // }
+    if (SPICNT & (1 << 15)) {
+        log_warn("implement support for spi transfers");
+        Transfer();
+    }
 }
 
 void SPI::DirectBoot() {
@@ -45,4 +54,17 @@ void SPI::LoadFirmware() {
     fread(firmware, 0x40000, 1, file_buffer);
     fclose(file_buffer);  
     log_debug("firmware loaded successfully!");
+}
+
+void SPI::Transfer() {
+    // check device select to see which device is used for transfer
+    u8 device_select = (SPICNT >> 8) & 0x3;
+    switch (device_select) {
+    case 0:
+        // just set spidata to 0
+        SPIDATA = 0;
+        break;
+    default:
+        log_fatal("device %d is not implemented yet for spi transfers", device_select);
+    }
 }

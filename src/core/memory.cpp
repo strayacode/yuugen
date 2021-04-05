@@ -139,7 +139,7 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
         case 0x040001C0:
             return core->spi.SPICNT;
         case 0x040001C2:
-            return core->spi.SPIDATA;
+            return core->spi.ReadSPIDATA();
         case 0x04000208:
             return core->interrupt[0].IME & 0x1;
         case 0x04000300:
@@ -378,7 +378,6 @@ void Memory::ARM7WriteHalfword(u32 addr, u16 data) {
             core->spi.WriteSPICNT(data);
             break;
         case 0x040001C2:
-            // TODO: handle properly!
             core->spi.WriteSPIDATA(data);
             break;
         case 0x04000208:
@@ -459,7 +458,8 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
             core->interrupt[0].IE = data;
             break;
         case 0x04000214:
-            core->interrupt[0].IF &= ~(data);
+            // TODO: fix later
+            core->interrupt[0].IF = ~data;
             break;
         default:
             log_fatal("unimplemented arm7 word io write at address 0x%08x with data 0x%08x", addr, data);
@@ -563,11 +563,7 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
             case 0x040001C0:
                 return core->spi.SPICNT;
             case 0x04000204:
-                // for now lets just return 0 because i don't think
-                // we have to emulate it yet
-                // log_warn("exmemcnt is %04x", EXMEMCNT);
-                // return EXMEMCNT;
-                return 0;
+                return EXMEMCNT;
             case 0x04000208:
                 return core->interrupt[1].IME & 0x1;
             case 0x04000280:
@@ -965,10 +961,7 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
                 core->spi.WriteSPICNT(data);
                 break;
             case 0x04000204:
-                // for now lets not do anything because
-                // it doesn't seem like we have to emulate it
-                // EXMEMCNT = data;
-                // log_warn("exmemcnt is now %04x", EXMEMCNT);
+                EXMEMCNT = data;
                 break;
             case 0x04000208:
                 core->interrupt[1].IME = data & 0x1;
@@ -1230,7 +1223,7 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
                 break;
             case 0x04000214:
                 // when writing to IF a value of 1 actually resets the bit to acknowledge the interrupt while writing 0 has no change
-                core->interrupt[1].IF &= ~(data);
+                core->interrupt[1].IF &= ~data;
                 break;
             case 0x04000240:
                 // sets vramcnt_a, vramcnt_b, vramcnt_c and vramcnt_d

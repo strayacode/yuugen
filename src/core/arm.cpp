@@ -4,6 +4,7 @@
 
 ARM::ARM(Core* core, int arch) : core(core), arch(arch) {
     log_buffer = fopen("../../log-stuff/yuugen.log", "w");
+    GenerateConditionTable();
 }
 
 
@@ -129,44 +130,49 @@ void ARM::SetConditionFlag(int condition_flag, int value) {
     }
 }
 
-bool ARM::ConditionEvaluate() {
-    bool n_flag = GetConditionFlag(N_FLAG);
-    bool z_flag = GetConditionFlag(Z_FLAG);
-    bool c_flag = GetConditionFlag(C_FLAG);
-    bool v_flag = GetConditionFlag(V_FLAG);
+void ARM::GenerateConditionTable() {
+    // iterate through each combination of bits 28..31
+    for (int i = 0; i < 16; i++) {
+        bool n_flag = i & 8;
+        bool z_flag = i & 4;
+        bool c_flag = i & 2;
+        bool v_flag = i & 1;
+
+
+        condition_table[CONDITION_EQ][i] = z_flag;
     
-    switch (instruction >> 28) {
-    case 0:
-        return z_flag; // EQ
-    case 1:
-        return !z_flag; // NE
-    case 2:
-        return c_flag; // CS
-    case 3:
-        return !c_flag; // CC
-    case 4:
-        return n_flag; // MI
-    case 5:
-        return !n_flag; // PL
-    case 6:
-        return v_flag; // VS
-    case 7:
-        return !v_flag; // VC
-    case 8:
-        return (c_flag && !z_flag); // HI
-    case 9:
-        return (!c_flag || z_flag); // LS
-    case 10:
-        return (n_flag == v_flag); // GE
-    case 11:
-        return (n_flag != v_flag); // LT
-    case 12:
-        return (!z_flag && (n_flag == v_flag)); // GT
-    case 13:
-        return (z_flag || (n_flag != v_flag)); // LE
-    case 14:
-        return true; // AL
-    case 15:
+        condition_table[CONDITION_NE][i] = !z_flag;
+        condition_table[CONDITION_CS][i] = c_flag;
+        condition_table[CONDITION_CC][i] = !c_flag;
+
+        condition_table[CONDITION_MI][i] = n_flag;
+        condition_table[CONDITION_PL][i] = !n_flag;
+
+        condition_table[CONDITION_VS][i] = v_flag;
+
+        condition_table[CONDITION_VC][i] = !v_flag;
+
+        condition_table[CONDITION_HI][i] = (c_flag && !z_flag);
+
+        condition_table[CONDITION_LS][i] = (!c_flag || z_flag);
+
+        condition_table[CONDITION_GE][i] = (n_flag == v_flag);
+
+        condition_table[CONDITION_LT][i] = (n_flag != v_flag);
+
+        condition_table[CONDITION_GT][i] = (!z_flag && (n_flag == v_flag));
+
+        condition_table[CONDITION_LE][i] = (z_flag || (n_flag != v_flag));
+
+        condition_table[CONDITION_AL][i] = true;
+
+        // this one depends on cpu arch and instruction
+        condition_table[CONDITION_NV][i] = true;
+    }
+}
+
+bool ARM::ConditionEvaluate(u8 condition) {
+    if (condition == CONDITION_NV) {
         if (arch == ARMv5) {
             // using arm decoding table this can only occur for branch and branch with link and change to thumb
             // so where bits 25..27 is 0b101
@@ -176,10 +182,9 @@ bool ARM::ConditionEvaluate() {
         } else {
             return false;
         }
-        break;
-    default:
-        log_fatal("condition code %d not implemented!", instruction >> 28);
     }
+
+    return condition_table[condition][regs.cpsr >> 28];
 }
 
 void ARM::ARMFlushPipeline() {
@@ -221,7 +226,7 @@ void ARM::ExecuteInstruction() {
     // }
 
     if (IsARM()) {
-        if (ConditionEvaluate()) {
+        if (ConditionEvaluate(instruction >> 28)) {
             u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
             switch (index) {
             case 0x000: case 0x008:

@@ -61,6 +61,25 @@ enum CPUArchitecture {
     ARMv5 = 1,
 };
 
+enum CPUCondition {
+    CONDITION_EQ = 0,
+    CONDITION_NE = 1,
+    CONDITION_CS = 2,
+    CONDITION_CC = 3,
+    CONDITION_MI = 4,
+    CONDITION_PL = 5,
+    CONDITION_VS = 6,
+    CONDITION_VC = 7,
+    CONDITION_HI = 8,
+    CONDITION_LS = 9,
+    CONDITION_GE = 10,
+    CONDITION_LT = 11,
+    CONDITION_GT = 12,
+    CONDITION_LE = 13,
+    CONDITION_AL = 14,
+    CONDITION_NV = 15,
+};
+
 struct ARM {
     ARM(Core* core, int arch);
 
@@ -92,6 +111,8 @@ struct ARM {
     // this is used for emulating the pipeline. we store the raw instruction data of the instruction currently executing and the instruction currently being decoded
     u32 pipeline[2];
 
+    
+
     u32 instruction = 0;
 
     bool IsARM();
@@ -99,7 +120,13 @@ struct ARM {
     bool GetConditionFlag(int condition_flag);
     void SetConditionFlag(int condition_flag, int value);
 
-    bool ConditionEvaluate();
+    // condition table for every possible condition of the bits 28..31 in an opcode
+    // so for each type of condition code we have 2^4 possibilities
+
+    bool condition_table[16][16] = {};
+
+    void GenerateConditionTable();
+    bool ConditionEvaluate(u8 condition);
 
     void ARMFlushPipeline();
     void ThumbFlushPipeline();
@@ -144,7 +171,3 @@ struct ARM {
     bool halted;
 
 };
-
-
-
-
