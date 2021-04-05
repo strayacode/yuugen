@@ -18,7 +18,7 @@ void SPI::WriteSPICNT(u16 data) {
     SPICNT = (SPICNT & ~0xCF03) | (data & 0xCF03);
 }
 
-u8 SPI::ReadSPIDATA() {
+auto SPI::ReadSPIDATA() -> u8 {
     if (!(SPICNT & (1 << 15))) {
         return 0;
     }
@@ -31,8 +31,9 @@ void SPI::WriteSPIDATA(u8 data) {
     SPIDATA = data;
     // check if spi is enabled
     if (SPICNT & (1 << 15)) {
-        log_warn("implement support for spi transfers");
         Transfer();
+    } else {
+        SPIDATA = 0;
     }
 }
 
@@ -64,7 +65,24 @@ void SPI::Transfer() {
         // just set spidata to 0
         SPIDATA = 0;
         break;
+    case 1:
+        FirmwareTransfer();
+        break;
     default:
         log_fatal("device %d is not implemented yet for spi transfers", device_select);
+    }
+
+    // if enabled trigger a transfer finished irq
+    if (SPICNT & (1 << 14)) {
+        core->arm7.SendInterrupt(23);
+    }
+}
+
+void SPI::FirmwareTransfer() {
+    log_warn("chipselect hold: %d", SPICNT & (1 << 11));
+    // check the command
+    switch (SPIDATA) {
+    default:
+        log_warn("implement support for firmware command %02x", SPIDATA);
     }
 }

@@ -11,9 +11,10 @@ struct SPI {
     void Reset();
     void WriteSPICNT(u16 data);
     void WriteSPIDATA(u8 data);
-    u8 ReadSPIDATA();
+    auto ReadSPIDATA() -> u8;
 
     void Transfer();
+    void FirmwareTransfer();
 
     // used to transfer firmware data into main memory
     void DirectBoot();
