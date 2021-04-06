@@ -14,6 +14,7 @@ add_library(core
     rtc.h rtc.cpp
     spu.h spu.cpp
     spi.h spi.cpp
+    maths_unit.h maths_unit.cpp
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")

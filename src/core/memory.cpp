@@ -965,6 +965,14 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
             case 0x04000208:
                 core->interrupt[1].IME = data & 0x1;
                 break;
+            case 0x04000280:
+                core->maths_unit.DIVCNT = data;
+                core->maths_unit.StartDivision();
+                break;
+            case 0x040002B0:
+                core->maths_unit.SQRTCNT = data;
+                core->maths_unit.StartSquareRoot();
+                break;
             case 0x04000304:
                 core->gpu.POWCNT1 = data;
                 break;
@@ -1237,6 +1245,36 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
                 core->gpu.VRAMCNT_F = (data >> 8) & 0xFF;
                 core->gpu.VRAMCNT_G = (data >> 16) & 0xFF;
                 WRAMCNT = (data >> 24) & 0xFF;
+                break;
+            case 0x04000290:
+                // write to lower 32 bits of DIV_NUMER, starting a division
+                core->maths_unit.DIV_NUMER = (core->maths_unit.DIV_NUMER & ~0xFFFFFFFF) | data;
+                core->maths_unit.StartDivision();
+                break;
+            case 0x04000294:
+                // write to upper 32 bits of DIV_NUMER, starting a division
+                core->maths_unit.DIV_NUMER = (core->maths_unit.DIV_NUMER & 0xFFFFFFFF) | (data << 32);
+                core->maths_unit.StartDivision();
+                break;
+            case 0x04000298:
+                // write to lower 32 bits of DIV_DENOM, starting a division
+                core->maths_unit.DIV_DENOM = (core->maths_unit.DIV_DENOM & ~0xFFFFFFFF) | data;
+                core->maths_unit.StartDivision();
+                break;
+            case 0x0400029C:
+                // write to upper 32 bits of DIV_DENOM, starting a division
+                core->maths_unit.DIV_DENOM = (core->maths_unit.DIV_DENOM & 0xFFFFFFFF) | (data << 32);
+                core->maths_unit.StartDivision();
+                break;
+            case 0x040002B8:
+                // write to lower 32 bits of SQRT_PARAM
+                core->maths_unit.SQRT_PARAM = (core->maths_unit.SQRT_PARAM & ~0xFFFFFFFF) | data;
+                core->maths_unit.StartSquareRoot();
+                break;
+            case 0x040002BC:
+                // write to upper 32 bits of SQRT_PARAM
+                core->maths_unit.SQRT_PARAM = (core->maths_unit.SQRT_PARAM & 0xFFFFFFFF) | (data << 32);
+                core->maths_unit.StartSquareRoot();
                 break;
             case 0x04000304:
                 core->gpu.POWCNT1 = data;

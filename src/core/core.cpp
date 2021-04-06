@@ -41,6 +41,8 @@ void Core::Reset() {
     spu.Reset();
 
     spi.Reset();
+
+    maths_unit.Reset();
 }
 
 void Core::DirectBoot() {

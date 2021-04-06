@@ -723,6 +723,11 @@ void ARM::ExecuteInstruction() {
             case 0x8B8: case 0x8B9: case 0x8BA: case 0x8BB:
             case 0x8BC: case 0x8BD: case 0x8BE: case 0x8BF:
                 return ARM_LDM_INCREMENT_AFTER_WRITEBACK();
+            case 0x8D0: case 0x8D1: case 0x8D2: case 0x8D3:
+            case 0x8D4: case 0x8D5: case 0x8D6: case 0x8D7:
+            case 0x8D8: case 0x8D9: case 0x8DA: case 0x8DB:
+            case 0x8DC: case 0x8DD: case 0x8DE: case 0x8DF:
+                return ARM_LDM_INCREMENT_AFTER_USER();
             case 0x8F0: case 0x8F1: case 0x8F2: case 0x8F3:
             case 0x8F4: case 0x8F5: case 0x8F6: case 0x8F7:
             case 0x8F8: case 0x8F9: case 0x8FA: case 0x8FB:

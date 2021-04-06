@@ -628,6 +628,32 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_LDM_INCREMENT_AFTER_USER) {
+    u8 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+    
+    u8 old_mode = regs.cpsr & 0x1F;
+    
+    // first we must switch to user mode so that we can change the values of usr mode registers
+    UpdateMode(SYS);
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            regs.r[i] = ReadWord(address);
+            address += 4;
+        }
+    }
+
+    // switching back to to old mode is my guess
+    UpdateMode(old_mode);
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle");
+    }
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_STM_INCREMENT_AFTER_WRITEBACK) {
     u8 rn = (instruction >> 16) & 0xF;
     u32 address = regs.r[rn];
