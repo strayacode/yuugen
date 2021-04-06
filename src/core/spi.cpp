@@ -27,11 +27,9 @@ auto SPI::ReadSPIDATA() -> u8 {
 }
 
 void SPI::WriteSPIDATA(u8 data) {
-    // TODO: properly handle behaviour of spi
-    SPIDATA = data;
     // check if spi is enabled
     if (SPICNT & (1 << 15)) {
-        Transfer();
+        Transfer(data);
     } else {
         SPIDATA = 0;
     }
@@ -57,19 +55,41 @@ void SPI::LoadFirmware() {
     log_debug("firmware loaded successfully!");
 }
 
-void SPI::Transfer() {
-    // check device select to see which device is used for transfer
-    u8 device_select = (SPICNT >> 8) & 0x3;
-    switch (device_select) {
-    case 0:
-        // just set spidata to 0
+void SPI::Transfer(u8 data) {
+    if (write_count == 0) {
+        // set the new command to the spidata
+        command = data;
+        // reset the address used
+        address = 0;
+        // reset the spidata so that when we read a byte from firmware into it
+        // we just have a fresh spidata
         SPIDATA = 0;
-        break;
-    case 1:
-        FirmwareTransfer();
-        break;
-    default:
-        log_fatal("device %d is not implemented yet for spi transfers", device_select);
+    } else {
+        // if the command has been set on the previous spidata write then we can now interpret the command
+        // check device select to see which device is used for transfer
+        u8 device_select = (SPICNT >> 8) & 0x3;
+        switch (device_select) {
+        case 0:
+            // just set spidata to 0
+            SPIDATA = 0;
+            break;
+        case 1:
+            FirmwareTransfer(data);
+            break;
+        default:
+            log_fatal("device %d is not implemented yet for spi transfers", device_select);
+        }
+
+        
+    }
+
+    // keep device selected or deselect it depending on bit 11 of spicnt
+    if (SPICNT & (1 << 11)) {
+        // continue with the command
+        write_count++;
+    } else {
+        // interpret a new command
+        write_count = 0;
     }
 
     // if enabled trigger a transfer finished irq
@@ -78,11 +98,33 @@ void SPI::Transfer() {
     }
 }
 
-void SPI::FirmwareTransfer() {
-    log_warn("chipselect hold: %d", SPICNT & (1 << 11));
-    // check the command
-    switch (SPIDATA) {
+void SPI::FirmwareTransfer(u8 data) {
+    if (SPICNT & (1 << 10)) {
+        log_fatal("implement support for bugged 16-bit transfer size");
+    }
+
+    // interpret a command
+    switch (command) {
+    case 0x03:
+        // what we do will depend on the write count
+        // on write_count < 4, we will set up the 3 byte address
+        // on write_count >= 4, we will finally read a byte from the firmware
+        // in setting up the 3 byte address the most significant byte is done first
+        if (write_count < 4) {
+            address |= (data << ((3 - write_count) * 8));
+        } else {
+            // read endless stream of bytes (keep incrementing the address unless chip is deselected)
+            // read data from firmware
+            if (address >= 0x40000) {
+                log_fatal("undefined firmware address");
+            }
+            SPIDATA = firmware[address];
+
+            // increment the address after reading a byte into SPIDATA
+            address++;
+        }
+        break;
     default:
-        log_warn("implement support for firmware command %02x", SPIDATA);
+        log_fatal("implement support for firmware command %02x", command);
     }
 }
