@@ -77,10 +77,14 @@ void HostInterface::Loop() {
                     show_graphics_window = !show_graphics_window; 
                 }
 
+                if (ImGui::MenuItem("Console", nullptr, show_console_window)) { 
+                    show_console_window = !show_console_window; 
+                }
+
                 ImGui::EndMenu();
             }
 
-            // TODO: add settings, debug and help
+            // TODO: add settings and help
                 
             ImGui::EndMainMenuBar();
         }
@@ -238,6 +242,15 @@ void HostInterface::Loop() {
 
             if (ImGui::CollapsingHeader("2D Engine B")) {
                 ImGui::Text("DISPCNT: %08x", core->gpu.engine_b.DISPCNT);
+            }
+            ImGui::End();
+        }
+
+        if (show_console_window) {
+            ImGui::Begin("Console");
+            ImGui::InputText("Prompt", prompt, 15);
+            if (ImGui::Button("Process command")) {
+                printf("command is %s\n", prompt);
             }
             ImGui::End();
         }

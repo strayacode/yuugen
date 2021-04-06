@@ -36,6 +36,9 @@ struct HostInterface {
     bool show_cartridge_window = false;
     bool show_interrupts_window = false;
     bool show_graphics_window = false;
+    bool show_console_window = false;
+
+    char prompt[15];
 
     sf::Uint8* framebuffer;
 
@@ -49,5 +52,5 @@ struct HostInterface {
 
     void SetToContentSize();
 
-    sf::Texture texture;  
+    sf::Texture texture;
 };
