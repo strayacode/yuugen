@@ -458,8 +458,7 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
             core->interrupt[0].IE = data;
             break;
         case 0x04000214:
-            // TODO: fix later
-            core->interrupt[0].IF = ~data;
+            core->interrupt[0].IF &= ~data;
             break;
         default:
             log_fatal("unimplemented arm7 word io write at address 0x%08x with data 0x%08x", addr, data);

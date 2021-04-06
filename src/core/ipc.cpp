@@ -162,7 +162,9 @@ u32 IPC::ReadFIFORECV7() {
                 IPCFIFOCNT9 |= 1;
                 IPCFIFOCNT7 |= (1 << 8);
             } else if (fifo9.size() == 15) {
-                log_fatal("handle");
+                // recieve fifo now went from full to not full
+                IPCFIFOCNT9 &= ~(1 << 1);
+                IPCFIFOCNT7 &= ~(1 << 9);
             }
         }
     } else {
@@ -188,7 +190,9 @@ u32 IPC::ReadFIFORECV9() {
                 IPCFIFOCNT7 |= 1;
                 IPCFIFOCNT9 |= (1 << 8);
             } else if (fifo7.size() == 15) {
-                log_fatal("handle");
+                // recieve fifo now went from full to not full
+                IPCFIFOCNT7 &= ~(1 << 1);
+                IPCFIFOCNT9 &= ~(1 << 9);
             }
         }
     } else {
