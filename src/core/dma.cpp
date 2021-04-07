@@ -148,25 +148,7 @@ void DMA::Trigger(u8 mode) {
 
 void DMA::WriteDMACNT_L(int channel_index, u16 data) {
     // write to the lower 16 bits of DMACNT
-    if (arch == 1) {
-        // arm9 dma
-        if (data == 0) {
-            // 0 = 0x200000
-            channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0xFFC00000) | (0x200000);
-        } else {
-            // 0x1..0x1FFFFF
-            channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0x1FFFFF) | (data & 0x1FFFFF);
-        }
-    } else {
-        // arm7 dma
-        if (data == 0) {
-            // 0 = 0x10000 on channel 3 and 0x4000 on all other channels
-            channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0xFFE00000) | ((channel_index == 3) ? 0x10000 : 0x4000);
-        } else {
-            // 0x1..0xFFFF on channel 3 and 0x1..0x3FFF on all other channels
-            channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0xFFFF) | (data & ((channel_index == 3) ? 0xFFFF : 0x3FFF));
-        }
-    }
+    channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0xFFFF) | (data & 0xFFFF);
 }
 
 
@@ -191,9 +173,25 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     }
 
     // otherwise load internal registers
+
     channel[channel_index].internal_source = channel[channel_index].source;
     channel[channel_index].internal_destination = channel[channel_index].destination;
-    channel[channel_index].internal_length = channel[channel_index].DMACNT & 0x1FFFFF;
+
+    if (arch == 1) {
+        // arm9
+        if ((channel[channel_index].DMACNT & 0x1FFFFF) == 0) {
+            channel[channel_index].internal_length = 0x200000;
+        } else {
+            channel[channel_index].internal_length = channel[channel_index].DMACNT & 0x1FFFFF;
+        }
+    } else {
+        // arm7
+        if ((channel[channel_index].DMACNT & 0x1FFFFF) == 0) {
+            channel[channel_index].internal_length = 0x10000;
+        } else {
+            channel[channel_index].internal_length = channel[channel_index].DMACNT & 0x1FFFFF;
+        }
+    }
 
     if (start_timing == 0) {
         enabled |= (1 << channel_index);
@@ -216,4 +214,31 @@ u16 DMA::ReadDMACNT_L(int channel_index) {
 
 u16 DMA::ReadDMACNT_H(int channel_index) {
     return channel[channel_index].DMACNT >> 16;
+}
+
+void DMA::WriteLength(int channel_index, u32 data) {
+    if (arch == 1) {
+        // arm9 dma
+        if (data == 0) {
+            // 0 = 0x200000
+            channel[channel_index].DMACNT = (channel[channel_index].DMACNT & 0xFFC00000) | (0x200000);
+        } else {
+            // 0x1..0x1FFFFF
+            channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0x1FFFFF) | (data & 0x1FFFFF);
+        }
+    } else {
+        // arm7 dma
+        if (data == 0) {
+            // 0 = 0x10000 on channel 3 and 0x4000 on all other channels
+            channel[channel_index].DMACNT = (channel[channel_index].DMACNT & 0xFFE00000) | ((channel_index == 3) ? 0x10000 : 0x4000);
+        } else {
+            // 0x1..0xFFFF on channel 3 and 0x1..0x3FFF on all other channels
+            channel[channel_index].DMACNT = (channel[channel_index].DMACNT & ~0xFFFF) | (data & ((channel_index == 3) ? 0xFFFF : 0x3FFF));
+        }
+    }
+}
+
+u32 DMA::ReadLength(int channel_index) {
+    // get bits 0..20 of dmacnt
+    return channel[channel_index].DMACNT & 0x1FFFFF;
 }

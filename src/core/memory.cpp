@@ -219,7 +219,7 @@ u32 Memory::ARM7ReadWord(u32 addr) {
     case REGION_IO:
         switch (addr) {
         case 0x040000DC:
-            return core->dma[0].ReadDMACNT_L(3);
+            return core->dma[0].ReadDMACNT(3);
         case 0x04000180:
             return core->ipc.ReadIPCSYNC7();
         case 0x04000208:
@@ -443,7 +443,7 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
             core->dma[0].channel[3].destination = data;
             break;
         case 0x040000DC:
-            core->dma[0].WriteDMACNT_L(3, data);
+            core->dma[0].WriteDMACNT(3, data);
             break;
         case 0x04000180:
             core->ipc.WriteIPCSYNC7(data);

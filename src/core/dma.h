@@ -46,4 +46,6 @@ struct DMA {
     u16 ReadDMACNT_L(int channel_index);
     u16 ReadDMACNT_H(int channel_index);
 
+    u32 ReadLength(int channel_index);
+    void WriteLength(int channel_index, u32 data);
 };
