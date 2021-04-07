@@ -74,6 +74,8 @@ u8 Memory::ARM7ReadByte(u32 addr) {
         switch (addr) {
         case 0x04000138:
             return core->rtc.RTC_REG;
+        case 0x04000300:
+            return POSTFLG7;
         default:
             log_fatal("unimplemented arm7 byte io read at address 0x%08x", addr);
         }
@@ -217,6 +219,10 @@ u32 Memory::ARM7ReadWord(u32 addr) {
         }
         break;
     case REGION_IO:
+        if (in_range(0x04000400, 0x100, addr)) {
+            return 0;
+        }
+
         switch (addr) {
         case 0x040000DC:
             return core->dma[0].ReadDMACNT(3);
@@ -235,7 +241,8 @@ u32 Memory::ARM7ReadWord(u32 addr) {
         }
         break;
     default:
-        log_fatal("unimplemented arm7 word read at address 0x%08x\n", addr);
+        log_warn("unimplemented arm7 word read at address 0x%08x\n", addr);
+        return 0;
     }
 
     return return_value;
@@ -470,7 +477,7 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
         }
         break;
     default:
-        log_fatal("unimplemented arm7 word write at address 0x%08x with data 0x%08x\n", addr, data);
+        log_warn("unimplemented arm7 word write at address 0x%08x with data 0x%08x", addr, data);
     }
 }
 
@@ -1251,6 +1258,9 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
                 core->gpu.VRAMCNT_G = (data >> 16) & 0xFF;
                 WRAMCNT = (data >> 24) & 0xFF;
                 break;
+            case 0x04000280:
+                core->maths_unit.DIVCNT = data;
+                core->maths_unit.StartDivision();
             case 0x04000290:
                 // write to lower 32 bits of DIV_NUMER, starting a division
                 core->maths_unit.DIV_NUMER = (core->maths_unit.DIV_NUMER & ~0xFFFFFFFF) | data;
@@ -1447,6 +1457,9 @@ void Memory::WriteHALTCNT(u8 data) {
     switch (power_down_mode) {
     case 2:
         core->arm7.Halt();
+        break;
+    case 3:
+        log_warn("unhandled request for sleep mode");
         break;
     default:
         log_fatal("power down mode %d is not implemented!", power_down_mode);

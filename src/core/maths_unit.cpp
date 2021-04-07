@@ -28,8 +28,11 @@ void MathsUnit::StartDivision() {
             // in 32 bit mode the upper 32 bits of DIV_RESULT are inverted
             DIVREM_RESULT = (s64)DIV_RESULT;
             DIV_RESULT = ((s32)DIV_NUMER >= 0) ? -1 : 1;
+        } else if (DIV_NUMER == -(s32)0x80000000 && DIV_DENOM == -1) {
+            log_fatal("handle MAX/-1");
         } else {
-            log_fatal("handle regular division");
+            DIV_RESULT = (s64)((s32)DIV_NUMER / (s32)DIV_DENOM);
+            DIVREM_RESULT = (s64)((s32)DIV_NUMER % (s32)DIV_DENOM);
         }
         break;
     default:
