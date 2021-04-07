@@ -19,10 +19,6 @@ void SPI::WriteSPICNT(u16 data) {
 }
 
 auto SPI::ReadSPIDATA() -> u8 {
-    if (!(SPICNT & (1 << 15))) {
-        return 0;
-    }
-
     return SPIDATA;
 }
 
@@ -40,7 +36,6 @@ void SPI::DirectBoot() {
     for (u32 i = 0; i < 0x70; i++) {
         core->memory.ARM9WriteByte(0x027FFC80 + i, firmware[0x3FF00 + i]);
     }
-    log_debug("firmware data transfers completed successfully!");
 }
 
 void SPI::LoadFirmware() {

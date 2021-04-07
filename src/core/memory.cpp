@@ -435,6 +435,11 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
         }
         break;
     case REGION_IO:
+        if (in_range(0x04000400, 0x100, addr)) {
+            core->spu.WriteSoundChannel(addr, data);
+            return;
+        }
+
         switch (addr) {
         case 0x040000D4:
             core->dma[0].channel[3].source = data;

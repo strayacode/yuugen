@@ -30,7 +30,7 @@ struct SPI {
     u8 command;
 
     // this is used to keep track of how times spidata has been written to for the current command
-    u8 write_count;
+    u32 write_count;
 
     // used in the 3 byte address for command 0x03 so far
     u32 address;
