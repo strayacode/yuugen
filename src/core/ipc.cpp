@@ -161,6 +161,11 @@ u32 IPC::ReadFIFORECV7() {
                 // set respective bits
                 IPCFIFOCNT9 |= 1;
                 IPCFIFOCNT7 |= (1 << 8);
+                // trigger a recieve fifo empty irq if enabled
+                // on the other ipcfifocnt
+                if (IPCFIFOCNT9 & (1 << 2)) {
+                    core->arm9.SendInterrupt(17);
+                }
             } else if (fifo9.size() == 15) {
                 // recieve fifo now went from full to not full
                 IPCFIFOCNT9 &= ~(1 << 1);
@@ -189,6 +194,11 @@ u32 IPC::ReadFIFORECV9() {
                 // set respective bits
                 IPCFIFOCNT7 |= 1;
                 IPCFIFOCNT9 |= (1 << 8);
+                // trigger a recieve fifo empty irq if enabled
+                // on the other ipcfifocnt
+                if (IPCFIFOCNT7 & (1 << 2)) {
+                    core->arm7.SendInterrupt(17);
+                }
             } else if (fifo7.size() == 15) {
                 // recieve fifo now went from full to not full
                 IPCFIFOCNT7 &= ~(1 << 1);

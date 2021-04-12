@@ -74,6 +74,8 @@ u8 Memory::ARM7ReadByte(u32 addr) {
         switch (addr) {
         case 0x04000138:
             return core->rtc.RTC_REG;
+        case 0x04000241:
+            return WRAMCNT;
         case 0x04000300:
             return POSTFLG7;
         default:
@@ -1418,7 +1420,7 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
             }
             break;
         default:
-            log_fatal("unimplemented arm9 word write at address 0x%08x with data 0x%08x\n", addr, data);
+            log_warn("unimplemented arm9 word write at address 0x%08x with data 0x%08x", addr, data);
         }
     }
 }
