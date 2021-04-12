@@ -74,6 +74,8 @@ u8 Memory::ARM7ReadByte(u32 addr) {
         switch (addr) {
         case 0x04000138:
             return core->rtc.RTC_REG;
+        case 0x04000240:
+            return core->gpu.VRAMSTAT;
         case 0x04000241:
             return WRAMCNT;
         case 0x04000300:
@@ -242,6 +244,9 @@ u32 Memory::ARM7ReadWord(u32 addr) {
             log_fatal("unimplemented arm7 word io read at address 0x%08x", addr);
         }
         break;
+    case REGION_VRAM:
+        // do plain arm7 cpu access from the gpu
+        return (core->gpu.ReadARM7(addr + 2) << 16) | (core->gpu.ReadARM7(addr));
     default:
         log_warn("unimplemented arm7 word read at address 0x%08x\n", addr);
         return 0;
@@ -484,10 +489,10 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
 }
 
 u8 Memory::ARM9ReadByte(u32 addr) {
-    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize()) && !core->cp15.GetITCMLoadMode()) {
         return core->cp15.itcm[addr & 0x7FFF];
     } else if (core->cp15.GetDTCMEnabled() && 
-        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr) && !core->cp15.GetDTCMLoadMode()) {
         return core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF];
     } else {
         switch (addr >> 24) {
@@ -531,10 +536,10 @@ u16 Memory::ARM9ReadHalfword(u32 addr) {
     addr &= ~1;
 
     u16 return_value = 0;
-    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize()) && !core->cp15.GetITCMLoadMode()) {
         memcpy(&return_value, &core->cp15.itcm[addr & 0x7FFF], 2);
     } else if (core->cp15.GetDTCMEnabled() && 
-        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr) && !core->cp15.GetDTCMLoadMode()) {
         memcpy(&return_value, &core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], 2);
     } else {
         switch (addr >> 24) {
@@ -647,10 +652,10 @@ u32 Memory::ARM9ReadWord(u32 addr) {
     addr &= ~3;
 
     u32 return_value = 0;
-    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize()) && !core->cp15.GetITCMLoadMode()) {
         memcpy(&return_value, &core->cp15.itcm[addr & 0x7FFF], 4);
     } else if (core->cp15.GetDTCMEnabled() && 
-        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr) && !core->cp15.GetDTCMLoadMode()) {
         memcpy(&return_value, &core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], 4);
     } else {
         switch (addr >> 24) {
@@ -753,8 +758,10 @@ u32 Memory::ARM9ReadWord(u32 addr) {
         case REGION_VRAM:
             if (addr >= 0x06800000) {
                 return (core->gpu.ReadLCDC(addr + 2) << 16) | (core->gpu.ReadLCDC(addr));
+            } else if (in_range(0x06000000, 0x200000, addr)) {
+                return (core->gpu.ReadBGA(addr + 2) << 16) | (core->gpu.ReadBGA(addr));
             } else {
-                log_fatal("handle at word write at address %08x", addr);
+                log_fatal("handle word write at address %08x", addr);
             }
             break;
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
@@ -823,9 +830,27 @@ void Memory::ARM9WriteByte(u32 addr, u8 data) {
             break;
         case 0x04000242:
             core->gpu.VRAMCNT_C = data;
+            // if vramcnt_c has an mst of 2 and is now enabled,
+            // then set bit 0 of VRAMSTAT (vram bank c allocated to the arm7)
+            if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
+                // then set bit 0
+                core->gpu.VRAMSTAT |= 1;
+            } else {
+                // reset bit 0
+                core->gpu.VRAMSTAT &= ~1;
+            }
             break;
         case 0x04000243:
             core->gpu.VRAMCNT_D = data;
+            // if vramcnt_d has an mst of 2 and is now enabled,
+            // then set bit 0 of VRAMSTAT (vram bank d allocated to the arm7)
+            if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
+                // then set bit 0
+                core->gpu.VRAMSTAT |= (1 << 1);
+            } else {
+                // reset bit 0
+                core->gpu.VRAMSTAT &= ~(1 << 1);
+            }
             break;
         case 0x04000244:
             core->gpu.VRAMCNT_E = data;

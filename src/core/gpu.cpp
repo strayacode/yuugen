@@ -28,6 +28,8 @@ void GPU::Reset() {
     VRAMCNT_H = 0;
     VRAMCNT_I = 0;
 
+    VRAMSTAT = 0;
+
     DISPSTAT7 = 0;
     DISPSTAT9 = 0;
 
@@ -414,6 +416,23 @@ u16 GPU::ReadBGB(u32 addr) {
     if (GetVRAMCNTEnabled(VRAMCNT_I)) {
         if (in_range(0x06208000, 0x4000, addr) && (GetVRAMCNTMST(VRAMCNT_I) == 1)) {
             memcpy(&return_value, &VRAM_I[addr & 0x3FFF], 2);
+        }
+    }
+
+    return return_value;
+}
+
+u16 GPU::ReadARM7(u32 addr) {
+    u16 return_value = 0;
+    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
+        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
+            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], 2);
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
+        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000, addr) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
+            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], 2);
         }
     }
 

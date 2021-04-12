@@ -163,6 +163,15 @@ bool CP15::GetDTCMEnabled() {
     return (control_register & (1 << 16));
 }
 
+bool CP15::GetITCMLoadMode() {
+    return (control_register & (1 << 19));
+}
+
+
+bool CP15::GetDTCMLoadMode() {
+    return (control_register & (1 << 17));
+}
+
 u32 CP15::GetExceptionBase() {
     return ((control_register & (1 << 13)) ? 0xFFFF0000 : 0x00000000);
 }

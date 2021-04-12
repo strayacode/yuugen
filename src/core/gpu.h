@@ -32,6 +32,8 @@ struct GPU {
     u8 VRAMCNT_H;
     u8 VRAMCNT_I;
 
+    u8 VRAMSTAT;
+
     u16 DISPSTAT7, DISPSTAT9;
 
     // understanding: these blocks of vram make up 656kb and are able to be dynamically mapped to the vram region
@@ -62,6 +64,7 @@ struct GPU {
     u16 ReadLCDC(u32 addr);
     u16 ReadBGA(u32 addr);
     u16 ReadBGB(u32 addr);
+    u16 ReadARM7(u32 addr);
 
     void RenderScanlineStart();
     void RenderScanlineFinish();

@@ -23,6 +23,9 @@ struct CP15 {
     bool GetITCMEnabled();
     bool GetDTCMEnabled();
 
+    bool GetITCMLoadMode();
+    bool GetDTCMLoadMode();
+
     u32 GetExceptionBase();
 
     u8 itcm[0x8000] = {};
