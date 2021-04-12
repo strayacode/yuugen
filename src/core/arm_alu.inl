@@ -37,14 +37,14 @@ INSTRUCTION(ARM_MOVS, u32 op2) {
     regs.r[rd] = op2;
 
     if (rd == 15) {
-        // store the current spsr in cpsr
-        // TODO:
-        // only update cpsr with spsr if not in usr or sys
+        // store the current spsr in cpsr only if in privileged mode
+        // (when spsr exists)
+        printf("cpsr before: %08x counter: %d\n", regs.cpsr, counter);
+        printf("spsr: %08x\n", regs.spsr);
+        printf("spsr sys: %08x\n", regs.spsr_banked[0]);
         UpdateMode(regs.spsr & 0x1F);
-
-        
         regs.cpsr = regs.spsr;
-        
+        printf("cpsr after: %08x counter: %d\n", regs.cpsr, counter);
 
         if (IsARM()) {
             // word align first
@@ -57,6 +57,7 @@ INSTRUCTION(ARM_MOVS, u32 op2) {
 
             ThumbFlushPipeline();
         }
+        return;
     } else {
         regs.r[15] += 4;
     }
@@ -284,16 +285,16 @@ INSTRUCTION(ARM_ORRS, u32 op2) {
 INSTRUCTION(ARM_SUBS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] - op2;
     
+    regs.r[rd] = regs.r[rn] - op2;
     if (rd == 15) {
-        // store the current spsr in cpsr
-
+        // store the current spsr in cpsr only if in privileged mode
+        // (when spsr exists)
+        printf("cpsr mode: %02x\n", regs.cpsr & 0x1F);
+        printf("spsr mode: %02x\n", regs.spsr & 0x1F);
+        printf("spsr: %08x cpsr: %08x\n", regs.spsr, regs.cpsr); 
         UpdateMode(regs.spsr & 0x1F);
-
-        
         regs.cpsr = regs.spsr;
-
         if (IsARM()) {
             // word align first
             regs.r[15] &= ~3;
@@ -305,6 +306,7 @@ INSTRUCTION(ARM_SUBS, u32 op2) {
 
             ThumbFlushPipeline();
         }
+        return;
     } else {
         regs.r[15] += 4;
     }
@@ -831,14 +833,13 @@ u32 ARM_LOGICAL_SHIFT_RIGHT_IMM() {
 u32 ARM_LOGICAL_SHIFT_RIGHT_IMMS() {
     u8 shift_amount = (instruction >> 7) & 0x1F;
     u8 rm = instruction & 0xF;
-
     u32 result = 0;
 
     if (shift_amount == 0) {
         SetConditionFlag(C_FLAG, regs.r[rm] >> 31);
     } else {
         result = regs.r[rm] >> shift_amount;
-        SetConditionFlag(C_FLAG, regs.r[rm] && (1 << (shift_amount - 1)));
+        SetConditionFlag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
     }
 
     return result;

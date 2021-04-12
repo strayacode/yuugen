@@ -205,7 +205,7 @@ void ARM::ExecuteInstruction() {
     }
     // DebugRegisters();
     // TODO: maybe change arm instructions to SyntaxLikeThis instead of all caps
-    // counter++;
+    counter++;
 
     // if ((counter == 150000) && (arch == ARMv4)) {
     //     exit(1);
@@ -214,9 +214,9 @@ void ARM::ExecuteInstruction() {
         HandleInterrupt();
     }
 
-    // if (arch == ARMv5) {
-    //     LogRegisters();
-    // }
+    if (arch == ARMv5) {
+        LogRegisters();
+    }
     // if (arch == ARMv4) {
     //     // printf("counter: %d\n", counter);
     //     LogRegisters();
@@ -341,6 +341,8 @@ void ARM::ExecuteInstruction() {
                 return ARM_MRS_SPSR();
             case 0x149:
                 return ARM_SWPB();
+            case 0x14B:
+                return ARM_STRH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x150: case 0x158:
                 return ARM_CMPS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x152: case 0x15A:
@@ -1254,9 +1256,9 @@ void ARM::DebugRegisters() {
 }
 
 void ARM::LogRegisters() {
-    fprintf(log_buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x r5: %08x r6: %08x r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x\n",
+    fprintf(log_buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x r5: %08x r6: %08x r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x cpsr: %08x\n",
         regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], 
-        regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction);
+        regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction, regs.cpsr);
 }
 
 int ARM::GetRegisterBank(int mode) {
@@ -1280,23 +1282,36 @@ int ARM::GetRegisterBank(int mode) {
 
 
 void ARM::UpdateMode(int new_mode) {
+    if (new_mode == (regs.cpsr & 0x1F)) {
+        // don't switch at all
+        return;
+    }
+
     // log_debug("switch from mode %02x to %02x", regs.cpsr & 0x1F, new_mode);
     int old_bank = GetRegisterBank(regs.cpsr & 0x1F);
     int new_bank = GetRegisterBank(new_mode);
     
-
-    // only restore spsr with a banked spsr if that an spsr exists for that mode (not usr or sys)
-    if ((new_mode != 0x1F) && (new_mode != 0x10)) {
-        regs.spsr = regs.spsr_banked[new_bank];
-    }
-
     // slight optimisation
     if (old_bank == new_bank) {
         return;
     }
 
+    printf("new mode: %02x old mode: %02x\n", new_mode, regs.cpsr & 0x1F);
+    printf("new bank: %02x old bank: %02x\n", new_bank, old_bank);
+    // only restore spsr with a banked spsr if that an spsr exists for that mode (not usr or sys)
+    if ((new_mode != 0x1F) && (new_mode != 0x10)) {
+        regs.spsr_banked[old_bank] = regs.spsr;
+        regs.spsr = regs.spsr_banked[new_bank];
+        // printf("spsr is now %08x\n", regs.spsr);
+    }
+    printf("banked spsr: %08x\n", regs.spsr_banked[new_bank]);
+    printf("spsr is now %08x\n", regs.spsr);
+
+    // finally change cpsr to reflect the new cpu mode
+    regs.cpsr = (regs.cpsr & ~0x1F) | (new_mode);
+
     
-    
+
     if ((old_bank == BANK_FIQ) || (new_bank == BANK_FIQ)) {
         for (int i = 0; i < 7; i++) {
             regs.r_banked[old_bank][i] = regs.r[8 + i];
@@ -1312,9 +1327,6 @@ void ARM::UpdateMode(int new_mode) {
         regs.r[13] = regs.r_banked[new_bank][5];
         regs.r[14] = regs.r_banked[new_bank][6];
     }
-
-    // finally change cpsr to reflect the new cpu mode
-    regs.cpsr = (regs.cpsr & ~0x1F) | (new_mode);
 }
 
 void ARM::Halt() {
@@ -1332,7 +1344,6 @@ void ARM::SendInterrupt(int interrupt) {
 
 void ARM::HandleInterrupt() {
     halted = false;
-
     // store the cpsr in spsr_svc
     regs.spsr_banked[BANK_IRQ] = regs.cpsr;
 
