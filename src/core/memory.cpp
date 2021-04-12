@@ -162,14 +162,14 @@ u16 Memory::ARM7ReadHalfword(u32 addr) {
             }
             // otherwise return openbus (0xFFFFFFFF)
             return 0xFFFF;
-        case REGION_GBA_RAM:
-            // check if the arm9 has access rights to the gba slot
-            // if not return 0
-            if (!EXMEMCNT & (1 << 7)) {
-                return 0;
-            }
-            // otherwise return openbus (0xFFFFFFFF)
-            return 0xFFFF;
+    case REGION_GBA_RAM:
+        // check if the arm9 has access rights to the gba slot
+        // if not return 0
+        if (!EXMEMCNT & (1 << 7)) {
+            return 0;
+        }
+        // otherwise return openbus (0xFFFFFFFF)
+        return 0xFFFF;
     default:
         log_fatal("unimplemented arm7 halfword read at address 0x%08x\n", addr);
     }
@@ -645,9 +645,6 @@ u32 Memory::ARM9ReadWord(u32 addr) {
     addr &= ~3;
 
     u32 return_value = 0;
-    // printf("itcm enabled %d dtcm enabled %d\n", core->cp15.GetITCMEnabled(), core->cp15.GetDTCMEnabled());
-    // printf("itcm size: %08x\n", core->cp15.GetITCMSize());
-    // printf("dtcm base: %08x\n", core->cp15.GetDTCMBase());
     if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&return_value, &core->cp15.itcm[addr & 0x7FFF], 4);
     } else if (core->cp15.GetDTCMEnabled() && 
@@ -972,7 +969,9 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
                 core->spi.WriteSPICNT(data);
                 break;
             case 0x04000204:
-                EXMEMCNT = data;
+                // don't do exmemcnt emulation for now
+                // TODO: do later
+                // EXMEMCNT = data;
                 break;
             case 0x04000208:
                 core->interrupt[1].IME = data & 0x1;

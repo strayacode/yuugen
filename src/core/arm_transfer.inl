@@ -233,7 +233,8 @@ INSTRUCTION(ARM_STRH_PRE, u32 op2) {
 INSTRUCTION(ARM_LDRH_PRE, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
-
+    // log_warn("address is %08x with rn as %d counter %d", regs.r[rn] + op2, rn, counter);
+    
     if (rn == 15) {
         log_fatal("handle");
     }

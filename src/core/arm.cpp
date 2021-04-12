@@ -205,7 +205,7 @@ void ARM::ExecuteInstruction() {
     }
     // DebugRegisters();
     // TODO: maybe change arm instructions to SyntaxLikeThis instead of all caps
-    // counter++;
+    counter++;
 
     // if ((counter == 150000) && (arch == ARMv4)) {
     //     exit(1);
@@ -214,9 +214,9 @@ void ARM::ExecuteInstruction() {
         HandleInterrupt();
     }
 
-    // if (arch == ARMv4) {
-    //     LogRegisters();
-    // }
+    if (arch == ARMv5) {
+        LogRegisters();
+    }
     // if (arch == ARMv4) {
     //     // printf("counter: %d\n", counter);
     //     LogRegisters();
@@ -909,7 +909,14 @@ void ARM::ExecuteInstruction() {
             case 0xBF4: case 0xBF5: case 0xBF6: case 0xBF7:
             case 0xBF8: case 0xBF9: case 0xBFA: case 0xBFB:
             case 0xBFC: case 0xBFD: case 0xBFE: case 0xBFF:
-                return ARM_BL();
+                // check bits 28..31
+                // if it is 0b1111 then its a blx_offset
+                if ((instruction & 0xF0000000) != 0xF0000000) {
+                    return ARM_BL();
+                } else {
+                    return ARM_BLX();
+                }
+                return;
             case 0xE01: case 0xE03: case 0xE05: case 0xE07:
             case 0xE09: case 0xE0B: case 0xE0D: case 0xE0F:
             case 0xE21: case 0xE23: case 0xE25: case 0xE27:
