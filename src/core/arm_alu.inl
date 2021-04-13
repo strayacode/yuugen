@@ -39,12 +39,8 @@ INSTRUCTION(ARM_MOVS, u32 op2) {
     if (rd == 15) {
         // store the current spsr in cpsr only if in privileged mode
         // (when spsr exists)
-        printf("cpsr before: %08x counter: %d\n", regs.cpsr, counter);
-        printf("spsr: %08x\n", regs.spsr);
-        printf("spsr sys: %08x\n", regs.spsr_banked[0]);
         UpdateMode(regs.spsr & 0x1F);
         regs.cpsr = regs.spsr;
-        printf("cpsr after: %08x counter: %d\n", regs.cpsr, counter);
 
         if (IsARM()) {
             // word align first
@@ -288,11 +284,9 @@ INSTRUCTION(ARM_SUBS, u32 op2) {
     
     regs.r[rd] = regs.r[rn] - op2;
     if (rd == 15) {
+        // TODO:
         // store the current spsr in cpsr only if in privileged mode
         // (when spsr exists)
-        printf("cpsr mode: %02x\n", regs.cpsr & 0x1F);
-        printf("spsr mode: %02x\n", regs.spsr & 0x1F);
-        printf("spsr: %08x cpsr: %08x\n", regs.spsr, regs.cpsr); 
         UpdateMode(regs.spsr & 0x1F);
         regs.cpsr = regs.spsr;
         if (IsARM()) {

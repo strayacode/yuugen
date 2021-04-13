@@ -14,7 +14,9 @@ void Memory::Reset() {
 
     LoadARM7BIOS();
     LoadARM9BIOS();
+}
 
+void Memory::DirectBoot() {
     // TODO: check later or add to a direct boot function
     WRAMCNT = 3;
     POWCNT2 = 0;
@@ -232,6 +234,8 @@ u32 Memory::ARM7ReadWord(u32 addr) {
             return core->dma[0].ReadDMACNT(3);
         case 0x04000180:
             return core->ipc.ReadIPCSYNC7();
+        case 0x040001A4:
+            return core->cartridge.ROMCTRL;
         case 0x04000208:
             return core->interrupt[0].IME & 0x1;
         case 0x04000210:
@@ -298,6 +302,21 @@ void Memory::ARM7WriteByte(u32 addr, u8 data) {
         switch (addr) {
         case 0x04000138:
             core->rtc.RTC_REG = data;
+            break;
+        case 0x040001A1:
+            // write to the high byte of AUXSPICNT
+            core->cartridge.AUXSPICNT = (core->cartridge.AUXSPICNT & 0xFF) | (data << 8);
+            break;
+        case 0x040001A8:
+        case 0x040001A9:
+        case 0x040001AA:
+        case 0x040001AB:
+        case 0x040001AC:
+        case 0x040001AD:
+        case 0x040001AE:
+        case 0x040001AF:
+            // recieve a cartridge command and store in the buffer
+            core->cartridge.ReceiveCommand(data, addr - 0x040001A8);
             break;
         case 0x04000208:
             core->interrupt[0].IME = data & 0x1;
@@ -464,11 +483,26 @@ void Memory::ARM7WriteWord(u32 addr, u32 data) {
         case 0x040000DC:
             core->dma[0].WriteDMACNT(3, data);
             break;
+        case 0x04000100:
+            core->timers[0].WriteTMCNT_L(0, data);
+            core->timers[0].WriteTMCNT_H(0, data);
+            break;
+        case 0x04000104:
+            core->timers[0].WriteTMCNT_L(1, data);
+            core->timers[0].WriteTMCNT_H(1, data);
+            break;
+        case 0x04000108:
+            core->timers[0].WriteTMCNT_L(2, data);
+            core->timers[0].WriteTMCNT_H(2, data);
+            break;
         case 0x04000180:
             core->ipc.WriteIPCSYNC7(data);
             break;
         case 0x04000188:
             core->ipc.WriteFIFOSEND7(data);
+            break;
+        case 0x040001A4:
+            core->cartridge.WriteROMCTRL(data);
             break;
         case 0x04000208:
             core->interrupt[0].IME = data & 0x1;
@@ -520,6 +554,8 @@ u8 Memory::ARM9ReadByte(u32 addr) {
             switch (addr) {
             case 0x04000208:
                 return core->interrupt[1].IME & 0x1;
+            case 0x04000300:
+                return POSTFLG9;
             case 0x04004000:
                 return 0;
             default:
@@ -1259,6 +1295,13 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
                 break;
             case 0x04000188:
                 core->ipc.WriteFIFOSEND9(data);
+                break;
+            case 0x040001A0:
+                core->cartridge.WriteAUXSPICNT(data & 0xFFFF);
+                core->cartridge.WriteAUXSPIDATA(data >> 16);
+                break;
+            case 0x040001A4:
+                core->cartridge.WriteROMCTRL(data);
                 break;
             case 0x04000208:
                 core->interrupt[1].IME = data & 0x1;

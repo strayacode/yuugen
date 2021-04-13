@@ -60,7 +60,7 @@ bool HostInterface::Initialise() {
 void HostInterface::Run(const char* path) {
     core->SetRomPath(path);
     core->Reset();
-    core->DirectBoot();
+    core->FirmwareBoot();
 
     u32 frame_time_start = SDL_GetTicks();
     while (true) {

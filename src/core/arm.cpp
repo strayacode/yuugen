@@ -111,7 +111,21 @@ void ARM::DirectBoot() {
     UpdateMode(SYS);
 
     ARMFlushPipeline();
+}
 
+void ARM::FirmwareBoot() {
+    if (arch == ARMv5) {
+        // make arm9 start at arm9 bios
+        regs.r[15] = 0xFFFF0000;
+    } else {
+        // make arm7 start at arm7 bios
+        regs.r[15] = 0x00000000;
+    }
+    
+    regs.cpsr = 0xD3;
+    UpdateMode(SVC);
+
+    ARMFlushPipeline();
 }
 
 bool ARM::IsARM() {
@@ -205,7 +219,7 @@ void ARM::ExecuteInstruction() {
     }
     // DebugRegisters();
     // TODO: maybe change arm instructions to SyntaxLikeThis instead of all caps
-    counter++;
+    // counter++;
 
     // if ((counter == 150000) && (arch == ARMv4)) {
     //     exit(1);
@@ -214,9 +228,9 @@ void ARM::ExecuteInstruction() {
         HandleInterrupt();
     }
 
-    if (arch == ARMv5) {
-        LogRegisters();
-    }
+    // if (arch == ARMv5) {
+    //     LogRegisters();
+    // }
     // if (arch == ARMv4) {
     //     // printf("counter: %d\n", counter);
     //     LogRegisters();
@@ -1296,21 +1310,15 @@ void ARM::UpdateMode(int new_mode) {
         return;
     }
 
-    printf("new mode: %02x old mode: %02x\n", new_mode, regs.cpsr & 0x1F);
-    printf("new bank: %02x old bank: %02x\n", new_bank, old_bank);
     // only restore spsr with a banked spsr if that an spsr exists for that mode (not usr or sys)
     if ((new_mode != 0x1F) && (new_mode != 0x10)) {
         regs.spsr_banked[old_bank] = regs.spsr;
         regs.spsr = regs.spsr_banked[new_bank];
         // printf("spsr is now %08x\n", regs.spsr);
     }
-    printf("banked spsr: %08x\n", regs.spsr_banked[new_bank]);
-    printf("spsr is now %08x\n", regs.spsr);
 
     // finally change cpsr to reflect the new cpu mode
     regs.cpsr = (regs.cpsr & ~0x1F) | (new_mode);
-
-    
 
     if ((old_bank == BANK_FIQ) || (new_bank == BANK_FIQ)) {
         for (int i = 0; i < 7; i++) {

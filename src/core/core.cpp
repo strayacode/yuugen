@@ -49,6 +49,8 @@ void Core::DirectBoot() {
     cartridge.LoadROM(rom_path);
     cartridge.DirectBoot();
 
+    memory.DirectBoot();
+
     arm9.DirectBoot();
     arm7.DirectBoot();
 
@@ -57,7 +59,8 @@ void Core::DirectBoot() {
 }
 
 void Core::FirmwareBoot() {
-    
+    arm9.FirmwareBoot();
+    arm7.FirmwareBoot();
 }
 
 void Core::RunFrame() {

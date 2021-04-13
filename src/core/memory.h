@@ -28,6 +28,8 @@ struct Memory {
 
     void Reset();
 
+    void DirectBoot();
+
     // generic memory read and write handlers
     u8 ARM7ReadByte(u32 addr);
     u16 ARM7ReadHalfword(u32 addr);

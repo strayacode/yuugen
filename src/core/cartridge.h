@@ -44,7 +44,19 @@ struct Cartridge {
     void LoadROM(const char* rom_path);
     void Reset();
 
+    void WriteROMCTRL(u32 data);
+    void WriteAUXSPICNT(u16 data);
+    void WriteAUXSPIDATA(u16 data);
+
+    void ReceiveCommand(u8 command, int command_index);
+
     u8* rom = nullptr;
+
+    u32 ROMCTRL;
+    u16 AUXSPICNT;
+    u16 AUXSPIDATA;
+
+    u8 command_buffer[8];
 
     Core* core;
 };

@@ -85,6 +85,7 @@ struct ARM {
 
     void Reset();
     void DirectBoot();
+    void FirmwareBoot();
 
     // 0 = arm7, 1 = arm9
     int arch;

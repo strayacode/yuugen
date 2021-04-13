@@ -61,6 +61,34 @@ void Cartridge::LoadROM(const char* rom_path) {
 
 void Cartridge::Reset() {
     memset(&header, 0, sizeof(CartridgeHeader));
+    memset(command_buffer, 0, 8);
+
+    ROMCTRL = 0;
+    AUXSPICNT = 0;
+    AUXSPIDATA = 0;
+}
+
+void Cartridge::WriteROMCTRL(u32 data) {
+    ROMCTRL = data;
+    if (ROMCTRL & (1 << 31)) {
+        log_fatal("handle cartridge transfer");
+    }
+
+    if (AUXSPICNT & (1 << 5)) {
+        log_fatal("handle");
+    }
+}
+
+void Cartridge::WriteAUXSPICNT(u16 data) {
+    AUXSPICNT = data;
+}
+
+void Cartridge::WriteAUXSPIDATA(u16 data) {
+    AUXSPIDATA = data;
+}
+
+void Cartridge::ReceiveCommand(u8 command, int command_index) {
+    command_buffer[command_index] = command;
 }
 
 void Cartridge::DirectBoot() {
