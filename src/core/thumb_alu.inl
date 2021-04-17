@@ -320,8 +320,7 @@ INSTRUCTION(THUMB_CMPH) {
 
 INSTRUCTION(THUMB_SUB_IMM3) {
     u8 rd = instruction & 0x7;
-    u32 op1 = (instruction >> 3) & 0x7;
-
+    u32 op1 = regs.r[(instruction >> 3) & 0x7];
 
     u8 immediate = (instruction >> 6) & 0x7;
 
@@ -337,7 +336,7 @@ INSTRUCTION(THUMB_SUB_IMM3) {
 
 INSTRUCTION(THUMB_ADD_IMM3) {
     u8 rd = instruction & 0x7;
-    u32 op1 = (instruction >> 3) & 0x7;
+    u32 op1 = regs.r[(instruction >> 3) & 0x7];
 
 
     u8 immediate = (instruction >> 6) & 0x7;

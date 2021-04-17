@@ -828,90 +828,103 @@ u32 Memory::ARM9ReadWord(u32 addr) {
 }
 
 void Memory::ARM9WriteByte(u32 addr, u8 data) {
-    switch (addr >> 24) {
-    case REGION_MAIN_MEMORY:
-        main_memory[addr & 0x3FFFFF] = data;
-        break;
-    case REGION_SHARED_WRAM:
-        switch (WRAMCNT) {
-        case 0:
-            // 32 kb is allocated to arm9 and 0kb is allocated to arm7
-            shared_wram[addr & 0x7FFF] = data;
+    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+        core->cp15.itcm[addr & 0x7FFF] = data;
+        // done with the write
+        return;
+    } else if (core->cp15.GetDTCMEnabled() && 
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize(), addr)) {
+
+        core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF] = data;
+        
+        // done with the write
+        return;
+    } else {
+        switch (addr >> 24) {
+        case REGION_MAIN_MEMORY:
+            main_memory[addr & 0x3FFFFF] = data;
             break;
-        case 1:
-            // in a 32kb block the first 16kb are allocated to the arm7 and the next 16kb are allocated to the arm9
-            shared_wram[(addr & 0x3FFF) + 0x4000] = data;
-            break;
-        case 2:
-            // in a 32kb block the first 16kb are allocated to the arm9 and the next 16kb are allocated to the arm7
-            shared_wram[addr & 0x3FFF] = data;
-            break;
-        case 3:
-            // in this case the wram area is empty (undefined)
-            break;
-        default:
-            log_fatal("handle");
-        }
-        break;
-    case REGION_IO:
-        switch (addr) {
-        case 0x04000208:
-            core->interrupt[1].IME = data & 0x1;
-            break;
-        case 0x04000240:
-            core->gpu.VRAMCNT_A = data;
-            break;
-        case 0x04000241:
-            core->gpu.VRAMCNT_B = data;
-            break;
-        case 0x04000242:
-            core->gpu.VRAMCNT_C = data;
-            // if vramcnt_c has an mst of 2 and is now enabled,
-            // then set bit 0 of VRAMSTAT (vram bank c allocated to the arm7)
-            if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
-                // then set bit 0
-                core->gpu.VRAMSTAT |= 1;
-            } else {
-                // reset bit 0
-                core->gpu.VRAMSTAT &= ~1;
+        case REGION_SHARED_WRAM:
+            switch (WRAMCNT) {
+            case 0:
+                // 32 kb is allocated to arm9 and 0kb is allocated to arm7
+                shared_wram[addr & 0x7FFF] = data;
+                break;
+            case 1:
+                // in a 32kb block the first 16kb are allocated to the arm7 and the next 16kb are allocated to the arm9
+                shared_wram[(addr & 0x3FFF) + 0x4000] = data;
+                break;
+            case 2:
+                // in a 32kb block the first 16kb are allocated to the arm9 and the next 16kb are allocated to the arm7
+                shared_wram[addr & 0x3FFF] = data;
+                break;
+            case 3:
+                // in this case the wram area is empty (undefined)
+                break;
+            default:
+                log_fatal("handle");
             }
             break;
-        case 0x04000243:
-            core->gpu.VRAMCNT_D = data;
-            // if vramcnt_d has an mst of 2 and is now enabled,
-            // then set bit 0 of VRAMSTAT (vram bank d allocated to the arm7)
-            if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
-                // then set bit 0
-                core->gpu.VRAMSTAT |= (1 << 1);
-            } else {
-                // reset bit 0
-                core->gpu.VRAMSTAT &= ~(1 << 1);
+        case REGION_IO:
+            switch (addr) {
+            case 0x04000208:
+                core->interrupt[1].IME = data & 0x1;
+                break;
+            case 0x04000240:
+                core->gpu.VRAMCNT_A = data;
+                break;
+            case 0x04000241:
+                core->gpu.VRAMCNT_B = data;
+                break;
+            case 0x04000242:
+                core->gpu.VRAMCNT_C = data;
+                // if vramcnt_c has an mst of 2 and is now enabled,
+                // then set bit 0 of VRAMSTAT (vram bank c allocated to the arm7)
+                if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
+                    // then set bit 0
+                    core->gpu.VRAMSTAT |= 1;
+                } else {
+                    // reset bit 0
+                    core->gpu.VRAMSTAT &= ~1;
+                }
+                break;
+            case 0x04000243:
+                core->gpu.VRAMCNT_D = data;
+                // if vramcnt_d has an mst of 2 and is now enabled,
+                // then set bit 0 of VRAMSTAT (vram bank d allocated to the arm7)
+                if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
+                    // then set bit 0
+                    core->gpu.VRAMSTAT |= (1 << 1);
+                } else {
+                    // reset bit 0
+                    core->gpu.VRAMSTAT &= ~(1 << 1);
+                }
+                break;
+            case 0x04000244:
+                core->gpu.VRAMCNT_E = data;
+                break;
+            case 0x04000245:
+                core->gpu.VRAMCNT_F = data;
+                break;
+            case 0x04000246:
+                core->gpu.VRAMCNT_G = data;
+                break;
+            case 0x04000247:
+                WRAMCNT = data;
+                break;
+            case 0x04000248:
+                core->gpu.VRAMCNT_H = data;
+                break;
+            case 0x04000249:
+                core->gpu.VRAMCNT_I = data;
+                break;
+            default:
+                log_fatal("unimplemented arm9 byte io write at address 0x%08x with data 0x%02x", addr, data);
             }
             break;
-        case 0x04000244:
-            core->gpu.VRAMCNT_E = data;
-            break;
-        case 0x04000245:
-            core->gpu.VRAMCNT_F = data;
-            break;
-        case 0x04000246:
-            core->gpu.VRAMCNT_G = data;
-            break;
-        case 0x04000247:
-            WRAMCNT = data;
-            break;
-        case 0x04000248:
-            core->gpu.VRAMCNT_H = data;
-            break;
-        case 0x04000249:
-            core->gpu.VRAMCNT_I = data;
-            break;
         default:
-            log_fatal("unimplemented arm9 byte io write at address 0x%08x with data 0x%02x", addr, data);
+            log_fatal("unimplemented arm9 byte write at address 0x%08x with data 0x%02x", addr, data);
         }
-        break;
-    default:
-        log_fatal("unimplemented arm9 byte write at address 0x%08x with data 0x%02x", addr, data);
     }
 }
 
