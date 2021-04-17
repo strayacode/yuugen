@@ -614,7 +614,6 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {
 INSTRUCTION(ARM_LDM_INCREMENT_AFTER) {
     u8 rn = (instruction >> 16) & 0xF;
     u32 address = regs.r[rn];
-    
     for (int i = 0; i < 16; i++) {
         if (instruction & (1 << i)) {
             regs.r[i] = ReadWord(address);

@@ -305,7 +305,7 @@ INSTRUCTION(ARM_SUBS, u32 op2) {
     } else {
         regs.r[15] += 4;
     }
-    
+
     SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
     SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
     SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
@@ -451,7 +451,7 @@ INSTRUCTION(ARM_SBCS, u32 op2) {
         SetConditionFlag(Z_FLAG, result == 0);
         SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result));
         // TODO: fix later
-        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
+        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2) & SUB_CARRY(op1 - op2, !GetConditionFlag(C_FLAG)));
     }
 
     regs.r[rd] = result;

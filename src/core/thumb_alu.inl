@@ -255,20 +255,20 @@ INSTRUCTION(THUMB_MUL_DATA_PROCESSING) {
 INSTRUCTION(THUMB_SBC_DATA_PROCESSING) {
     u8 rd = instruction & 0x7;
     u32 op2 = regs.r[(instruction >> 3) & 0x7];
-    
-    u64 result64 = (u64)regs.r[rd] - (u64)op2 - (u64)!GetConditionFlag(C_FLAG);
 
-    u32 result32 = (u32)result64;
+    u32 result = regs.r[rd] - op2 - !GetConditionFlag(C_FLAG);
     
     
 
-    SetConditionFlag(Z_FLAG, result32 == 0);
-    SetConditionFlag(N_FLAG, result32 >> 31);
+    SetConditionFlag(Z_FLAG, result == 0);
+    SetConditionFlag(N_FLAG, result >> 31);
 
-    SetConditionFlag(V_FLAG, ((regs.r[rd] ^ op2) & (op2 ^ result32)) >> 31);
-    regs.r[rd] = regs.r[rd] - op2 - !GetConditionFlag(C_FLAG);
+    SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rd], op2, result));
+    
 
-    SetConditionFlag(C_FLAG, result64 >> 32);
+    SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rd], op2) & SUB_CARRY(regs.r[rd] - op2, !GetConditionFlag(C_FLAG)));
+
+    regs.r[rd] = result;
 
     regs.r[15] += 2;
 }
@@ -354,13 +354,13 @@ INSTRUCTION(THUMB_ADD_IMM3) {
 INSTRUCTION(THUMB_ADD_REG) {
     u8 rd = instruction & 0x7;
     u32 op1 = regs.r[(instruction >> 3) & 0x7];
-    u8 rm = (instruction >> 6) & 0x7;
-    regs.r[rd] = op1 + regs.r[rm];
+    u32 op2 = regs.r[(instruction >> 6) & 0x7];
+    regs.r[rd] = op1 + op2;
 
     SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
     SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-    SetConditionFlag(C_FLAG, ADD_CARRY(op1, regs.r[rm]));
-    SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, regs.r[rm], regs.r[rd]));
+    SetConditionFlag(C_FLAG, ADD_CARRY(op1, op2));
+    SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, regs.r[rd]));
 
     regs.r[15] += 2;
 }
