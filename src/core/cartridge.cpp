@@ -66,16 +66,42 @@ void Cartridge::Reset() {
     ROMCTRL = 0;
     AUXSPICNT = 0;
     AUXSPIDATA = 0;
+
+    transfer_count = 0;
+
+    command = 0;
 }
 
 void Cartridge::WriteROMCTRL(u32 data) {
+    u32 old_romctrl = ROMCTRL;
     ROMCTRL = data;
-    if (ROMCTRL & (1 << 31)) {
-        log_fatal("handle cartridge transfer");
+    // setup a cartridge transfer if cartridge enable (bit 31) goes from 0 to 1
+    if (!(old_romctrl & (1 << 31)) && (ROMCTRL & (1 << 31))) {
+        Transfer();
+    }
+}
+
+void Cartridge::Transfer() {
+    u8 block_size = (ROMCTRL >> 24) & 0x7;
+
+
+    if (block_size == 0) {
+        transfer_count = 0;
+    } else if (block_size == 7) {
+        // transfer count is 4 bytes
+        transfer_count = 4;
+    } else {
+        // 100h SHL (1..6) bytes
+        transfer_count = 0x100 << block_size;
     }
 
-    if (AUXSPICNT & (1 << 5)) {
-        log_fatal("handle");
+    // check the first command in the command buffer
+    switch (command_buffer[0]) {
+    case DUMMY_COMMAND:
+        command = DUMMY_COMMAND;
+        break;
+    default:
+        log_fatal("implemented support for cartridge command %02x", command_buffer[0]);
     }
 }
 

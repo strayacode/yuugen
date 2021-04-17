@@ -7,6 +7,10 @@
 
 struct Core;
 
+enum CartridgeCommand {
+    DUMMY_COMMAND = 0x9F,
+};
+
 struct Cartridge {
     Cartridge(Core* core);
     ~Cartridge();
@@ -50,13 +54,20 @@ struct Cartridge {
 
     void ReceiveCommand(u8 command, int command_index);
 
+    void Transfer();
+
     u8* rom = nullptr;
+
+
+    u32 transfer_count;
 
     u32 ROMCTRL;
     u16 AUXSPICNT;
     u16 AUXSPIDATA;
 
     u8 command_buffer[8];
+
+    u8 command;
 
     Core* core;
 };

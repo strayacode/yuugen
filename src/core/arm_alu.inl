@@ -80,32 +80,32 @@ INSTRUCTION(ARM_MVN, u32 op2) {
 
 INSTRUCTION(ARM_CMPS, u32 op2) {
     // if rn == 15 and I=0 and R=1 (shift by register) then rn which is r15 is read as current instruction address + 12
-    u32 rn = regs.r[(instruction >> 16) & 0xF] + (((instruction & 0x20F0010) == 0xF0010) ? 4 : 0);
+    u32 op1 = regs.r[(instruction >> 16) & 0xF] + (((instruction & 0x20F0010) == 0xF0010) ? 4 : 0);
 
-    u32 result = rn - op2;
+    u32 result = op1 - op2;
     // set flags
     SetConditionFlag(N_FLAG, result >> 31);
     SetConditionFlag(Z_FLAG, result == 0);
-    SetConditionFlag(C_FLAG, SUB_CARRY(rn, op2));
-    SetConditionFlag(V_FLAG, SUB_OVERFLOW(rn, op2, result));
+    SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
+    SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result));
     regs.r[15] += 4;
 }
 
 INSTRUCTION(ARM_CMNS, u32 op2) {
-    u8 rn = (instruction >> 16) & 0xF;
-    u32 result = regs.r[rn] + op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    u32 result = op1 + op2;
 
     SetConditionFlag(Z_FLAG, result == 0);
     SetConditionFlag(N_FLAG, result >> 31);
-    SetConditionFlag(C_FLAG, ADD_CARRY(regs.r[rn], op2));
-    SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rn], op2, result));
+    SetConditionFlag(C_FLAG, ADD_CARRY(op1, op2));
+    SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, result));
 
     regs.r[15] += 4;
 }
 
 INSTRUCTION(ARM_TSTS, u32 op2) {
-    u8 rn = (instruction >> 16) & 0xF;
-    u32 result = regs.r[rn] & op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    u32 result = op1 & op2;
 
     SetConditionFlag(Z_FLAG, result == 0);
     SetConditionFlag(N_FLAG, result >> 31);
@@ -117,8 +117,8 @@ INSTRUCTION(ARM_TSTS, u32 op2) {
 
 INSTRUCTION(ARM_ADD, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] + op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op1 + op2;
     if (rd == 15) {
         // word align first
         regs.r[15] &= ~3;
@@ -131,16 +131,16 @@ INSTRUCTION(ARM_ADD, u32 op2) {
 
 INSTRUCTION(ARM_ADDS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    u64 result64 = (u64)regs.r[rn] + (u64)op2;
-    regs.r[rd] = regs.r[rn] + op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    u64 result64 = (u64)op1 + (u64)op2;
+    regs.r[rd] = op1 + op2;
     if (rd == 15) {
         log_fatal("handle");
     } else {
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
         SetConditionFlag(C_FLAG, result64 >> 32);
-        SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rn], op2, regs.r[rd]));
+        SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, regs.r[rd]));
     }
 
     regs.r[15] += 4;
@@ -149,9 +149,9 @@ INSTRUCTION(ARM_ADDS, u32 op2) {
 INSTRUCTION(ARM_SWP) {
     u8 rm = instruction & 0xF;
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
 
-    u32 address = regs.r[rn];
+    u32 address = op1;
     u32 data = ReadWord(address);
     if (address & 0x3) {
         int shift_amount = (address & 0x3) * 8;
@@ -168,10 +168,10 @@ INSTRUCTION(ARM_SWP) {
 INSTRUCTION(ARM_SWPB) {
     u8 rm = instruction & 0xF;
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
 
-    u8 data = ReadByte(regs.r[rn]);
-    WriteByte(regs.r[rn], regs.r[rm]);
+    u8 data = ReadByte(op1);
+    WriteByte(op1, regs.r[rm]);
     regs.r[rd] = data;
 
     regs.r[15] += 4;
@@ -179,9 +179,9 @@ INSTRUCTION(ARM_SWPB) {
 
 INSTRUCTION(ARM_ADC, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
 
-    regs.r[rd] = regs.r[rn] + op2 + GetConditionFlag(C_FLAG);
+    regs.r[rd] = op1 + op2 + GetConditionFlag(C_FLAG);
     
     if (rd == 15) {
         log_fatal("handle");
@@ -192,16 +192,16 @@ INSTRUCTION(ARM_ADC, u32 op2) {
 
 INSTRUCTION(ARM_ADCS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    u64 result64 = (u64)regs.r[rn] + (u64)op2 + (u64)GetConditionFlag(C_FLAG);
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    u64 result64 = (u64)op1 + (u64)op2 + (u64)GetConditionFlag(C_FLAG);
     u32 result32 = (u32)result64;
-    regs.r[rd] = regs.r[rn] + op2 + GetConditionFlag(C_FLAG);
+    regs.r[rd] = op1 + op2 + GetConditionFlag(C_FLAG);
     SetConditionFlag(C_FLAG, result64 >> 32);
 
     SetConditionFlag(Z_FLAG, result32 == 0);
     SetConditionFlag(N_FLAG, result32 >> 31);
 
-    SetConditionFlag(V_FLAG, (~(regs.r[rn] ^ op2) & (op2 ^ result32)) >> 31);
+    SetConditionFlag(V_FLAG, (~(op1 ^ op2) & (op2 ^ result32)) >> 31);
     
 
     regs.r[15] += 4;
@@ -209,8 +209,8 @@ INSTRUCTION(ARM_ADCS, u32 op2) {
 
 INSTRUCTION(ARM_SUB, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] - op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op1 - op2;
     
     if (rd == 15) {
         log_fatal("handle");
@@ -222,8 +222,8 @@ INSTRUCTION(ARM_SUB, u32 op2) {
 
 INSTRUCTION(ARM_RSB, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = op2 - regs.r[rn];
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op2 - op1;
     
     if (rd == 15) {
         log_fatal("handle");
@@ -234,25 +234,25 @@ INSTRUCTION(ARM_RSB, u32 op2) {
 
 INSTRUCTION(ARM_RSBS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = op2 - regs.r[rn];
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op2 - op1;
     
     if (rd == 15) {
         log_fatal("handle");
     } else {
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-        SetConditionFlag(C_FLAG, SUB_CARRY(op2, regs.r[rn]));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, regs.r[rn], regs.r[rd]));
+        SetConditionFlag(C_FLAG, SUB_CARRY(op2, op1));
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, op1, regs.r[rd]));
         regs.r[15] += 4;
     } 
 }
 
 INSTRUCTION(ARM_ORR, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
 
-    regs.r[rd] = regs.r[rn] | op2;
+    regs.r[rd] = op1 | op2;
 
     if (rd == 15) {
         log_fatal("handle");
@@ -263,9 +263,9 @@ INSTRUCTION(ARM_ORR, u32 op2) {
 
 INSTRUCTION(ARM_ORRS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
 
-    regs.r[rd] = regs.r[rn] | op2;
+    regs.r[rd] = op1 | op2;
 
     if (rd == 15) {
         log_fatal("handle");
@@ -280,9 +280,10 @@ INSTRUCTION(ARM_ORRS, u32 op2) {
 
 INSTRUCTION(ARM_SUBS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+
+    regs.r[rd] = op1 - op2;
     
-    regs.r[rd] = regs.r[rn] - op2;
     if (rd == 15) {
         // TODO:
         // store the current spsr in cpsr only if in privileged mode
@@ -304,17 +305,17 @@ INSTRUCTION(ARM_SUBS, u32 op2) {
     } else {
         regs.r[15] += 4;
     }
-
+    
     SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
     SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-    SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rn], op2));
-    SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rn], op2, regs.r[rd]));   
+    SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
+    SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, regs.r[rd]));   
 }
 
 INSTRUCTION(ARM_BIC, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] & ~op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op1 & ~op2;
     if (rd == 15) {
         log_fatal("shit");
     }
@@ -324,8 +325,8 @@ INSTRUCTION(ARM_BIC, u32 op2) {
 
 INSTRUCTION(ARM_BICS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] & ~op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op1 & ~op2;
     if (rd == 15) {
         log_fatal("shit");
     } else {
@@ -339,8 +340,8 @@ INSTRUCTION(ARM_BICS, u32 op2) {
 
 INSTRUCTION(ARM_AND, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] & op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op1 & op2;
     if (rd == 15) {
         log_fatal("handle");
     } 
@@ -350,8 +351,8 @@ INSTRUCTION(ARM_AND, u32 op2) {
 
 INSTRUCTION(ARM_EOR, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] ^ op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op1 ^ op2;
     if (rd == 15) {
         log_fatal("handle");
     } 
@@ -361,8 +362,8 @@ INSTRUCTION(ARM_EOR, u32 op2) {
 
 INSTRUCTION(ARM_EORS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] ^ op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op1 ^ op2;
     if (rd == 15) {
         log_fatal("handle");
     } else {
@@ -376,8 +377,8 @@ INSTRUCTION(ARM_EORS, u32 op2) {
 
 INSTRUCTION(ARM_TEQS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    u32 result = regs.r[rn] ^ op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    u32 result = op1 ^ op2;
     if (rd == 15) {
         log_fatal("handle");
     } else {
@@ -391,8 +392,8 @@ INSTRUCTION(ARM_TEQS, u32 op2) {
 
 INSTRUCTION(ARM_ANDS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = regs.r[rn] & op2;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op1 & op2;
     if (rd == 15) {
         log_fatal("handle");
     } else {
@@ -406,16 +407,16 @@ INSTRUCTION(ARM_ANDS, u32 op2) {
 
 INSTRUCTION(ARM_RSCS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    regs.r[rd] = op2 - regs.r[rn] - !GetConditionFlag(C_FLAG);
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op2 - op1 - !GetConditionFlag(C_FLAG);
     if (rd == 15) {
         log_fatal("handle");
     } else {
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
         // TODO: check how carry flag is used in calculation later
-        SetConditionFlag(C_FLAG, SUB_CARRY(op2, regs.r[rn]));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, regs.r[rn], regs.r[rd]));
+        SetConditionFlag(C_FLAG, SUB_CARRY(op2, op1));
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, op1, regs.r[rd]));
     }
 
     regs.r[15] += 4;
@@ -423,7 +424,7 @@ INSTRUCTION(ARM_RSCS, u32 op2) {
 
 INSTRUCTION(ARM_SBCS, u32 op2) {
     // u8 rd = (instruction >> 12) & 0xF;
- //    u8 rn = (instruction >> 16) & 0xF;
+ //    u32 op1 = regs.r[(instruction >> 16) & 0xF];
  //    u32 temporary_result = regs.r[rn] - op2;
  //    regs.r[rd] = regs.r[rn] - op2 - !GetConditionFlag(C_FLAG);
  //    if (rd == 15) {
@@ -439,8 +440,8 @@ INSTRUCTION(ARM_SBCS, u32 op2) {
  //    regs.r[15] += 4;
 
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    u32 result = regs.r[rn] - op2 - !GetConditionFlag(C_FLAG);
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    u32 result = op1 - op2 - !GetConditionFlag(C_FLAG);
 
     if (rd == 15) {
         log_fatal("handle");
@@ -448,9 +449,9 @@ INSTRUCTION(ARM_SBCS, u32 op2) {
     } else {
         SetConditionFlag(N_FLAG, result >> 31);
         SetConditionFlag(Z_FLAG, result == 0);
-        SetConditionFlag(V_FLAG, ((regs.r[rn] ^ op2) & (op2 ^ result)) >> 31);
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result));
         // TODO: fix later
-        SetConditionFlag(C_FLAG, regs.r[rn] >= result);
+        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
     }
 
     regs.r[rd] = result;
@@ -611,11 +612,11 @@ INSTRUCTION(ARM_QADD) {
 
     u8 rm = instruction & 0xF;
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
 
-    u32 result = regs.r[rm] + regs.r[rn];
+    u32 result = regs.r[rm] + op1;
 
-    if (ADD_OVERFLOW(regs.r[rm], regs.r[rn], result)) {
+    if (ADD_OVERFLOW(regs.r[rm], op1, result)) {
         // set q flag
         SetConditionFlag(Q_FLAG, true);
 
@@ -645,11 +646,11 @@ INSTRUCTION(ARM_QSUB) {
 
     u8 rm = instruction & 0xF;
     u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
 
-    u32 result = regs.r[rm] - regs.r[rn];
+    u32 result = regs.r[rm] - op1;
 
-    if (SUB_OVERFLOW(regs.r[rm], regs.r[rn], result)) {
+    if (SUB_OVERFLOW(regs.r[rm], op1, result)) {
         // set q flag
         SetConditionFlag(Q_FLAG, true);
 
@@ -679,17 +680,17 @@ INSTRUCTION(ARM_SMLABB) {
 
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;
-    u8 rn = (instruction >> 12) & 0xF;
+    u32 op1 = regs.r[(instruction >> 12) & 0xF];
     u8 rd = (instruction >> 16) & 0xF;
 
     // signed multiply first bottom half of first operand with signed
     // bottom half of second half and accumulate
 
     u32 result = (s16)regs.r[rm] * (s16)regs.r[rs];
-    regs.r[rd] = result + regs.r[rn];
+    regs.r[rd] = result + op1;
 
 
-    if (ADD_OVERFLOW(result, regs.r[rn], regs.r[rd])) {
+    if (ADD_OVERFLOW(result, op1, regs.r[rd])) {
         SetConditionFlag(Q_FLAG, true);
     }
 
@@ -704,16 +705,16 @@ INSTRUCTION(ARM_SMLABT) {
 
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;
-    u8 rn = (instruction >> 12) & 0xF;
+    u32 op1 = regs.r[(instruction >> 12) & 0xF];
     u8 rd = (instruction >> 16) & 0xF;
 
     // signed multiply first bottom half of first operand with signed
     // top half of second half and accumulate
 
     u32 result = (s16)regs.r[rm] * (s16)(regs.r[rs] >> 16);
-    regs.r[rd] = result + regs.r[rn];
+    regs.r[rd] = result + op1;
 
-    if (ADD_OVERFLOW(result, regs.r[rn], regs.r[rd])) {
+    if (ADD_OVERFLOW(result, op1, regs.r[rd])) {
         SetConditionFlag(Q_FLAG, true);
     }
 
@@ -728,16 +729,16 @@ INSTRUCTION(ARM_SMLATB) {
 
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;
-    u8 rn = (instruction >> 12) & 0xF;
+    u32 op1 = regs.r[(instruction >> 12) & 0xF];
     u8 rd = (instruction >> 16) & 0xF;
 
     // signed multiply first bottom half of first operand with signed
     // top half of second half and accumulate
 
     u32 result = (s16)(regs.r[rm] >> 16) * (s16)regs.r[rs];
-    regs.r[rd] = result + regs.r[rn];
+    regs.r[rd] = result + op1;
 
-    if (ADD_OVERFLOW(result, regs.r[rn], regs.r[rd])) {
+    if (ADD_OVERFLOW(result, op1, regs.r[rd])) {
         SetConditionFlag(Q_FLAG, true);
     }
 
@@ -752,16 +753,16 @@ INSTRUCTION(ARM_SMLATT) {
 
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;
-    u8 rn = (instruction >> 12) & 0xF;
+    u32 op1 = regs.r[(instruction >> 12) & 0xF];
     u8 rd = (instruction >> 16) & 0xF;
 
     // signed multiply first bottom half of first operand with signed
     // top half of second half and accumulate
 
     u32 result = (s16)(regs.r[rm] >> 16) * (s16)(regs.r[rs] >> 16);
-    regs.r[rd] = result + regs.r[rn];
+    regs.r[rd] = result + op1;
 
-    if (ADD_OVERFLOW(result, regs.r[rn], regs.r[rd])) {
+    if (ADD_OVERFLOW(result, op1, regs.r[rd])) {
         SetConditionFlag(Q_FLAG, true);
     }
 
