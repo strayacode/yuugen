@@ -75,7 +75,7 @@ u8 Memory::ARM7ReadByte(u32 addr) {
     case REGION_IO:
         switch (addr) {
         case 0x04000138:
-            return core->rtc.RTC_REG;
+            return core->rtc.ReadRTC();
         case 0x04000240:
             return core->gpu.VRAMSTAT;
         case 0x04000241:
@@ -301,7 +301,7 @@ void Memory::ARM7WriteByte(u32 addr, u8 data) {
     case REGION_IO:
         switch (addr) {
         case 0x04000138:
-            core->rtc.RTC_REG = data;
+            core->rtc.WriteRTC(data);
             break;
         case 0x040001A1:
             // write to the high byte of AUXSPICNT

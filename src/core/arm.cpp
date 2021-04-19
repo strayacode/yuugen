@@ -86,7 +86,6 @@ void ARM::DirectBoot() {
         regs.r[i] = 0;
     }
 
-    // // TODO: double check direct boot values later
     regs.r_banked[BANK_IRQ][6] = regs.spsr_banked[BANK_IRQ] = 0;
     regs.r_banked[BANK_SVC][6] = regs.spsr_banked[BANK_SVC] = 0;
 
@@ -221,14 +220,14 @@ void ARM::ExecuteInstruction() {
     // TODO: maybe change arm instructions to SyntaxLikeThis instead of all caps
     // counter++;
 
-    // if ((counter == 1000000) && (arch == ARMv5)) {
+    // if ((counter == 500000) && (arch == ARMv4)) {
     //     exit(1);
     // }
     if (core->interrupt[arch].IME && ((core->interrupt[arch].IE & core->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
         HandleInterrupt();
     }
 
-    // if (arch == ARMv5) {
+    // if (arch == ARMv4) {
     //     LogRegisters();
     // }
     // if (arch == ARMv4) {

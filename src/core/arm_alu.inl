@@ -423,22 +423,6 @@ INSTRUCTION(ARM_RSCS, u32 op2) {
 }
 
 INSTRUCTION(ARM_SBCS, u32 op2) {
-    // u8 rd = (instruction >> 12) & 0xF;
- //    u32 op1 = regs.r[(instruction >> 16) & 0xF];
- //    u32 temporary_result = regs.r[rn] - op2;
- //    regs.r[rd] = regs.r[rn] - op2 - !GetConditionFlag(C_FLAG);
- //    if (rd == 15) {
- //        log_fatal("handle");
- //    } else {
- //        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
- //        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
- //        // TODO: check how carry flag is used in calculation later
- //        SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rn], op2) & SUB_CARRY(temporary_result, !GetConditionFlag(C_FLAG)));
- //        SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rn], op2, temporary_result) | SUB_OVERFLOW(temporary_result, !GetConditionFlag(C_FLAG), regs.r[rd]));
- //    }
-
- //    regs.r[15] += 4;
-
     u8 rd = (instruction >> 12) & 0xF;
     u32 op1 = regs.r[(instruction >> 16) & 0xF];
     u32 result = op1 - op2 - !GetConditionFlag(C_FLAG);

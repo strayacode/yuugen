@@ -174,8 +174,10 @@ INSTRUCTION(THUMB_LSR_DATA_PROCESSING) {
 
     // TODO: make cleaner
     u8 shift_amount = regs.r[rs] & 0xFF;
-    if (shift_amount < 32) {
-        SetConditionFlag(C_FLAG, regs.r[rd] && (1 << (shift_amount - 1)));
+    if (shift_amount == 0) {
+        // do nothing lol
+    } else if (shift_amount < 32) {
+        SetConditionFlag(C_FLAG, regs.r[rd] & (1 << (shift_amount - 1)));
         regs.r[rd] >>= shift_amount;
     } else if (shift_amount == 32) {
         SetConditionFlag(C_FLAG, regs.r[rd] >> 31);
@@ -229,7 +231,7 @@ INSTRUCTION(THUMB_LSL_DATA_PROCESSING) {
     } else if (shift_amount == 32) {
         SetConditionFlag(C_FLAG, regs.r[rd] & 0x1);
         regs.r[rd] = 0;
-    } else {
+    } else if (shift_amount > 32) {
         // shift_amount > 32
         SetConditionFlag(C_FLAG, false);
         regs.r[rd] = 0;
