@@ -169,6 +169,7 @@ void GPU2D::RenderGraphicsDisplay(u16 line) {
 }
 
 void GPU2D::RenderText(int bg_index, u16 line) {
+
     u32 character_base = (((BGCNT[bg_index] >> 2) & 0x3) * 0x4000) + (((DISPCNT >> 24) & 0x7) * 0x10000);
     u32 screen_base = (((BGCNT[bg_index] >> 8) & 0x1F) * 0x800) + (((DISPCNT >> 27) & 0x7) * 0x10000);
     screen_base += ((line / 8) % 32) * 64;
@@ -268,6 +269,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             }
             // times tile_number by 32 as each tile is 32 bytes long
             u32 character_addr = 0x06000000 + character_base + (tile_number * 32);
+            // printf("%08x %08x\n", screen_addr, character_addr);
             u32 palette_indices = (ReadPaletteRAM(character_addr + 2) << 16) | (ReadPaletteRAM(character_addr));
             // we use 4 bits for the palette index of a pixel
             for (int j = 0; j < 8; j++) {

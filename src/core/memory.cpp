@@ -1112,6 +1112,9 @@ void Memory::ARM9WriteHalfword(u32 addr, u16 data) {
             }
             break;
         case REGION_VRAM:
+            // if (data != 0) {
+            //     log_warn("non zero data %04x with addr %08x", data, addr);
+            // }
             if (addr >= 0x06800000) {
                 core->gpu.WriteLCDC(addr, data);
             } else if (in_range(0x06000000, 0x400000, addr)) {
@@ -1473,6 +1476,9 @@ void Memory::ARM9WriteWord(u32 addr, u32 data) {
             }
             break;
         case REGION_VRAM:
+            // if (data != 0) {
+            //     log_warn("non zero data %04x", data);
+            // }
             if (addr >= 0x06800000) {
                 core->gpu.WriteLCDC(addr, data & 0xFFFF);
                 core->gpu.WriteLCDC(addr + 2, data >> 16);
