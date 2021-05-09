@@ -1,6 +1,4 @@
-#include <memory>
 #include "host_interface.h"
-#include <util/log.h>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -11,6 +9,7 @@ int main(int argc, char *argv[]) {
    
     if (!host_interface->Initialise()) {
         host_interface->Cleanup();
+        return 0;
     }
     int i = 1;
     for (int i = 1; i < argc - 1; i++) {

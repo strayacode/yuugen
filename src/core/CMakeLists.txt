@@ -1,22 +1,26 @@
 add_library(core
     core.h core.cpp
-    arm.h arm.cpp
-    memory.h memory.cpp
-    cartridge.h cartridge.cpp
-    gpu.h gpu.cpp
-    gpu_2d.h gpu_2d.cpp
-    dma.h dma.cpp
-    cp15.h cp15.cpp
-    input.h input.cpp
-    interrupt.h interrupt.cpp
-    ipc.h ipc.cpp
-    timers.h timers.cpp
-    rtc.h rtc.cpp
-    spu.h spu.cpp
-    spi.h spi.cpp
-    maths_unit.h maths_unit.cpp
+    arm/arm7/bus.cpp arm/arm7/mmio.cpp
+    arm/arm9/bus.cpp arm/arm9/mmio.cpp
+    arm/arm.h arm/arm.cpp
+    arm/memory.h arm/memory.cpp
+    
+    hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
+    hw/spi/spi.h hw/spi/spi.cpp
+    scheduler/scheduler.h scheduler/scheduler.cpp
+    hw/cp15/cp15.h hw/cp15/cp15.cpp
+    hw/gpu/gpu.h hw/gpu/gpu.cpp
+    hw/gpu/gpu_2d.h hw/gpu/gpu_2d.cpp
+    hw/gpu/render/text.cpp hw/gpu/compose.cpp
+    hw/dma/dma.h hw/dma/dma.cpp
+    hw/input/input.h hw/input/input.cpp
+    hw/ipc/ipc.h hw/ipc/ipc.cpp
+    hw/interrupt/interrupt.h hw/interrupt/interrupt.cpp
+    hw/timers/timers.h hw/timers/timers.cpp
+    hw/spu/spu.h hw/spu/spu.cpp
+    hw/rtc/rtc.h hw/rtc/rtc.cpp
+    hw/maths_unit/maths_unit.h hw/maths_unit/maths_unit.cpp
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-
-target_link_libraries(core PRIVATE util)
+target_link_libraries(core PRIVATE common)

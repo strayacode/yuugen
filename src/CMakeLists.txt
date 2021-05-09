@@ -1,15 +1,11 @@
 set(FRONTEND_SDL ON)
 set(FRONTEND_QT OFF)
-set(FRONTEND_IMGUI OFF)
 
-add_subdirectory(util)
+add_subdirectory(common)
 add_subdirectory(core)
-add_subdirectory(yuugen_common)
 
 if (FRONTEND_SDL)
     add_subdirectory(yuugen_sdl)
 elseif(FRONTEND_QT)
     add_subdirectory(yuugen_qt)
-elseif(FRONTEND_IMGUI)
-    add_subdirectory(yuugen_imgui)
 endif()

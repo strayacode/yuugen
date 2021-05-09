@@ -57,18 +57,15 @@ bool HostInterface::Initialise() {
     return true;
 }
 
-void HostInterface::Run(const char* path) {
+void HostInterface::Run(std::string path) {
     core->SetRomPath(path);
     core->Reset();
     core->DirectBoot();
-
-    u32 frame_time_start = SDL_GetTicks();
     while (true) {
         core->RunFrame();
 
-        // TODO: update this to work for u8 array
-        SDL_UpdateTexture(top_texture, nullptr, core->gpu.GetFramebuffer(Screen::TOP_SCREEN), sizeof(u32) * 256);
-        SDL_UpdateTexture(bottom_texture, nullptr, core->gpu.GetFramebuffer(Screen::BOTTOM_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_texture, nullptr, core->gpu.GetFramebuffer(TOP_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(bottom_texture, nullptr, core->gpu.GetFramebuffer(BOTTOM_SCREEN), sizeof(u32) * 256);
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_area);
@@ -79,8 +76,7 @@ void HostInterface::Run(const char* path) {
             if (event.type == SDL_QUIT) {
                 Cleanup();
                 return;
-            }
-            if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
+            } else if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
                 bool key_pressed = event.type == SDL_KEYDOWN;
                 switch (event.key.keysym.sym) {
                 case SDLK_d:
@@ -127,17 +123,7 @@ void HostInterface::Run(const char* path) {
                 }
             }
         }
-        u32 frame_time_end = SDL_GetTicks();
-        frames++;
-        if ((frame_time_end - frame_time_start) >= 1000) {
-            snprintf(window_title, 40, "yuugen [%d FPS | %0.2f ms]", frames, 1000.0 / frames);
-            SDL_SetWindowTitle(window, window_title);
-            frame_time_start = SDL_GetTicks();
-            frames = 0;
-        }
     }
-    
-    
 }
 
 void HostInterface::Cleanup() {

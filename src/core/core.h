@@ -1,61 +1,61 @@
 #pragma once
 
-#include <memory>
-#include <core/arm.h>
-#include <core/memory.h>
-#include <core/cartridge.h>
-#include <core/gpu.h>
-#include <core/dma.h>
-#include <core/cp15.h>
-#include <core/input.h>
-#include <core/interrupt.h>
-#include <core/ipc.h>
-#include <core/timers.h>
-#include <core/rtc.h>
-#include <core/spu.h>
-#include <core/spi.h>
-#include <core/maths_unit.h>
-#include <string.h>
+#include <core/arm/memory.h>
+#include <core/arm/arm.h>
+#include <core/scheduler/scheduler.h>
+#include <core/hw/cartridge/cartridge.h>
+#include <core/hw/spi/spi.h>
+#include <core/hw/cp15/cp15.h>
+#include <core/hw/gpu/gpu.h>
+#include <core/hw/dma/dma.h>
+#include <core/hw/input/input.h>
+#include <core/hw/ipc/ipc.h>
+#include <core/hw/interrupt/interrupt.h>
+#include <core/hw/timers/timers.h>
+#include <core/hw/spu/spu.h>
+#include <core/hw/rtc/rtc.h>
+#include <core/hw/maths_unit/maths_unit.h>
+#include <string>
 
 struct Core {
     Core();
     void Reset();
     void DirectBoot();
     void FirmwareBoot();
+
+    void SetRomPath(std::string path);
+
     void RunFrame();
-    void SetRomPath(const char* path);
 
-    
-
-    
     Cartridge cartridge;
-    
-    ARM arm9;
+
+    Memory memory;
     ARM arm7;
+    ARM arm9;
+
+    Scheduler scheduler;
+
+    SPI spi;
+
+    CP15 cp15;
 
     GPU gpu;
 
     DMA dma[2];
 
-    CP15 cp15;
-
     Input input;
-
-    Interrupt interrupt[2];
 
     IPC ipc;
 
-    Timers timers[2];
+    Interrupt interrupt[2];
 
-    RTC rtc;
+    Timers timers[2];
 
     SPU spu;
 
-    SPI spi;
-
-    Memory memory;
+    RTC rtc;
 
     MathsUnit maths_unit;
 
-    const char* rom_path = nullptr;
+    std::string rom_path;
 };

@@ -1,17 +1,16 @@
 #pragma once
 
-#include <memory>
 #include <core/core.h>
-#include <util/log.h>
-#include <stdlib.h>
+#include <memory>
+#include <string>
 #include <SDL2/SDL.h>
-
-// provides an interface for the sdl frontend and the yuugen core
+#include <common/log.h>
+#include <common/types.h>
 
 struct HostInterface {
     HostInterface();
     bool Initialise();
-    void Run(const char* path);
+    void Run(std::string path);
     void Cleanup();
 
     std::unique_ptr<Core> core;
@@ -25,7 +24,4 @@ struct HostInterface {
     SDL_Rect bottom_texture_area;
 
     SDL_Event event;
-
-    int frames = 0;
-    char window_title[40];
 };
