@@ -134,6 +134,21 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
 
 void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
     switch (addr) {
+    case 0x040001A1:
+        // write to the high byte of AUXSPICNT
+        core->cartridge.AUXSPICNT = (core->cartridge.AUXSPICNT & 0xFF) | (data << 8);
+        break;
+    case 0x040001A8:
+    case 0x040001A9:
+    case 0x040001AA:
+    case 0x040001AB:
+    case 0x040001AC:
+    case 0x040001AD:
+    case 0x040001AE:
+    case 0x040001AF:
+        // recieve a cartridge command and store in the buffer
+        core->cartridge.ReceiveCommand(data, addr - 0x040001A8);
+        break;
     case 0x04000208:
         core->interrupt[1].IME = data & 0x1;
         break;
@@ -438,6 +453,9 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
     case 0x040000EC:
         core->dma[1].DMAFILL[3] = data;
         break;
+    case 0x040001A4:
+        core->cartridge.WriteROMCTRL(data);
+        break;
     case 0x04000180:
         core->ipc.WriteIPCSYNC9(data);
         break;
@@ -458,6 +476,13 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         core->gpu.VRAMCNT_B = (data >> 8) & 0xFF;
         core->gpu.VRAMCNT_C = (data >> 16) & 0xFF;
         core->gpu.VRAMCNT_D = (data >> 24) & 0xFF;
+        break;
+    case 0x04000244:
+        // sets vramcnt_e, vramcnt_f, vramcnt_g and wramcnt
+        core->gpu.VRAMCNT_E = data & 0xFF;
+        core->gpu.VRAMCNT_F = (data >> 8) & 0xFF;
+        core->gpu.VRAMCNT_G = (data >> 16) & 0xFF;
+        WRAMCNT = (data >> 24) & 0xFF;
         break;
     case 0x04000280:
         core->maths_unit.DIVCNT = data;

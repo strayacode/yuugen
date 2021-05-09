@@ -8,6 +8,11 @@
 
 #pragma once
 
+enum CartridgeCommand {
+    DUMMY_COMMAND = 0x9F,
+    READ_DATA = 0xB7,
+};
+
 struct Core;
 
 struct Cartridge {
@@ -16,6 +21,14 @@ struct Cartridge {
     void LoadRom(std::string rom_path);
     void LoadHeaderData();
     void DirectBoot();
+
+    void WriteROMCTRL(u32 data);
+    void WriteAUXSPICNT(u16 data);
+    void WriteAUXSPIDATA(u16 data);
+
+    void ReceiveCommand(u8 command, int command_index);
+
+    void Transfer();
 
     struct CartridgeHeader {
         u32 arm9_rom_offset; // specifies from which offset in the rom data will be transferred to the arm9/arm7 bus
@@ -31,6 +44,16 @@ struct Cartridge {
         u32 icon_title_offset; // specifies the offset in the rom image to where the icon and title is
         // 0 = None
     } header;
+
+    u32 transfer_count;
+
+    u32 ROMCTRL;
+    u16 AUXSPICNT;
+    u16 AUXSPIDATA;
+
+    u8 command_buffer[8];
+
+    u8 command;
 
     Core* core;
 
