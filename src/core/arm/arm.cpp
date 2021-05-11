@@ -388,10 +388,6 @@ void ARM::Execute() {
         HandleInterrupt();
     }
 
-    if (arch == ARMv5) {
-        LogRegisters();
-    }
-
     if (IsARM()) {
         if (ConditionEvaluate(instruction >> 28)) {
             u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
@@ -462,6 +458,8 @@ void ARM::Execute() {
                 return ARM_ADCS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x0B9:
                 return ARM_UMLALS();
+            case 0x0C0: case 0x0C8:
+                return ARM_SBC(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x0C9:
                 return ARM_SMULL();
             case 0x0CB: case 0x0EB:
@@ -470,6 +468,8 @@ void ARM::Execute() {
                 return ARM_SBCS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x0D9:
                 return ARM_SMULLS();
+            case 0x0DB: case 0x0FB:
+                return ARM_LDRH_POST(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x0F0: case 0x0F8:
                 return ARM_RSCS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x0F9:
@@ -490,6 +490,8 @@ void ARM::Execute() {
                 return ARM_SMLATT();
             case 0x110: case 0x118:
                 return ARM_TSTS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
+            case 0x113:
+                return ARM_TSTS(ARM_LOGICAL_SHIFT_RIGHT_REGS());
             case 0x11B:
                 return ARM_LDRH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x11D:
@@ -532,6 +534,8 @@ void ARM::Execute() {
                 return ARM_ORR(ARM_LOGICAL_SHIFT_LEFT_REG());
             case 0x182: case 0x18A:
                 return ARM_ORR(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x184: case 0x18C:
+                return ARM_ORR(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x18B:
                 return ARM_STRH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x190: case 0x198:
@@ -635,6 +639,11 @@ void ARM::Execute() {
             case 0x298: case 0x299: case 0x29A: case 0x29B: 
             case 0x29C: case 0x29D: case 0x29E: case 0x29F:
                 return ARM_ADDS(ARM_DATA_PROCESSING_IMM());
+            case 0x2A0: case 0x2A1: case 0x2A2: case 0x2A3: 
+            case 0x2A4: case 0x2A5: case 0x2A6: case 0x2A7: 
+            case 0x2A8: case 0x2A9: case 0x2AA: case 0x2AB: 
+            case 0x2AC: case 0x2AD: case 0x2AE: case 0x2AF:
+                return ARM_ADC(ARM_DATA_PROCESSING_IMM());
             case 0x2D0: case 0x2D1: case 0x2D2: case 0x2D3: 
             case 0x2D4: case 0x2D5: case 0x2D6: case 0x2D7: 
             case 0x2D8: case 0x2D9: case 0x2DA: case 0x2DB: 
@@ -1448,7 +1457,6 @@ void ARM::ARM_MCR() {
 }
 
 void ARM::ARM_SWI() {
-    printf("counter %d storing %08x into spsr svc\n", counter, regs.cpsr);
     // store the cpsr in spsr_svc
     regs.spsr_svc = regs.cpsr;
 
@@ -1469,7 +1477,6 @@ void ARM::ARM_SWI() {
 }
 
 void ARM::THUMB_SWI() {
-    printf("counter %d storing %08x into spsr svc\n", counter, regs.cpsr);
     // store the cpsr in spsr_svc
     regs.spsr_svc = regs.cpsr;
 

@@ -20,6 +20,7 @@ INSTRUCTION(ARM_MOVS, u32 op2) {
         // store the current spsr in cpsr only if in privileged mode
         if (PrivilegedMode()) {
             u32 current_spsr = GetCurrentSPSR();
+            
             SwitchMode(current_spsr & 0x1F);
             regs.cpsr = current_spsr;
         } else {
@@ -272,7 +273,7 @@ INSTRUCTION(ARM_SUBS, u32 op2) {
         // store the current spsr in cpsr only if in privileged mode
         if (PrivilegedMode()) {
             u32 current_spsr = GetCurrentSPSR();
-            printf("current mode %02x current spsr %08x\n", regs.cpsr & 0x1F, current_spsr);
+
             SwitchMode(current_spsr & 0x1F);
             regs.cpsr = current_spsr;
         } else {
@@ -411,6 +412,20 @@ INSTRUCTION(ARM_RSCS, u32 op2) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_SBC, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    u32 result = op1 - op2 - !GetConditionFlag(C_FLAG);
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[rd] = result;
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_SBCS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u32 op1 = regs.r[(instruction >> 16) & 0xF];
@@ -418,7 +433,6 @@ INSTRUCTION(ARM_SBCS, u32 op2) {
 
     if (rd == 15) {
         log_fatal("handle");
-        // regs.cpsr = get_spsr();
     } else {
         SetConditionFlag(N_FLAG, result >> 31);
         SetConditionFlag(Z_FLAG, result == 0);
