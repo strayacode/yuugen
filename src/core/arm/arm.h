@@ -107,6 +107,7 @@ struct ARM {
     void HandleInterrupt();
 
     auto GetCurrentSPSR() -> u32;
+    void SetCurrentSPSR(u32 data);
 
     // instructions that require access to core we just declare outside the .inl files
     void ARM_MRC();

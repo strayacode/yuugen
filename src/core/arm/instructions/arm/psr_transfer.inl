@@ -77,7 +77,7 @@ INSTRUCTION(ARM_MSR_SPSR_REG) {
     u32 value = regs.r[rm] & mask;
 
     if (HasSPSR()) {
-        regs.spsr = (regs.spsr & ~mask) | value;
+        SetCurrentSPSR((GetCurrentSPSR() & ~mask) | value);
     }
     
     regs.r[15] += 4;

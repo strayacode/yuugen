@@ -71,7 +71,7 @@ template void Memory::ARM7Write(u32 addr, u32 data);
 template <typename T>
 void Memory::ARM7Write(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
-
+    
     switch (addr >> 24) {
     case REGION_MAIN_MEMORY:
         memcpy(&main_memory[addr & 0x3FFFFF], &data, sizeof(T));

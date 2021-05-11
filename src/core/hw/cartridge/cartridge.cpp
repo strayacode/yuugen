@@ -70,7 +70,6 @@ void Cartridge::WriteROMCTRL(u32 data) {
 void Cartridge::Transfer() {
     u8 block_size = (ROMCTRL >> 24) & 0x7;
 
-
     if (block_size == 0) {
         transfer_count = 0;
     } else if (block_size == 7) {
@@ -89,7 +88,10 @@ void Cartridge::Transfer() {
     case READ_DATA: {
         // get the address from the 4 parameter bytes after the command byte in command buffer
         u32 address = (command_buffer[1] << 24) | (command_buffer[2] << 16) | (command_buffer[3] << 8) | (command_buffer[4]);
-        log_fatal("address %08x", address);
+
+        if (address < 0x8000) {
+            log_fatal("[Cartridge] addresses below 0x8000 are not supported in B7 command");
+        }
         break;
     }
     default:

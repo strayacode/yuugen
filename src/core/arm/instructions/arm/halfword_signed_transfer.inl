@@ -25,8 +25,12 @@ INSTRUCTION(ARM_LDRH_PRE, u32 op2) {
     if (rd == 15) {
         log_fatal("handle");
     }
-
+    
     regs.r[rd] = ReadHalf(regs.r[rn] + op2);
+    if (counter == 473991) {
+        log_warn("address: %08x", regs.r[rn] + op2);
+        log_warn("r%d is %08x", rd, regs.r[rd]);
+    }
     regs.r[15] += 4;
 }
 

@@ -272,6 +272,7 @@ INSTRUCTION(ARM_SUBS, u32 op2) {
         // store the current spsr in cpsr only if in privileged mode
         if (PrivilegedMode()) {
             u32 current_spsr = GetCurrentSPSR();
+            printf("current mode %02x current spsr %08x\n", regs.cpsr & 0x1F, current_spsr);
             SwitchMode(current_spsr & 0x1F);
             regs.cpsr = current_spsr;
         } else {

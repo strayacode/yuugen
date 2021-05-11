@@ -53,6 +53,21 @@ auto Memory::ARM9Read(u32 addr) -> T {
             default:
                 log_fatal("[ARM9] Undefined behaviour");
             }
+        case REGION_PALETTE_RAM:
+            if (sizeof(T) == 1) {
+                log_fatal("[ARM9] 8-bit palette ram write is undefined behaviour");
+            }
+
+
+            if ((addr & 0x7FF) < 400) {
+                // this is the first block which is assigned to engine a
+                memcpy(&return_value, &core->gpu.engine_a.palette_ram[addr & 0x3FF], sizeof(T));
+            } else {
+                // write to engine b's palette ram
+                memcpy(&return_value, &core->gpu.engine_b.palette_ram[addr & 0x3FF], sizeof(T));
+            }
+
+            break;
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
             // check if the arm9 has access rights to the gba slot
             // if not return 0
@@ -78,7 +93,7 @@ template void Memory::ARM9Write(u32 addr, u32 data);
 template <typename T>
 void Memory::ARM9Write(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
-
+    
     if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&core->cp15.itcm[addr & 0x7FFF], &data, sizeof(T));
         return;

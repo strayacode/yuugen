@@ -45,7 +45,7 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
     case 0x04000184:
         return core->ipc.IPCFIFOCNT9;
     case 0x04000204:
-        return EXMEMCNT;
+        return 0;
     case 0x04000208:
         return core->interrupt[1].IME & 0x1;
     case 0x04000280:
@@ -54,6 +54,10 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->maths_unit.SQRTCNT;
     case 0x04000300:
         return POSTFLG9;
+    case 0x04000304:
+        return core->gpu.POWCNT1;
+    case 0x04001000:
+        return core->gpu.engine_b.DISPCNT & 0xFFFF;
     case 0x04001008:
         return core->gpu.engine_b.BGCNT[0];
     default:
@@ -99,6 +103,8 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return core->dma[1].DMAFILL[3];
     case 0x04000180:
         return core->ipc.ReadIPCSYNC9();
+    case 0x040001A4:
+        return core->cartridge.ROMCTRL;
     case 0x04000208:
         return core->interrupt[1].IME & 0x1;
     case 0x04000210:
@@ -189,6 +195,9 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
 
 void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     switch (addr) {
+    case 0x04000000:
+        core->gpu.engine_a.DISPCNT = (core->gpu.engine_a.DISPCNT & ~0xFFFF) | data;
+        break;
     case 0x04000004:
         core->gpu.WriteDISPSTAT9(data);
         break;
@@ -218,6 +227,10 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04000036:
         core->gpu.engine_a.BG3P[3] = data;
+        break;
+    case 0x0400006C:
+        // TODO: handle brightness properly later
+        core->gpu.engine_a.MASTER_BRIGHT = data;
         break;
     case 0x040000B8:
         core->dma[1].WriteDMACNT_L(0, data);
@@ -277,7 +290,7 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         core->ipc.WriteIPCFIFOCNT9(data);
         break;
     case 0x04000204:
-        EXMEMCNT = data;
+        // EXMEMCNT = data;
         break;
     case 0x04000208:
         core->interrupt[1].IME = data & 0x1;
@@ -292,6 +305,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04000304:
         core->gpu.POWCNT1 = data;
+        break;
+    case 0x04001000:
+        core->gpu.engine_b.DISPCNT = (core->gpu.engine_b.DISPCNT & ~0xFFFF) | data;
         break;
     case 0x04001008:
         core->gpu.engine_b.BGCNT[0] = data;
