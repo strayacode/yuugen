@@ -28,12 +28,12 @@ void DMA::Transfer() {
             if (channel[i].DMACNT & (1 << 25)) {
                 log_fatal("implement support for dma repeat");
             }
-
             // loop through all the data units specified by internal length
             for (u32 j = 0; j < channel[i].internal_length; j++) {
                 // check the transfer type (either halfwords or words)
                 if (channel[i].DMACNT & (1 << 26)) {
                     // word transfer
+
                     if (arch == ARMv5) {
                         core->memory.ARM9Write<u32>(channel[i].internal_destination, core->memory.ARM9Read<u32>(channel[i].internal_source));
                     } else {

@@ -9,9 +9,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
     screen_base += ((line / 8) % 32) * 64;
     u8 screen_size = (BGCNT[bg_index] >> 14) & 0x3;
 
-    if (screen_size != 0) {
-        log_fatal("[GPU2D] Handle non 256x256 background map");
-    }
+    // if (screen_size != 0) {
+    //     log_fatal("[GPU2D] Handle non 256x256 background map with size %d", screen_size);
+    // }
 
     if (DISPCNT & (1 << 30)) {
         log_fatal("[GPU2D] Handle extended palettes");
@@ -59,7 +59,6 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             }
         }
     } else {
-        
         // 16 colours / 16 palettes
         for (int tile = 0; tile < 256; tile += 8) {
             u32 screen_addr = vram_addr + screen_base + (((tile / 8) % 32) * 2);
@@ -69,6 +68,8 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             } else {
                 tile_info = gpu->ReadBGB(screen_addr);
             }
+
+            // printf("tile info %04x\n", tile_info);
 
             // now we need to decode what the tile info means
             u32 tile_number = tile_info & 0x3FF;
@@ -90,6 +91,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
             for (int j = 0; j < 8; j++) {
                 u16 colour = ReadPaletteRAM((palette_number * 32) + (palette_indices & 0xF) * 2);
+                if (colour != 0) {
+                    printf("POG: %04x\n", colour);
+                }
                 layers[bg_index][(256 * line) + tile + j] = Convert15To24(colour);
                 palette_indices >>= 4;
             }

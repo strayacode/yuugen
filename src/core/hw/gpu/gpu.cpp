@@ -33,6 +33,8 @@ void GPU::Reset() {
     DISPSTAT7 = 0;
     DISPSTAT9 = 0;
 
+    DISPCAPCNT = 0;
+
     engine_a.Reset();
     engine_b.Reset();
 
@@ -271,7 +273,6 @@ auto GPU::ReadLCDC(u32 addr) -> u16 {
 }
 
 void GPU::WriteBGA(u32 addr, u16 data) {
-
     if (GetVRAMCNTEnabled(VRAMCNT_A)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_A)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_A) == 1)) {
             memcpy(&VRAM_A[addr & 0x1FFFF], &data, 2);

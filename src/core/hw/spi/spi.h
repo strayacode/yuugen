@@ -13,6 +13,7 @@ struct SPI {
 
     void Transfer(u8 data);
     void FirmwareTransfer(u8 data);
+    void TouchscreenTransfer(u8 data);
 
     // used to transfer firmware data into main memory
     void DirectBoot();
@@ -34,6 +35,11 @@ struct SPI {
     u32 address;
 
     u8 firmware[0x40000];
+
+    bool write_enable_latch;
+
+    // Write/Program/Erase in Progess
+    bool write_in_progress;
 
     Core* core;
 };

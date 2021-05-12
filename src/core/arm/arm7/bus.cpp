@@ -10,6 +10,11 @@ auto Memory::ARM7Read(u32 addr) -> T {
 
     T return_value = 0;
 
+    if (in_range(0x04800000, 0x100000)) {
+        // TODO: implement wifi regs correctly
+        return 0;
+    }
+
     switch (addr >> 24) {
     case REGION_ARM7_BIOS:
         memcpy(&return_value, &arm7_bios[addr & 0x3FFF], sizeof(T));
@@ -53,7 +58,7 @@ auto Memory::ARM7Read(u32 addr) -> T {
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
-        if (!EXMEMCNT & (1 << 7)) {
+        if (!(EXMEMCNT & (1 << 7))) {
             return 0;
         }
         // otherwise return openbus (0xFFFFFFFF)
@@ -72,6 +77,11 @@ template <typename T>
 void Memory::ARM7Write(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
     
+    if (in_range(0x04800000, 0x100000)) {
+        // TODO: implement wifi regs correctly
+        return;
+    }
+
     switch (addr >> 24) {
     case REGION_MAIN_MEMORY:
         memcpy(&main_memory[addr & 0x3FFFFF], &data, sizeof(T));

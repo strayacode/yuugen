@@ -26,6 +26,47 @@ INSTRUCTION(ARM_STM_DECREMENT_BEFORE_WRITEBACK) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_LDM_INCREMENT_BEFORE) {
+    u32 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            regs.r[i] = ReadWord(address);
+        }
+    }
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_USER) {
+    u32 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    u32 old_mode = regs.cpsr & 0x1F;
+    SwitchMode(SYS);
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            regs.r[i] = ReadWord(address);
+        }
+    }
+
+    SwitchMode(old_mode);
+    
+    if (instruction & (1 << 15)) {
+        log_fatal("handle lol");
+    }
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_WRITEBACK) {
     u32 rn = (instruction >> 16) & 0xF;
     u32 address = regs.r[rn];
@@ -494,6 +535,27 @@ INSTRUCTION(ARM_STM_INCREMENT_BEFORE_WRITEBACK) {
             WriteWord(address, regs.r[i]);
         }
     }
+
+    regs.r[rn] = address;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_STM_INCREMENT_BEFORE_USER_WRITEBACK) {
+    u32 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    u32 old_mode = regs.cpsr & 0x1F;
+    SwitchMode(SYS);
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            WriteWord(address, regs.r[i]);
+        }
+    }
+
+    SwitchMode(old_mode);
 
     regs.r[rn] = address;
 

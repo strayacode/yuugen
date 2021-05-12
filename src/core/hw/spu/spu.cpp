@@ -7,9 +7,26 @@ SPU::SPU(Core* core) : core(core) {
 
 void SPU::Reset() {
     SOUNDCNT = 0;
+    for (int i = 0; i < 16; i++) {
+        memset(&channel[i], 0, sizeof(SPUChannel));
+    }
+
+    SNDCAPCNT[0] = SNDCAPCNT[1] = 0;
 }
 
-void SPU::WriteSoundChannel(u32 addr, u32 data) {
+auto SPU::ReadByte(u32 addr) -> u8 {
+    u8 channel_index = (addr >> 4) & 0xF;
+
+    switch (addr & 0xF) {
+    case 0x03:
+        // get upper byte of SOUNDCNT for that register
+        return (channel[channel_index].SOUNDCNT >> 24);
+    default:
+        log_fatal("[SPU] Unhandled address %08x", addr & 0xF);
+    }
+}
+
+void SPU::WriteWord(u32 addr, u32 data) {
     if (data != 0) {
         log_fatal("implement sound channel support for spu");
     }

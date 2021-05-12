@@ -20,8 +20,18 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->gpu.DISPSTAT9;
     case 0x04000006:
         return core->gpu.VCOUNT;
+    case 0x04000008:
+        return core->gpu.engine_a.BGCNT[0];
+    case 0x0400000A:
+        return core->gpu.engine_a.BGCNT[1];
+    case 0x0400000C:
+        return core->gpu.engine_a.BGCNT[2];
     case 0x0400000E:
         return core->gpu.engine_a.BGCNT[3];
+    case 0x04000048:
+        return core->gpu.engine_a.WININ;
+    case 0x0400004A:
+        return core->gpu.engine_a.WINOUT;
     case 0x040000BA:
         return core->dma[1].ReadDMACNT_H(0);
     case 0x040000C6:
@@ -60,6 +70,16 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->gpu.engine_b.DISPCNT & 0xFFFF;
     case 0x04001008:
         return core->gpu.engine_b.BGCNT[0];
+    case 0x0400100A:
+        return core->gpu.engine_b.BGCNT[1];
+    case 0x0400100C:
+        return core->gpu.engine_b.BGCNT[2];
+    case 0x0400100E:
+        return core->gpu.engine_b.BGCNT[3];
+    case 0x04001048:
+        return core->gpu.engine_b.WININ;
+    case 0x0400104A:
+        return core->gpu.engine_b.WINOUT;
     default:
         log_fatal("[ARM9] Undefined 16-bit io read %08x", addr);
     }
@@ -204,6 +224,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x04000008:
         core->gpu.engine_a.BGCNT[0] = data;
         break;
+    case 0x0400000A:
+        core->gpu.engine_a.BGCNT[1] = data;
+        break;
     case 0x0400000C:
         core->gpu.engine_a.BGCNT[2] = data;
         break;
@@ -216,6 +239,18 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x0400001A:
         core->gpu.engine_a.BGVOFS[2] = data;
         break;
+    case 0x04000020:
+        core->gpu.engine_a.BG2P[0] = data;
+        break;
+    case 0x04000022:
+        core->gpu.engine_a.BG2P[1] = data;
+        break;
+    case 0x04000024:
+        core->gpu.engine_a.BG2P[2] = data;
+        break;
+    case 0x04000026:
+        core->gpu.engine_a.BG2P[3] = data;
+        break;
     case 0x04000030:
         core->gpu.engine_a.BG3P[0] = data;
         break;
@@ -227,6 +262,24 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04000036:
         core->gpu.engine_a.BG3P[3] = data;
+        break;
+    case 0x04000040:
+        core->gpu.engine_a.WINH[0] = data;
+        break;
+    case 0x04000042:
+        core->gpu.engine_a.WINH[1] = data;
+        break;
+    case 0x04000044:
+        core->gpu.engine_a.WINV[0] = data;
+        break;
+    case 0x04000046:
+        core->gpu.engine_a.WINV[1] = data;
+        break;
+    case 0x04000048:
+        core->gpu.engine_a.WININ = data;
+        break;
+    case 0x0400004A:
+        core->gpu.engine_a.WINOUT = data;
         break;
     case 0x0400006C:
         // TODO: handle brightness properly later
@@ -295,6 +348,10 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x04000208:
         core->interrupt[1].IME = data & 0x1;
         break;
+    case 0x04000248:
+        core->gpu.VRAMCNT_H = data & 0xFF;
+        core->gpu.VRAMCNT_I = data >> 8;
+        break;
     case 0x04000280:
         core->maths_unit.DIVCNT = data;
         core->maths_unit.StartDivision();
@@ -312,6 +369,12 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x04001008:
         core->gpu.engine_b.BGCNT[0] = data;
         break;
+    case 0x0400100A:
+        core->gpu.engine_b.BGCNT[1] = data;
+        break;
+    case 0x0400100C:
+        core->gpu.engine_b.BGCNT[2] = data;
+        break;
     case 0x0400100E:
         core->gpu.engine_b.BGCNT[3] = data;
         break;
@@ -320,6 +383,18 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04001012:
         core->gpu.engine_b.BGVOFS[0] = data;
+        break;
+    case 0x04001020:
+        core->gpu.engine_b.BG2P[0] = data;
+        break;
+    case 0x04001022:
+        core->gpu.engine_b.BG2P[1] = data;
+        break;
+    case 0x04001024:
+        core->gpu.engine_b.BG2P[2] = data;
+        break;
+    case 0x04001026:
+        core->gpu.engine_b.BG2P[3] = data;
         break;
     case 0x04001030:
         core->gpu.engine_b.BG3P[0] = data;
@@ -332,6 +407,24 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04001036:
         core->gpu.engine_b.BG3P[3] = data;
+        break;
+    case 0x04001040:
+        core->gpu.engine_b.WINH[0] = data;
+        break;
+    case 0x04001042:
+        core->gpu.engine_b.WINH[1] = data;
+        break;
+    case 0x04001044:
+        core->gpu.engine_b.WINV[0] = data;
+        break;
+    case 0x04001046:
+        core->gpu.engine_b.WINV[1] = data;
+        break;
+    case 0x04001048:
+        core->gpu.engine_b.WININ = data;
+        break;
+    case 0x0400104A:
+        core->gpu.engine_b.WINOUT = data;
         break;
     case 0x0400106C:
         // TODO: handle brightness properly later
@@ -420,6 +513,14 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
     case 0x04000050:
         core->gpu.engine_a.BLDCNT = data & 0xFFFF;
         core->gpu.engine_a.BLDALPHA = data >> 16;
+        break;
+    case 0x04000054:
+        core->gpu.engine_a.BLDY = data;
+        break;
+    case 0x04000058: case 0x0400005C: case 0x04000060:
+        break;
+    case 0x04000064:
+        core->gpu.DISPCAPCNT = data;
         break;
     case 0x040000B0:
         core->dma[1].channel[0].source = data;
@@ -539,6 +640,8 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
     case 0x04001000:
         core->gpu.engine_b.DISPCNT = data;
         break;
+    case 0x04001004:
+        break;
     case 0x04001008:
         core->gpu.engine_b.BGCNT[0] = data & 0xFFFF;
         core->gpu.engine_b.BGCNT[1] = data >> 16;
@@ -613,8 +716,11 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
     case 0x04001054:
         core->gpu.engine_b.BLDY = data;
         break;
-    case 0x04001058:
-        return;
+    case 0x04001058: case 0x0400105C: case 0x04001060: case 0x04001064: case 0x04001068:
+        break;
+    case 0x0400106C:
+        core->gpu.engine_b.MASTER_BRIGHT = data & 0xFFFF;
+        break;
     default:
         log_fatal("[ARM9] Undefined 32-bit io write %08x = %08x", addr, data);
     }

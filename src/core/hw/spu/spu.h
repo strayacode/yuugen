@@ -2,6 +2,7 @@
 
 #include <common/types.h>
 #include <common/log.h>
+#include <string.h>
 
 struct Core;
 
@@ -9,7 +10,8 @@ struct SPU {
     SPU(Core* core);
     void Reset();
 
-    void WriteSoundChannel(u32 addr, u32 data);
+    auto ReadByte(u32 addr) -> u8;
+    void WriteWord(u32 addr, u32 data);
 
     struct SPUChannel {
         u32 SOUNDCNT; // sound control
@@ -25,4 +27,6 @@ struct SPU {
 
     // used by the arm7
     u16 SOUNDCNT;
+
+    u8 SNDCAPCNT[2];
 };

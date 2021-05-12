@@ -394,6 +394,8 @@ void ARM::Execute() {
             switch (index) {
             case 0x000: case 0x008:
                 return ARM_AND(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x004: case 0x00C:
+                return ARM_AND(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x009:
                 return ARM_MUL();
             case 0x010: case 0x018:
@@ -408,6 +410,8 @@ void ARM::Execute() {
                 return ARM_MULS();
             case 0x020: case 0x028:
                 return ARM_EOR(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x022: case 0x02A:
+                return ARM_EOR(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x029:
                 return ARM_MLA();
             case 0x030: case 0x038:
@@ -444,6 +448,8 @@ void ARM::Execute() {
                 return ARM_ADD(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x084: case 0x08C:
                 return ARM_ADD(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
+            case 0x089:
+                return ARM_UMULL();
             case 0x090: case 0x098:
                 return ARM_ADDS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x094: case 0x09C:
@@ -946,6 +952,16 @@ void ARM::Execute() {
             case 0x9B8: case 0x9B9: case 0x9BA: case 0x9BB:
             case 0x9BC: case 0x9BD: case 0x9BE: case 0x9BF:
                 return ARM_LDM_INCREMENT_BEFORE_WRITEBACK();
+            case 0x9D0: case 0x9D1: case 0x9D2: case 0x9D3:
+            case 0x9D4: case 0x9D5: case 0x9D6: case 0x9D7:
+            case 0x9D8: case 0x9D9: case 0x9DA: case 0x9DB:
+            case 0x9DC: case 0x9DD: case 0x9DE: case 0x9DF:
+                return ARM_LDM_INCREMENT_BEFORE_USER();
+            case 0x9E0: case 0x9E1: case 0x9E2: case 0x9E3:
+            case 0x9E4: case 0x9E5: case 0x9E6: case 0x9E7:
+            case 0x9E8: case 0x9E9: case 0x9EA: case 0x9EB:
+            case 0x9EC: case 0x9ED: case 0x9EE: case 0x9EF:
+                return ARM_STM_INCREMENT_BEFORE_USER_WRITEBACK();
             case 0x9F0: case 0x9F1: case 0x9F2: case 0x9F3:
             case 0x9F4: case 0x9F5: case 0x9F6: case 0x9F7:
             case 0x9F8: case 0x9F9: case 0x9FA: case 0x9FB:

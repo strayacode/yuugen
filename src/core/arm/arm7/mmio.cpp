@@ -2,6 +2,10 @@
 #include <core/core.h>
 
 auto Memory::ARM7ReadByteIO(u32 addr) -> u8 {
+    if (in_range(0x04000400, 0x100)) {
+        return core->spu.ReadByte(addr);
+    }
+
     switch (addr) {
     case 0x04000138:
         return core->rtc.ReadRTC();
@@ -10,6 +14,10 @@ auto Memory::ARM7ReadByteIO(u32 addr) -> u8 {
     case 0x04000501:
         // read upper byte of SOUNDCNT
         return core->spu.SOUNDCNT >> 8;
+    case 0x04000508:
+        return core->spu.SNDCAPCNT[0];
+    case 0x04000509:
+        return core->spu.SNDCAPCNT[1];
     default:
         log_fatal("[ARM7] Undefined 8-bit io read %08x", addr);
     }
@@ -27,6 +35,8 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
         return core->timers[0].ReadTMCNT_L(2);
     case 0x0400010C:
         return core->timers[0].ReadTMCNT_L(3);
+    case 0x0400010E:
+        return core->timers[0].ReadTMCNT_H(3);
     case 0x04000130:
         return core->input.KEYINPUT;
     case 0x04000134:
@@ -43,6 +53,9 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
         return core->spi.SPICNT;
     case 0x040001C2:
         return core->spi.ReadSPIDATA();
+    case 0x04000204:
+        // TODO: handle exmemstat later
+        return 0;
     case 0x04000208:
         return core->interrupt[0].IME & 0x1;
     case 0x04000300:
@@ -51,6 +64,28 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
         return POWCNT2;
     case 0x04000500:
         return core->spu.SOUNDCNT;
+    case 0x04808006:
+        return core->wifi.W_MODE_WEP;
+    case 0x04808018:
+        return core->wifi.W_MACADDR_0;
+    case 0x0480801A:
+        return core->wifi.W_MACADDR_1;
+    case 0x0480801C:
+        return core->wifi.W_MACADDR_2;
+    case 0x04808020:
+        return core->wifi.W_BSSID_0;
+    case 0x04808022:
+        return core->wifi.W_BSSID_1;
+    case 0x04808024:
+        return core->wifi.W_BSSID_2;
+    case 0x0480802A:
+        return core->wifi.W_AID_FULL;
+    case 0x04808050:
+        return core->wifi.W_RXBUF_BEGIN;
+    case 0x04808052:
+        return core->wifi.W_RXBUF_END;
+    case 0x04808056:
+        return core->wifi.W_RXBUF_WR_ADDR;
     default:
         log_fatal("[ARM7] Undefined 16-bit io read %08x", addr);
     }
@@ -150,6 +185,12 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
     case 0x040001C2:
         core->spi.WriteSPIDATA(data);
         break;
+    case 0x04000204:
+        // TODO: handle exmemstat later
+        break;
+    case 0x04000206:
+        // TODO: implement WIFIWAITCNT
+        break;
     case 0x04000208:
         core->interrupt[0].IME = data & 0x1;
         break;
@@ -159,6 +200,42 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
     case 0x04000500:
         core->spu.SOUNDCNT = data;
         break;
+    case 0x04808006:
+        core->wifi.W_MODE_WEP = data;
+        break;
+    case 0x04808018:
+        core->wifi.W_MACADDR_0 = data;
+        break;
+    case 0x0480801A:
+        core->wifi.W_MACADDR_1 = data;
+        break;
+    case 0x0480801C:
+        core->wifi.W_MACADDR_2 = data;
+        break;
+    case 0x04808020:
+        core->wifi.W_BSSID_0 = data;
+        break;
+    case 0x04808022:
+        core->wifi.W_BSSID_1 = data;
+        break;
+    case 0x04808024:
+        core->wifi.W_BSSID_2 = data;
+        break;
+    case 0x0480802A:
+        core->wifi.W_AID_FULL = data;
+        break;
+    case 0x04808050:
+        core->wifi.W_RXBUF_BEGIN = data;
+        break;
+    case 0x04808052:
+        core->wifi.W_RXBUF_END = data;
+        break;
+    case 0x04808056:
+        core->wifi.W_RXBUF_WR_ADDR = data;
+        break;
+    case 0x048080AE:
+        core->wifi.W_TXREQ_SET = data;
+        break;
     default:
         log_fatal("[ARM7] Undefined 16-bit io write %08x = %08x", addr, data);
     }
@@ -167,7 +244,7 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
 void Memory::ARM7WriteWordIO(u32 addr, u32 data) {
     if (in_range(0x04000400, 0x100)) {
         // write to an spu channel
-        core->spu.WriteSoundChannel(addr, data);
+        core->spu.WriteWord(addr, data);
         return;
     }
 

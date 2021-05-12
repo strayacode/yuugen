@@ -21,6 +21,7 @@ add_library(core
     hw/spu/spu.h hw/spu/spu.cpp
     hw/rtc/rtc.h hw/rtc/rtc.cpp
     hw/maths_unit/maths_unit.h hw/maths_unit/maths_unit.cpp
+    hw/wifi/wifi.h hw/wifi/wifi.cpp
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")

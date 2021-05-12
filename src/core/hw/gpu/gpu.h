@@ -72,6 +72,8 @@ struct GPU {
 
     u16 VCOUNT;
 
+    u32 DISPCAPCNT;
+
     std::function<void()> RenderScanlineStartTask = std::bind(&GPU::RenderScanlineStart, this);
     std::function<void()> RenderScanlineFinishTask = std::bind(&GPU::RenderScanlineFinish, this);
 };

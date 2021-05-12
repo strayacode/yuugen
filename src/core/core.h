@@ -15,6 +15,7 @@
 #include <core/hw/spu/spu.h>
 #include <core/hw/rtc/rtc.h>
 #include <core/hw/maths_unit/maths_unit.h>
+#include <core/hw/wifi/wifi.h>
 #include <string>
 
 struct Core {
@@ -56,6 +57,8 @@ struct Core {
     RTC rtc;
 
     MathsUnit maths_unit;
+
+    Wifi wifi;
 
     std::string rom_path;
 };

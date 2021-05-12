@@ -13,6 +13,9 @@ void SPI::Reset() {
 
     SPICNT = 0;
     SPIDATA = 0;
+
+    write_enable_latch = false;
+    write_in_progress = false;
 }
 
 void SPI::WriteSPICNT(u16 data) {
@@ -72,6 +75,10 @@ void SPI::Transfer(u8 data) {
         case 1:
             FirmwareTransfer(data);
             break;
+        case 2:
+            // TODO: split touchscreen into own file
+            TouchscreenTransfer(data);
+            break;
         default:
             log_fatal("device %d is not implemented yet for spi transfers", device_select);
         }
@@ -99,6 +106,9 @@ void SPI::FirmwareTransfer(u8 data) {
         log_fatal("[SPI] Implement support for bugged 16-bit transfer size");
     }
 
+    // NOTE: the write enable latch is reset on WRDI/PW/PP/PE/SE instructions
+    // and is set on the WREN instruction
+
     // interpret a command
     switch (command) {
     case 0x03:
@@ -120,7 +130,18 @@ void SPI::FirmwareTransfer(u8 data) {
             address++;
         }
         break;
+    case 0x05:
+        // read status register
+        SPIDATA = (write_in_progress ? 1 : 0) | (write_enable_latch ? (1 << 1) : 0);
+        break;
     default:
         log_fatal("implement support for firmware command %02x", command);
+    }
+}
+
+void SPI::TouchscreenTransfer(u8 data) {
+    // bit 7 signifies the start bit and tells us whether the control byte (data in this case) can be accessed
+    if (data & (1 << 7)) {
+        log_fatal("[Touchscreen] Handle control byte %02x", data);
     }
 }

@@ -44,6 +44,8 @@ void Core::Reset() {
     interrupt[1].Reset();
 
     maths_unit.Reset();
+
+    wifi.Reset();
 }
 
 void Core::DirectBoot() {
