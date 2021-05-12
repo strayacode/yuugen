@@ -198,6 +198,21 @@ INSTRUCTION(ARM_SMULL) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_UMLAL) {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    u64 rdhilo = ((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]);
+    u64 result = (u64)regs.r[rm] * (u64)regs.r[rs] + rdhilo;
+    
+    regs.r[rdlo] = result & 0xFFFFFFFF;
+
+    regs.r[rdhi] = result >> 32;
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_UMLALS) {
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;

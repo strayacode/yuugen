@@ -13,9 +13,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
     //     log_fatal("[GPU2D] Handle non 256x256 background map with size %d", screen_size);
     // }
 
-    if (DISPCNT & (1 << 30)) {
-        log_fatal("[GPU2D] Handle extended palettes");
-    }
+    // if (DISPCNT & (1 << 30)) {
+    //     log_fatal("[GPU2D] Handle extended palettes");
+    // }
 
     if (BGCNT[bg_index] & (1 << 7)) {
         // 256 colours / 1 palette
@@ -91,9 +91,6 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
             for (int j = 0; j < 8; j++) {
                 u16 colour = ReadPaletteRAM((palette_number * 32) + (palette_indices & 0xF) * 2);
-                if (colour != 0) {
-                    printf("POG: %04x\n", colour);
-                }
                 layers[bg_index][(256 * line) + tile + j] = Convert15To24(colour);
                 palette_indices >>= 4;
             }

@@ -310,7 +310,7 @@ auto ARM::GetCurrentSPSR() -> u32 {
     case UND:
         return regs.spsr_und;
     default:
-        log_warn("[ARM%d] Mode %02x doesn't have an spsr", arch ? 9 : 7, regs.cpsr & 0x1F);
+        // log_warn("[ARM%d] Mode %02x doesn't have an spsr", arch ? 9 : 7, regs.cpsr & 0x1F);
         return 0;
     }
 }
@@ -333,7 +333,7 @@ void ARM::SetCurrentSPSR(u32 data) {
         regs.spsr_und = data;
         break;
     default:
-        log_warn("[ARM%d] Mode %02x doesn't have an spsr", arch ? 9 : 7, regs.cpsr & 0x1F);
+        // log_warn("[ARM%d] Mode %02x doesn't have an spsr", arch ? 9 : 7, regs.cpsr & 0x1F);
         return;
     }
 }
@@ -424,6 +424,8 @@ void ARM::Execute() {
                 return ARM_SUB(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x042: case 0x04A:
                 return ARM_SUB(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x044: case 0x04C:
+                return ARM_SUB(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x04D: case 0x06D:
                 return ARM_LDRD_POST(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x050: case 0x058:
@@ -458,6 +460,8 @@ void ARM::Execute() {
                 return ARM_UMULLS();
             case 0x0A0: case 0x0A8:
                 return ARM_ADC(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x0A9:
+                return ARM_UMLAL();
             case 0x0A2: case 0x0AA:
                 return ARM_ADC(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x0B0: case 0x0B8:
@@ -522,6 +526,8 @@ void ARM::Execute() {
                 return ARM_CMPS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x152: case 0x15A:
                 return ARM_CMPS(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x154: case 0x15C:
+                return ARM_CMPS(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x15B:
                 return ARM_LDRH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x15D:
@@ -650,6 +656,16 @@ void ARM::Execute() {
             case 0x2A8: case 0x2A9: case 0x2AA: case 0x2AB: 
             case 0x2AC: case 0x2AD: case 0x2AE: case 0x2AF:
                 return ARM_ADC(ARM_DATA_PROCESSING_IMM());
+            case 0x2B0: case 0x2B1: case 0x2B2: case 0x2B3: 
+            case 0x2B4: case 0x2B5: case 0x2B6: case 0x2B7: 
+            case 0x2B8: case 0x2B9: case 0x2BA: case 0x2BB: 
+            case 0x2BC: case 0x2BD: case 0x2BE: case 0x2BF:
+                return ARM_ADCS(ARM_DATA_PROCESSING_IMM());
+            case 0x2C0: case 0x2C1: case 0x2C2: case 0x2C3: 
+            case 0x2C4: case 0x2C5: case 0x2C6: case 0x2C7: 
+            case 0x2C8: case 0x2C9: case 0x2CA: case 0x2CB: 
+            case 0x2CC: case 0x2CD: case 0x2CE: case 0x2CF:
+                return ARM_SBC(ARM_DATA_PROCESSING_IMM());
             case 0x2D0: case 0x2D1: case 0x2D2: case 0x2D3: 
             case 0x2D4: case 0x2D5: case 0x2D6: case 0x2D7: 
             case 0x2D8: case 0x2D9: case 0x2DA: case 0x2DB: 
@@ -760,6 +776,11 @@ void ARM::Execute() {
             case 0x538: case 0x539: case 0x53A: case 0x53B:
             case 0x53C: case 0x53D: case 0x53E: case 0x53F:
                 return ARM_LDR_PRE_WRITEBACK(-ARM_SINGLE_DATA_TRANSFER_IMM());
+            case 0x540: case 0x541: case 0x542: case 0x543:
+            case 0x544: case 0x545: case 0x546: case 0x547:
+            case 0x548: case 0x549: case 0x54A: case 0x54B:
+            case 0x54C: case 0x54D: case 0x54E: case 0x54F:
+                return ARM_STRB_PRE(-ARM_SINGLE_DATA_TRANSFER_IMM());
             case 0x550: case 0x551: case 0x552: case 0x553:
             case 0x554: case 0x555: case 0x556: case 0x557:
             case 0x558: case 0x559: case 0x55A: case 0x55B:
@@ -872,6 +893,8 @@ void ARM::Execute() {
                 return ARM_LDRB_PRE(ARM_RPLL());
             case 0x7D2: case 0x7DA:
                 return ARM_LDRB_PRE(ARM_RPLR());
+            case 0x7D4: case 0x7DC:
+                return ARM_LDRB_PRE(ARM_RPAR());
             case 0x820: case 0x821: case 0x822: case 0x823:
             case 0x824: case 0x825: case 0x826: case 0x827:
             case 0x828: case 0x829: case 0x82A: case 0x82B:
