@@ -4,6 +4,7 @@
 #include <common/log.h>
 #include <common/memory_helpers.h>
 #include <string.h>
+#include <type_traits>
 
 enum MemoryRegion {
     REGION_ARM7_BIOS = 0x00,

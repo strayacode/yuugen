@@ -43,16 +43,14 @@ auto Memory::ARM9Read(u32 addr) -> T {
             }
             break;
         case REGION_IO:
-            switch (sizeof(T)) {
-            case 1:
+            if constexpr (std::is_same_v<T, u8>) {
                 return ARM9ReadByteIO(addr);
-            case 2:
+            } else if constexpr (std::is_same_v<T, u16>) {
                 return ARM9ReadHalfIO(addr);
-            case 4:
+            } else if constexpr (std::is_same_v<T, u32>) {
                 return ARM9ReadWordIO(addr);
-            default:
-                log_fatal("[ARM9] Undefined behaviour");
             }
+            break;
         case REGION_PALETTE_RAM:
             if (sizeof(T) == 1) {
                 log_fatal("[ARM9] 8-bit palette ram write is undefined behaviour");
@@ -71,24 +69,13 @@ auto Memory::ARM9Read(u32 addr) -> T {
         case REGION_VRAM:
             // TODO: make vram memory handlers applicable to u8, u16 and u32
             if (addr >= 0x06800000) {
-                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
-                    return_value = ((return_value & ~(0xFFFF << (i * 8))) | (core->gpu.ReadLCDC(addr + i) & (0xFFFF << (i * 8))));
-                    
-                }
+                return_value = core->gpu.ReadLCDC<T>(addr);
             } else if (in_range(0x06000000, 0x200000)) {
-                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
-                    return_value = ((return_value & ~(0xFFFF << (i * 8))) | (core->gpu.ReadBGA(addr + i) & (0xFFFF << (i * 8))));
-                }
+                return_value = core->gpu.ReadBGA<T>(addr);
             } else if (in_range(0x06200000, 0x200000)) {
-                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
-                    return_value = ((return_value & ~(0xFFFF << (i * 8))) | (core->gpu.ReadBGB(addr + i) & (0xFFFF << (i * 8))));
-                }
+                return_value = core->gpu.ReadBGB<T>(addr);
             } else {
                 log_warn("[ARM9] Undefined %ld-bit vram read %08x", sizeof(T) * 8, addr);
-            }
-
-            if (sizeof(T) == 1) {
-                return_value &= 0xFF;
             }
 
             break;
@@ -153,16 +140,14 @@ void Memory::ARM9Write(u32 addr, T data) {
             }
             break;
         case REGION_IO:
-            switch (sizeof(T)) {
-            case 1:
+            if constexpr (std::is_same_v<T, u8>) {
                 return ARM9WriteByteIO(addr, data);
-            case 2:
+            } else if constexpr (std::is_same_v<T, u16>) {
                 return ARM9WriteHalfIO(addr, data);
-            case 4:
+            } else if constexpr (std::is_same_v<T, u32>) {
                 return ARM9WriteWordIO(addr, data);
-            default:
-                log_fatal("[ARM9] Undefined behaviour");
             }
+            break;
         case REGION_PALETTE_RAM:
             if (sizeof(T) == 1) {
                 log_fatal("[ARM9] 8-bit palette ram write is undefined behaviour");
@@ -180,22 +165,16 @@ void Memory::ARM9Write(u32 addr, T data) {
 
             break;
         case REGION_VRAM:
-            if (sizeof(T) == 1) {
-                log_warn("[ARM9] 8-bit vram write is undefined behaviour");
-            }
+            // if (sizeof(T) == 1) {
+            //     log_fatal("[ARM9] 8-bit vram write is undefined behaviour");
+            // }
 
             if (addr >= 0x06800000) {
-                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
-                    core->gpu.WriteLCDC(addr + i, (data >> (i * 8)) & 0xFFFF);
-                }
+                core->gpu.WriteLCDC<T>(addr, data);
             } else if (in_range(0x06000000, 0x200000)) {
-                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
-                    core->gpu.WriteBGA(addr + i, (data >> (i * 8)) & 0xFFFF);
-                }
+                core->gpu.WriteBGA<T>(addr, data);
             } else if (in_range(0x06200000, 0x200000)) {
-                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
-                    core->gpu.WriteBGB(addr + i, (data >> (i * 8)) & 0xFFFF);
-                }
+                core->gpu.WriteBGB<T>(addr, data);
             } else {
                 log_warn("[ARM9] Undefined %ld-bit vram write %08x = %08x", sizeof(T) * 8, addr, data);
             }

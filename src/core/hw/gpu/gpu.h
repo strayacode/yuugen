@@ -28,14 +28,26 @@ struct GPU {
     void WriteDISPSTAT7(u16 data);
     void WriteDISPSTAT9(u16 data);
 
-    void WriteLCDC(u32 addr, u16 data);
-    void WriteBGA(u32 addr, u16 data);
-    void WriteBGB(u32 addr, u16 data);
+    template <typename T>
+    void WriteLCDC(u32 addr, T data);
 
-    auto ReadLCDC(u32 addr) -> u16;
-    auto ReadBGA(u32 addr) -> u16;
-    auto ReadBGB(u32 addr) -> u16;
-    auto ReadARM7(u32 addr) -> u16;
+    template <typename T>
+    void WriteBGA(u32 addr, T data);
+
+    template <typename T>
+    void WriteBGB(u32 addr, T data);
+
+    template <typename T>
+    auto ReadLCDC(u32 addr) -> T;
+
+    template <typename T>
+    auto ReadBGA(u32 addr) -> T;
+
+    template <typename T>
+    auto ReadBGB(u32 addr) -> T;
+
+    template <typename T>
+    auto ReadARM7(u32 addr) -> T;
 
     void RenderScanlineStart();
     void RenderScanlineFinish();

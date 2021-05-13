@@ -165,271 +165,299 @@ auto GPU::GetVRAMCNTEnabled(u8 vramcnt) -> bool {
     return (vramcnt & (1 << 7));
 }
 
-void GPU::WriteLCDC(u32 addr, u16 data) {
+template void GPU::WriteLCDC(u32 addr, u8 data);
+template void GPU::WriteLCDC(u32 addr, u16 data);
+template void GPU::WriteLCDC(u32 addr, u32 data);
+template <typename T>
+void GPU::WriteLCDC(u32 addr, T data) {
     // small optimisation by checking enabled first instead of in a range as it should be faster?
     if (GetVRAMCNTEnabled(VRAMCNT_A)) {
         if (in_range(0x06800000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_A) == 0)) {
-            memcpy(&VRAM_A[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_A[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_B)) {
         if (in_range(0x06820000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_B) == 0)) {
-            memcpy(&VRAM_B[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_B[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_C)) {
         if (in_range(0x06840000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 0)) {
-            memcpy(&VRAM_C[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_C[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_D)) {
         if (in_range(0x06860000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 0)) {
-            memcpy(&VRAM_D[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_D[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_E)) {
         if (in_range(0x06880000, 0x10000) && (GetVRAMCNTMST(VRAMCNT_E) == 0)) {
-            memcpy(&VRAM_E[addr & 0xFFFF], &data, 2);
+            memcpy(&VRAM_E[addr & 0xFFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_F)) {
         if (in_range(0x06890000, 0x4000) && (GetVRAMCNTMST(VRAMCNT_F) == 0)) {
-            memcpy(&VRAM_F[addr & 0x3FFF], &data, 2);
+            memcpy(&VRAM_F[addr & 0x3FFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_G)) {
         if (in_range(0x06894000, 0x4000) && (GetVRAMCNTMST(VRAMCNT_G) == 0)) {
-            memcpy(&VRAM_G[addr & 0x3FFF], &data, 2);
+            memcpy(&VRAM_G[addr & 0x3FFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_H)) {
         if (in_range(0x06898000, 0x8000) && (GetVRAMCNTMST(VRAMCNT_H) == 0)) {
-            memcpy(&VRAM_H[addr & 0x7FFF], &data, 2);
+            memcpy(&VRAM_H[addr & 0x7FFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_I)) {
         if (in_range(0x068A0000, 0x4000) && (GetVRAMCNTMST(VRAMCNT_I) == 0)) {
-            memcpy(&VRAM_I[addr & 0x3FFF], &data, 2);
+            memcpy(&VRAM_I[addr & 0x3FFF], &data, sizeof(T));
         }
     }
 }
 
-auto GPU::ReadLCDC(u32 addr) -> u16 {
-    u16 return_value = 0;
+template auto GPU::ReadLCDC(u32 addr) -> u8;
+template auto GPU::ReadLCDC(u32 addr) -> u16;
+template auto GPU::ReadLCDC(u32 addr) -> u32;
+template <typename T>
+auto GPU::ReadLCDC(u32 addr) -> T {
+    T return_value = 0;
 
     // small optimisation by checking enabled first instead of in a range as it should be faster?
     if (GetVRAMCNTEnabled(VRAMCNT_A)) {
         if (in_range(0x06800000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_A) == 0)) {
-            memcpy(&return_value, &VRAM_A[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_A[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_B)) {
         if (in_range(0x06820000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_B) == 0)) {
-            memcpy(&return_value, &VRAM_B[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_B[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_C)) {
         if (in_range(0x06840000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 0)) {
-            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_D)) {
         if (in_range(0x06860000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 0)) {
-            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_E)) {
         if (in_range(0x06880000, 0x10000) && (GetVRAMCNTMST(VRAMCNT_E) == 0)) {
-            memcpy(&return_value, &VRAM_E[addr & 0xFFFF], 2);
+            memcpy(&return_value, &VRAM_E[addr & 0xFFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_F)) {
         if (in_range(0x06890000, 0x4000) && (GetVRAMCNTMST(VRAMCNT_F) == 0)) {
-            memcpy(&return_value, &VRAM_F[addr & 0x3FFF], 2);
+            memcpy(&return_value, &VRAM_F[addr & 0x3FFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_G)) {
         if (in_range(0x06894000, 0x4000) && (GetVRAMCNTMST(VRAMCNT_G) == 0)) {
-            memcpy(&return_value, &VRAM_G[addr & 0x3FFF], 2);
+            memcpy(&return_value, &VRAM_G[addr & 0x3FFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_H)) {
         if (in_range(0x06898000, 0x8000) && (GetVRAMCNTMST(VRAMCNT_H) == 0)) {
-            memcpy(&return_value, &VRAM_H[addr & 0x7FFF], 2);
+            memcpy(&return_value, &VRAM_H[addr & 0x7FFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_I)) {
         if (in_range(0x068A0000, 0x4000) && (GetVRAMCNTMST(VRAMCNT_I) == 0)) {
-            memcpy(&return_value, &VRAM_I[addr & 0x3FFF], 2);
+            memcpy(&return_value, &VRAM_I[addr & 0x3FFF], sizeof(T));
         }
     }
 
     return return_value;
 }
 
-void GPU::WriteBGA(u32 addr, u16 data) {
+template void GPU::WriteBGA(u32 addr, u8 data);
+template void GPU::WriteBGA(u32 addr, u16 data);
+template void GPU::WriteBGA(u32 addr, u32 data);
+template <typename T>
+void GPU::WriteBGA(u32 addr, T data) {
     if (GetVRAMCNTEnabled(VRAMCNT_A)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_A)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_A) == 1)) {
-            memcpy(&VRAM_A[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_A[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_B)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_B)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_B) == 1)) {
-            memcpy(&VRAM_B[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_B[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_C)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_C)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 1)) {
-            memcpy(&VRAM_C[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_C[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_D)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_D)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 1)) {
-            memcpy(&VRAM_D[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_D[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_E)) {
         if (in_range(0x06000000, 0x10000) && (GetVRAMCNTMST(VRAMCNT_E) == 1)) {
-            memcpy(&VRAM_E[addr & 0xFFFF], &data, 2);
+            memcpy(&VRAM_E[addr & 0xFFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_F)) {
         if (in_range(0x06000000 + (0x4000 * (GetVRAMCNTOffset(VRAMCNT_F) & 0x1)) + (0x10000 * (GetVRAMCNTOffset(VRAMCNT_F) & 0x2)), 0x3FFF) && (GetVRAMCNTMST(VRAMCNT_F) == 1)) {
-            memcpy(&VRAM_F[addr & 0x3FFF], &data, 2);
+            memcpy(&VRAM_F[addr & 0x3FFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_G)) {
         if (in_range(0x06000000 + (0x4000 * (GetVRAMCNTOffset(VRAMCNT_G) & 0x1)) + (0x10000 * (GetVRAMCNTOffset(VRAMCNT_G) & 0x2)), 0x3FFF) && (GetVRAMCNTMST(VRAMCNT_G) == 1)) {
-            memcpy(&VRAM_G[addr & 0x3FFF], &data, 2);
+            memcpy(&VRAM_G[addr & 0x3FFF], &data, sizeof(T));
         }
     }
 }
 
-auto GPU::ReadBGA(u32 addr) -> u16 {
-    u16 return_value = 0;
+template auto GPU::ReadBGA(u32 addr) -> u8;
+template auto GPU::ReadBGA(u32 addr) -> u16;
+template auto GPU::ReadBGA(u32 addr) -> u32;
+template <typename T>
+auto GPU::ReadBGA(u32 addr) -> T {
+    T return_value = 0;
 
     if (GetVRAMCNTEnabled(VRAMCNT_A)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_A)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_A) == 1)) {
-            memcpy(&return_value, &VRAM_A[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_A[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_B)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_B)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_B) == 1)) {
-            memcpy(&return_value, &VRAM_B[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_B[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_C)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_C)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 1)) {
-            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_D)) {
         if (in_range(0x06000000 + (0x20000 * GetVRAMCNTOffset(VRAMCNT_D)), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 1)) {
-            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_E)) {
         if (in_range(0x06000000, 0x10000) && (GetVRAMCNTMST(VRAMCNT_E) == 1)) {
-            memcpy(&return_value, &VRAM_E[addr & 0xFFFF], 2);
+            memcpy(&return_value, &VRAM_E[addr & 0xFFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_F)) {
         if (in_range(0x06000000 + (0x4000 * (GetVRAMCNTOffset(VRAMCNT_F) & 0x1)) + (0x10000 * (GetVRAMCNTOffset(VRAMCNT_F) & 0x2)), 0x3FFF) && (GetVRAMCNTMST(VRAMCNT_F) == 1)) {
-            memcpy(&return_value, &VRAM_F[addr & 0x3FFF], 2);
+            memcpy(&return_value, &VRAM_F[addr & 0x3FFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_G)) {
         if (in_range(0x06000000 + (0x4000 * (GetVRAMCNTOffset(VRAMCNT_G) & 0x1)) + (0x10000 * (GetVRAMCNTOffset(VRAMCNT_G) & 0x2)), 0x3FFF) && (GetVRAMCNTMST(VRAMCNT_G) == 1)) {
-            memcpy(&return_value, &VRAM_G[addr & 0x3FFF], 2);
+            memcpy(&return_value, &VRAM_G[addr & 0x3FFF], sizeof(T));
         }
     }
 
     return return_value;
 }
 
-void GPU::WriteBGB(u32 addr, u16 data) {
+template void GPU::WriteBGB(u32 addr, u8 data);
+template void GPU::WriteBGB(u32 addr, u16 data);
+template void GPU::WriteBGB(u32 addr, u32 data);
+template <typename T>
+void GPU::WriteBGB(u32 addr, T data) {
     if (GetVRAMCNTEnabled(VRAMCNT_C)) {
         if (in_range(0x06200000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 4)) {
-            memcpy(&VRAM_C[addr & 0x1FFFF], &data, 2);
+            memcpy(&VRAM_C[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_H)) {
         if (in_range(0x06200000, 0x8000) && (GetVRAMCNTMST(VRAMCNT_H) == 1)) {
-            memcpy(&VRAM_H[addr & 0x7FFF], &data, 2);
+            memcpy(&VRAM_H[addr & 0x7FFF], &data, sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_I)) {
         if (in_range(0x06208000, 0x4000) && (GetVRAMCNTMST(VRAMCNT_I) == 1)) {
-            memcpy(&VRAM_I[addr & 0x3FFF], &data, 2);
+            memcpy(&VRAM_I[addr & 0x3FFF], &data, sizeof(T));
         }
     }
 }
 
-auto GPU::ReadBGB(u32 addr) -> u16 {
-    u16 return_value = 0;
+template auto GPU::ReadBGB(u32 addr) -> u8;
+template auto GPU::ReadBGB(u32 addr) -> u16;
+template auto GPU::ReadBGB(u32 addr) -> u32;
+template <typename T>
+auto GPU::ReadBGB(u32 addr) -> T {
+    T return_value = 0;
 
     if (GetVRAMCNTEnabled(VRAMCNT_C)) {
         if (in_range(0x06200000, 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 4)) {
-            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_H)) {
         if (in_range(0x06200000, 0x8000) && (GetVRAMCNTMST(VRAMCNT_H) == 1)) {
-            memcpy(&return_value, &VRAM_H[addr & 0x7FFF], 2);
+            memcpy(&return_value, &VRAM_H[addr & 0x7FFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_I)) {
         if (in_range(0x06208000, 0x4000) && (GetVRAMCNTMST(VRAMCNT_I) == 1)) {
-            memcpy(&return_value, &VRAM_I[addr & 0x3FFF], 2);
+            memcpy(&return_value, &VRAM_I[addr & 0x3FFF], sizeof(T));
         }
     }
 
     return return_value;
 }
 
-auto GPU::ReadARM7(u32 addr) -> u16 {
-    u16 return_value = 0;
+template auto GPU::ReadARM7(u32 addr) -> u8;
+template auto GPU::ReadARM7(u32 addr) -> u16;
+template auto GPU::ReadARM7(u32 addr) -> u32;
+template <typename T>
+auto GPU::ReadARM7(u32 addr) -> T {
+    T return_value = 0;
     if (GetVRAMCNTEnabled(VRAMCNT_C)) {
         if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
-            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], sizeof(T));
         }
     }
 
     if (GetVRAMCNTEnabled(VRAMCNT_D)) {
         if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
-            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], 2);
+            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], sizeof(T));
         }
     }
 

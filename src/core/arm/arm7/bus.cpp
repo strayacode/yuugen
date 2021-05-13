@@ -47,14 +47,14 @@ auto Memory::ARM7Read(u32 addr) -> T {
         }
         break;
     case REGION_IO:
-        switch (sizeof(T)) {
-        case 1:
+        if constexpr (std::is_same_v<T, u8>) {
             return ARM7ReadByteIO(addr);
-        case 2:
+        } else if constexpr (std::is_same_v<T, u16>) {
             return ARM7ReadHalfIO(addr);
-        case 4:
+        } else if constexpr (std::is_same_v<T, u32>) {
             return ARM7ReadWordIO(addr);
         }
+        break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -112,14 +112,14 @@ void Memory::ARM7Write(u32 addr, T data) {
 
         break;
     case REGION_IO:
-        switch (sizeof(T)) {
-        case 1:
+        if constexpr (std::is_same_v<T, u8>) {
             return ARM7WriteByteIO(addr, data);
-        case 2:
+        } else if constexpr (std::is_same_v<T, u16>) {
             return ARM7WriteHalfIO(addr, data);
-        case 4:
+        } else if constexpr (std::is_same_v<T, u32>) {
             return ARM7WriteWordIO(addr, data);
         }
+        break;
     default:
         log_fatal("[ARM7] undefined %ld-bit write %08x = %08x", sizeof(T) * 8, addr, data);
     }

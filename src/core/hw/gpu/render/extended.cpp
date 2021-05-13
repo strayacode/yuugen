@@ -17,9 +17,9 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
             u32 data_addr = data_base + (pixel * 2);
             u16 colour;
             if (engine_id == 1) {
-                colour = gpu->ReadBGA(data_addr);
+                colour = gpu->ReadBGA<u16>(data_addr);
             } else {
-                colour = gpu->ReadBGB(data_addr);
+                colour = gpu->ReadBGB<u16>(data_addr);
             }
             layers[bg_index][(256 * line) + pixel] = Convert15To24(colour);
         }
