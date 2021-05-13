@@ -55,6 +55,9 @@ auto Memory::ARM7Read(u32 addr) -> T {
             return ARM7ReadWordIO(addr);
         }
         break;
+    case REGION_VRAM:
+        return_value = core->gpu.ReadARM7<T>(addr);
+        break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // check if the arm9 has access rights to the gba slot
         // if not return 0

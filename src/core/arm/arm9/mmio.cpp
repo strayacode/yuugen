@@ -203,9 +203,27 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
         break;
     case 0x04000242:
         core->gpu.VRAMCNT_C = data;
+        // if vramcnt_c has an mst of 2 and is now enabled,
+        // then set bit 0 of VRAMSTAT (vram bank c allocated to the arm7)
+        if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
+            // then set bit 0
+            core->gpu.VRAMSTAT |= 1;
+        } else {
+            // reset bit 0
+            core->gpu.VRAMSTAT &= ~1;
+        }
         break;
     case 0x04000243:
         core->gpu.VRAMCNT_D = data;
+        // if vramcnt_d has an mst of 2 and is now enabled,
+        // then set bit 0 of VRAMSTAT (vram bank d allocated to the arm7)
+        if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
+            // then set bit 0
+            core->gpu.VRAMSTAT |= (1 << 1);
+        } else {
+            // reset bit 0
+            core->gpu.VRAMSTAT &= ~(1 << 1);
+        }
         break;
     case 0x04000244:
         core->gpu.VRAMCNT_E = data;

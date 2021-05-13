@@ -10,11 +10,10 @@ auto Memory::ARM9Read(u32 addr) -> T {
 
     T return_value = 0;
 
-    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize()) && !core->cp15.GetITCMLoadMode()) {
         memcpy(&return_value, &core->cp15.itcm[addr & 0x7FFF], sizeof(T));
     } else if (core->cp15.GetDTCMEnabled() && 
-        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize())) {
-
+        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize()) && !core->cp15.GetDTCMLoadMode()) {
         memcpy(&return_value, &core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], sizeof(T));
     } else {
         switch (addr >> 24) {
@@ -24,22 +23,16 @@ auto Memory::ARM9Read(u32 addr) -> T {
         case REGION_SHARED_WRAM:
             switch (WRAMCNT) {
             case 0:
-                // 32 kb is allocated to arm9
                 memcpy(&return_value, &shared_wram[addr & 0x7FFF], sizeof(T));
                 break;
             case 1:
-                // 1st 16kb allocated to arm9
                 memcpy(&return_value, &shared_wram[(addr & 0x3FFF) + 0x4000], sizeof(T));
                 break;
             case 2:
-                // 2nd 16kb allocated to arm9
                 memcpy(&return_value, &shared_wram[addr & 0x3FFF], sizeof(T));
                 break;
             case 3:
-                // 0kb allocated to arm9
                 return 0;
-            default:
-                log_fatal("handle");
             }
             break;
         case REGION_IO:
