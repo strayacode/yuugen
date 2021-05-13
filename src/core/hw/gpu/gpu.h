@@ -49,6 +49,18 @@ struct GPU {
     template <typename T>
     auto ReadARM7(u32 addr) -> T;
 
+    template <typename T>
+    void WriteOBJA(u32 addr, T data);
+
+    template <typename T>
+    void WriteOBJB(u32 addr, T data);
+
+    template <typename T>
+    auto ReadOBJA(u32 addr) -> T;
+
+    template <typename T>
+    auto ReadOBJB(u32 addr) -> T;
+
     void RenderScanlineStart();
     void RenderScanlineFinish();
 

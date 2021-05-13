@@ -35,6 +35,18 @@ void MathsUnit::StartDivision() {
             DIVREM_RESULT = (s64)((s32)DIV_NUMER % (s32)DIV_DENOM);
         }
         break;
+    case 1: case 3:
+        // 64-bit / 32-bit
+        if (DIV_DENOM == 0) {
+            DIVREM_RESULT = (s64)DIV_RESULT;
+            DIV_RESULT = ((s32)DIV_NUMER >= 0) ? -1 : 1;
+        } else if (DIV_NUMER == -(s32)0x80000000 && DIV_DENOM == -1) {
+            log_fatal("handle MAX/-1");
+        } else {
+            DIV_RESULT = DIV_NUMER / (s32)DIV_DENOM;
+            DIVREM_RESULT = DIV_NUMER % (s32)DIV_DENOM;
+        }
+        break;
     default:
         log_fatal("handle division mode %d", division_mode);
     }

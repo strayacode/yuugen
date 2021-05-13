@@ -74,6 +74,10 @@ auto Memory::ARM9Read(u32 addr) -> T {
                 return_value = core->gpu.ReadBGA<T>(addr);
             } else if (in_range(0x06200000, 0x200000)) {
                 return_value = core->gpu.ReadBGB<T>(addr);
+            } else if (in_range(0x06400000, 0x200000)) {
+                return_value = core->gpu.ReadOBJA<T>(addr);
+            } else if (in_range(0x06600000, 0x200000)) {
+                return_value = core->gpu.ReadOBJB<T>(addr);
             } else {
                 log_warn("[ARM9] Undefined %ld-bit vram read %08x", sizeof(T) * 8, addr);
             }
@@ -175,6 +179,10 @@ void Memory::ARM9Write(u32 addr, T data) {
                 core->gpu.WriteBGA<T>(addr, data);
             } else if (in_range(0x06200000, 0x200000)) {
                 core->gpu.WriteBGB<T>(addr, data);
+            } else if (in_range(0x06400000, 0x200000)) {
+                core->gpu.WriteOBJA<T>(addr, data);
+            } else if (in_range(0x06600000, 0x200000)) {
+                core->gpu.WriteOBJB<T>(addr, data);
             } else {
                 log_warn("[ARM9] Undefined %ld-bit vram write %08x = %08x", sizeof(T) * 8, addr, data);
             }
@@ -196,6 +204,9 @@ void Memory::ARM9Write(u32 addr, T data) {
                 }
             }
 
+            break;
+        case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+            // for now do nothing lol
             break;
         default:
             log_fatal("[ARM9] Undefined %ld-bit write %08x = %08x", sizeof(T) * 8, addr, data);

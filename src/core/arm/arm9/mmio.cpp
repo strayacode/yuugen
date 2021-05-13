@@ -150,6 +150,12 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return core->maths_unit.DIV_DENOM >> 32;
     case 0x040002A0:
         return core->maths_unit.DIV_RESULT & 0xFFFFFFFF;
+    case 0x040002A4:
+        return core->maths_unit.DIV_RESULT >> 32;
+    case 0x040002A8:
+        return core->maths_unit.DIVREM_RESULT & 0xFFFFFFFF;
+    case 0x040002AC:
+        return core->maths_unit.DIVREM_RESULT >> 32;
     case 0x040002B8:
         return core->maths_unit.SQRT_PARAM & 0xFFFFFFFF;
     case 0x040002BC:
@@ -228,6 +234,11 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
 }
 
 void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
+    if (in_range(0x4000320, 0x383)) {
+        // ignore 3d renderer writes for now
+        return;
+    }
+
     switch (addr) {
     case 0x04000000:
         core->gpu.engine_a.DISPCNT = (core->gpu.engine_a.DISPCNT & ~0xFFFF) | data;
