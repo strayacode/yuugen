@@ -49,7 +49,6 @@ auto Memory::ARM9Read(u32 addr) -> T {
                 log_fatal("[ARM9] 8-bit palette ram write is undefined behaviour");
             }
 
-
             if ((addr & 0x7FF) < 400) {
                 // this is the first block which is assigned to engine a
                 memcpy(&return_value, &core->gpu.engine_a.palette_ram[addr & 0x3FF], sizeof(T));

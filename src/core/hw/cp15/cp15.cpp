@@ -115,7 +115,7 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         // dtcm size 512 shl n
         dtcm_size = 512 << dtcm_size;
 
-        log_debug("dtcm size: 0x%04x dtcm_base: 0x%04x", dtcm_size, dtcm_base);
+        log_debug("[CP15]\nDtcm Size: 0x%08x\nDtcm Base: 0x%08x", dtcm_size, dtcm_base);
         break;
     case 0x090101:
         // write to raw register
@@ -127,8 +127,7 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         // itcm size 512 shl n
         itcm_size = 512 << itcm_size;
         
-        log_debug("itcm size: 0x%04x itcm_base: 0x%04x", itcm_size, itcm_base);
-        // itcm_base_addr always remains 0x00000000 so we will not change that
+        log_debug("[CP15]\nItcm Size: 0x%08x\nItcm Base: 0x%08x", itcm_size, itcm_base);
         break;
     default:
         log_fatal("undefined register write C%d, C%d, C%d with data 0x%08x", cn, cm, cp, data);
