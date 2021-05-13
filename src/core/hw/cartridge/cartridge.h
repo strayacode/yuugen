@@ -11,6 +11,7 @@
 enum CartridgeCommand {
     DUMMY_COMMAND = 0x9F,
     READ_DATA = 0xB7,
+    CHIP_ID = 0xB8,
 };
 
 struct Core;
@@ -27,8 +28,8 @@ struct Cartridge {
     void WriteAUXSPIDATA(u16 data);
 
     void ReceiveCommand(u8 command, int command_index);
-
-    void Transfer();
+    auto ReadData() -> u32;
+    void StartTransfer();
 
     struct CartridgeHeader {
         u32 arm9_rom_offset; // specifies from which offset in the rom data will be transferred to the arm9/arm7 bus
@@ -46,6 +47,7 @@ struct Cartridge {
     } header;
 
     u32 transfer_count;
+    u32 transfer_size;
 
     u32 ROMCTRL;
     u16 AUXSPICNT;
@@ -58,4 +60,6 @@ struct Cartridge {
     Core* core;
 
     std::vector<u8> rom;
+
+    u64 rom_size;
 };

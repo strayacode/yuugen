@@ -62,6 +62,8 @@ struct Memory {
 
     void WriteHALTCNT(u8 data);
 
+    int CartridgeAccessRights();
+
     Core* core;
 
     // todo: maybe make vectors later or std::array?

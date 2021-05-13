@@ -68,6 +68,29 @@ auto Memory::ARM9Read(u32 addr) -> T {
             }
 
             break;
+        case REGION_VRAM:
+            if (sizeof(T) == 1) {
+                log_fatal("[ARM9] 8-bit vram read is undefined behaviour");
+            }
+
+            if (addr >= 0x06800000) {
+                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
+                    return_value = ((return_value & ~(0xFFFF << (i * 8))) | (core->gpu.ReadLCDC(addr + i) & (0xFFFF << (i * 8))));
+                    
+                }
+            } else if (in_range(0x06000000, 0x200000)) {
+                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
+                    return_value = ((return_value & ~(0xFFFF << (i * 8))) | (core->gpu.ReadBGA(addr + i) & (0xFFFF << (i * 8))));
+                }
+            } else if (in_range(0x06200000, 0x200000)) {
+                for (long unsigned int i = 0; i < sizeof(T); i += 2) {
+                    return_value = ((return_value & ~(0xFFFF << (i * 8))) | (core->gpu.ReadBGB(addr + i) & (0xFFFF << (i * 8))));
+                }
+            } else {
+                log_fatal("[ARM9] Undefined %ld-bit vram read %08x", sizeof(T) * 8, addr);
+            }
+
+            break;
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
             // check if the arm9 has access rights to the gba slot
             // if not return 0

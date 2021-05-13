@@ -18,9 +18,9 @@ Core::Core() :
 }
 
 void Core::Reset() {
+    cartridge.Reset();
     cartridge.LoadRom(rom_path);
 
-    cartridge.Reset();
     arm9.Reset();
     arm7.Reset();
     gpu.Reset();

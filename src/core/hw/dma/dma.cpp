@@ -112,15 +112,15 @@ void DMA::Transfer() {
 
             }
             // request dma irq upon end of word count if enabled 
-            // if (channel[i].DMACNT & (1 << 30)) {
-            //     if (arch == 1) {
-            //         // arm9
-            //         core->arm9.SendInterrupt(8 + i);
-            //     } else {
-            //         // arm7
-            //         core->arm7.SendInterrupt(8 + i);
-            //     }
-            // }
+            if (channel[i].DMACNT & (1 << 30)) {
+                if (arch == 1) {
+                    // arm9
+                    core->arm9.SendInterrupt(8 + i);
+                } else {
+                    // arm7
+                    core->arm7.SendInterrupt(8 + i);
+                }
+            }
 
             // disable the dma channel after the transfer is finished
             enabled &= ~(1 << i);

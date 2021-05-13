@@ -55,7 +55,7 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
     case 0x04000184:
         return core->ipc.IPCFIFOCNT9;
     case 0x04000204:
-        return 0;
+        return EXMEMCNT;
     case 0x04000208:
         return core->interrupt[1].IME & 0x1;
     case 0x04000280:
@@ -153,6 +153,8 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return 0;
     case 0x04100000:
         return core->ipc.ReadFIFORECV9();
+    case 0x04100010:
+        return core->cartridge.ReadData();
     default:
         log_fatal("[ARM9] Undefined 32-bit io read %08x", addr);
     }
@@ -343,7 +345,7 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         core->ipc.WriteIPCFIFOCNT9(data);
         break;
     case 0x04000204:
-        // EXMEMCNT = data;
+        EXMEMCNT = data;
         break;
     case 0x04000208:
         core->interrupt[1].IME = data & 0x1;

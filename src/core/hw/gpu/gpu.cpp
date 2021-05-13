@@ -48,7 +48,9 @@ void GPU::RenderScanlineStart() {
     if (VCOUNT < 192) {
         engine_a.RenderScanline(VCOUNT);
         engine_b.RenderScanline(VCOUNT);
-        // TODO: add hblank dma transfers
+
+        // trigger an arm9 dma transfer on hblank (only for visible scanlines)
+        core->dma[1].Trigger(2);
     }
 
     DISPSTAT7 |= (1 << 1);
@@ -60,6 +62,14 @@ void GPU::RenderScanlineStart() {
 
     if (DISPSTAT9 & (1 << 4)) {
         core->arm9.SendInterrupt(1);
+    }
+
+    // ARM9 DMA exclusive
+    // check if scanline is between 2 and 193 inclusive
+    // if so trigger a start of display dma transfer
+    // TODO: on scanline 194 automatically clear the enable bit in DMA
+    if ((VCOUNT > 1) && (VCOUNT < 194)) {
+        core->dma[1].Trigger(3);
     }
 
     core->scheduler.Add(524, RenderScanlineFinishTask);
@@ -83,7 +93,8 @@ void GPU::RenderScanlineFinish() {
             core->arm9.SendInterrupt(0);
         }
 
-        // TODO: add vblank dmas
+        core->dma[0].Trigger(1);
+        core->dma[1].Trigger(1);
         break;
     case 262:
         // end of vblank

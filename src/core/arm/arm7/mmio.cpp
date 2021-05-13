@@ -54,8 +54,7 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
     case 0x040001C2:
         return core->spi.ReadSPIDATA();
     case 0x04000204:
-        // TODO: handle exmemstat later
-        return 0;
+        return EXMEMCNT;
     case 0x04000208:
         return core->interrupt[0].IME & 0x1;
     case 0x04000300:
@@ -186,7 +185,7 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
         core->spi.WriteSPIDATA(data);
         break;
     case 0x04000204:
-        // TODO: handle exmemstat later
+        EXMEMCNT = data;
         break;
     case 0x04000206:
         // TODO: implement WIFIWAITCNT
