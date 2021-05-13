@@ -88,6 +88,9 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
     case 0x070601:
         // invalidate data cache line
         break;
+    case 0x070A01:
+        // clean data cache line
+        break;
     case 0x070A04:
         // drain write buffer
         break;

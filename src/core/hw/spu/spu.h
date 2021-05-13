@@ -11,6 +11,8 @@ struct SPU {
     void Reset();
 
     auto ReadByte(u32 addr) -> u8;
+
+    void WriteHalf(u32 addr, u16 data);
     void WriteWord(u32 addr, u32 data);
 
     struct SPUChannel {
@@ -27,6 +29,9 @@ struct SPU {
 
     // used by the arm7
     u16 SOUNDCNT;
+    u16 SOUNDBIAS;
 
     u8 SNDCAPCNT[2];
+    u32 SNDCAPDAD[2];
+    u32 SNDCAPLEN[2];
 };

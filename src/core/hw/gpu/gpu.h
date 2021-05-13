@@ -3,6 +3,7 @@
 #include <common/types.h>
 #include <common/memory_helpers.h>
 #include <core/hw/gpu/gpu_2d.h>
+#include <core/hw/gpu/gpu_3d.h>
 #include <string.h>
 #include <functional>
 
@@ -69,6 +70,8 @@ struct GPU {
     u8 VRAM_I[0x4000];
 
     GPU2D engine_a, engine_b;
+
+    GPU3D engine_3d;
 
     u16 VCOUNT;
 

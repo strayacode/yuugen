@@ -7,11 +7,14 @@ SPU::SPU(Core* core) : core(core) {
 
 void SPU::Reset() {
     SOUNDCNT = 0;
+    SOUNDBIAS = 0;
     for (int i = 0; i < 16; i++) {
         memset(&channel[i], 0, sizeof(SPUChannel));
     }
 
     SNDCAPCNT[0] = SNDCAPCNT[1] = 0;
+    SNDCAPDAD[0] = SNDCAPDAD[1] = 0;
+    SNDCAPLEN[0] = SNDCAPLEN[1] = 0;
 }
 
 auto SPU::ReadByte(u32 addr) -> u8 {
@@ -26,10 +29,15 @@ auto SPU::ReadByte(u32 addr) -> u8 {
     }
 }
 
+void SPU::WriteHalf(u32 addr, u16 data) {
+    // do later lol
+}
+
 void SPU::WriteWord(u32 addr, u32 data) {
-    if (data != 0) {
-        log_fatal("implement sound channel support for spu");
-    }
+    // if (data != 0) {
+    //     log_fatal("implement sound channel support for spu");
+    // }
+    // do later lol
     // // get the channel index
     // u8 channel_index = (addr >> 4) & 0xF;
     // // check which data in the channel should be changed

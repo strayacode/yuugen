@@ -23,7 +23,7 @@ void MathsUnit::StartDivision() {
     switch (division_mode) {
     case 0:
         // 32-bit / 32-bit
-        if (DIV_NUMER == 0) {
+        if (DIV_DENOM == 0) {
             // set DIV_RESULT to +/-1 with sign opposite of DIV_NUMER
             // in 32 bit mode the upper 32 bits of DIV_RESULT are inverted
             DIVREM_RESULT = (s64)DIV_RESULT;

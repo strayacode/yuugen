@@ -32,6 +32,8 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->gpu.engine_a.WININ;
     case 0x0400004A:
         return core->gpu.engine_a.WINOUT;
+    case 0x04000060:
+        return core->gpu.engine_3d.DISP3DCNT;
     case 0x040000BA:
         return core->dma[1].ReadDMACNT_H(0);
     case 0x040000C6:
@@ -86,6 +88,11 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
 }
 
 auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
+    if (in_range(0x4000320, 0x383)) {
+        // ignore 3d renderer writes for now
+        return 0;
+    }
+
     switch (addr) {
     case 0x04000000:
         return core->gpu.engine_a.DISPCNT;
@@ -141,6 +148,8 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return core->maths_unit.DIV_DENOM & 0xFFFFFFFF;
     case 0x0400029C:
         return core->maths_unit.DIV_DENOM >> 32;
+    case 0x040002A0:
+        return core->maths_unit.DIV_RESULT & 0xFFFFFFFF;
     case 0x040002B8:
         return core->maths_unit.SQRT_PARAM & 0xFFFFFFFF;
     case 0x040002BC:
@@ -209,6 +218,9 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
         break;
     case 0x04000249:
         core->gpu.VRAMCNT_I = data;
+        break;
+    case 0x04000300:
+        POSTFLG9 = data;
         break;
     default:
         log_fatal("[ARM9] Undefined 8-bit io write %08x = %02x", addr, data);
@@ -282,6 +294,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x0400004A:
         core->gpu.engine_a.WINOUT = data;
+        break;
+    case 0x04000060:
+        core->gpu.engine_3d.DISP3DCNT = data;
         break;
     case 0x0400006C:
         // TODO: handle brightness properly later
@@ -438,6 +453,11 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
 }
 
 void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
+    if (in_range(0x4000320, 0x383)) {
+        // ignore 3d renderer writes for now
+        return;
+    }
+
     switch (addr) {
     case 0x04000000:
         core->gpu.engine_a.DISPCNT = data;

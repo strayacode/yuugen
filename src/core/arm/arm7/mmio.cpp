@@ -49,6 +49,10 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
         return core->ipc.ReadIPCSYNC7();
     case 0x04000184:
         return core->ipc.IPCFIFOCNT7;
+    case 0x040001A0:
+        return core->cartridge.AUXSPICNT;
+    case 0x040001A2:
+        return core->cartridge.AUXSPIDATA;
     case 0x040001C0:
         return core->spi.SPICNT;
     case 0x040001C2:
@@ -63,6 +67,8 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
         return POWCNT2;
     case 0x04000500:
         return core->spu.SOUNDCNT;
+    case 0x04000504:
+        return core->spu.SOUNDBIAS;
     case 0x04808006:
         return core->wifi.W_MODE_WEP;
     case 0x04808018:
@@ -91,6 +97,11 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
 }
 
 auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
+    if (in_range(0x04000400, 0x100)) {
+        // for now just return 0
+        return 0;
+    }
+
     switch (addr) {
     case 0x04000000:
         return core->gpu.engine_b.DISPCNT;
@@ -121,6 +132,9 @@ void Memory::ARM7WriteByteIO(u32 addr, u8 data) {
     case 0x04000208:
         core->interrupt[0].IME = data & 0x1;
         break;
+    case 0x04000300:
+        POSTFLG7 = data;
+        break;
     case 0x04000301:
         WriteHALTCNT(data);
         break;
@@ -132,12 +146,24 @@ void Memory::ARM7WriteByteIO(u32 addr, u8 data) {
         // write to upper byte of SOUNDCNT
         core->spu.SOUNDCNT = (core->spu.SOUNDCNT & 0xFF) | (data << 8);
         break;
+    case 0x04000508:
+        core->spu.SNDCAPCNT[0] = data;
+        break;
+    case 0x04000509:
+        core->spu.SNDCAPCNT[1] = data;
+        break;
     default:
         log_fatal("[ARM7] Undefined 8-bit io write %08x = %08x", addr, data);
     }
 }
 
 void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
+    if (in_range(0x04000400, 0x100)) {
+        // write to an spu channel
+        core->spu.WriteHalf(addr, data);
+        return;
+    }
+
     switch (addr) {
     case 0x04000004:
         core->gpu.WriteDISPSTAT7(data);
@@ -178,6 +204,12 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
     case 0x04000184:
         core->ipc.WriteIPCFIFOCNT7(data);
         break;
+    case 0x040001A0:
+        core->cartridge.WriteAUXSPICNT(data);
+        break;
+    case 0x040001A2:
+        core->cartridge.WriteAUXSPIDATA(data);
+        break;
     case 0x040001C0:
         core->spi.WriteSPICNT(data);
         break;
@@ -198,6 +230,15 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04000500:
         core->spu.SOUNDCNT = data;
+        break;
+    case 0x04000504:
+        core->spu.SOUNDBIAS = data;
+        break;
+    case 0x04000514:
+        core->spu.SNDCAPLEN[0] = data;
+        break;
+    case 0x0400051C:
+        core->spu.SNDCAPLEN[1] = data;
         break;
     case 0x04808006:
         core->wifi.W_MODE_WEP = data;
@@ -283,6 +324,12 @@ void Memory::ARM7WriteWordIO(u32 addr, u32 data) {
         break;
     case 0x04000214:
         core->interrupt[0].IF &= ~data;
+        break;
+    case 0x04000510:
+        core->spu.SNDCAPDAD[0] = data;
+        break;
+    case 0x04000518:
+        core->spu.SNDCAPDAD[1] = data;
         break;
     default:
         log_fatal("[ARM7] Undefined 32-bit io write %08x = %08x", addr, data);

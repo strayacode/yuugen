@@ -394,6 +394,8 @@ void ARM::Execute() {
             switch (index) {
             case 0x000: case 0x008:
                 return ARM_AND(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x002: case 0x00A:
+                return ARM_AND(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x004: case 0x00C:
                 return ARM_AND(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x009:
