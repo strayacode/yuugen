@@ -69,10 +69,7 @@ auto Memory::ARM9Read(u32 addr) -> T {
 
             break;
         case REGION_VRAM:
-            if (sizeof(T) == 1) {
-                log_fatal("[ARM9] 8-bit vram read is undefined behaviour");
-            }
-
+            // TODO: make vram memory handlers applicable to u8, u16 and u32
             if (addr >= 0x06800000) {
                 for (long unsigned int i = 0; i < sizeof(T); i += 2) {
                     return_value = ((return_value & ~(0xFFFF << (i * 8))) | (core->gpu.ReadLCDC(addr + i) & (0xFFFF << (i * 8))));
@@ -87,7 +84,11 @@ auto Memory::ARM9Read(u32 addr) -> T {
                     return_value = ((return_value & ~(0xFFFF << (i * 8))) | (core->gpu.ReadBGB(addr + i) & (0xFFFF << (i * 8))));
                 }
             } else {
-                log_fatal("[ARM9] Undefined %ld-bit vram read %08x", sizeof(T) * 8, addr);
+                log_warn("[ARM9] Undefined %ld-bit vram read %08x", sizeof(T) * 8, addr);
+            }
+
+            if (sizeof(T) == 1) {
+                return_value &= 0xFF;
             }
 
             break;
@@ -180,7 +181,7 @@ void Memory::ARM9Write(u32 addr, T data) {
             break;
         case REGION_VRAM:
             if (sizeof(T) == 1) {
-                log_fatal("[ARM9] 8-bit vram write is undefined behaviour");
+                log_warn("[ARM9] 8-bit vram write is undefined behaviour");
             }
 
             if (addr >= 0x06800000) {
@@ -196,7 +197,7 @@ void Memory::ARM9Write(u32 addr, T data) {
                     core->gpu.WriteBGB(addr + i, (data >> (i * 8)) & 0xFFFF);
                 }
             } else {
-                log_fatal("[ARM9] Undefined %ld-bit vram write %08x = %08x", sizeof(T) * 8, addr, data);
+                log_warn("[ARM9] Undefined %ld-bit vram write %08x = %08x", sizeof(T) * 8, addr, data);
             }
 
             break;

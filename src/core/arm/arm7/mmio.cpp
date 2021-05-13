@@ -69,6 +69,8 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
         return core->spu.SOUNDCNT;
     case 0x04000504:
         return core->spu.SOUNDBIAS;
+    case 0x04000508:
+        return (core->spu.SNDCAPCNT[0]) | (core->spu.SNDCAPCNT[1] << 8);
     case 0x04808006:
         return core->wifi.W_MODE_WEP;
     case 0x04808018:
@@ -125,6 +127,12 @@ auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
 }
 
 void Memory::ARM7WriteByteIO(u32 addr, u8 data) {
+    if (in_range(0x04000400, 0x100)) {
+        // write to an spu channel
+        core->spu.WriteByte(addr, data);
+        return;
+    }
+
     switch (addr) {
     case 0x04000138:
         core->rtc.WriteRTC(data);
@@ -233,6 +241,10 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04000504:
         core->spu.SOUNDBIAS = data;
+        break;
+    case 0x04000508:
+        core->spu.SNDCAPCNT[0] = data & 0xFF;
+        core->spu.SNDCAPCNT[1] = data >> 8;
         break;
     case 0x04000514:
         core->spu.SNDCAPLEN[0] = data;

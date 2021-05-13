@@ -12,6 +12,7 @@ struct SPU {
 
     auto ReadByte(u32 addr) -> u8;
 
+    void WriteByte(u32 addr, u8 data);
     void WriteHalf(u32 addr, u16 data);
     void WriteWord(u32 addr, u32 data);
 

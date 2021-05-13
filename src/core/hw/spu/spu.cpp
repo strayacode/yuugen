@@ -29,6 +29,10 @@ auto SPU::ReadByte(u32 addr) -> u8 {
     }
 }
 
+void SPU::WriteByte(u32 addr, u8 data) {
+    // do later lol
+}
+
 void SPU::WriteHalf(u32 addr, u16 data) {
     // do later lol
 }
