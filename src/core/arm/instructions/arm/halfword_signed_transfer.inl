@@ -13,6 +13,23 @@ INSTRUCTION(ARM_STRH_PRE, u32 op2) {
     regs.r[15] += 4;
 }
 
+// with writeback
+INSTRUCTION(ARM_STRH_PRE_WRITEBACK, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+    
+    u32 address = regs.r[rn] + op2;
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[rn] += op2;
+
+    WriteHalf(address, regs.r[rd]);
+
+    regs.r[15] += 4;
+}
+
 // without writeback
 INSTRUCTION(ARM_LDRH_PRE, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;

@@ -97,6 +97,66 @@ INSTRUCTION(ARM_SMLABB) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_SMULBB) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = (s16)regs.r[rm] * (s16)regs.r[rs];
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMULTB) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = (s16)(regs.r[rm] >> 16) * (s16)regs.r[rs];
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMULBT) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = (s16)regs.r[rm] * (s16)(regs.r[rs] >> 16);
+    
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMULTT) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = (s16)(regs.r[rm] >> 16) * (s16)(regs.r[rs] >> 16);
+    
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_SMLABT) {
     // ARMv5 exclusive
     if (arch == ARMv4) {

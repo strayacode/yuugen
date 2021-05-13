@@ -20,14 +20,10 @@ void DMA::Transfer() {
     for (int i = 0; i < 4; i++) {
         // only do transfer if enabled obviously
         if (enabled & (1 << i)) {
-            log_debug("[DMA] Starting transfer with size %04x bytes", channel[i].internal_length);
-
             // make variables to make things easier
             u8 destination_control = (channel[i].DMACNT >> 21) & 0x7;
             u8 source_control = (channel[i].DMACNT >> 23) & 0x7;
-            if (channel[i].DMACNT & (1 << 25)) {
-                log_fatal("implement support for dma repeat");
-            }
+            
             // loop through all the data units specified by internal length
             for (u32 j = 0; j < channel[i].internal_length; j++) {
                 // check the transfer type (either halfwords or words)
@@ -42,7 +38,7 @@ void DMA::Transfer() {
 
                     // case 2 is just fixed so nothing happens
                     switch (destination_control) {
-                    case 0:
+                    case 0: case 3:
                         // increment
                         channel[i].internal_destination += 4;
                         break;
@@ -50,8 +46,8 @@ void DMA::Transfer() {
                         // decrement
                         channel[i].internal_destination -= 4;
                         break;
-                    case 3:
-                        log_fatal("handle increment/reload in destination control");
+                    case 2:
+                        // fixed
                         break;
                     }
 
@@ -66,7 +62,7 @@ void DMA::Transfer() {
                         channel[i].internal_source -= 4;
                         break;
                     case 3:
-                        log_fatal("prohibited in destination control");
+                        log_fatal("prohibited in source control");
                         break;
                     }
 
@@ -80,16 +76,16 @@ void DMA::Transfer() {
 
                     // case 2 is just fixed so nothing happens
                     switch (destination_control) {
-                    case 0:
+                    case 0: case 3:
                         // increment
                         channel[i].internal_destination += 2;
+                        break;
+                    case 2:
+                        // fixed
                         break;
                     case 1:
                         // decrement
                         channel[i].internal_destination -= 2;
-                        break;
-                    case 3:
-                        log_fatal("handle increment/reload in destination control");
                         break;
                     }
 
@@ -104,7 +100,7 @@ void DMA::Transfer() {
                         channel[i].internal_source -= 2;
                         break;
                     case 3:
-                        log_fatal("prohibited in destination control");
+                        log_fatal("prohibited in source control");
                         break;
                     }
                 }
@@ -122,10 +118,20 @@ void DMA::Transfer() {
                 }
             }
 
-            // disable the dma channel after the transfer is finished
-            enabled &= ~(1 << i);
-            channel[i].DMACNT &= ~(1 << 31);
+            u8 start_timing = (channel[i].DMACNT >> 27) & 0x7;
+            if (channel[i].DMACNT & (1 << 25) && start_timing != 0) {
+                // restart the internal registers
+                channel[i].internal_length = channel[i].DMACNT & 0x1FFFFF;
 
+                if (destination_control == 3) {
+                    // only reload internal destination register in increment/reload mode
+                    channel[i].internal_destination = channel[i].destination;
+                }
+            } else {
+                // disable the dma channel after the transfer is finished
+                enabled &= ~(1 << i);
+                channel[i].DMACNT &= ~(1 << 31);
+            }
         }
     }
 }

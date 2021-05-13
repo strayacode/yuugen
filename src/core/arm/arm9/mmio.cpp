@@ -295,6 +295,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x0400004A:
         core->gpu.engine_a.WINOUT = data;
         break;
+    case 0x04000052:
+        core->gpu.engine_a.BLDALPHA = data;
+        break;
     case 0x04000060:
         core->gpu.engine_3d.DISP3DCNT = data;
         break;
