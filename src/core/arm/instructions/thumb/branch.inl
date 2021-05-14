@@ -151,6 +151,28 @@ INSTRUCTION(THUMB_BX_REG) {
     }
 }
 
+INSTRUCTION(THUMB_BLX_REG) {
+    // arm9 specific instruction
+    if (arch == ARMv5) {
+        return;
+    }
+
+    u8 rm = (instruction >> 3) & 0xF;
+    u32 next_instruction_address = regs.r[15] - 2;
+    regs.r[14] = next_instruction_address | 1;
+    if (regs.r[rm] & 0x1) {
+        // just load rm into r15 normally in thumb
+        regs.r[15] = regs.r[rm] & ~1;
+        ThumbFlushPipeline();
+    } else {
+        // switch to arm state
+        // clear bit 5 in cpsr
+        regs.cpsr &= ~(1 << 5);
+        regs.r[15] = regs.r[rm] & ~3;
+        ARMFlushPipeline();
+    }
+}
+
 INSTRUCTION(THUMB_BL_SETUP) {
     u32 immediate = ((instruction & (1 << 10)) ? 0xFFFFF000 : 0) | ((instruction & 0x7FF) << 1);
 

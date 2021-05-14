@@ -460,6 +460,8 @@ void ARM::Execute() {
                 return ARM_ADDS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x094: case 0x09C:
                 return ARM_ADDS(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
+            case 0x096: case 0x09E:
+                return ARM_ADDS(ARM_ROTATE_RIGHT_IMM());
             case 0x099:
                 return ARM_UMULLS();
             case 0x0A0: case 0x0A8:
@@ -992,6 +994,11 @@ void ARM::Execute() {
             case 0x978: case 0x979: case 0x97A: case 0x97B:
             case 0x97C: case 0x97D: case 0x97E: case 0x97F:
                 return ARM_LDM_DECREMENT_BEFORE_USER_WRITEBACK();
+            case 0x980: case 0x981: case 0x982: case 0x983:
+            case 0x984: case 0x985: case 0x986: case 0x987:
+            case 0x988: case 0x989: case 0x98A: case 0x98B:
+            case 0x98C: case 0x98D: case 0x98E: case 0x98F:
+                return ARM_STM_INCREMENT_BEFORE();
             case 0x990: case 0x991: case 0x992: case 0x993:
             case 0x994: case 0x995: case 0x996: case 0x997:
             case 0x998: case 0x999: case 0x99A: case 0x99B:
@@ -1370,7 +1377,12 @@ void ARM::Execute() {
         case 0x46:
             return THUMB_MOVH();
         case 0x47:
-            return THUMB_BX_REG();
+            if (instruction & (1 << 7)) {
+                return THUMB_BLX_REG();
+            } else {
+                return THUMB_BX_REG();
+            }
+            return;
         case 0x48: case 0x49: case 0x4A: case 0x4B: 
         case 0x4C: case 0x4D: case 0x4E: case 0x4F:
             return THUMB_LDR_PC();

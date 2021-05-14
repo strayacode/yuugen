@@ -29,6 +29,8 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
     switch (addr) {
     case 0x04000004:
         return core->gpu.DISPSTAT7;
+    case 0x04000006:
+        return core->gpu.VCOUNT;
     case 0x04000100:
         return core->timers[0].ReadTMCNT_L(0);
     case 0x04000104:
