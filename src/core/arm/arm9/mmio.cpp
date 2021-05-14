@@ -324,6 +324,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x0400004A:
         core->gpu.engine_a.WINOUT = data;
         break;
+    case 0x04000050:
+        core->gpu.engine_a.BLDCNT = data;
+        break;
     case 0x04000052:
         core->gpu.engine_a.BLDALPHA = data;
         break;
@@ -474,6 +477,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x0400104A:
         core->gpu.engine_b.WINOUT = data;
+        break;
+    case 0x04001050:
+        core->gpu.engine_b.BLDCNT = data;
         break;
     case 0x0400106C:
         // TODO: handle brightness properly later
