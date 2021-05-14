@@ -59,7 +59,8 @@ void Core::DirectBoot() {
 }
 
 void Core::FirmwareBoot() {
-
+    arm9.FirmwareBoot();
+    arm7.FirmwareBoot();
 }
 
 void Core::SetRomPath(std::string path) {

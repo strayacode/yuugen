@@ -123,6 +123,9 @@ void Memory::ARM7Write(u32 addr, T data) {
             return ARM7WriteWordIO(addr, data);
         }
         break;
+    case REGION_VRAM:
+        core->gpu.WriteARM7<T>(addr, data);
+        break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // for now do nothing lol
         break;

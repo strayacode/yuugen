@@ -464,6 +464,24 @@ auto GPU::ReadARM7(u32 addr) -> T {
     return return_value;
 }
 
+template void GPU::WriteARM7(u32 addr, u8 data);
+template void GPU::WriteARM7(u32 addr, u16 data);
+template void GPU::WriteARM7(u32 addr, u32 data);
+template <typename T>
+void GPU::WriteARM7(u32 addr, T data) {
+    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
+        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
+            memcpy(&VRAM_C[addr & 0x1FFFF], &data, sizeof(T));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
+        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
+            memcpy(&VRAM_D[addr & 0x1FFFF], &data, sizeof(T));
+        }
+    }
+}
+
 template void GPU::WriteOBJA(u32 addr, u8 data);
 template void GPU::WriteOBJA(u32 addr, u16 data);
 template void GPU::WriteOBJA(u32 addr, u32 data);

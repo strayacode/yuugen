@@ -50,6 +50,9 @@ struct GPU {
     auto ReadARM7(u32 addr) -> T;
 
     template <typename T>
+    void WriteARM7(u32 addr, T data);
+
+    template <typename T>
     void WriteOBJA(u32 addr, T data);
 
     template <typename T>
