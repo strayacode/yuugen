@@ -76,7 +76,7 @@ void Core::RunFrame() {
     // so thus each frame consists of 263 * 355 * 6 cycles based on arm9 clock speed
     // which is = 560190
 
-    u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
+    u64 frame_end_time = scheduler.GetCurrentTime() + 280095;
 
     // run frame for total of 560190 arm9 cycles
     while (scheduler.GetCurrentTime() < frame_end_time) {

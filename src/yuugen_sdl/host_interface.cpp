@@ -61,6 +61,8 @@ void HostInterface::Run(std::string path) {
     core->SetRomPath(path);
     core->Reset();
     core->DirectBoot();
+
+    auto frame_start = std::chrono::system_clock::now();
     while (true) {
         core->RunFrame();
 
@@ -122,6 +124,16 @@ void HostInterface::Run(std::string path) {
                     break;
                 }
             }
+        }
+
+        frames++;
+
+        auto frame_end = std::chrono::system_clock::now();
+        if ((frame_end - frame_start) >= std::chrono::milliseconds(1000)) {
+            snprintf(window_title, 40, "yuugen [%d FPS | %0.2f ms]", frames, 1000.0 / frames);
+            SDL_SetWindowTitle(window, window_title);
+            frame_start = std::chrono::system_clock::now();
+            frames = 0;
         }
     }
 }

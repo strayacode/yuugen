@@ -13,7 +13,7 @@ add_library(core
     hw/gpu/gpu_2d.h hw/gpu/gpu_2d.cpp
     hw/gpu/gpu_3d.h hw/gpu/gpu_3d.cpp
     hw/gpu/render/text.cpp hw/gpu/render/extended.cpp
-    hw/gpu/compose.cpp
+    hw/gpu/compose.cpp hw/gpu/render/object.cpp
     hw/dma/dma.h hw/dma/dma.cpp
     hw/input/input.h hw/input/input.cpp
     hw/ipc/ipc.h hw/ipc/ipc.cpp
