@@ -92,6 +92,11 @@ auto GPU2D::Convert15To24(u32 colour) -> u32 {
 }
 
 void GPU2D::RenderScanline(u16 line) {
+    // reset all the bg layers
+    for (int i = 0; i < 4; i++) {
+        memset(&layers[i][256 * line], 0, 256 * sizeof(u32));
+    }
+
     // get the display mode (bits 16..17)
     u8 display_mode = (DISPCNT >> 16) & 0x3;
     switch (display_mode) {
