@@ -20,11 +20,17 @@ struct GPU2D {
 
     auto Convert15To24(u32 colour) -> u32;
 
-    void WritePaletteRAM(u32 addr, u16 data);
-    void WriteOAM(u32 addr, u16 data);
+    template <typename T>
+    auto ReadPaletteRAM(u32 addr) -> T;
 
-    auto ReadPaletteRAM(u32 addr) -> u16;
-    auto ReadOAM(u32 addr) -> u16;
+    template <typename T>
+    auto ReadOAM(u32 addr) -> T;
+
+    template <typename T>
+    void WritePaletteRAM(u32 addr, T data);
+
+    template <typename T>
+    void WriteOAM(u32 addr, T data);
 
     void ComposeScanline(u16 line);
 
@@ -60,7 +66,7 @@ struct GPU2D {
     u8 palette_ram[0x400];
 
     // // each gpu engine holds 1kb of oam which allows for a total of 128 oam entries for each gpu engine (128 sprites)
-    u16 oam[0x400];
+    u8 oam[0x400];
 
     
 

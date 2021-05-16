@@ -149,14 +149,12 @@ void Memory::ARM9Write(u32 addr, T data) {
                 log_fatal("[ARM9] 8-bit palette ram write is undefined behaviour");
             }
 
-            for (long unsigned int i = 0; i < sizeof(T); i += 2) {
-                if ((addr & 0x7FF) < 400) {
-                    // this is the first block which is assigned to engine a
-                    core->gpu.engine_a.WritePaletteRAM(addr + i, (data >> (i * 8)) & 0xFFFF);
-                } else {
-                    // write to engine b's palette ram
-                    core->gpu.engine_b.WritePaletteRAM(addr + i, (data >> (i * 8)) & 0xFFFF);
-                }
+            if ((addr & 0x7FF) < 0x400) {
+                // this is the first block of oam which is 1kb and is assigned to engine a
+                core->gpu.engine_a.WritePaletteRAM<T>(addr, data);
+            } else {
+                // write to engine b's palette ram
+                core->gpu.engine_b.WritePaletteRAM<T>(addr, data);
             }
 
             break;
@@ -185,15 +183,12 @@ void Memory::ARM9Write(u32 addr, T data) {
                 log_fatal("[ARM9] 8-bit oam write is undefined behaviour");
             }
 
-            for (long unsigned int i = 0; i < sizeof(T); i += 2) {
-                // check memory address to see which engine to write to oam
-                if ((addr & 0x3FF) < 0x400) {
-                    // this is the first block of oam which is 1kb and is assigned to engine a
-                    core->gpu.engine_a.WriteOAM(addr + i, (data >> (i * 8)) & 0xFFFF);
-                } else {
-                    // write to engine b's palette ram
-                    core->gpu.engine_b.WriteOAM(addr + i, (data >> (i * 8)) & 0xFFFF);
-                }
+            if ((addr & 0x7FF) < 0x400) {
+                // this is the first block of oam which is 1kb and is assigned to engine a
+                core->gpu.engine_a.WriteOAM<T>(addr, data);
+            } else {
+                // write to engine b's palette ram
+                core->gpu.engine_b.WriteOAM<T>(addr, data);
             }
 
             break;

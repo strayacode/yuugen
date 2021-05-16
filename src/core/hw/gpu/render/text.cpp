@@ -49,8 +49,8 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                 }
 
                 // now we have the palette indices for 2 pixels in a row
-                u16 colour1 = ReadPaletteRAM(palette_indices & 0xFF);
-                u16 colour2 = ReadPaletteRAM(palette_indices >> 8);
+                u16 colour1 = ReadPaletteRAM<u16>(palette_indices & 0xFF);
+                u16 colour2 = ReadPaletteRAM<u16>(palette_indices >> 8);
                 
                 layers[bg_index][(256 * line) + tile + j] = Convert15To24(colour1);
                 layers[bg_index][(256 * line) + tile + j + 1] = Convert15To24(colour2);
@@ -88,7 +88,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             }
 
             for (int j = 0; j < 8; j++) {
-                u16 colour = ReadPaletteRAM((palette_number * 32) + (palette_indices & 0xF) * 2);
+                u16 colour = ReadPaletteRAM<u16>((palette_number * 32) + (palette_indices & 0xF) * 2);
 
                 u16 offset = (256 * line) + tile + (horizontal_flip ? (7 - j) : j);
 
