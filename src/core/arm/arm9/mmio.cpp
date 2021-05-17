@@ -5,6 +5,8 @@ auto Memory::ARM9ReadByteIO(u32 addr) -> u8 {
     switch (addr) {
     case 0x04000208:
         return core->interrupt[1].IME & 0x1;
+    case 0x04000300:
+        return POSTFLG9;
     case 0x04004000:
         return 0;
     default:
@@ -629,6 +631,10 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         break;
     case 0x040000EC:
         core->dma[1].DMAFILL[3] = data;
+        break;
+    case 0x040001A0:
+        core->cartridge.WriteAUXSPICNT(data & 0xFFFF);
+        core->cartridge.WriteAUXSPIDATA(data >> 16);
         break;
     case 0x040001A4:
         core->cartridge.WriteROMCTRL(data);

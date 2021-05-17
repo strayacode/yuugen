@@ -9,10 +9,14 @@ auto Memory::ARM7ReadByteIO(u32 addr) -> u8 {
     switch (addr) {
     case 0x04000138:
         return core->rtc.ReadRTC();
+    case 0x040001C2:
+        return core->spi.ReadSPIDATA();
     case 0x04000240:
         return core->gpu.VRAMSTAT;
     case 0x04000241:
         return WRAMCNT;
+    case 0x04000300:
+        return POSTFLG7;
     case 0x04000501:
         // read upper byte of SOUNDCNT
         return core->spu.SOUNDCNT >> 8;
@@ -31,6 +35,14 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
         return core->gpu.DISPSTAT7;
     case 0x04000006:
         return core->gpu.VCOUNT;
+    case 0x040000BA:
+        return core->dma[0].ReadDMACNT_H(0);
+    case 0x040000C6:
+        return core->dma[0].ReadDMACNT_H(1);
+    case 0x040000D2:
+        return core->dma[0].ReadDMACNT_H(2);
+    case 0x040000DE:
+        return core->dma[0].ReadDMACNT_H(3);
     case 0x04000100:
         return core->timers[0].ReadTMCNT_L(0);
     case 0x04000104:
@@ -117,6 +129,10 @@ auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
         return core->dma[0].ReadDMACNT(3);
     case 0x04000180:
         return core->ipc.ReadIPCSYNC7();
+    case 0x040001A4:
+        return core->cartridge.ROMCTRL;
+    case 0x040001C0:
+        return (core->spi.ReadSPIDATA() << 8) | core->spi.SPICNT;
     case 0x04000208:
         return core->interrupt[0].IME & 0x1;
     case 0x04000210:
@@ -125,6 +141,8 @@ auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
         return core->interrupt[0].IF;
     case 0x04100000:
         return core->ipc.ReadFIFORECV7();
+    case 0x04100010:
+        return core->cartridge.ReadData();
     default:
         log_fatal("[ARM7] Undefined 32-bit io read %08x", addr);
     }
@@ -140,6 +158,24 @@ void Memory::ARM7WriteByteIO(u32 addr, u8 data) {
     switch (addr) {
     case 0x04000138:
         core->rtc.WriteRTC(data);
+        break;
+    case 0x040001A1:
+        // write to the high byte of AUXSPICNT
+        core->cartridge.AUXSPICNT = (core->cartridge.AUXSPICNT & 0xFF) | (data << 8);
+        break;
+    case 0x040001A8:
+    case 0x040001A9:
+    case 0x040001AA:
+    case 0x040001AB:
+    case 0x040001AC:
+    case 0x040001AD:
+    case 0x040001AE:
+    case 0x040001AF:
+        // recieve a cartridge command and store in the buffer
+        core->cartridge.ReceiveCommand(data, addr - 0x040001A8);
+        break;
+    case 0x040001C2:
+        core->spi.WriteSPIDATA(data);
         break;
     case 0x04000208:
         core->interrupt[0].IME = data & 0x1;
@@ -180,6 +216,18 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
     case 0x04000004:
         core->gpu.WriteDISPSTAT7(data);
         break;
+    case 0x040000BA:
+        core->dma[0].WriteDMACNT_H(0, data);
+        break;
+    case 0x040000C6:
+        core->dma[0].WriteDMACNT_H(1, data);
+        break;
+    case 0x040000D2:
+        core->dma[0].WriteDMACNT_H(2, data);
+        break;
+    case 0x040000DE:
+        core->dma[0].WriteDMACNT_H(3, data);
+        break;
     case 0x04000100:
         core->timers[0].WriteTMCNT_L(0, data);
         break;
@@ -204,6 +252,10 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
     case 0x0400010E:
         core->timers[0].WriteTMCNT_H(3, data);
         break;
+    case 0x04000128:
+        // debug SIOCNT
+        SIOCNT = data;
+        break;
     case 0x04000134:
         RCNT = data;
         break;
@@ -221,6 +273,9 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x040001A2:
         core->cartridge.WriteAUXSPIDATA(data);
+        break;
+    case 0x040001B8: case 0x040001BA:
+        // TODO: handle key2 encryption later
         break;
     case 0x040001C0:
         core->spi.WriteSPICNT(data);
@@ -255,6 +310,9 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x0400051C:
         core->spu.SNDCAPLEN[1] = data;
+        break;
+    case 0x04001080:
+        // this address seems to just be for debugging for the ds lite so not useful for us
         break;
     case 0x04808006:
         core->wifi.W_MODE_WEP = data;
@@ -326,11 +384,23 @@ void Memory::ARM7WriteWordIO(u32 addr, u32 data) {
         core->timers[0].WriteTMCNT_L(2, data);
         core->timers[0].WriteTMCNT_H(2, data);
         break;
+    case 0x04000120:
+        // debug SIODATA32
+        break;
+    case 0x04000128:
+        // debug SIOCNT but it doesn't matter
+        break;
     case 0x04000180:
         core->ipc.WriteIPCSYNC7(data);
         break;
     case 0x04000188:
         core->ipc.WriteFIFOSEND7(data);
+        break;
+    case 0x040001A4:
+        core->cartridge.WriteROMCTRL(data);
+        break;
+    case 0x040001B0: case 0x040001B4:
+        // TODO: handle key2 encryption later
         break;
     case 0x04000208:
         core->interrupt[0].IME = data & 0x1;
@@ -340,6 +410,9 @@ void Memory::ARM7WriteWordIO(u32 addr, u32 data) {
         break;
     case 0x04000214:
         core->interrupt[0].IF &= ~data;
+        break;
+    case 0x04000308:
+        BIOSPROT = data;
         break;
     case 0x04000510:
         core->spu.SNDCAPDAD[0] = data;

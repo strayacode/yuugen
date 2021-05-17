@@ -384,6 +384,11 @@ void ARM::Execute() {
         return;
     }
 
+    counter++;
+    if (counter > 100000000) {
+        LogRegisters();
+    }
+
     if (core->interrupt[arch].IME && ((core->interrupt[arch].IE & core->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
         HandleInterrupt();
     }
@@ -414,6 +419,8 @@ void ARM::Execute() {
                 return ARM_EOR(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x022: case 0x02A:
                 return ARM_EOR(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x026: case 0x2E:
+                return ARM_EOR(ARM_ROTATE_RIGHT_IMM());
             case 0x029:
                 return ARM_MLA();
             case 0x030: case 0x038:

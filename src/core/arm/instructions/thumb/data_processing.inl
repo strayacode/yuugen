@@ -67,11 +67,9 @@ INSTRUCTION(THUMB_LSL_IMM) {
     u8 rd = instruction & 0x7;
     u8 rm = (instruction >> 3) & 0x7;
     u32 immediate = (instruction >> 6) & 0x1F;
-    // TODO: optimise later
-
+    
     if (immediate > 0) {
         SetConditionFlag(C_FLAG, regs.r[rm] & (1 << (32 - immediate)));
-
     }
     
     regs.r[rd] = regs.r[rm] << immediate;
@@ -295,13 +293,15 @@ INSTRUCTION(THUMB_ADDH) {
     u8 rd = ((instruction & (1 << 7)) >> 4) | (instruction & 0x7);
     u8 rm = (instruction >> 3) & 0xF;
 
-    if (rd == 15) {
-        log_fatal("handle");
-    }
-
     regs.r[rd] += regs.r[rm];
 
-    regs.r[15] += 2;
+    if (rd == 15) {
+        // halfword align
+        regs.r[15] &= ~1;
+        ThumbFlushPipeline();
+    } else {
+        regs.r[15] += 2;
+    }
 }
 
 INSTRUCTION(THUMB_CMPH) {

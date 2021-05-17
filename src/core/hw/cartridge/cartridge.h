@@ -9,9 +9,11 @@
 #pragma once
 
 enum CartridgeCommand {
+    READ_HEADER = 0x00,
+    FIRST_CHIP_ID = 0x90,
     DUMMY_COMMAND = 0x9F,
     READ_DATA = 0xB7,
-    CHIP_ID = 0xB8,
+    SECOND_CHIP_ID = 0xB8,
 };
 
 struct Core;
@@ -30,6 +32,12 @@ struct Cartridge {
     void ReceiveCommand(u8 command, int command_index);
     auto ReadData() -> u32;
     void StartTransfer();
+
+    void WriteSeed0_L(u32 data);
+    void WriteSeed1_L(u32 data);
+
+    void WriteSeed0_H(u16 data);
+    void WriteSeed1_H(u16 data);
 
     struct CartridgeHeader {
         u32 arm9_rom_offset; // specifies from which offset in the rom data will be transferred to the arm9/arm7 bus
@@ -62,4 +70,7 @@ struct Cartridge {
     std::vector<u8> rom;
 
     u64 rom_size;
+
+    u64 seed0;
+    u64 seed1;
 };

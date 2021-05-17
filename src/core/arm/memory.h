@@ -88,4 +88,10 @@ struct Memory {
 
     u8 POSTFLG7;
     u8 POSTFLG9;
+
+    // used for protection of the arm7 bios
+    u32 BIOSPROT;
+
+    // the arm7 provides io ports for the link port but it doesn't seem to be used
+    u16 SIOCNT;
 };

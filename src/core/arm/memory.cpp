@@ -19,6 +19,8 @@ void Memory::Reset() {
     EXMEMCNT = 0;
     POSTFLG7 = 0;
     POSTFLG9 = 0;
+    BIOSPROT = 0;
+    SIOCNT = 0;
 
     LoadARM7Bios();
     LoadARM9Bios();

@@ -4,7 +4,7 @@ INSTRUCTION(THUMB_LDR_PC) {
     // in this instruction pc is word aligned (pc & 0xFFFFFFFC)
     u32 address = (regs.r[15] & ~0x3) + immediate;
     regs.r[rd] = ReadWord(address);
-    // log_fatal("address is 0x%04x", address);
+    
     if (address & 0x3) {
         u8 shift_amount = (address & 0x3) << 3;
         regs.r[rd] = (regs.r[rd] >> shift_amount) | (regs.r[rd] << (32 - shift_amount));

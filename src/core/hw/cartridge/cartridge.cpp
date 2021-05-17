@@ -18,6 +18,8 @@ void Cartridge::Reset() {
     command = 0;
 
     rom_size = 0;
+
+    seed0 = seed1 = 0;
 }
 
 void Cartridge::LoadRom(std::string rom_path) {
@@ -126,6 +128,10 @@ auto Cartridge::ReadData() -> u32 {
 
     // check the first command in the command buffer
     switch (command_buffer[0]) {
+    case READ_HEADER:
+        // return the cartridge header repeated every 0x1000 bytes
+        memcpy(&data, &rom[transfer_count & 0xFFF], 4);
+        break;
     case DUMMY_COMMAND:
         // data remains as 0xFFFFFFFF
         break;
@@ -144,7 +150,7 @@ auto Cartridge::ReadData() -> u32 {
         memcpy(&data, &rom[address + transfer_count], 4);
         break;
     }
-    case CHIP_ID:
+    case FIRST_CHIP_ID: case SECOND_CHIP_ID:
         data = 0x1FC2;
         break;
     default:
@@ -207,4 +213,21 @@ void Cartridge::DirectBoot() {
     }
 
     log_debug("[Cartridge] Data transferred into memory");
+}
+
+// TODO: handle key2 encryption later
+void Cartridge::WriteSeed0_L(u32 data) {
+
+}
+    
+void Cartridge::WriteSeed1_L(u32 data) {
+
+}
+
+void Cartridge::WriteSeed0_H(u16 data) {
+
+}
+
+void Cartridge::WriteSeed1_H(u16 data) {
+
 }
