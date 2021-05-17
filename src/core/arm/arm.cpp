@@ -384,11 +384,6 @@ void ARM::Execute() {
         return;
     }
 
-    counter++;
-    if (counter > 100000000) {
-        LogRegisters();
-    }
-
     if (core->interrupt[arch].IME && ((core->interrupt[arch].IE & core->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
         HandleInterrupt();
     }

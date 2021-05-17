@@ -158,6 +158,8 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return core->maths_unit.DIVREM_RESULT & 0xFFFFFFFF;
     case 0x040002AC:
         return core->maths_unit.DIVREM_RESULT >> 32;
+    case 0x040002B4:
+        return core->maths_unit.SQRT_RESULT;
     case 0x040002B8:
         return core->maths_unit.SQRT_PARAM & 0xFFFFFFFF;
     case 0x040002BC:

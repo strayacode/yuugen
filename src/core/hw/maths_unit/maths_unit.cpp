@@ -31,8 +31,8 @@ void MathsUnit::StartDivision() {
         } else if (DIV_NUMER == -(s32)0x80000000 && DIV_DENOM == -1) {
             log_fatal("handle MAX/-1");
         } else {
-            DIV_RESULT = (s64)((s32)DIV_NUMER / (s32)DIV_DENOM);
-            DIVREM_RESULT = (s64)((s32)DIV_NUMER % (s32)DIV_DENOM);
+            DIV_RESULT = static_cast<s32>(DIV_NUMER) / static_cast<s32>(DIV_DENOM);
+            DIVREM_RESULT = static_cast<s32>(DIV_NUMER) % static_cast<s32>(DIV_DENOM);
         }
         break;
     case 1: case 3:
