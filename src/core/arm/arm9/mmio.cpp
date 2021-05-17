@@ -98,6 +98,8 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
     switch (addr) {
     case 0x04000000:
         return core->gpu.engine_a.DISPCNT;
+    case 0x04000048:
+        return (core->gpu.engine_a.WINOUT << 8) | core->gpu.engine_a.WININ;
     case 0x040000B0:
         return core->dma[1].channel[0].source;
     case 0x040000B4:

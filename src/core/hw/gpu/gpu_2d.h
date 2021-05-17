@@ -33,6 +33,7 @@ struct GPU2D {
     void WriteOAM(u32 addr, T data);
 
     void ComposeScanline(u16 line);
+    void ComposePixel(u16 line, u16 x);
 
     u32 framebuffer[256 * 192];
 
@@ -67,12 +68,6 @@ struct GPU2D {
 
     // // each gpu engine holds 1kb of oam which allows for a total of 128 oam entries for each gpu engine (128 sprites)
     u8 oam[0x400];
-
-    
-
-    // void UpdatePixel(u32 pixel, u32 colour);
-    // void RenderGraphicsDisplay(u16 line);
-    
 
     GPU* gpu;
 
