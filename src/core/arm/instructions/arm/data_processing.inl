@@ -484,19 +484,54 @@ INSTRUCTION(ARM_QADD) {
         // set q flag
         SetConditionFlag(Q_FLAG, true);
 
+        // saturate the result
+        // this approach avoids an if else statement
+        result = 0x80000000 - (result >> 31);
+    }
+
+    regs.r[rd] = result;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_QDADD) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+
+    u32 result = op1 + op1;
+    
+    if ((op1 ^ result) >> 31) {
+        // if the last bit has changed then we know a signed overflow occured
+        SetConditionFlag(Q_FLAG, true);
+
+        // saturate the result
+        // this approach avoids an if else statement
+        result = 0x80000000 - (result >> 31);
+    }
+
+    u32 old_result = result;
+
+    // now add rm
+    result += regs.r[rm];
+
+    if (ADD_OVERFLOW(old_result, regs.r[rm], result)) {
+        // set q flag
+        SetConditionFlag(Q_FLAG, true);
+
         // since a signed overflow occured with saturated arithmetic, we set the result to the max value
         // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
         // if greater than the largest positive value (2^31 - 1)
-        if (result & 0x80000000) {
-            // then set to 2^31 - 1
-            result = 0x7FFFFFFF;
-        } else {
-            // this implies that we overflowed above the largest negative value (-2^31)
-            // then set to -2^31
-            result = 0x80000000;
-        }
+        // saturate the result
+        // this approach avoids an if else statement
+        result = 0x80000000 - (result >> 31);
     }
-
+    
     regs.r[rd] = result;
 
     regs.r[15] += 4;
@@ -521,16 +556,56 @@ INSTRUCTION(ARM_QSUB) {
         // since a signed overflow occured with saturated arithmetic, we set the result to the max value
         // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
         // if greater than the largest positive value (2^31 - 1)
-        if (result & 0x80000000) {
-            // then set to 2^31 - 1
-            result = 0x7FFFFFFF;
-        } else {
-            // this implies that we overflowed above the largest negative value (-2^31)
-            // then set to -2^31
-            result = 0x80000000;
-        }
+        // saturate the result
+        // this approach avoids an if else statement
+        result = 0x80000000 - (result >> 31);
     }
 
+    regs.r[rd] = result;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_QDSUB) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+
+    u32 result = op1 + op1;
+
+    if ((op1 ^ result) >> 31) {
+        // set q flag
+        SetConditionFlag(Q_FLAG, true);
+
+        // since a signed overflow occured with saturated arithmetic, we set the result to the max value
+        // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
+        // if greater than the largest positive value (2^31 - 1)
+        // saturate the result
+        // this approach avoids an if else statement
+        result = 0x80000000 - (result >> 31);
+    }
+
+    u32 old_result = result;
+
+    // now subtract rm
+    result = regs.r[rm] - result;
+    if (SUB_OVERFLOW(regs.r[rm], old_result, result)) {
+        // set q flag
+        SetConditionFlag(Q_FLAG, true);
+
+        // since a signed overflow occured with saturated arithmetic, we set the result to the max value
+        // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
+        // if greater than the largest positive value (2^31 - 1)
+        // saturate the result
+        // this approach avoids an if else statement
+        result = 0x80000000 - (result >> 31);
+    }
+    
     regs.r[rd] = result;
 
     regs.r[15] += 4;

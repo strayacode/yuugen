@@ -528,6 +528,8 @@ void ARM::Execute() {
                 return ARM_TEQS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
             case 0x140:
                 return ARM_MRS_SPSR();
+            case 0x145:
+                return ARM_QDADD();
             case 0x149:
                 return ARM_SWPB();
             case 0x14B:
@@ -546,6 +548,8 @@ void ARM::Execute() {
                 return ARM_MSR_SPSR_REG();
             case 0x161:
                 return ARM_CLZ();
+            case 0x165:
+                return ARM_QDSUB();
             case 0x168:
                 return ARM_SMULBB();
             case 0x16A:

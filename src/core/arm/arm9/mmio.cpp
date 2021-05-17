@@ -183,6 +183,18 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
 
 void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
     switch (addr) {
+    case 0x04000040:
+        core->gpu.engine_a.WINH[0] = (core->gpu.engine_a.WINH[0] & ~0xFF) | data;
+        break;
+    case 0x04000041:
+        core->gpu.engine_a.WINH[0] = (core->gpu.engine_a.WINH[0] & 0xFF) | (data << 8);
+        break;
+    case 0x04000044:
+        core->gpu.engine_a.WINV[0] = (core->gpu.engine_a.WINV[0] & ~0xFF) | data;
+        break;
+    case 0x04000045:
+        core->gpu.engine_a.WINV[0] = (core->gpu.engine_a.WINV[0] & 0xFF) | (data << 8);
+        break;
     case 0x040001A1:
         // write to the high byte of AUXSPICNT
         core->cartridge.AUXSPICNT = (core->cartridge.AUXSPICNT & 0xFF) | (data << 8);

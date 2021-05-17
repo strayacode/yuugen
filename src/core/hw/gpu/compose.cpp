@@ -13,6 +13,7 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
 
     // then at least 1 of the windows is enabled so handle accordingly
     if ((DISPCNT >> 13) & 0x7) {
+
         u8 win0_x1 = WINH[0] >> 8;
         u8 win0_x2 = WINH[0] & 0xFF;
         u8 win0_y1 = WINV[0] >> 8;
@@ -33,8 +34,11 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
         } else {
             // pixel is not in any window
             enabled &= (WINOUT & 0xF);
+            
         }
     }
+
+    
 
     u8 priority = 0;
     u8 priority_bg_index = 3;
@@ -47,7 +51,9 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
             }
         }
     }
-
-    // finally store the pixel from the correct bg layer
-    framebuffer[(256 * line) + x] = layers[priority_bg_index][(256 * line) + x];
+    // only update the framebuffer if any layers are enabled
+    if (enabled) {
+        // finally store the pixel from the correct bg layer
+        framebuffer[(256 * line) + x] = layers[priority_bg_index][(256 * line) + x];
+    }
 }
