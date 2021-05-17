@@ -538,8 +538,16 @@ void ARM::Execute() {
                 return ARM_MRS_SPSR();
             case 0x145:
                 return ARM_QDADD();
+            case 0x148:
+                return ARM_SMLALBB();
             case 0x149:
                 return ARM_SWPB();
+            case 0x14A:
+                return ARM_SMLALTB();
+            case 0x14C:
+                return ARM_SMLALBT();
+            case 0x14E:
+                return ARM_SMLALTT();
             case 0x14B:
                 return ARM_STRH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x150: case 0x158:

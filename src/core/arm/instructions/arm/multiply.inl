@@ -300,6 +300,81 @@ INSTRUCTION(ARM_SMLAWT) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_SMLALBB) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    s64 rdhilo = (s64)(((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]));
+    s64 result = ((s64)(s16)regs.r[rm] * (s64)(s16)regs.r[rs]);
+    result += rdhilo;
+    regs.r[rdlo] = result;
+    regs.r[rdhi] = result >> 32;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMLALTB) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+    
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    s64 rdhilo = (s64)(((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]));
+    s64 result = ((s64)(s16)(regs.r[rm] >> 16) * (s64)(s16)regs.r[rs]);
+    result += rdhilo;
+    regs.r[rdlo] = result;
+    regs.r[rdhi] = result >> 32;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMLALBT) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+    
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    s64 rdhilo = (s64)(((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]));
+    s64 result = ((s64)(s16)regs.r[rm] * (s64)(s16)(regs.r[rs] >> 16));
+    result += rdhilo;
+    regs.r[rdlo] = result;
+    regs.r[rdhi] = result >> 32;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMLALTT) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+    
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    s64 rdhilo = (s64)(((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]));
+    s64 result = ((s64)(s16)(regs.r[rm] >> 16) * (s64)(s16)(regs.r[rs] >> 16));
+    result += rdhilo;
+    regs.r[rdlo] = result;
+    regs.r[rdhi] = result >> 32;
+
+    regs.r[15] += 4;
+}
 
 INSTRUCTION(ARM_SMULLS) {
     u8 rm = instruction & 0xF;
