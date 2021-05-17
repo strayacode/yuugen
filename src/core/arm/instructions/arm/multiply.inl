@@ -218,7 +218,6 @@ INSTRUCTION(ARM_SMLATT) {
 
     // signed multiply first bottom half of first operand with signed
     // top half of second half and accumulate
-
     u32 result = (s16)(regs.r[rm] >> 16) * (s16)(regs.r[rs] >> 16);
     regs.r[rd] = result + op1;
 
@@ -228,6 +227,79 @@ INSTRUCTION(ARM_SMLATT) {
 
     regs.r[15] += 4;
 }
+
+INSTRUCTION(ARM_SMULWB) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = ((s32)regs.r[rm] * (s16)regs.r[rs]) >> 16;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMULWT) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = ((s32)regs.r[rm] * (s16)(regs.r[rs] >> 16)) >> 16;
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMLAWB) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u32 op1 = regs.r[(instruction >> 12) & 0xF];
+    u8 rd = (instruction >> 16) & 0xF;
+
+    u32 result = ((s32)regs.r[rm] * (s16)regs.r[rs]) >> 16;
+    regs.r[rd] = result + op1;
+
+    if (ADD_OVERFLOW(result, op1, regs.r[rd])) {
+        SetConditionFlag(Q_FLAG, true);
+    }
+
+    regs.r[15] += 4;
+}
+
+INSTRUCTION(ARM_SMLAWT) {
+    // ARMv5 exclusive
+    if (arch == ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u32 op1 = regs.r[(instruction >> 12) & 0xF];
+    u8 rd = (instruction >> 16) & 0xF;
+
+    u32 result = ((s32)regs.r[rm] * (s16)(regs.r[rs] >> 16)) >> 16;
+    regs.r[rd] = result + op1;
+
+    if (ADD_OVERFLOW(result, op1, regs.r[rd])) {
+        SetConditionFlag(Q_FLAG, true);
+    }
+
+    regs.r[15] += 4;
+}
+
 
 INSTRUCTION(ARM_SMULLS) {
     u8 rm = instruction & 0xF;
@@ -241,7 +313,6 @@ INSTRUCTION(ARM_SMULLS) {
     SetConditionFlag(N_FLAG, regs.r[rdhi] >> 31);
     SetConditionFlag(Z_FLAG, result == 0);
     
-
     regs.r[15] += 4;
 }
 
@@ -285,7 +356,6 @@ INSTRUCTION(ARM_UMLALS) {
     regs.r[rdlo] = result & 0xFFFFFFFF;
 
     regs.r[rdhi] = result >> 32;
-
 
     regs.r[15] += 4;
 }

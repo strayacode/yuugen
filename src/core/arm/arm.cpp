@@ -524,6 +524,14 @@ void ARM::Execute() {
                 return ARM_BLX_REG();
             case 0x125:
                 return ARM_QSUB();
+            case 0x128:
+                return ARM_SMLAWB();
+            case 0x12A:
+                return ARM_SMULWB();
+            case 0x12C:
+                return ARM_SMLAWT();
+            case 0x12E:
+                return ARM_SMULWT();
             case 0x130: case 0x138:
                 return ARM_TEQS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
             case 0x140:
