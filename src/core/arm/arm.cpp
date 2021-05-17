@@ -1532,7 +1532,6 @@ void ARM::ARM_MRC() {
         }
     }
 
-    
     u32 data = core->cp15.Read(crn, crm, opcode2);
 
     if (rd == 15) {
@@ -1568,8 +1567,6 @@ void ARM::ARM_SWI() {
     // enter supervisor mode
     SwitchMode(SVC);
 
-    // fiq interrupts state is unchanged
-
     // disable normal interrupts
     regs.cpsr |= (1 << 7);
 
@@ -1587,8 +1584,6 @@ void ARM::THUMB_SWI() {
 
     // enter supervisor mode
     SwitchMode(SVC);
-
-    // fiq interrupts state is unchanged
 
     // always execute in arm state
     regs.cpsr &= ~(1 << 5);
@@ -1609,8 +1604,6 @@ void ARM::ARM_UND() {
 
     // enter undefined mode
     SwitchMode(UND);
-
-    // fiq interrupts state is unchanged
 
     // disable normal interrupts
     regs.cpsr |= (1 << 7);

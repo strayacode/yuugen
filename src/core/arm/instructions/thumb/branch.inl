@@ -153,7 +153,7 @@ INSTRUCTION(THUMB_BX_REG) {
 
 INSTRUCTION(THUMB_BLX_REG) {
     // arm9 specific instruction
-    if (arch == ARMv5) {
+    if (arch == ARMv4) {
         return;
     }
 
