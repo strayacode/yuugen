@@ -9,8 +9,9 @@ void Memory::Reset() {
     memset(main_memory, 0, 0x400000);
     memset(arm7_wram, 0, 0x10000);
     memset(shared_wram, 0, 0x8000);
-    memset(arm7_bios, 0, 0x4000);
-    memset(arm9_bios, 0, 0x8000);
+    
+    arm7_bios.clear();
+    arm9_bios.clear();
 
     WRAMCNT = 0;
     POWCNT2 = 0;
@@ -48,27 +49,43 @@ void Memory::DirectBoot() {
 }
 
 void Memory::LoadARM7Bios() {
-    FILE* file_buffer = fopen("../bios/bios7.bin", "rb");
-    if (file_buffer == NULL) {
-        log_fatal("error when opening the arm7 bios! make sure the file bios7.bin exists in the bios folder");
+    std::ifstream file("../bios/bios7.bin", std::ios::binary);
+
+    if (!file) {
+        log_fatal("[Memory] ARM7 bios could not be found");
     }
-    fseek(file_buffer, 0, SEEK_END);
-    fseek(file_buffer, 0, SEEK_SET);
-    fread(arm7_bios, 0x4000, 1, file_buffer);
-    fclose(file_buffer);  
-    log_debug("[ARM7] Bios loaded successfully");
+
+    file.unsetf(std::ios::skipws);
+
+    std::streampos size;
+
+    file.seekg(0, std::ios::beg);
+
+    arm7_bios.reserve(0x4000);
+
+    arm7_bios.insert(arm7_bios.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
+
+    log_debug("[Memory] ARM7 bios loaded successfully!");
 }
 
 void Memory::LoadARM9Bios() {
-    FILE* file_buffer = fopen("../bios/bios9.bin", "rb");
-    if (file_buffer == NULL) {
-        log_fatal("error when opening the arm9 bios! make sure the file bios9.bin exists in the bios folder");
+    std::ifstream file("../bios/bios9.bin", std::ios::binary);
+
+    if (!file) {
+        log_fatal("[Memory] ARM9 bios could not be found");
     }
-    fseek(file_buffer, 0, SEEK_END);
-    fseek(file_buffer, 0, SEEK_SET);
-    fread(arm9_bios, 0x8000, 1, file_buffer);
-    fclose(file_buffer);  
-    log_debug("[ARM9] Bios loaded successfully!");
+
+    file.unsetf(std::ios::skipws);
+
+    std::streampos size;
+
+    file.seekg(0, std::ios::beg);
+
+    arm9_bios.reserve(0x8000);
+
+    arm9_bios.insert(arm9_bios.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
+
+    log_debug("[Memory] ARM9 bios loaded successfully!");
 }
 
 void Memory::WriteHALTCNT(u8 data) {

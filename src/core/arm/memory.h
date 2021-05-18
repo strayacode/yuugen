@@ -5,6 +5,10 @@
 #include <common/memory_helpers.h>
 #include <string.h>
 #include <type_traits>
+#include <vector>
+#include <fstream>
+#include <vector>
+#include <iterator>
 
 enum MemoryRegion {
     REGION_ARM7_BIOS = 0x00,
@@ -72,8 +76,8 @@ struct Memory {
     u8 arm7_wram[0x10000] = {};
     u8 shared_wram[0x8000] = {};
 
-    u8 arm7_bios[0x4000] = {};
-    u8 arm9_bios[0x8000] = {};
+    std::vector<u8> arm7_bios;
+    std::vector<u8> arm9_bios;
 
     // used by the arm7 and arm9 to configure mapping of shared wram
     // but is only on the arm9 bus

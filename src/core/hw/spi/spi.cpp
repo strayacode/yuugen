@@ -7,7 +7,7 @@ SPI::SPI(Core* core) : core(core) {
 }
 
 void SPI::Reset() {
-    memset(firmware, 0, 0x40000);
+    firmware.clear();
 
     LoadFirmware();
 
@@ -43,15 +43,23 @@ void SPI::DirectBoot() {
 }
 
 void SPI::LoadFirmware() {
-    FILE* file_buffer = fopen("../firmware/firmware.bin", "rb");
-    if (file_buffer == NULL) {
-        log_fatal("error when opening the firmware! make sure the file firmware.bin exists in the firmware folder");
+    std::ifstream file("../firmware/firmware.bin", std::ios::binary);
+
+    if (!file) {
+        log_fatal("[SPI] Firmware could not be found");
     }
-    fseek(file_buffer, 0, SEEK_END);
-    fseek(file_buffer, 0, SEEK_SET);
-    fread(firmware, 0x40000, 1, file_buffer);
-    fclose(file_buffer);  
-    log_debug("firmware loaded successfully!");
+
+    file.unsetf(std::ios::skipws);
+
+    std::streampos size;
+
+    file.seekg(0, std::ios::beg);
+
+    firmware.reserve(0x40000);
+
+    firmware.insert(firmware.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
+
+    log_debug("[SPI] Firmware loaded successfully!");
 }
 
 void SPI::Transfer(u8 data) {

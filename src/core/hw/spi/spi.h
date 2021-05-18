@@ -1,6 +1,10 @@
 #pragma once
 #include <common/types.h>
 #include <common/log.h>
+#include <vector>
+#include <fstream>
+#include <vector>
+#include <iterator>
 
 struct Core;
 
@@ -34,7 +38,7 @@ struct SPI {
     // used in the 3 byte address for command 0x03 so far
     u32 address;
 
-    u8 firmware[0x40000];
+    std::vector<u8> firmware;
 
     bool write_enable_latch;
 
