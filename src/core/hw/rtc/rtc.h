@@ -8,7 +8,7 @@ struct RTC {
     RTC(Core* core);
     void Reset();
 
-    u8 ReadRTC();
+    auto ReadRTC() -> u8;
     void WriteRTC(u8 data);
 
     u8 RTC_REG;

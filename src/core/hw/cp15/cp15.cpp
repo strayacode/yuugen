@@ -19,7 +19,7 @@ void CP15::Reset() {
     itcm_reg = 0;
 }
 
-u32 CP15::Read(u32 cn, u32 cm, u32 cp) {
+auto CP15::Read(u32 cn, u32 cm, u32 cp) -> u32 {
     switch ((cn << 16) | (cm << 8) | cp) {
     case 0x000001:
         return 0x0F0D2112; // this is the value used on the nds
@@ -144,33 +144,33 @@ void CP15::DirectBoot() {
 
 
 
-u32 CP15::GetITCMSize() {
+auto CP15::GetITCMSize() -> u32 {
     return itcm_size;
 }
 
 
-u32 CP15::GetDTCMSize() {
+auto CP15::GetDTCMSize() -> u32 {
     return dtcm_size;
 }
 
-u32 CP15::GetDTCMBase() {
+auto CP15::GetDTCMBase() -> u32 {
     return dtcm_base;
 }
 
-bool CP15::GetITCMEnabled() {
+auto CP15::GetITCMEnabled() -> bool {
     return (control_register & (1 << 18));
 }
 
-bool CP15::GetDTCMEnabled() {
+auto CP15::GetDTCMEnabled() -> bool {
     return (control_register & (1 << 16));
 }
 
-bool CP15::GetITCMLoadMode() {
+auto CP15::GetITCMLoadMode() -> bool {
     return (control_register & (1 << 19));
 }
 
 
-bool CP15::GetDTCMLoadMode() {
+auto CP15::GetDTCMLoadMode() -> bool {
     return (control_register & (1 << 17));
 }
 

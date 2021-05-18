@@ -104,11 +104,11 @@ void Memory::WriteHALTCNT(u8 data) {
     }
 }
 
-int Memory::CartridgeAccessRights() {
+auto Memory::CartridgeAccessRights() -> bool {
     // check which cpu has access to the nds cartridge
     if (EXMEMCNT & (1 << 11)) {
-        return 0; // 0 = ARMv4
+        return false; // 0 = ARMv4
     } else {
-        return 1; // 1 = ARMv5
+        return true; // 1 = ARMv5
     }
 }

@@ -10,7 +10,7 @@
 
 struct HostInterface {
     HostInterface();
-    bool Initialise();
+    auto Initialise() -> bool;
     void Run(std::string path);
     void Cleanup();
 

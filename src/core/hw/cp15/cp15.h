@@ -12,19 +12,19 @@ struct CP15 {
     void Reset();
     void DirectBoot();
 
-    u32 Read(u32 cn, u32 cm, u32 cp);
+    auto Read(u32 cn, u32 cm, u32 cp) -> u32;
     void Write(u32 cn, u32 cm, u32 cp, u32 data);
 
-    u32 GetITCMSize();
-    u32 GetDTCMSize();
+    auto GetITCMSize() -> u32;
+    auto GetDTCMSize() -> u32;
 
-    u32 GetDTCMBase();
+    auto GetDTCMBase() -> u32;
 
-    bool GetITCMEnabled();
-    bool GetDTCMEnabled();
+    auto GetITCMEnabled() -> bool;
+    auto GetDTCMEnabled() -> bool;
 
-    bool GetITCMLoadMode();
-    bool GetDTCMLoadMode();
+    auto GetITCMLoadMode() -> bool;
+    auto GetDTCMLoadMode() -> bool;
 
     auto GetExceptionBase() -> u32;
 
@@ -43,8 +43,6 @@ struct CP15 {
 
     u32 dtcm_size;
     u32 itcm_size;
-
-
 
     Core* core;
 };

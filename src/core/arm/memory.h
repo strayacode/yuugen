@@ -67,7 +67,7 @@ struct Memory {
 
     void WriteHALTCNT(u8 data);
 
-    int CartridgeAccessRights();
+    auto CartridgeAccessRights() -> bool;
 
     Core* core;
 

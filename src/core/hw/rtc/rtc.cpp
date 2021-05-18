@@ -10,7 +10,7 @@ void RTC::Reset() {
     RTC_REG = 0;
 }
 
-u8 RTC::ReadRTC() {
+auto RTC::ReadRTC() -> u8 {
     return RTC_REG;
 }
 
