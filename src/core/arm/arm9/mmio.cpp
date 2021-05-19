@@ -58,6 +58,8 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->ipc.ReadIPCSYNC9();
     case 0x04000184:
         return core->ipc.IPCFIFOCNT9;
+    case 0x040001A0:
+        return core->cartridge.AUXSPICNT;
     case 0x04000204:
         return EXMEMCNT;
     case 0x04000208:
@@ -84,6 +86,10 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->gpu.engine_b.WININ;
     case 0x0400104A:
         return core->gpu.engine_b.WINOUT;
+    case 0x04004004:
+        return 0;
+    case 0x04004010:
+        return 0;
     default:
         log_fatal("[ARM9] Undefined 16-bit io read %08x", addr);
     }
@@ -144,6 +150,8 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return core->interrupt[1].IF;
     case 0x04000240:
         return ((core->gpu.VRAMCNT_D << 24) | (core->gpu.VRAMCNT_C << 16) | (core->gpu.VRAMCNT_B << 8) | (core->gpu.VRAMCNT_A));
+    case 0x04000280:
+        return core->maths_unit.DIVCNT;
     case 0x04000290:
         return core->maths_unit.DIV_NUMER & 0xFFFFFFFF;
     case 0x04000294:
@@ -412,6 +420,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x04000184:
         core->ipc.WriteIPCFIFOCNT9(data);
         break;
+    case 0x040001A0:
+        core->cartridge.WriteAUXSPICNT(data);
+        break;
     case 0x04000204:
         EXMEMCNT = data;
         break;
@@ -654,6 +665,18 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         break;
     case 0x040001A4:
         core->cartridge.WriteROMCTRL(data);
+        break;
+    case 0x040001A8:
+        core->cartridge.ReceiveCommand(data & 0xFF, 0);
+        core->cartridge.ReceiveCommand((data >> 8) & 0xFF, 1);
+        core->cartridge.ReceiveCommand((data >> 16) & 0xFF, 2);
+        core->cartridge.ReceiveCommand((data >> 24) & 0xFF, 3);
+        break;
+    case 0x040001AC:
+        core->cartridge.ReceiveCommand(data & 0xFF, 4);
+        core->cartridge.ReceiveCommand((data >> 8) & 0xFF, 5);
+        core->cartridge.ReceiveCommand((data >> 16) & 0xFF, 6);
+        core->cartridge.ReceiveCommand((data >> 24) & 0xFF, 7);
         break;
     case 0x04000180:
         core->ipc.WriteIPCSYNC9(data);

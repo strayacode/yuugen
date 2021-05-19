@@ -435,6 +435,20 @@ INSTRUCTION(ARM_UMLALS) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_SMLAL) {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    s64 rdhilo = (s64)(((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]));
+    s64 result = ((s64)(s32)regs.r[rm] * (s64)(s32)regs.r[rs]);
+    result += rdhilo;
+    regs.r[rdlo] = result;
+    regs.r[rdhi] = result >> 32;
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_SMLALS) {
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;

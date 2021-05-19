@@ -539,6 +539,26 @@ INSTRUCTION(ARM_STM_INCREMENT_BEFORE) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_STM_INCREMENT_BEFORE_USER) {
+    u32 rn = (instruction >> 16) & 0xF;
+    u32 address = regs.r[rn];
+
+    u8 old_mode = regs.cpsr & 0x1F;
+
+    SwitchMode(SYS);
+
+    for (int i = 0; i < 16; i++) {
+        if (instruction & (1 << i)) {
+            address += 4;
+            WriteWord(address, regs.r[i]);
+        }
+    }
+
+    SwitchMode(old_mode);
+
+    regs.r[15] += 4;
+}
+
 INSTRUCTION(ARM_STM_INCREMENT_BEFORE_WRITEBACK) {
     u32 rn = (instruction >> 16) & 0xF;
     u32 address = regs.r[rn];

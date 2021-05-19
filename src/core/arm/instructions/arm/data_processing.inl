@@ -53,10 +53,20 @@ INSTRUCTION(ARM_MVN, u32 op2) {
     regs.r[rd] = ~op2;
 
     if (rd == 15) {
-        // // word align first
-        // regs.r[15] &= ~3;
+        log_fatal("handle");
+    } else {
+        regs.r[15] += 4;
+    }
+}
 
-        // ARMFlushPipeline();
+INSTRUCTION(ARM_MVNS, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    regs.r[rd] = ~op2;
+
+    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+
+    if (rd == 15) {
         log_fatal("handle");
     } else {
         regs.r[15] += 4;

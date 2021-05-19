@@ -80,7 +80,7 @@ template <typename T>
 void Memory::ARM7Write(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
     
-    if (sizeof(T) == 1 && addr < 0x4000) {
+    if (addr < 0x4000) {
         // ignore bios writes
         return;
     }

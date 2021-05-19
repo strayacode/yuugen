@@ -87,6 +87,8 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
         return core->spu.SOUNDBIAS;
     case 0x04000508:
         return (core->spu.SNDCAPCNT[0]) | (core->spu.SNDCAPCNT[1] << 8);
+    case 0x04004700:
+        return 0;
     case 0x04808006:
         return core->wifi.W_MODE_WEP;
     case 0x04808018:
@@ -125,6 +127,8 @@ auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
         return core->gpu.engine_b.DISPCNT;
     case 0x04000004:
         return core->gpu.VCOUNT;
+    case 0x040000B8:
+        return core->dma[0].ReadDMACNT(0);
     case 0x040000DC:
         return core->dma[0].ReadDMACNT(3);
     case 0x04000180:
@@ -139,6 +143,8 @@ auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
         return core->interrupt[0].IE;
     case 0x04000214:
         return core->interrupt[0].IF;
+    case 0x04004008:
+        return 0;
     case 0x04100000:
         return core->ipc.ReadFIFORECV7();
     case 0x04100010:
@@ -363,6 +369,33 @@ void Memory::ARM7WriteWordIO(u32 addr, u32 data) {
     }
 
     switch (addr) {
+    case 0x040000B0:
+        core->dma[0].channel[0].source = data;
+        break;
+    case 0x040000B4:
+        core->dma[0].channel[0].destination = data;
+        break;
+    case 0x040000B8:
+        core->dma[0].WriteDMACNT(0, data);
+        break;
+    case 0x040000BC:
+        core->dma[0].channel[1].source = data;
+        break;
+    case 0x040000C0:
+        core->dma[0].channel[1].destination = data;
+        break;
+    case 0x040000C4:
+        core->dma[0].WriteDMACNT(1, data);
+        break;
+    case 0x040000C8:
+        core->dma[0].channel[2].source = data;
+        break;
+    case 0x040000CC:
+        core->dma[0].channel[2].destination = data;
+        break;
+    case 0x040000D0:
+        core->dma[0].WriteDMACNT(2, data);
+        break;
     case 0x040000D4:
         core->dma[0].channel[3].source = data;
         break;
