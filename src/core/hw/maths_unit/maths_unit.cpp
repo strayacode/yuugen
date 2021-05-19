@@ -1,5 +1,6 @@
 #include <core/hw/maths_unit/maths_unit.h>
 #include <math.h>
+#include <limits>
 
 void MathsUnit::Reset() {
     DIVCNT = 0;
@@ -17,24 +18,31 @@ void MathsUnit::StartDivision() {
     // set the division by 0 error bit only if the full 64 bits of DIV_DENOM is 0 (even in 32 bit mode)
     if (DIV_DENOM == 0) {
         DIVCNT |= (1 << 14);
+    } else {
+        DIVCNT &= ~(1 << 14);
     }
 
     u8 division_mode = DIVCNT & 0x3;
     switch (division_mode) {
-    case 0:
+    case 0: {
+        s32 numerator = (s32)DIV_NUMER;
+        s32 denominator = (s32)DIV_DENOM;
+
         // 32-bit / 32-bit
-        if (DIV_DENOM == 0) {
+        if (denominator == 0) {
             // set DIV_RESULT to +/-1 with sign opposite of DIV_NUMER
             // in 32 bit mode the upper 32 bits of DIV_RESULT are inverted
-            DIVREM_RESULT = (s64)DIV_RESULT;
-            DIV_RESULT = ((s32)DIV_NUMER >= 0) ? -1 : 1;
-        } else if (DIV_NUMER == -(s32)0x80000000 && DIV_DENOM == -1) {
-            log_fatal("handle MAX/-1");
+            DIVREM_RESULT = numerator;
+            DIV_RESULT = numerator >= 0 ? 0xFFFFFFFF : 0xFFFFFFFF00000001;
+        } else if (DIV_NUMER == 0x80000000 && denominator == -1) {
+            DIV_RESULT = (u64)((u32)(std::numeric_limits<s32>::min()));
+            DIVREM_RESULT = 0;
         } else {
-            DIV_RESULT = static_cast<s32>(DIV_NUMER) / static_cast<s32>(DIV_DENOM);
-            DIVREM_RESULT = static_cast<s32>(DIV_NUMER) % static_cast<s32>(DIV_DENOM);
+            DIV_RESULT = (u64)((s64)(numerator / denominator));
+            DIVREM_RESULT = (u64)((s64)(numerator % denominator));
         }
         break;
+    }
     case 1: case 3:
         // 64-bit / 32-bit
         if (DIV_DENOM == 0) {

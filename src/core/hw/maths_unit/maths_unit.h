@@ -20,6 +20,8 @@ struct MathsUnit {
     u64 SQRT_PARAM;
     u32 SQRT_RESULT;
 
+    int counter = 0;
+
     void StartDivision();
     void StartSquareRoot();
 };
