@@ -38,22 +38,19 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             u32 character_addr = vram_addr + character_base + (tile_number * 64) + (vertical_flip ? ((7 - line % 8) * 8) : ((line % 8) * 8));
 
             // now we want to write some specific row of 8 pixels in a tile to the bg layer
-            for (int j = 0; j < 8; j += 2) {
+            for (int j = 0; j < 8; j++) {
                 u32 byte_offset = character_addr + (horizontal_flip ? (7 - j) : j);
 
-                u16 palette_indices;
+                u8 palette_index;
                 if (engine_id == 1) {
-                    palette_indices = gpu->ReadBGA<u16>(byte_offset);
+                    palette_index = gpu->ReadBGA<u8>(byte_offset);
                 } else {
-                    palette_indices = gpu->ReadBGB<u16>(byte_offset);
+                    palette_index = gpu->ReadBGB<u8>(byte_offset);
                 }
 
-                // now we have the palette indices for 2 pixels in a row
-                u16 colour1 = ReadPaletteRAM<u16>(palette_indices & 0xFF);
-                u16 colour2 = ReadPaletteRAM<u16>(palette_indices >> 8);
+                u16 colour = ReadPaletteRAM<u16>(palette_index * 2);
                 
-                layers[bg_index][(256 * line) + tile + j] = Convert15To24(colour1);
-                layers[bg_index][(256 * line) + tile + j + 1] = Convert15To24(colour2);
+                layers[bg_index][(256 * line) + tile + j] = Convert15To24(colour);
             }
         }
     } else {

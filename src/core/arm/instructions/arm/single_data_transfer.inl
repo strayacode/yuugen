@@ -74,8 +74,6 @@ INSTRUCTION(ARM_LDR_PRE, u32 op2) {
     } else {
         regs.r[15] += 4;
     }
-
-    
 }
 
 // with writeback
