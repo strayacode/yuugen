@@ -25,10 +25,10 @@ void MathsUnit::StartDivision() {
     u8 division_mode = DIVCNT & 0x3;
     switch (division_mode) {
     case 0: {
+        // 32-bit / 32-bit
         s32 numerator = (s32)DIV_NUMER;
         s32 denominator = (s32)DIV_DENOM;
 
-        // 32-bit / 32-bit
         if (denominator == 0) {
             // set DIV_RESULT to +/-1 with sign opposite of DIV_NUMER
             // in 32 bit mode the upper 32 bits of DIV_RESULT are inverted
@@ -43,18 +43,40 @@ void MathsUnit::StartDivision() {
         }
         break;
     }
-    case 1: case 3:
+    case 1: case 3: {
         // 64-bit / 32-bit
-        if (DIV_DENOM == 0) {
-            DIVREM_RESULT = (s64)DIV_RESULT;
-            DIV_RESULT = ((s32)DIV_NUMER >= 0) ? -1 : 1;
-        } else if (DIV_NUMER == -(s32)0x80000000 && DIV_DENOM == -1) {
-            log_fatal("handle MAX/-1");
+        s64 numerator = (s64)DIV_NUMER;
+        s32 denominator = (s32)DIV_DENOM;
+
+        if (denominator == 0) {
+            DIVREM_RESULT = numerator;
+            DIV_RESULT = (numerator >= 0) ? -1 : 1;
+        } else if (DIV_NUMER == 0x8000000000000000 && denominator == -1) {
+            DIV_RESULT = (u64)(std::numeric_limits<s64>::min());
+            DIVREM_RESULT = 0;
         } else {
-            DIV_RESULT = DIV_NUMER / (s32)DIV_DENOM;
-            DIVREM_RESULT = DIV_NUMER % (s32)DIV_DENOM;
+            DIV_RESULT = (u64)((s64)(numerator / denominator));
+            DIVREM_RESULT = (u64)((s64)(numerator % denominator));
         }
         break;
+    }
+    case 2: {
+        // 64-bit / 64-bit
+        s64 numerator = (s64)DIV_NUMER;
+        s64 denominator = (s64)DIV_DENOM;
+        
+        if (denominator == 0) {
+            DIVREM_RESULT = numerator;
+            DIV_RESULT = (numerator >= 0) ? -1 : 1;
+        } else if (DIV_NUMER == 0x8000000000000000 && denominator == -1) {
+            DIV_RESULT = (u64)(std::numeric_limits<s64>::min());
+            DIVREM_RESULT = 0;
+        } else {
+            DIV_RESULT = (u64)((s64)(numerator / denominator));
+            DIVREM_RESULT = (u64)((s64)(numerator % denominator));
+        }
+        break;
+    }
     default:
         log_fatal("handle division mode %d", division_mode);
     }
