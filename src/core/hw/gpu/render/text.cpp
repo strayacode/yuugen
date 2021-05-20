@@ -48,7 +48,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                     palette_index = gpu->ReadBGB<u8>(byte_offset);
                 }
 
-                u16 colour = ReadPaletteRAM<u16>(palette_index * 2);
+                u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(palette_index * 2);
                 
                 layers[bg_index][(256 * line) + tile + j] = Convert15To24(colour);
             }
@@ -85,11 +85,13 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             }
 
             for (int j = 0; j < 8; j++) {
-                u16 colour = ReadPaletteRAM<u16>((palette_number * 32) + (palette_indices & 0xF) * 2);
-
+                u16 colour = (palette_indices & 0xF) == 0 ? 0x8000 : ReadPaletteRAM<u16>((palette_number * 32) + (palette_indices & 0xF) * 2);
                 u16 offset = (256 * line) + tile + (horizontal_flip ? (7 - j) : j);
 
                 layers[bg_index][offset] = Convert15To24(colour);
+                // if (colour == 0x8000) {
+                //     printf("colour is %08x\n", Convert15To24(colour));
+                // }
                 palette_indices >>= 4;
             }
         }
