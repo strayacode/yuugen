@@ -64,8 +64,6 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                 tile_info = gpu->ReadBGB<u16>(screen_addr);
             }
 
-            // printf("tile info %04x\n", tile_info);
-
             // now we need to decode what the tile info means
             u32 tile_number = tile_info & 0x3FF;
             u8 horizontal_flip = (tile_info >> 10) & 0x1;
@@ -76,7 +74,6 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             u32 character_addr = vram_addr + character_base + (tile_number * 32);
 
             u32 tile_offset = character_addr + (vertical_flip ? ((7 - line % 8) * 4) : ((line % 8) * 4));
-            // printf("tile offest is %08x\n", tile_offset);
             u32 palette_indices;
             if (engine_id == 1) {
                 palette_indices = gpu->ReadBGA<u32>(tile_offset);
@@ -89,9 +86,6 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                 u16 offset = (256 * line) + tile + (horizontal_flip ? (7 - j) : j);
 
                 layers[bg_index][offset] = Convert15To24(colour);
-                // if (colour == 0x8000) {
-                //     printf("colour is %08x\n", Convert15To24(colour));
-                // }
                 palette_indices >>= 4;
             }
         }
