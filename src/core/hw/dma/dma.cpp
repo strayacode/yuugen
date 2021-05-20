@@ -20,35 +20,21 @@ void DMA::Transfer() {
     for (int i = 0; i < 4; i++) {
         // only do transfer if enabled obviously
         if (enabled & (1 << i)) {
-            // make variables to make things easier
-            u8 destination_control = (channel[i].DMACNT >> 21) & 0x7;
-            u8 source_control = (channel[i].DMACNT >> 23) & 0x7;
-            
-            // loop through all the data units specified by internal length
-            for (u32 j = 0; j < channel[i].internal_length; j++) {
-                // check the transfer type (either halfwords or words)
-                if (channel[i].DMACNT & (1 << 26)) {
-                    // word transfer
+            enabled &= ~(1 << i);
 
+            // make variables to make things easier
+            u8 destination_control = (channel[i].DMACNT >> 21) & 0x3;
+            u8 source_control = (channel[i].DMACNT >> 23) & 0x3;
+            
+            // check the transfer type (either halfwords or words)
+            if (channel[i].DMACNT & (1 << 26)) {
+                // word transfer
+                // loop through all the data units specified by internal length
+                for (u32 j = 0; j < channel[i].internal_length; j++) {
                     if (arch == ARMv5) {
                         core->memory.ARM9Write<u32>(channel[i].internal_destination, core->memory.ARM9Read<u32>(channel[i].internal_source));
                     } else {
                         core->memory.ARM7Write<u32>(channel[i].internal_destination, core->memory.ARM7Read<u32>(channel[i].internal_source));
-                    }
-
-                    // case 2 is just fixed so nothing happens
-                    switch (destination_control) {
-                    case 0: case 3:
-                        // increment
-                        channel[i].internal_destination += 4;
-                        break;
-                    case 1:
-                        // decrement
-                        channel[i].internal_destination -= 4;
-                        break;
-                    case 2:
-                        // fixed
-                        break;
                     }
 
                     // case 2 is just fixed so nothing happens
@@ -66,27 +52,28 @@ void DMA::Transfer() {
                         break;
                     }
 
-                } else {
-                    // halfword transfer
-                    if (arch == ARMv5) {
-                        core->memory.ARM9Write<u16>(channel[i].internal_destination, core->memory.ARM9Read<u16>(channel[i].internal_source));
-                    } else {
-                        core->memory.ARM7Write<u16>(channel[i].internal_destination, core->memory.ARM7Read<u16>(channel[i].internal_source));
-                    }
-
                     // case 2 is just fixed so nothing happens
                     switch (destination_control) {
                     case 0: case 3:
                         // increment
-                        channel[i].internal_destination += 2;
+                        channel[i].internal_destination += 4;
+                        break;
+                    case 1:
+                        // decrement
+                        channel[i].internal_destination -= 4;
                         break;
                     case 2:
                         // fixed
                         break;
-                    case 1:
-                        // decrement
-                        channel[i].internal_destination -= 2;
-                        break;
+                    }
+                }
+            } else {
+                // halfword transfer
+                for (u32 j = 0; j < channel[i].internal_length; j++) {
+                    if (arch == ARMv5) {
+                        core->memory.ARM9Write<u16>(channel[i].internal_destination, core->memory.ARM9Read<u16>(channel[i].internal_source));
+                    } else {
+                        core->memory.ARM7Write<u16>(channel[i].internal_destination, core->memory.ARM7Read<u16>(channel[i].internal_source));
                     }
 
                     // case 2 is just fixed so nothing happens
@@ -103,13 +90,27 @@ void DMA::Transfer() {
                         log_fatal("prohibited in source control");
                         break;
                     }
+
+                    // case 2 is just fixed so nothing happens
+                    switch (destination_control) {
+                    case 0: case 3:
+                        // increment
+                        channel[i].internal_destination += 2;
+                        break;
+                    case 1:
+                        // decrement
+                        channel[i].internal_destination -= 2;
+                        break;
+                    case 2:
+                        // fixed
+                        break;
+                    }  
                 }
-
-
             }
+
             // request dma irq upon end of word count if enabled 
             if (channel[i].DMACNT & (1 << 30)) {
-                if (arch == 1) {
+                if (arch == ARMv5) {
                     // arm9
                     core->arm9.SendInterrupt(8 + i);
                 } else {
@@ -140,7 +141,7 @@ void DMA::Trigger(u8 mode) {
     // check each channels start_timing to see if any are equal to mode
     for (int channel_index = 0; channel_index < 4; channel_index++) {
         u8 start_timing;
-        if (arch == 1) {
+        if (arch == ARMv5) {
             // for arm9 dma we use bits 27..29
             start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
         } else {
@@ -181,19 +182,16 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     }
 
     // otherwise load internal registers
-
     channel[channel_index].internal_source = channel[channel_index].source;
     channel[channel_index].internal_destination = channel[channel_index].destination;
 
-    if (arch == 1) {
-        // arm9
+    if (arch == ARMv5) {
         if ((channel[channel_index].DMACNT & 0x1FFFFF) == 0) {
             channel[channel_index].internal_length = 0x200000;
         } else {
             channel[channel_index].internal_length = channel[channel_index].DMACNT & 0x1FFFFF;
         }
     } else {
-        // arm7
         if ((channel[channel_index].DMACNT & 0x1FFFFF) == 0) {
             channel[channel_index].internal_length = 0x10000;
         } else {
@@ -212,20 +210,20 @@ void DMA::WriteDMACNT(int channel_index, u32 data) {
     WriteDMACNT_H(channel_index, data >> 16);
 }
 
-u32 DMA::ReadDMACNT(int channel_index) {
+auto DMA::ReadDMACNT(int channel_index) -> u32 {
     return channel[channel_index].DMACNT;
 }
 
-u16 DMA::ReadDMACNT_L(int channel_index) {
+auto DMA::ReadDMACNT_L(int channel_index) -> u16 {
     return channel[channel_index].DMACNT & 0xFFFF;
 }
 
-u16 DMA::ReadDMACNT_H(int channel_index) {
+auto DMA::ReadDMACNT_H(int channel_index) -> u16 {
     return channel[channel_index].DMACNT >> 16;
 }
 
 void DMA::WriteLength(int channel_index, u32 data) {
-    if (arch == 1) {
+    if (arch == ARMv5) {
         // arm9 dma
         if (data == 0) {
             // 0 = 0x200000
@@ -246,7 +244,7 @@ void DMA::WriteLength(int channel_index, u32 data) {
     }
 }
 
-u32 DMA::ReadLength(int channel_index) {
+auto DMA::ReadLength(int channel_index) -> u32 {
     // get bits 0..20 of dmacnt
     return channel[channel_index].DMACNT & 0x1FFFFF;
 }

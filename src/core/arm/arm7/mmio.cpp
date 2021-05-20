@@ -123,8 +123,6 @@ auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
     }
 
     switch (addr) {
-    case 0x04000000:
-        return core->gpu.engine_b.DISPCNT;
     case 0x04000004:
         return core->gpu.VCOUNT;
     case 0x040000B8:

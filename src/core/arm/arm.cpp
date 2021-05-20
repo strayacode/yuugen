@@ -598,6 +598,8 @@ void ARM::Execute() {
                 return ARM_ORR(ARM_LOGICAL_SHIFT_RIGHT_REG());
             case 0x184: case 0x18C:
                 return ARM_ORR(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
+            case 0x186: case 0x18E:
+                return ARM_ORR(ARM_ROTATE_RIGHT_IMM());
             case 0x18B:
                 return ARM_STRH_PRE(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x190: case 0x198:
