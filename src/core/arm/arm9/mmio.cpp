@@ -441,6 +441,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         core->maths_unit.SQRTCNT = data;
         core->maths_unit.StartSquareRoot();
         break;
+    case 0x04000300:
+        POSTFLG9 = data;
+        break;
     case 0x04000304:
         core->gpu.POWCNT1 = data;
         break;
@@ -509,6 +512,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04001050:
         core->gpu.engine_b.BLDCNT = data;
+        break;
+    case 0x04001052:
+        core->gpu.engine_b.BLDALPHA = data;
         break;
     case 0x0400106C:
         // TODO: handle brightness properly later

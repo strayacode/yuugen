@@ -21,9 +21,12 @@ auto SPU::ReadByte(u32 addr) -> u8 {
     u8 channel_index = (addr >> 4) & 0xF;
 
     switch (addr & 0xF) {
+    case 0x02:
+        // get 3rd byte of SOUNDCNT for that channel
+        return ((channel[channel_index].SOUNDCNT >> 16) & 0xFF);
     case 0x03:
-        // get upper byte of SOUNDCNT for that register
-        return (channel[channel_index].SOUNDCNT >> 24);
+        // get upper byte of SOUNDCNT for that channel
+        return ((channel[channel_index].SOUNDCNT >> 24) & 0xFF);
     default:
         log_fatal("[SPU] Unhandled address %08x", addr & 0xF);
     }
