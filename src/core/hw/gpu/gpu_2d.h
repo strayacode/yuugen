@@ -48,6 +48,7 @@ struct GPU2D {
     u32 DISPCNT;
 
     u32 vram_addr;
+    u32 obj_addr;
 
     u16 BGCNT[4];
     u16 BGHOFS[4];
@@ -69,10 +70,10 @@ struct GPU2D {
 
     u16 MASTER_BRIGHT;
 
-    // // each gpu engine holds 1kb of palette ram with the first 512 bytes for bg palette and the remaining memory for obj palette
+    // each gpu engine holds 1kb of palette ram with the first 512 bytes for bg palette and the remaining memory for obj palette
     u8 palette_ram[0x400];
 
-    // // each gpu engine holds 1kb of oam which allows for a total of 128 oam entries for each gpu engine (128 sprites)
+    // each gpu engine holds 1kb of oam which allows for a total of 128 oam entries for each gpu engine (128 sprites)
     u8 oam[0x400];
 
     GPU* gpu;

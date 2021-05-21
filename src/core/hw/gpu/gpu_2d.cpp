@@ -38,8 +38,10 @@ void GPU2D::Reset() {
 
     if (engine_id == 1) {
         vram_addr = 0x06000000;
+        obj_addr = 0x06400000;
     } else {
         vram_addr = 0x06200000;
+        obj_addr = 0x06600000;
     }
 }
 
@@ -194,9 +196,9 @@ void GPU2D::RenderGraphicsDisplay(u16 line) {
         log_fatal("[GPU2D] BG mode %d is unimplemented", bg_mode);
     }
 
+    ComposeScanline(line);
+
     if (DISPCNT & (1 << 12)) {
         RenderObjects(line);
     }
-
-    ComposeScanline(line);
 }
