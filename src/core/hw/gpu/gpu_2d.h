@@ -3,6 +3,7 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <string.h>
+#include <cmath>
 
 #define COLOUR_TRANSPARENT 0x8000
 

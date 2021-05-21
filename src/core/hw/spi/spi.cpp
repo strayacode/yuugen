@@ -19,7 +19,6 @@ void SPI::Reset() {
 }
 
 void SPI::WriteSPICNT(u16 data) {
-    printf("writing data %08x\n", data);
     SPICNT = (SPICNT & ~0xCF03) | (data & 0xCF03);
 }
 
@@ -84,10 +83,10 @@ void SPI::Transfer(u8 data) {
         case 1:
             FirmwareTransfer(data);
             break;
-        // case 2:
-        //     // TODO: split touchscreen into own file
-        //     TouchscreenTransfer(data);
-        //     break;
+        case 2:
+            // TODO: split touchscreen into own file
+            TouchscreenTransfer(data);
+            break;
         default:
             log_fatal("device %d is not implemented yet for spi transfers", device_select);
         }
@@ -148,7 +147,7 @@ void SPI::FirmwareTransfer(u8 data) {
 
 void SPI::TouchscreenTransfer(u8 data) {
     // bit 7 signifies the start bit and tells us whether the control byte (data in this case) can be accessed
-    if (data & (1 << 7)) {
-        log_fatal("[Touchscreen] Handle control byte %02x", data);
-    }
+    // if (data & (1 << 7)) {
+    //     log_fatal("[Touchscreen] Handle control byte %02x", data);
+    // }
 }

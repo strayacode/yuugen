@@ -66,6 +66,10 @@ auto RTC::InterpretReadCommand(u8 data) -> u8 {
         // get a specific bit dependent on the write count
         data |= (status_register1 >> (write_count % 8)) & 0x1;
         break;
+    case 1:
+        // alarm time 1
+        // do nothing for now lol
+        break;
     case 2: {
         // date / time
         // get the current time
@@ -101,6 +105,10 @@ auto RTC::InterpretReadCommand(u8 data) -> u8 {
         // get a specific bit dependent on the write count
         data |= (status_register2 >> (write_count % 8)) & 0x1;
         break;
+    case 5:
+        // alarm time 2
+        // do nothing for now lol
+        break;
     default:
         log_fatal("[RTC] Handle read command type %02x", command_type);
     }
@@ -112,9 +120,15 @@ void RTC::InterpretWriteCommand(u8 data) {
     // extract the specific command from the command byte
     u8 command_type = (command >> 4) & 0x7;
     switch (command_type) {
+    case 0:
+        status_register1 = (status_register1 & ~(1 << (write_count % 8))) | ((data & 0x1) << (write_count % 8));
+        break;
     case 1:
         // alarm time 1
         // do nothing for now lol
+        break;
+    case 3:
+        // clock adjustment
         break;
     case 4:
         status_register2 = (status_register2 & ~(1 << (write_count % 8))) | ((data & 0x1) << (write_count % 8));

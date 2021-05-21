@@ -194,5 +194,9 @@ void GPU2D::RenderGraphicsDisplay(u16 line) {
         log_fatal("[GPU2D] BG mode %d is unimplemented", bg_mode);
     }
 
+    if (DISPCNT & (1 << 12)) {
+        RenderObjects(line);
+    }
+
     ComposeScanline(line);
 }
