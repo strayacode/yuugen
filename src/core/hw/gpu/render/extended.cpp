@@ -21,7 +21,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
             } else {
                 colour = gpu->ReadBGB<u16>(data_addr);
             }
-            layers[bg_index][(256 * line) + pixel] = Convert15To24(colour);
+            bg_layers[bg_index][(256 * line) + pixel] = colour;
         }
     } else {
         // 256 colour bitmap
@@ -35,7 +35,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
             }
             u16 colour = ReadPaletteRAM<u16>(palette_index * 2);
 
-            layers[bg_index][(256 * line) + pixel] = Convert15To24(colour);
+            bg_layers[bg_index][(256 * line) + pixel] = colour;
         }
     }
 }

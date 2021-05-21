@@ -19,6 +19,7 @@ void SPI::Reset() {
 }
 
 void SPI::WriteSPICNT(u16 data) {
+    printf("writing data %08x\n", data);
     SPICNT = (SPICNT & ~0xCF03) | (data & 0xCF03);
 }
 
@@ -83,15 +84,13 @@ void SPI::Transfer(u8 data) {
         case 1:
             FirmwareTransfer(data);
             break;
-        case 2:
-            // TODO: split touchscreen into own file
-            TouchscreenTransfer(data);
-            break;
+        // case 2:
+        //     // TODO: split touchscreen into own file
+        //     TouchscreenTransfer(data);
+        //     break;
         default:
             log_fatal("device %d is not implemented yet for spi transfers", device_select);
         }
-
-        
     }
 
     // keep device selected or deselect it depending on bit 11 of spicnt

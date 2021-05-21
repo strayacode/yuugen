@@ -388,6 +388,10 @@ void ARM::Execute() {
         HandleInterrupt();
     }
 
+    if (arch == ARMv4) {
+        LogRegisters();
+    }
+
     if (IsARM()) {
         if (ConditionEvaluate(instruction >> 28)) {
             u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
@@ -398,6 +402,8 @@ void ARM::Execute() {
                 return ARM_AND(ARM_LOGICAL_SHIFT_LEFT_REG());
             case 0x002: case 0x00A:
                 return ARM_AND(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x003:
+                return ARM_AND(ARM_LOGICAL_SHIFT_RIGHT_REG());
             case 0x004: case 0x00C:
                 return ARM_AND(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x009:
@@ -452,10 +458,14 @@ void ARM::Execute() {
                 return ARM_RSBS(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x080: case 0x088:
                 return ARM_ADD(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x081:
+                return ARM_ADD(ARM_LOGICAL_SHIFT_LEFT_REG());
             case 0x082: case 0x08A:
                 return ARM_ADD(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x084: case 0x08C:
                 return ARM_ADD(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
+            case 0x085:
+                return ARM_ADD(ARM_ARITHMETIC_SHIFT_RIGHT_REG());
             case 0x086: case 0x08E:
                 return ARM_ADD(ARM_ROTATE_RIGHT_IMM());
             case 0x089:
@@ -666,6 +676,8 @@ void ARM::Execute() {
                 return ARM_MVNS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
             case 0x1FB:
                 return ARM_LDRH_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
+            case 0x1FD:
+                return ARM_LDRSB_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM()); 
             case 0x200: case 0x201: case 0x202: case 0x203: 
             case 0x204: case 0x205: case 0x206: case 0x207: 
             case 0x208: case 0x209: case 0x20A: case 0x20B: 
@@ -930,8 +942,10 @@ void ARM::Execute() {
                 return ARM_LDR_PRE_WRITEBACK(-ARM_RPAR());
             case 0x736: case 0x73E:
                 return ARM_LDR_PRE_WRITEBACK(-ARM_RPRR());
+            case 0x740: case 0x748:
+                return ARM_STRB_PRE(-ARM_RPLL());
             case 0x750: case 0x758:
-                return ARM_LDR_PRE(-ARM_RPLL());
+                return ARM_LDRB_PRE(-ARM_RPLL());
             case 0x770: case 0x778:
                 return ARM_LDRB_PRE_WRITEBACK(-ARM_RPLL());
             case 0x780: case 0x788:

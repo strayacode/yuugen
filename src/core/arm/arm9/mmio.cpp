@@ -302,11 +302,29 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x0400000E:
         core->gpu.engine_a.BGCNT[3] = data;
         break;
+    case 0x04000010:
+        core->gpu.engine_a.BGHOFS[0] = data;
+        break;
+    case 0x04000012:
+        core->gpu.engine_a.BGVOFS[0] = data;
+        break;
+    case 0x04000014:
+        core->gpu.engine_a.BGHOFS[1] = data;
+        break;
+    case 0x04000016:
+        core->gpu.engine_a.BGVOFS[1] = data;
+        break;
     case 0x04000018:
         core->gpu.engine_a.BGHOFS[2] = data;
         break;
     case 0x0400001A:
         core->gpu.engine_a.BGVOFS[2] = data;
+        break;
+    case 0x0400001C:
+        core->gpu.engine_a.BGHOFS[3] = data;
+        break;
+    case 0x0400001E:
+        core->gpu.engine_a.BGVOFS[3] = data;
         break;
     case 0x04000020:
         core->gpu.engine_a.BG2P[0] = data;
@@ -350,11 +368,17 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x0400004A:
         core->gpu.engine_a.WINOUT = data;
         break;
+    case 0x0400004C:
+        core->gpu.engine_a.MOSAIC = data;
+        break;
     case 0x04000050:
         core->gpu.engine_a.BLDCNT = data;
         break;
     case 0x04000052:
         core->gpu.engine_a.BLDALPHA = data;
+        break;
+    case 0x04000054:
+        core->gpu.engine_a.BLDY = data;
         break;
     case 0x04000060:
         core->gpu.engine_3d.DISP3DCNT = data;
@@ -468,6 +492,24 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x04001012:
         core->gpu.engine_b.BGVOFS[0] = data;
         break;
+    case 0x04001014:
+        core->gpu.engine_b.BGHOFS[1] = data;
+        break;
+    case 0x04001016:
+        core->gpu.engine_b.BGVOFS[1] = data;
+        break;
+    case 0x04001018:
+        core->gpu.engine_b.BGHOFS[2] = data;
+        break;
+    case 0x0400101A:
+        core->gpu.engine_b.BGVOFS[2] = data;
+        break;
+    case 0x0400101C:
+        core->gpu.engine_b.BGHOFS[3] = data;
+        break;
+    case 0x0400101E:
+        core->gpu.engine_b.BGVOFS[3] = data;
+        break;
     case 0x04001020:
         core->gpu.engine_b.BG2P[0] = data;
         break;
@@ -510,11 +552,17 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x0400104A:
         core->gpu.engine_b.WINOUT = data;
         break;
+    case 0x0400104C:
+        core->gpu.engine_b.MOSAIC = data;
+        break;
     case 0x04001050:
         core->gpu.engine_b.BLDCNT = data;
         break;
     case 0x04001052:
         core->gpu.engine_b.BLDALPHA = data;
+        break;
+    case 0x04001054:
+        core->gpu.engine_b.BLDY = data;
         break;
     case 0x0400106C:
         // TODO: handle brightness properly later

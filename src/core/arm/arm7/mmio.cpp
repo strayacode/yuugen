@@ -134,7 +134,7 @@ auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
     case 0x040001A4:
         return core->cartridge.ROMCTRL;
     case 0x040001C0:
-        return (core->spi.ReadSPIDATA() << 8) | core->spi.SPICNT;
+        return (core->spi.ReadSPIDATA() << 16) | core->spi.SPICNT;
     case 0x04000208:
         return core->interrupt[0].IME & 0x1;
     case 0x04000210:

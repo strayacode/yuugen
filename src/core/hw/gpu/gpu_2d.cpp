@@ -18,8 +18,10 @@ void GPU2D::Reset() {
     memset(WINV, 0, 2 * sizeof(u16));
 
     for (int i = 0; i < 4; i++) {
-        memset(layers[i], 0, 256 * 192 * sizeof(u32));
+        memset(bg_layers[i], 0, 256 * 192 * sizeof(u16));
     }
+
+    memset(obj_layer, 0, 256 * 192 * sizeof(u16));
 
     DISPCNT = 0;
     BG2X = 0;
@@ -92,10 +94,12 @@ auto GPU2D::Convert15To24(u32 colour) -> u32 {
 }
 
 void GPU2D::RenderScanline(u16 line) {
-    // reset all the bg layers
+    // reset all the bg layers and the obj layer
     for (int i = 0; i < 4; i++) {
-        memset(&layers[i][256 * line], 0, 256 * sizeof(u32));
+        memset(&bg_layers[i][256 * line], 0, 256 * sizeof(u16));
     }
+
+    // memset(&obj_layer[256 * line], 0, 256 * sizeof(u16));
 
     // get the display mode (bits 16..17)
     u8 display_mode = (DISPCNT >> 16) & 0x3;

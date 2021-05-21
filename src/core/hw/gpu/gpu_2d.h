@@ -4,6 +4,8 @@
 #include <common/log.h>
 #include <string.h>
 
+#define COLOUR_TRANSPARENT 0x8000
+
 struct GPU;
 
 struct GPU2D {
@@ -17,6 +19,7 @@ struct GPU2D {
     void RenderGraphicsDisplay(u16 line);
     void RenderText(int bg_index, u16 line);
     void RenderExtended(int bg_index, u16 line);
+    void RenderObjects(u16 line);
 
     auto Convert15To24(u32 colour) -> u32;
 
@@ -37,7 +40,9 @@ struct GPU2D {
 
     u32 framebuffer[256 * 192];
 
-    u32 layers[4][256 * 192];
+    u16 bg_layers[4][256 * 192];
+
+    u16 obj_layer[256 * 192];
 
     u32 DISPCNT;
 

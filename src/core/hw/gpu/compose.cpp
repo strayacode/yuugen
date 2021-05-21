@@ -40,16 +40,16 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
     u8 priority_bg_index = 3;
     for (int i = 3; i >= 0; i--) {
         // only check priority if the bg layer is enabled as indicated by the variable enabled, which has taken into account window logic
-        if ((enabled & (1 << i)) && (layers[i][(256 * line) + x] != 0x00000000)) {
+        if ((enabled & (1 << i)) && (bg_layers[i][(256 * line) + x] != 0x8000)) {
             if ((BGCNT[i] & 0x3) <= priority) {
                 priority_bg_index = i;
                 priority = (BGCNT[i] & 0x3);
             }
         }
     }
-    // only update the framebuffer if any layers are enabled
+    // only update the framebuffer if any bg_layers are enabled
     if (enabled) {
         // finally store the pixel from the correct bg layer
-        framebuffer[(256 * line) + x] = layers[priority_bg_index][(256 * line) + x];
+        framebuffer[(256 * line) + x] = Convert15To24(bg_layers[priority_bg_index][(256 * line) + x]);
     }
 }
