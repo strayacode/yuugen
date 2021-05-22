@@ -21,7 +21,7 @@ void GPU2D::Reset() {
         memset(bg_layers[i], 0, 256 * 192 * sizeof(u16));
     }
 
-    memset(obj_layer, 0, 256 * 192 * sizeof(u16));
+    memset(obj_layer, 0, 256 * 192 * sizeof(OBJPixel));
 
     DISPCNT = 0;
     BG2X = 0;
@@ -102,8 +102,10 @@ void GPU2D::RenderScanline(u16 line) {
     }
 
     // set the obj layer to be fully transparent
+    // also make sure each pixel has priority 4 so pixels with priority 3 can still get rendered
     for (int i = 0; i < 256; i++) {
-        obj_layer[(256 * line) + i] = 0x8000;
+        obj_layer[(256 * line) + i].colour = 0x8000;
+        obj_layer[(256 * line) + i].priority = 4;
     }
 
     // get the display mode (bits 16..17)

@@ -8,6 +8,8 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         log_fatal("handle");
     }
 
+    printf("extended rendering\n");
+
     if (!(BGCNT[bg_index] & (1 << 7))) {
         // 16 bit bgmap entries
         log_warn("[GPU2D] Handle 16 bit bg map entries");

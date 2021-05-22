@@ -7,6 +7,11 @@
 
 #define COLOUR_TRANSPARENT 0x8000
 
+struct OBJPixel {
+    u16 colour;
+    u8 priority;
+};
+
 struct GPU;
 
 struct GPU2D {
@@ -43,7 +48,8 @@ struct GPU2D {
 
     u16 bg_layers[4][256 * 192];
 
-    u16 obj_layer[256 * 192];
+
+    OBJPixel obj_layer[256 * 192];
 
     u32 DISPCNT;
 

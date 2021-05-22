@@ -37,6 +37,8 @@ void GPU2D::RenderObjects(u16 line) {
         u8 horizontal_flip = (attribute[1] >> 12) & 0x1;
         u8 vertical_flip = (attribute[1] >> 13) & 0x1;
 
+        u8 priority = (attribute[2] >> 10) & 0x3;
+
         // maybe add a lut for simpler code
         switch (shape) {
         case 0:
@@ -121,8 +123,13 @@ void GPU2D::RenderObjects(u16 line) {
             // each sprite will occupy 64 bytes for each 8x8 tile in it
             // for each 8 that height_difference goes we will move to a new tile
             // we must also add on a multiple of 8 for the specific row in an nx8 tile
-            obj_base += (height_difference % 8) * 8 + ((height_difference / 8) * width) * 8;
-
+            if (vertical_flip) {
+                // for vertical flip we must opposite tile row in the sprite, as well as the opposite pixel row in the current tile row
+                obj_base += (7 - (height_difference % 8)) * 8 + (((height - height_difference - 1) / 8) * width) * 8;
+            } else {
+                obj_base += (height_difference % 8) * 8 + ((height_difference / 8) * width) * 8;
+            }
+            
             // draw each pixel in the current row
             for (int j = 0; j < width; j++) {
                 // make sure that when j has been incremented by 8, we move onto the next 8x8 tile
@@ -139,7 +146,8 @@ void GPU2D::RenderObjects(u16 line) {
                 // now we have the palette index, so we can extract a colour from the palette ram
                 u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_index * 2));
                 u16 layer_offset = horizontal_flip ? x + width - j - 1 : x + j;
-                obj_layer[(256 * line) + layer_offset] = colour;
+                obj_layer[(256 * line) + layer_offset].colour = colour;
+                obj_layer[(256 * line) + layer_offset].priority = priority;
             }
         } else {
             // 16 colour / 16 palette
@@ -149,7 +157,12 @@ void GPU2D::RenderObjects(u16 line) {
             // each sprite will occupy 32 bytes for each 8x8 tile in it
             // for each 8 that height_difference goes we will move to a new tile
             // we must also add on a multiple of 4 for the specific row in an nx8 tile
-            obj_base += (height_difference % 8) * 4 + ((height_difference / 8) * width) * 4;
+            if (vertical_flip) {
+                // for vertical flip we must opposite tile row in the sprite, as well as the opposite pixel row in the current tile row
+                obj_base += (7 - (height_difference % 8)) * 4 + (((height - height_difference - 1) / 8) * width) * 4;
+            } else {
+                obj_base += (height_difference % 8) * 4 + ((height_difference / 8) * width) * 4;
+            }
 
             // draw each pixel in the current row
             for (int j = 0; j < width; j++) {
@@ -171,7 +184,12 @@ void GPU2D::RenderObjects(u16 line) {
                 // now we have the palette index and number, so we can extract a colour from the palette ram
                 u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_number * 32) + palette_index * 2);
                 u16 layer_offset = horizontal_flip ? x + width - j - 1 : x + j;
-                obj_layer[(256 * line) + layer_offset] = colour;
+
+                // only update a specific obj pixel if this one has lower priority
+                if (priority < obj_layer[(256 * line) + layer_offset].priority) {
+                    obj_layer[(256 * line) + layer_offset].colour = colour;
+                    obj_layer[(256 * line) + layer_offset].priority = priority;
+                }
             }
         }
     }
