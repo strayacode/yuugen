@@ -101,7 +101,10 @@ void GPU2D::RenderScanline(u16 line) {
         memset(&bg_layers[i][256 * line], 0, 256 * sizeof(u16));
     }
 
-    // memset(&obj_layer[256 * line], 0, 256 * sizeof(u16));
+    // set the obj layer to be fully transparent
+    for (int i = 0; i < 256; i++) {
+        obj_layer[(256 * line) + i] = 0x8000;
+    }
 
     // get the display mode (bits 16..17)
     u8 display_mode = (DISPCNT >> 16) & 0x3;
@@ -196,9 +199,9 @@ void GPU2D::RenderGraphicsDisplay(u16 line) {
         log_fatal("[GPU2D] BG mode %d is unimplemented", bg_mode);
     }
 
-    ComposeScanline(line);
-
     if (DISPCNT & (1 << 12)) {
         RenderObjects(line);
     }
+
+    ComposeScanline(line);
 }

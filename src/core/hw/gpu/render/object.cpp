@@ -142,11 +142,8 @@ void GPU2D::RenderObjects(u16 line) {
                 u8 palette_index = (j & 0x1) ? (palette_indices >> 4) : (palette_indices & 0xF);
 
                 // now we have the palette index and number, so we can extract a colour from the palette ram
-                u16 colour = ReadPaletteRAM<u16>(0x200 + (palette_number * 32) + palette_index * 2);
-
-                // for now we will just write directly to framebuffer
-                // TODO: handle obj priority
-                framebuffer[(256 * line) + x + j] = Convert15To24(colour);
+                u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_number * 32) + palette_index * 2);
+                obj_layer[(256 * line) + x + j] = colour;
             }
         }
     }
