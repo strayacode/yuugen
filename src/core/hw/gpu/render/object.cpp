@@ -34,6 +34,9 @@ void GPU2D::RenderObjects(u16 line) {
         u8 width;
         u8 height;
 
+        u8 horizontal_flip = (attribute[1] >> 12) & 0x1;
+        u8 vertical_flip = (attribute[1] >> 13) & 0x1;
+
         // maybe add a lut for simpler code
         switch (shape) {
         case 0:
@@ -135,7 +138,8 @@ void GPU2D::RenderObjects(u16 line) {
 
                 // now we have the palette index, so we can extract a colour from the palette ram
                 u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_index * 2));
-                obj_layer[(256 * line) + x + j] = colour;
+                u16 layer_offset = horizontal_flip ? x + width - j - 1 : x + j;
+                obj_layer[(256 * line) + layer_offset] = colour;
             }
         } else {
             // 16 colour / 16 palette
@@ -166,7 +170,8 @@ void GPU2D::RenderObjects(u16 line) {
 
                 // now we have the palette index and number, so we can extract a colour from the palette ram
                 u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_number * 32) + palette_index * 2);
-                obj_layer[(256 * line) + x + j] = colour;
+                u16 layer_offset = horizontal_flip ? x + width - j - 1 : x + j;
+                obj_layer[(256 * line) + layer_offset] = colour;
             }
         }
     }
