@@ -185,10 +185,12 @@ void GPU2D::RenderObjects(u16 line) {
                 u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_number * 32) + palette_index * 2);
                 u16 layer_offset = horizontal_flip ? x + width - j - 1 : x + j;
 
-                // only update a specific obj pixel if this one has lower priority
-                if (priority < obj_layer[(256 * line) + layer_offset].priority) {
-                    obj_layer[(256 * line) + layer_offset].colour = colour;
-                    obj_layer[(256 * line) + layer_offset].priority = priority;
+                // only update a specific obj pixel if this one has lower priority and is non transparent too
+                if (colour != 0x8000) {
+                    if (priority < obj_layer[(256 * line) + layer_offset].priority) {
+                        obj_layer[(256 * line) + layer_offset].colour = colour;
+                        obj_layer[(256 * line) + layer_offset].priority = priority;
+                    }
                 }
             }
         }
