@@ -97,9 +97,10 @@ void GPU2D::RenderObjects(u16 line) {
 
         u8 mode = (attribute[0] >> 10) & 0x3;
 
-        if (mode != 0) {
-            log_fatal("[GPU2D] handle non-normal object");
-        }
+        // for now we will just ignore semi transparent and window objs
+        // if (mode != 0) {
+        //     log_fatal("[GPU2D] handle non-normal object %d", mode);
+        // }
 
         if (attribute[0] & (1 << 8)) {
             log_fatal("[GPU2D] handle rotscal object");
@@ -113,7 +114,29 @@ void GPU2D::RenderObjects(u16 line) {
 
         if (attribute[0] & (1 << 13)) {
             // 256 colour / 1 palette
-            log_fatal("[GPU2D] handle 256 colour / 1 palette");
+            // in 1d mapping
+            // each sprite will occupy 64 bytes for each 8x8 tile in it
+            // for each 8 that height_difference goes we will move to a new tile
+            // we must also add on a multiple of 8 for the specific row in an nx8 tile
+            obj_base += (height_difference % 8) * 8 + ((height_difference / 8) * width) * 8;
+
+            // draw each pixel in the current row
+            for (int j = 0; j < width; j++) {
+                // make sure that when j has been incremented by 8, we move onto the next 8x8 tile
+                // and we know that each 8x8 tile occupies 64 bytes in 8bpp mode
+                // we must also increment by a byte for each time j is incremented
+                u8 palette_index;
+                u32 offset = obj_base + (j / 8) * 64 + (j % 8);
+                if (engine_id == 1) {
+                    palette_index = gpu->ReadOBJA<u8>(offset);
+                } else {
+                    palette_index = gpu->ReadOBJB<u8>(offset);
+                }
+
+                // now we have the palette index, so we can extract a colour from the palette ram
+                u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_index * 2));
+                obj_layer[(256 * line) + x + j] = colour;
+            }
         } else {
             // 16 colour / 16 palette
             u8 palette_number = (attribute[2] >> 12) & 0xF;
@@ -126,9 +149,9 @@ void GPU2D::RenderObjects(u16 line) {
 
             // draw each pixel in the current row
             for (int j = 0; j < width; j++) {
-                // make sure that when j has been incremented by 8, we move onto the nejt 8x8 tile
+                // make sure that when j has been incremented by 8, we move onto the next 8x8 tile
                 // and we know that each 8x8 tile occupies 32 bytes in 4bpp mode
-                // we must also increment by a byte for each time j is incremented by 2 (as each pijel occupies 4 bits)
+                // we must also increment by a byte for each time j is incremented by 2 (as each pixel occupies 4 bits)
                 u8 palette_indices;
                 u32 offset = obj_base + (j / 8) * 32 + ((j % 8) / 2);
                 if (engine_id == 1) {
@@ -137,7 +160,7 @@ void GPU2D::RenderObjects(u16 line) {
                     palette_indices = gpu->ReadOBJB<u8>(offset);
                 }
 
-                // we will only need 4 bits for the palette indej, since we have the palette number already
+                // we will only need 4 bits for the palette index, since we have the palette number already
                 // if j is odd, then access the top 4 bits of the byte, otherwise access the lower 4 bits of the byte
                 u8 palette_index = (j & 0x1) ? (palette_indices >> 4) : (palette_indices & 0xF);
 
