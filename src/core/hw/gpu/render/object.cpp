@@ -39,60 +39,9 @@ void GPU2D::RenderObjects(u16 line) {
 
         u8 priority = (attribute[2] >> 10) & 0x3;
 
-        // maybe add a lut for simpler code
-        switch (shape) {
-        case 0:
-            // square
-            // TODO: make this a shift left
-            width = 8 * pow(2, size);
-            height = 8 * pow(2, size);
-            break;
-        case 1:
-            // horizontal
-            switch (size) {
-            case 0:
-                width = 16;
-                height = 8;
-                break;
-            case 1:
-                width = 32;
-                height = 8;
-                break;
-            case 2:
-                width = 32;
-                height = 16;
-                break;
-            case 3:
-                width = 64;
-                height = 32;
-                break;
-            }
-            break;
-        case 2:
-            // vertical
-            switch (size) {
-            case 0:
-                width = 8;
-                height = 16;
-                break;
-            case 1:
-                width = 8;
-                height = 32;
-                break;
-            case 2:
-                width = 16;
-                height = 32;
-                break;
-            case 3:
-                width = 32;
-                height = 64;
-                break;
-            }
-            break;
-        default:
-            log_fatal("[GPU2D] Unknown sprite shape %d", shape);
-        }
-
+        width = dimensions[shape][size][0];
+        height = dimensions[shape][size][1];
+        
         u16 height_difference = line - y;
 
         if (height_difference < 0 || height_difference > height) {

@@ -52,12 +52,13 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
             }
         }
 
-
         pixel = bg_layers[priority_bg_index][(256 * line) + x];
-        // printf("%04x\n", obj_layer[(256 * line) + x]);
         if ((DISPCNT & (1 << 12)) && (obj_layer[(256 * line) + x].colour != 0x8000)) {
-            // we should draw an obj pixel onto the screen
-            pixel = obj_layer[(256 * line) + x].colour;
+            // only draw an obj pixel instead of a bg pixel if it has a higher priority or same priority than the relative bg priority index
+            if (obj_layer[(256 * line) + x].priority <= priority) {
+                // we should draw an obj pixel onto the screen
+                pixel = obj_layer[(256 * line) + x].colour;
+            }
         }
 
         // finally store the pixel from the correct bg layer
