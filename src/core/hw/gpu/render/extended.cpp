@@ -10,7 +10,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
 
     if (!(BGCNT[bg_index] & (1 << 7))) {
         // 16 bit bgmap entries
-        log_fatal("[GPU2D] Handle 16 bit bg map entries");
+        log_warn("[GPU2D] Handle 16 bit bg map entries");
     } else if ((BGCNT[bg_index] & (1 << 7)) && (BGCNT[bg_index] & (1 << 2))) {
         // direct colour bitmap
         for (int pixel = 0; pixel < 256; pixel++) {

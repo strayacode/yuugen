@@ -109,6 +109,27 @@ auto RTC::InterpretReadCommand(u8 data) -> u8 {
         // alarm time 2
         // do nothing for now lol
         break;
+    case 6: {
+        // time
+
+        std::time_t time = std::time(nullptr);
+        std::tm* current_time = std::localtime(&time);
+        if (status_register1 & (1 << 1)) {
+            // 24 hour mode
+            date_time[0] = ConvertToBCD(current_time->tm_hour);
+        } else {
+            // 12 hour mode
+            date_time[0] = ConvertToBCD(current_time->tm_hour % 12);
+        }
+
+        date_time[1] = ConvertToBCD(current_time->tm_min);
+        date_time[2] = ConvertToBCD(current_time->tm_sec);
+
+         // update bit 0
+        // since each date time value is a byte, we can only use a different parameter byte every 8 write counts
+        data |= (date_time[((write_count / 8) % 3) - 1] >> (write_count % 8)) & 0x1;
+        break;
+    }
     default:
         log_fatal("[RTC] Handle read command type %02x", command_type);
     }

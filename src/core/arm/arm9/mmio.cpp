@@ -36,6 +36,8 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->gpu.engine_a.WINOUT;
     case 0x04000060:
         return core->gpu.engine_3d.DISP3DCNT;
+    case 0x0400006C:
+        return core->gpu.engine_a.MASTER_BRIGHT;
     case 0x040000BA:
         return core->dma[1].ReadDMACNT_H(0);
     case 0x040000C6:
@@ -86,6 +88,8 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->gpu.engine_b.WININ;
     case 0x0400104A:
         return core->gpu.engine_b.WINOUT;
+    case 0x0400106C:
+        return core->gpu.engine_b.MASTER_BRIGHT;
     case 0x04004004:
         return 0;
     case 0x04004010:

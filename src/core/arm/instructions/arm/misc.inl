@@ -245,6 +245,25 @@ u32 ARM_ROTATE_RIGHT_IMM() {
     return result;
 }
 
+u32 ARM_ROTATE_RIGHT_REG() {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u32 shift_amount = regs.r[rs] & 0x1F;
+    u32 result = 0;
+
+    if ((regs.r[rs] & 0xFF) == 0) {
+        result = regs.r[rm];
+    } else if (shift_amount == 0) {
+        result = regs.r[rm];
+        SetConditionFlag(C_FLAG, regs.r[rm] >> 31);
+    } else {
+        result = (regs.r[rm] >> shift_amount) | (regs.r[rm] << (32 - shift_amount));
+        SetConditionFlag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
+    }
+
+    return result;
+}
+
 u32 ARM_SINGLE_DATA_TRANSFER_IMM() {
     return instruction & 0xFFF;
 }
