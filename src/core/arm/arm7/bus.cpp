@@ -134,7 +134,7 @@ void Memory::ARM7Write(u32 addr, T data) {
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // for now do nothing lol
         break;
-    default:
-        log_fatal("[ARM7] undefined %ld-bit write %08x = %08x", sizeof(T) * 8, addr, data);
     }
+
+    // since theres not really any other regions to handle we can ignore undefined writes :shrug:
 }

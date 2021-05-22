@@ -405,6 +405,17 @@ INSTRUCTION(ARM_ANDS, u32 op2) {
     regs.r[15] += 4;
 }
 
+INSTRUCTION(ARM_RSC, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u32 op1 = regs.r[(instruction >> 16) & 0xF];
+    regs.r[rd] = op2 - op1 - !GetConditionFlag(C_FLAG);
+    if (rd == 15) {
+        log_fatal("handle");
+    } else {
+        regs.r[15] += 4;
+    }
+}
+
 INSTRUCTION(ARM_RSCS, u32 op2) {
     u8 rd = (instruction >> 12) & 0xF;
     u32 op1 = regs.r[(instruction >> 16) & 0xF];

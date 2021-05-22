@@ -57,7 +57,7 @@ void GPU2D::RenderObjects(u16 line) {
         // }
 
         if (attribute[0] & (1 << 8)) {
-            log_fatal("[GPU2D] handle rotscal object");
+            // log_fatal("[GPU2D] handle rotscal object");
         }
 
         u32 tile_number = attribute[2] & 0x3FF;

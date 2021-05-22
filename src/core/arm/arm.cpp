@@ -484,6 +484,8 @@ void ARM::Execute() {
                 return ARM_UMLAL();
             case 0x0A2: case 0x0AA:
                 return ARM_ADC(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x0A4: case 0x0AC:
+                return ARM_ADC(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x0B0: case 0x0B8:
                 return ARM_ADCS(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x0B9:
@@ -753,6 +755,11 @@ void ARM::Execute() {
             case 0x2D8: case 0x2D9: case 0x2DA: case 0x2DB: 
             case 0x2DC: case 0x2DD: case 0x2DE: case 0x2DF:
                 return ARM_SBCS(ARM_DATA_PROCESSING_IMM());
+            case 0x2E0: case 0x2E1: case 0x2E2: case 0x2E3: 
+            case 0x2E4: case 0x2E5: case 0x2E6: case 0x2E7: 
+            case 0x2E8: case 0x2E9: case 0x2EA: case 0x2EB: 
+            case 0x2EC: case 0x2ED: case 0x2EE: case 0x2EF:
+                return ARM_RSC(ARM_DATA_PROCESSING_IMM());
             case 0x310: case 0x311: case 0x312: case 0x313: 
             case 0x314: case 0x315: case 0x316: case 0x317: 
             case 0x318: case 0x319: case 0x31A: case 0x31B: 
