@@ -44,7 +44,7 @@ void GPU2D::RenderObjects(u16 line) {
         
         u16 height_difference = line - y;
 
-        if (height_difference < 0 || height_difference > height) {
+        if (height_difference < 0 || height_difference >= height) {
             // then don't render the object and move onto the next one
             continue;
         }

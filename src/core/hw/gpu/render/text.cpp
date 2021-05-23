@@ -17,9 +17,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
     //     log_fatal("[GPU2D] Handle non 256x256 background map with size %d", screen_size);
     // }
 
-    if (DISPCNT & (1 << 30)) {
-        log_fatal("[GPU2D] Handle extended palettes");
-    }
+    // if (DISPCNT & (1 << 30)) {
+    //     log_fatal("[GPU2D] Handle extended palettes");
+    // }
 
     if (BGCNT[bg_index] & (1 << 7)) {
         // 256 colours / 1 palette

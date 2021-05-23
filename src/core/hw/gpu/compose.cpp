@@ -8,7 +8,6 @@ void GPU2D::ComposeScanline(u16 line) {
 }
 
 void GPU2D::ComposePixel(u16 line, u16 x) {
-    // use an enabled variable with each bit corresponding to which layers are enabled
     u8 enabled = DISPCNT >> 8;
 
     u8 win0_x1 = WINH[0] >> 8;
@@ -21,17 +20,13 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
     u8 win1_y1 = WINV[1] >> 8;
     u8 win1_y2 = WINV[1] & 0xFF;
 
-    // then at least 1 of the windows is enabled so handle accordingly
     if ((DISPCNT >> 13) & 0x7) {
         // TODO: add object window when we doing object rendering
         if ((DISPCNT & (1 << 13)) && x > win0_x1 && x <= win0_x2 && line > win0_y1 && line <= win0_y2) {
-            // pixel is in win0
             enabled &= (WININ & 0xF);
         } else if ((DISPCNT & (1 << 14)) && x > win1_x1 && x <= win1_x2 && line > win1_y1 && line <= win1_y2) {
-            // pixel is in win1
             enabled &= ((WININ >> 8) & 0xF);
         } else {
-            // pixel is not in any window
             enabled &= (WINOUT & 0xF);  
         }
     }
@@ -56,12 +51,10 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
         if ((DISPCNT & (1 << 12)) && (obj_layer[(256 * line) + x].colour != 0x8000)) {
             // only draw an obj pixel instead of a bg pixel if it has a higher priority or same priority than the relative bg priority index
             if (obj_layer[(256 * line) + x].priority <= priority) {
-                // we should draw an obj pixel onto the screen
                 pixel = obj_layer[(256 * line) + x].colour;
             }
         }
 
-        // finally store the pixel from the correct bg layer
         framebuffer[(256 * line) + x] = Convert15To24(pixel);
     }
 
