@@ -404,6 +404,8 @@ void ARM::Execute() {
                 return ARM_AND(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x005:
                 return ARM_AND(ARM_ARITHMETIC_SHIFT_RIGHT_REG());
+            case 0x006: case 0x00E:
+                return ARM_AND(ARM_ROTATE_RIGHT_IMM());
             case 0x009:
                 return ARM_MUL();
             case 0x010: case 0x018:
@@ -492,6 +494,8 @@ void ARM::Execute() {
                 return ARM_UMLALS();
             case 0x0C0: case 0x0C8:
                 return ARM_SBC(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x0C4: case 0x0CC:
+                return ARM_SBC(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x0C9:
                 return ARM_SMULL();
             case 0x0CB: case 0x0EB:
@@ -504,6 +508,8 @@ void ARM::Execute() {
                 return ARM_LDRH_POST(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x0DD: case 0x0FD:
                 return ARM_LDRSB_POST(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
+            case 0x0E4: case 0x0EC:
+                return ARM_RSC(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x0E9:
                 return ARM_SMLAL();
             case 0x0F0: case 0x0F8:
@@ -660,6 +666,8 @@ void ARM::Execute() {
                 return ARM_MOVS(ARM_ARITHMETIC_SHIFT_RIGHT_IMMS());
             case 0x1B5:
                 return ARM_MOVS(ARM_ARITHMETIC_SHIFT_RIGHT_REGS());
+            case 0x1B6: case 0x1BE:
+                return ARM_MOVS(ARM_ROTATE_RIGHT_IMMS());
             case 0x1BD:
                 return ARM_LDRSB_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x1C0: case 0x1C8:
@@ -690,6 +698,8 @@ void ARM::Execute() {
                 return ARM_LDRH_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x1FD:
                 return ARM_LDRSB_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM()); 
+            case 0x1FF:
+                return ARM_LDRSH_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x200: case 0x201: case 0x202: case 0x203: 
             case 0x204: case 0x205: case 0x206: case 0x207: 
             case 0x208: case 0x209: case 0x20A: case 0x20B: 

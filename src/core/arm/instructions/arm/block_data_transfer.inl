@@ -93,10 +93,31 @@ INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_WRITEBACK) {
     }
     
     if (instruction & (1 << 15)) {
-        log_fatal("handle lol");
-    }
+        // handle arm9 behaviour
+        if (arch == ARMv5) {
+            if (regs.r[15] & 0x1) {
+                // switch to thumb mode
+                regs.cpsr |= (1 << 5);
 
-    regs.r[15] += 4;
+                // halfword align the address
+                regs.r[15] &= ~1;
+
+                ThumbFlushPipeline();
+            } else {
+                // word align the address
+                regs.r[15] &= ~3;
+
+                ARMFlushPipeline();
+            }
+        } else {
+            // word align the address
+            regs.r[15] &= ~3;
+
+            ARMFlushPipeline();
+        }
+    } else {
+        regs.r[15] += 4;
+    }  
 }
 
 INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {

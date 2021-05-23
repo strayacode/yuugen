@@ -87,6 +87,8 @@ void SPI::LoadCalibrationPoints() {
     memcpy(&adc_y2, &firmware[user_settings_offset + 0x60], 2);
     memcpy(&scr_x2, &firmware[user_settings_offset + 0x62], 1);
     memcpy(&scr_y2, &firmware[user_settings_offset + 0x63], 1);
+
+    log_debug("[SPI] Touchscreen calibration points loaded successfully");
 }
 
 void SPI::Transfer(u8 data) {

@@ -60,7 +60,7 @@ bool HostInterface::Initialise() {
 void HostInterface::Run(std::string path) {
     core->SetRomPath(path);
     core->Reset();
-    core->FirmwareBoot();
+    core->DirectBoot();
 
     auto frame_start = std::chrono::system_clock::now();
     while (true) {

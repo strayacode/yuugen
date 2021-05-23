@@ -162,3 +162,22 @@ INSTRUCTION(ARM_LDRSH_PRE, u32 op2) {
 
     regs.r[15] += 4;
 }
+
+INSTRUCTION(ARM_LDRSH_PRE_WRITEBACK, u32 op2) {
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    u32 address = regs.r[rn] + op2;
+    // first we cast to s16 to read the data as a signed byte and then cast to s32 to sign extend to a 32 bit integer
+    u32 data = (s32)(s16)ReadHalf(address);
+
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[rd] = data;
+
+    regs.r[rn] += op2;
+
+    regs.r[15] += 4;
+}

@@ -98,6 +98,9 @@ void Memory::WriteHALTCNT(u8 data) {
     case 2:
         core->arm7.Halt();
         break;
+    case 3:
+        log_warn("unhandled request for sleep mode");
+        break;
     default:
         log_fatal("power down mode %d is not implemented!", power_down_mode);
         break;
