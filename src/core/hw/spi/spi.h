@@ -1,6 +1,7 @@
 #pragma once
 #include <common/types.h>
 #include <common/log.h>
+#include <string.h>
 #include <vector>
 #include <fstream>
 #include <vector>
@@ -16,6 +17,7 @@ struct SPI {
     auto ReadSPIDATA() -> u8;
 
     void Transfer(u8 data);
+    void Deselect();
     void FirmwareTransfer(u8 data);
     void TouchscreenTransfer(u8 data);
 
@@ -23,6 +25,7 @@ struct SPI {
     void DirectBoot();
 
     void LoadFirmware();
+    void LoadCalibrationPoints();
 
 
     u16 SPICNT;
@@ -46,6 +49,15 @@ struct SPI {
     bool write_in_progress;
 
     Core* core;
+
+    u16 adc_x1;
+    u16 adc_x2;
+    u16 adc_y1;
+    u16 adc_y2;
+    u8 scr_x1;
+    u8 scr_x2;
+    u8 scr_y1;
+    u8 scr_y2;
 };
 
 // ok so with the 03 command

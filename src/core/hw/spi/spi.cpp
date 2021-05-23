@@ -10,6 +10,7 @@ void SPI::Reset() {
     firmware.clear();
 
     LoadFirmware();
+    LoadCalibrationPoints();
 
     SPICNT = 0;
     SPIDATA = 0;
@@ -62,6 +63,32 @@ void SPI::LoadFirmware() {
     log_debug("[SPI] Firmware loaded successfully!");
 }
 
+void SPI::LoadCalibrationPoints() {
+    // get the user settings address from address 0x20 in the firmware header
+    u32 user_settings_offset = 0;
+    memcpy(&user_settings_offset, &firmware[0x20], 2);
+
+    // in the firmware header, the offset is actually stored as the address divided by 8, so we must reverse the division to get the actual address
+    user_settings_offset *= 8;
+
+    adc_x1 = 0;
+    adc_x2 = 0;
+    adc_y1 = 0;
+    adc_y2 = 0;
+    scr_x1 = 0;
+    scr_x2 = 0;
+    scr_y1 = 0;
+    scr_y2 = 0;
+    memcpy(&adc_x1, &firmware[user_settings_offset + 0x58], 2);
+    memcpy(&adc_y1, &firmware[user_settings_offset + 0x5A], 2);
+    memcpy(&scr_x1, &firmware[user_settings_offset + 0x5C], 1);
+    memcpy(&scr_y1, &firmware[user_settings_offset + 0x5D], 1);
+    memcpy(&adc_x2, &firmware[user_settings_offset + 0x5E], 2);
+    memcpy(&adc_y2, &firmware[user_settings_offset + 0x60], 2);
+    memcpy(&scr_x2, &firmware[user_settings_offset + 0x62], 1);
+    memcpy(&scr_y2, &firmware[user_settings_offset + 0x63], 1);
+}
+
 void SPI::Transfer(u8 data) {
     if (write_count == 0) {
         // set the new command to the spidata
@@ -84,7 +111,6 @@ void SPI::Transfer(u8 data) {
             FirmwareTransfer(data);
             break;
         case 2:
-            // TODO: split touchscreen into own file
             TouchscreenTransfer(data);
             break;
         default:
@@ -148,6 +174,25 @@ void SPI::FirmwareTransfer(u8 data) {
 void SPI::TouchscreenTransfer(u8 data) {
     // bit 7 signifies the start bit and tells us whether the control byte (data in this case) can be accessed
     if (data & (1 << 7)) {
-        log_fatal("[Touchscreen] Handle control byte %02x", data);
+        // determine the channel to access
+        u8 channel = (data >> 4) & 0x7;
+
+        // on release touch x is 0x000 and touch y is 0xFFF
+        u16 touch_x = 0x000;
+        u16 touch_y = 0xFFF;
+
+        switch (channel) {
+        case 1:
+            log_fatal("handle y position");
+            break;
+        case 5:
+            log_fatal("handle x position");
+            break;
+        default:
+            log_warn("[Touchscreen] Handle channel %d", channel);
+            SPIDATA = 0;
+        }
+    } else {
+        SPIDATA = 0;
     }
 }
