@@ -60,7 +60,7 @@ bool HostInterface::Initialise() {
 void HostInterface::Run(std::string path) {
     core->SetRomPath(path);
     core->Reset();
-    core->DirectBoot();
+    core->FirmwareBoot();
 
     auto frame_start = std::chrono::system_clock::now();
     while (true) {
@@ -114,9 +114,9 @@ void HostInterface::Run(std::string path) {
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
                 int x = event.button.x / window_size;
-                int y = event.button.y / window_size;
+                int y = event.button.y / window_size - 192;
                 
-                if ((y >= 192) && event.button.button == SDL_BUTTON_LEFT) {
+                if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
                     // only do a touchscreen event if it occurs in the bottom screen
                     bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
                     core->input.SetTouch(button_pressed);

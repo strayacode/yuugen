@@ -192,22 +192,10 @@ void SPI::TouchscreenTransfer(u8 data) {
 
             switch (channel) {
             case 1:
-                if (data & (1 << 3)) {
-                    // 8 bit conversion mode, so once we have recieved 3 bits we can return some data
-                    output = touch_y << 3;
-                } else {
-                    // 12 bit conversion mode, so once we have recieved 7 bits we can return some data
-                    output = touch_y << 7;
-                }
+                output = touch_y << 3;
                 break;
             case 5:
-                if (data & (1 << 3)) {
-                    // 8 bit conversion mode, so once we have recieved 3 bits we can return some data
-                    output = touch_x << 3;
-                } else {
-                    // 12 bit conversion mode, so once we have recieved 7 bits we can return some data
-                    output = touch_x << 7;
-                }
+                output = touch_x << 3;
                 break;
             default:
                 SPIDATA = 0;
