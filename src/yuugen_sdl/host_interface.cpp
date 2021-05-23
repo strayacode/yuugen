@@ -12,7 +12,7 @@ bool HostInterface::Initialise() {
 
     u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 
-    int window_size = 2;
+    window_size = 2;
 
     window = SDL_CreateWindow("yuugen", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 256 * window_size, 384 * window_size, window_flags);
 
@@ -82,46 +82,45 @@ void HostInterface::Run(std::string path) {
                 bool key_pressed = event.type == SDL_KEYDOWN;
                 switch (event.key.keysym.sym) {
                 case SDLK_d:
-                    // A
                     core->input.HandleInput(BUTTON_A, key_pressed);
                     break;
                 case SDLK_s:
-                    // B
                     core->input.HandleInput(BUTTON_B, key_pressed);
                     break;
-                // should handle X and Y later (not in keyinput)
                 case SDLK_RSHIFT:
-                    // select
                     core->input.HandleInput(BUTTON_SELECT, key_pressed);
                     break;
                 case SDLK_RETURN:
-                    // start
                     core->input.HandleInput(BUTTON_START, key_pressed);
                     break;
                 case SDLK_RIGHT:
-                    // right
                     core->input.HandleInput(BUTTON_RIGHT, key_pressed);
                     break;
                 case SDLK_LEFT:
-                    // left 
                     core->input.HandleInput(BUTTON_LEFT, key_pressed);
                     break;
                 case SDLK_UP:
-                    // up
                     core->input.HandleInput(BUTTON_UP, key_pressed);
                     break;
                 case SDLK_DOWN:
-                    // down
                     core->input.HandleInput(BUTTON_DOWN, key_pressed);
                     break;
                 case SDLK_e:
-                    // Button R
                     core->input.HandleInput(BUTTON_R, key_pressed);
                     break;
                 case SDLK_w:
-                    // Button L
                     core->input.HandleInput(BUTTON_L, key_pressed);
                     break;
+                }
+            } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+                int x = event.button.x / window_size;
+                int y = event.button.y / window_size;
+                
+                if ((y >= 192) && event.button.button == SDL_BUTTON_LEFT) {
+                    // only do a touchscreen event if it occurs in the bottom screen
+                    bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
+                    core->input.SetTouch(button_pressed);
+                    core->input.SetPoint(x, y);
                 }
             }
         }

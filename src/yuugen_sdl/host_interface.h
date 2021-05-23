@@ -28,4 +28,5 @@ struct HostInterface {
 
     int frames = 0;
     char window_title[40];
+    int window_size = 1;
 };

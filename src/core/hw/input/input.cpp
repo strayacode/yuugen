@@ -2,8 +2,10 @@
 
 void Input::Reset() {
     KEYINPUT = 0x3FF;
-    // TODO: handle correctly
     EXTKEYIN = 0x7F;
+
+    point.x = 0;
+    point.y = 0;
 }
 
 void Input::HandleInput(int button, bool pressed) {
@@ -13,4 +15,18 @@ void Input::HandleInput(int button, bool pressed) {
     } else {
         KEYINPUT |= (1 << button);
     }
+}
+
+void Input::SetTouch(bool pressed) {
+    // 0 means screen is touched, 1 means no
+    if (pressed) {
+        EXTKEYIN &= ~(1 << 6);
+    } else {
+        EXTKEYIN |= (1 << 6);
+    }
+}
+
+void Input::SetPoint(int x, int y) {
+    point.x = x;
+    point.y = y;
 }

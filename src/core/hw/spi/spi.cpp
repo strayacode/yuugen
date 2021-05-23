@@ -147,7 +147,7 @@ void SPI::FirmwareTransfer(u8 data) {
 
 void SPI::TouchscreenTransfer(u8 data) {
     // bit 7 signifies the start bit and tells us whether the control byte (data in this case) can be accessed
-    // if (data & (1 << 7)) {
-    //     log_fatal("[Touchscreen] Handle control byte %02x", data);
-    // }
+    if (data & (1 << 7)) {
+        log_fatal("[Touchscreen] Handle control byte %02x", data);
+    }
 }
