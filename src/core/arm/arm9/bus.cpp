@@ -45,10 +45,6 @@ auto Memory::ARM9Read(u32 addr) -> T {
             }
             break;
         case REGION_PALETTE_RAM:
-            if (sizeof(T) == 1) {
-                log_fatal("[ARM9] 8-bit palette ram write is undefined behaviour");
-            }
-
             if ((addr & 0x7FF) < 400) {
                 // this is the first block which is assigned to engine a
                 memcpy(&return_value, &core->gpu.engine_a.palette_ram[addr & 0x3FF], sizeof(T));
@@ -56,7 +52,6 @@ auto Memory::ARM9Read(u32 addr) -> T {
                 // write to engine b's palette ram
                 memcpy(&return_value, &core->gpu.engine_b.palette_ram[addr & 0x3FF], sizeof(T));
             }
-
             break;
         case REGION_VRAM:
             // TODO: make vram memory handlers applicable to u8, u16 and u32
@@ -145,10 +140,6 @@ void Memory::ARM9Write(u32 addr, T data) {
             }
             break;
         case REGION_PALETTE_RAM:
-            if (sizeof(T) == 1) {
-                log_fatal("[ARM9] 8-bit palette ram write is undefined behaviour");
-            }
-
             if ((addr & 0x7FF) < 0x400) {
                 // this is the first block of oam which is 1kb and is assigned to engine a
                 core->gpu.engine_a.WritePaletteRAM<T>(addr, data);
@@ -159,10 +150,6 @@ void Memory::ARM9Write(u32 addr, T data) {
 
             break;
         case REGION_VRAM:
-            // if (sizeof(T) == 1) {
-            //     log_fatal("[ARM9] 8-bit vram write is undefined behaviour");
-            // }
-
             if (addr >= 0x06800000) {
                 core->gpu.WriteLCDC<T>(addr, data);
             } else if (in_range(0x06000000, 0x200000)) {

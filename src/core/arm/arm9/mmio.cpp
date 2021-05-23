@@ -207,6 +207,18 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
     case 0x04000045:
         core->gpu.engine_a.WINV[0] = (core->gpu.engine_a.WINV[0] & 0xFF) | (data << 8);
         break;
+    case 0x0400004C:
+        core->gpu.engine_a.MOSAIC = (core->gpu.engine_a.MOSAIC & ~0xFF) | data;
+        break;
+    case 0x0400004D:
+        core->gpu.engine_a.MOSAIC = (core->gpu.engine_a.MOSAIC & ~0xFF00) | (data << 8);
+        break;
+    case 0x0400004E:
+        core->gpu.engine_a.MOSAIC = (core->gpu.engine_a.MOSAIC & ~0xFF0000) | (data << 16);
+        break;
+    case 0x0400004F:
+        core->gpu.engine_a.MOSAIC = (core->gpu.engine_a.MOSAIC & ~0xFF000000) | (data << 24);
+        break;
     case 0x040001A1:
         // write to the high byte of AUXSPICNT
         core->cartridge.AUXSPICNT = (core->cartridge.AUXSPICNT & 0xFF) | (data << 8);
@@ -275,6 +287,18 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
         break;
     case 0x04000300:
         POSTFLG9 = data;
+        break;
+    case 0x0400104C:
+        core->gpu.engine_b.MOSAIC = (core->gpu.engine_b.MOSAIC & ~0xFF) | data;
+        break;
+    case 0x0400104D:
+        core->gpu.engine_b.MOSAIC = (core->gpu.engine_b.MOSAIC & ~0xFF00) | (data << 8);
+        break;
+    case 0x0400104E:
+        core->gpu.engine_b.MOSAIC = (core->gpu.engine_b.MOSAIC & ~0xFF0000) | (data << 16);
+        break;
+    case 0x0400104F:
+        core->gpu.engine_b.MOSAIC = (core->gpu.engine_b.MOSAIC & ~0xFF000000) | (data << 24);
         break;
     default:
         log_fatal("[ARM9] Undefined 8-bit io write %08x = %02x", addr, data);
