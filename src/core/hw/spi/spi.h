@@ -58,6 +58,11 @@ struct SPI {
     u8 scr_x2;
     u8 scr_y1;
     u8 scr_y2;
+
+    u16 touch_x = 0x000;
+    u16 touch_y = 0xFFF;
+
+    u16 output = 0;
 };
 
 // ok so with the 03 command

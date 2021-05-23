@@ -29,4 +29,5 @@ struct Input {
     void HandleInput(int button, bool pressed);
     void SetTouch(bool pressed);
     void SetPoint(int x, int y);
+    auto TouchDown() -> bool;
 };

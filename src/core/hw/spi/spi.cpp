@@ -172,27 +172,50 @@ void SPI::FirmwareTransfer(u8 data) {
 }
 
 void SPI::TouchscreenTransfer(u8 data) {
+    // each time we do a touchscreen transfer, we want to transfer the msb first
+    u8 value = output >> 8;
+
+    // shift the lsb to be the msb now
+    output <<= 8;
+
     // bit 7 signifies the start bit and tells us whether the control byte (data in this case) can be accessed
     if (data & (1 << 7)) {
         // determine the channel to access
         u8 channel = (data >> 4) & 0x7;
 
-        // on release touch x is 0x000 and touch y is 0xFFF
-        u16 touch_x = 0x000;
-        u16 touch_y = 0xFFF;
+        // only return true touchscreen points if the touchscreen is currently pressed
+        if (core->input.TouchDown()) {
+            // the formula in gbatek is used to convert touchscreen values to screen / pixel values
+            // with some rearrangement we get the formula to convert screen / pixel values to touchscreen values
+            touch_x = (core->input.point.x - scr_x1 + 1) * (adc_x2 - adc_x1) / (scr_x2 - scr_x1) + adc_x1;
+            touch_y = (core->input.point.y - scr_y1 + 1) * (adc_y2 - adc_y1) / (scr_y2 - scr_y1) + adc_y1;
 
-        switch (channel) {
-        case 1:
-            log_fatal("handle y position");
-            break;
-        case 5:
-            log_fatal("handle x position");
-            break;
-        default:
-            log_warn("[Touchscreen] Handle channel %d", channel);
-            SPIDATA = 0;
+            switch (channel) {
+            case 1:
+                if (data & (1 << 3)) {
+                    // 8 bit conversion mode, so once we have recieved 3 bits we can return some data
+                    output = touch_y << 3;
+                } else {
+                    // 12 bit conversion mode, so once we have recieved 7 bits we can return some data
+                    output = touch_y << 7;
+                }
+                break;
+            case 5:
+                if (data & (1 << 3)) {
+                    // 8 bit conversion mode, so once we have recieved 3 bits we can return some data
+                    output = touch_x << 3;
+                } else {
+                    // 12 bit conversion mode, so once we have recieved 7 bits we can return some data
+                    output = touch_x << 7;
+                }
+                break;
+            default:
+                SPIDATA = 0;
+                break;
+            }
         }
-    } else {
-        SPIDATA = 0;
+
     }
+
+    SPIDATA = value;
 }
