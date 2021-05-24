@@ -597,3 +597,36 @@ auto GPU::ReadOBJA(u32 addr) -> T {
 
     return return_value;
 }
+
+template auto GPU::ReadExtPaletteBGA(u32 addr) -> u8;
+template auto GPU::ReadExtPaletteBGA(u32 addr) -> u16;
+template auto GPU::ReadExtPaletteBGA(u32 addr) -> u32;
+template <typename T>
+auto GPU::ReadExtPaletteBGA(u32 addr) -> T {
+    T return_value = 0;
+
+    if (GetVRAMCNTEnabled(VRAMCNT_E)) {
+        if (in_range(0x06400000, 0x10000) && (GetVRAMCNTMST(VRAMCNT_E) == 2)) {
+            memcpy(&return_value, &VRAM_E[addr & 0xFFFF], sizeof(T));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
+        if (in_range(0x06400000 + (0x4000 * (GetVRAMCNTOffset(VRAMCNT_F) & 0x1)) + (0x10000 * (GetVRAMCNTOffset(VRAMCNT_F) & 0x2)), 0x3FFF) && (GetVRAMCNTMST(VRAMCNT_F) == 2)) {
+            memcpy(&return_value, &VRAM_F[addr & 0x3FFF], sizeof(T));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+        if (in_range(0x06400000 + (0x4000 * (GetVRAMCNTOffset(VRAMCNT_G) & 0x1)) + (0x10000 * (GetVRAMCNTOffset(VRAMCNT_G) & 0x2)), 0x3FFF) && (GetVRAMCNTMST(VRAMCNT_G) == 2)) {
+            memcpy(&return_value, &VRAM_G[addr & 0x3FFF], sizeof(T));
+        }
+    }
+
+    return return_value;
+}
+
+template <typename T>
+auto GPU::ReadExtPaletteBGB(u32 addr) -> T {
+
+}

@@ -3,9 +3,9 @@
 
 void GPU2D::RenderObjects(u16 line) {
     // check for 1d / 2d mapping
-    if (!(DISPCNT & (1 << 4))) {
-        log_fatal("handle 2d obj mapping");
-    }
+    // if (!(DISPCNT & (1 << 4))) {
+    //     log_fatal("handle 2d obj mapping");
+    // }
 
     // assume 1d mapping for now
     // each object in oam consists of 6 bytes

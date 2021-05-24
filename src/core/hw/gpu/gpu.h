@@ -64,6 +64,12 @@ struct GPU {
     template <typename T>
     auto ReadOBJB(u32 addr) -> T;
 
+    template <typename T>
+    auto ReadExtPaletteBGA(u32 addr) -> T;
+
+    template <typename T>
+    auto ReadExtPaletteBGB(u32 addr) -> T;
+
     void RenderScanlineStart();
     void RenderScanlineFinish();
 

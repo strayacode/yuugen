@@ -15,6 +15,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         log_warn("[GPU2D] Handle 16 bit bg map entries");
     } else if ((BGCNT[bg_index] & (1 << 7)) && (BGCNT[bg_index] & (1 << 2))) {
         // direct colour bitmap
+        log_fatal("[GPU2D] Handle direct colour bitmap");
         for (int pixel = 0; pixel < 256; pixel++) {
             u32 data_addr = data_base + (pixel * 2);
             u16 colour;
@@ -27,6 +28,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         }
     } else {
         // 256 colour bitmap
+        log_fatal("[GPU2D] Handle 256 colour bitmap");
         for (int pixel = 0; pixel < 256; pixel++) {
             u32 data_addr = data_base + (pixel * 2);
             u8 palette_index;
