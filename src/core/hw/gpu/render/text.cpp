@@ -2,7 +2,7 @@
 #include <core/hw/gpu/gpu.h>
 
 void GPU2D::RenderText(int bg_index, u16 line) {
-    u32 character_base = vram_addr + (((BGCNT[bg_index] >> 2) & 0x3) * 0x4000) + (((DISPCNT >> 24) & 0x7) * 0x10000);
+    u32 character_base = vram_addr + (((BGCNT[bg_index] >> 2) & 0xF) * 0x4000) + (((DISPCNT >> 24) & 0x7) * 0x10000);
     u32 screen_base = vram_addr + (((BGCNT[bg_index] >> 8) & 0x1F) * 0x800) + (((DISPCNT >> 27) & 0x7) * 0x10000);
 
     // mod 512 since we can have up to a max screen size of 512x512
@@ -17,10 +17,6 @@ void GPU2D::RenderText(int bg_index, u16 line) {
     // basic pseudocode:
     // if y >= 256 and screen height is 512, then move by 0x800 bytes if width is 256, otherwise by 0x800 * 2
     // if x >= 256 and screen width is 512, then move by 0x800
-
-    if (DISPCNT & (1 << 30)) {
-        log_fatal("handle");
-    }
 
     if (y >= 256 && screen_size & 0x2) {
         screen_base += screen_size & 0x1 ? 0x1000 : 0x800;
@@ -70,6 +66,10 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             }
         }
     } else {
+        // if (DISPCNT & (1 << 30)) {
+        //     log_fatal("handle");
+        // }
+
         // 16 colours / 16 palettes
         for (int tile = 0; tile < 256; tile += 8) {
             // mod 512 since we can have up to a max screen size of 512x512
