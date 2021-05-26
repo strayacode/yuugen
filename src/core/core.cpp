@@ -83,6 +83,9 @@ void Core::RunFrame() {
         for (int i = 0; i < 2; i++) {
             arm9.Step();
 
+            if (dma[1].enabled) {
+                dma[1].Transfer();
+            }
             if (timers[1].enabled) {
                 timers[1].Tick(1);
             }
@@ -90,6 +93,9 @@ void Core::RunFrame() {
 
         arm7.Step();
 
+        if (dma[0].enabled) {
+            dma[0].Transfer();
+        }
         if (timers[0].enabled) {
             timers[0].Tick(2);
         }
