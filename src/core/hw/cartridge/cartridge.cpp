@@ -196,6 +196,10 @@ void Cartridge::ReceiveCommand(u8 command, int command_index) {
     command_buffer[command_index] = command;
 }
 
+auto Cartridge::ReadCommand(int command_index) -> u8 {
+    return command_buffer[command_index];
+}
+
 void Cartridge::DirectBoot() {
     // first transfer the cartridge header (this is taken from rom address 0 and loaded into main memory at address 0x27FFE00)
     for (u32 i = 0; i < 0x170; i++) {

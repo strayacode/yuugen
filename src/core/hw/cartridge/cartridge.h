@@ -30,6 +30,7 @@ struct Cartridge {
     void WriteAUXSPIDATA(u16 data);
 
     void ReceiveCommand(u8 command, int command_index);
+    auto ReadCommand(int command_index) -> u8;
     auto ReadData() -> u32;
     void StartTransfer();
 

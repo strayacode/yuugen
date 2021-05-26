@@ -3,6 +3,16 @@
 
 auto Memory::ARM9ReadByteIO(u32 addr) -> u8 {
     switch (addr) {
+    case 0x040001A8:
+    case 0x040001A9:
+    case 0x040001AA:
+    case 0x040001AB:
+    case 0x040001AC:
+    case 0x040001AD:
+    case 0x040001AE:
+    case 0x040001AF:
+        // recieve a cartridge command and store in the buffer
+        return core->cartridge.ReadCommand(addr - 0x040001A8);
     case 0x04000208:
         return core->interrupt[1].IME & 0x1;
     case 0x04000300:
@@ -46,6 +56,8 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->dma[1].ReadDMACNT_H(2);
     case 0x040000DE:
         return core->dma[1].ReadDMACNT_H(3);
+    case 0x040000EC:
+        return core->dma[1].DMAFILL[3] & 0xFFFF;
     case 0x04000100:
         return core->timers[1].ReadTMCNT_L(0);
     case 0x04000104:

@@ -424,8 +424,12 @@ void ARM::Execute() {
                 return ARM_EOR(ARM_LOGICAL_SHIFT_LEFT_REG());
             case 0x022: case 0x02A:
                 return ARM_EOR(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x023:
+                return ARM_EOR(ARM_LOGICAL_SHIFT_RIGHT_REG());
             case 0x026: case 0x2E:
                 return ARM_EOR(ARM_ROTATE_RIGHT_IMM());
+            case 0x027:
+                return ARM_EOR(ARM_ROTATE_RIGHT_REG());
             case 0x029:
                 return ARM_MLA();
             case 0x030: case 0x038:
@@ -464,6 +468,8 @@ void ARM::Execute() {
                 return ARM_ADD(ARM_LOGICAL_SHIFT_LEFT_REG());
             case 0x082: case 0x08A:
                 return ARM_ADD(ARM_LOGICAL_SHIFT_RIGHT_IMM());
+            case 0x083:
+                return ARM_ADD(ARM_LOGICAL_SHIFT_RIGHT_REG());
             case 0x084: case 0x08C:
                 return ARM_ADD(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x085:
@@ -474,6 +480,8 @@ void ARM::Execute() {
                 return ARM_UMULL();
             case 0x090: case 0x098:
                 return ARM_ADDS(ARM_LOGICAL_SHIFT_LEFT_IMM());
+            case 0x092: case 0x09A:
+                return ARM_ADDS(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x094: case 0x09C:
                 return ARM_ADDS(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x096: case 0x09E:
@@ -538,6 +546,8 @@ void ARM::Execute() {
                 return ARM_TSTS(ARM_LOGICAL_SHIFT_RIGHT_IMMS());
             case 0x113:
                 return ARM_TSTS(ARM_LOGICAL_SHIFT_RIGHT_REGS());
+            case 0x114: case 0x11C:
+                return ARM_TSTS(ARM_ARITHMETIC_SHIFT_RIGHT_IMMS());
             case 0x115:
                 return ARM_TSTS(ARM_ARITHMETIC_SHIFT_RIGHT_REGS());
             case 0x11B:
@@ -721,6 +731,11 @@ void ARM::Execute() {
             case 0x228: case 0x229: case 0x22A: case 0x22B: 
             case 0x22C: case 0x22D: case 0x22E: case 0x22F:
                 return ARM_EOR(ARM_DATA_PROCESSING_IMM());
+            case 0x230: case 0x231: case 0x232: case 0x233: 
+            case 0x234: case 0x235: case 0x236: case 0x237: 
+            case 0x238: case 0x239: case 0x23A: case 0x23B: 
+            case 0x23C: case 0x23D: case 0x23E: case 0x23F:
+                return ARM_EORS(ARM_DATA_PROCESSING_IMMS());
             case 0x240: case 0x241: case 0x242: case 0x243: 
             case 0x244: case 0x245: case 0x246: case 0x247: 
             case 0x248: case 0x249: case 0x24A: case 0x24B: 
@@ -846,6 +861,11 @@ void ARM::Execute() {
             case 0x418: case 0x419: case 0x41A: case 0x41B: 
             case 0x41C: case 0x41D: case 0x41E: case 0x41F:
                 return ARM_LDR_POST(-ARM_SINGLE_DATA_TRANSFER_IMM());
+            case 0x440: case 0x441: case 0x442: case 0x443: 
+            case 0x444: case 0x445: case 0x446: case 0x447: 
+            case 0x448: case 0x449: case 0x44A: case 0x44B: 
+            case 0x44C: case 0x44D: case 0x44E: case 0x44F:
+                return ARM_STRB_POST(-ARM_SINGLE_DATA_TRANSFER_IMM());
             case 0x480: case 0x481: case 0x482: case 0x483: 
             case 0x484: case 0x485: case 0x486: case 0x487: 
             case 0x488: case 0x489: case 0x48A: case 0x48B: 

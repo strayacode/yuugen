@@ -70,6 +70,16 @@ auto Memory::ARM9Read(u32 addr) -> T {
             }
 
             break;
+        case REGION_OAM:
+            if ((addr & 0x7FF) < 0x400) {
+                // this is the first block of oam which is 1kb and is assigned to engine a
+                return_value = core->gpu.engine_a.ReadOAM<T>(addr);
+            } else {
+                // write to engine b's palette ram
+                return_value = core->gpu.engine_b.ReadOAM<T>(addr);
+            }
+
+            break;
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
             // check if the arm9 has access rights to the gba slot
             // if not return 0

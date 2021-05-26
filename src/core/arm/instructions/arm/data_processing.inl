@@ -208,10 +208,13 @@ INSTRUCTION(ARM_SUB, u32 op2) {
     regs.r[rd] = op1 - op2;
     
     if (rd == 15) {
-        log_fatal("handle");
-    }
+        // word align first
+        regs.r[15] &= ~3;
 
-    regs.r[15] += 4;
+        ARMFlushPipeline();
+    } else {
+        regs.r[15] += 4;
+    }
 }
 
 

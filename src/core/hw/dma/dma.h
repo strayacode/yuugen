@@ -9,7 +9,7 @@ struct Core;
 struct DMA {
     DMA(Core* core, int arch);
     void Reset();
-    void Transfer();
+    void Transfer(int channel_index);
     void Trigger(u8 mode);
 
     void WriteDMACNT_L(int channel_index, u16 data);
@@ -39,9 +39,6 @@ struct DMA {
         u32 internal_length;
         u32 DMACNT;
     } channel[4];
-
-    // bits 0..3 are used to correspond to whether a specific channel 0..3 is enabled
-    u8 enabled;
 
     u32 DMAFILL[4];  
 };
