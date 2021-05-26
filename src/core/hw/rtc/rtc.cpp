@@ -111,7 +111,6 @@ auto RTC::InterpretReadCommand(u8 data) -> u8 {
         break;
     case 6: {
         // time
-
         std::time_t time = std::time(nullptr);
         std::tm* current_time = std::localtime(&time);
         if (status_register1 & (1 << 1)) {

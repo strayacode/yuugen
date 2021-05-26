@@ -66,6 +66,8 @@ void GPU2D::RenderObjects(u16 line) {
 
         u32 obj_base = obj_addr + (tile_number * bound);
 
+        u8 palette_number = (attribute[2] >> 12) & 0xF;
+
         if (attribute[0] & (1 << 13)) {
             // 256 colour / 1 palette
             // in 1d mapping
@@ -92,16 +94,25 @@ void GPU2D::RenderObjects(u16 line) {
                     palette_index = gpu->ReadOBJB<u8>(offset);
                 }
 
-                // now we have the palette index, so we can extract a colour from the palette ram
-                u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_index * 2));
+                u16 colour;
+
+                if (DISPCNT & (1 << 31)) {
+                    if (engine_id == 1) {
+                        colour = palette_index == 0 ? 0x8000 : gpu->ReadExtPaletteOBJA<u16>((palette_number * 0xFF + palette_index) * 2);
+                    } else {
+                        colour = palette_index == 0 ? 0x8000 : gpu->ReadExtPaletteOBJB<u16>((palette_number * 0xFF + palette_index) * 2);
+                    }
+                } else {
+                    colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_index * 2));
+                }
+
                 u16 layer_offset = horizontal_flip ? x + width - j - 1 : x + j;
                 obj_layer[(256 * line) + layer_offset].colour = colour;
                 obj_layer[(256 * line) + layer_offset].priority = priority;
             }
         } else {
             // 16 colour / 16 palette
-            u8 palette_number = (attribute[2] >> 12) & 0xF;
-
+            
             // in 1d mapping
             // each sprite will occupy 32 bytes for each 8x8 tile in it
             // for each 8 that height_difference goes we will move to a new tile

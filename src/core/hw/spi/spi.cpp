@@ -204,7 +204,6 @@ void SPI::TouchscreenTransfer(u8 data) {
                 break;
             }
         }
-
     }
 
     SPIDATA = value;

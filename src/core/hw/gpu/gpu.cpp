@@ -648,3 +648,44 @@ auto GPU::ReadExtPaletteBGB(u32 addr) -> T {
 
     return return_value;
 }
+
+template auto GPU::ReadExtPaletteOBJA(u32 addr) -> u8;
+template auto GPU::ReadExtPaletteOBJA(u32 addr) -> u16;
+template auto GPU::ReadExtPaletteOBJA(u32 addr) -> u32;
+template <typename T>
+auto GPU::ReadExtPaletteOBJA(u32 addr) -> T {
+    T return_value = 0;
+
+    // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
+    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
+        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_F) == 5)) {
+            memcpy(&return_value, &VRAM_F[addr & 0x1FFF], sizeof(T));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+        // we will either access slots 0-1 or 2-3 depending on ofs
+        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_G) == 5)) {
+            memcpy(&return_value, &VRAM_G[addr & 0x1FFF], sizeof(T));
+        }
+    }
+
+    return return_value;
+}
+
+template auto GPU::ReadExtPaletteOBJB(u32 addr) -> u8;
+template auto GPU::ReadExtPaletteOBJB(u32 addr) -> u16;
+template auto GPU::ReadExtPaletteOBJB(u32 addr) -> u32;
+template <typename T>
+auto GPU::ReadExtPaletteOBJB(u32 addr) -> T {
+    T return_value = 0;
+
+    // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
+    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
+        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_I) == 3)) {
+            memcpy(&return_value, &VRAM_I[addr & 0x1FFF], sizeof(T));
+        }
+    }
+
+    return return_value;
+}
