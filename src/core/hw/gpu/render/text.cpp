@@ -23,6 +23,10 @@ void GPU2D::RenderText(int bg_index, u16 line) {
     } 
 
     if (BGCNT[bg_index] & (1 << 7)) {
+        // if (DISPCNT & (1 << 30)) {
+        //     log_fatal("handle");
+        // }
+        
         // 256 colours / 1 palette
         for (int tile = 0; tile < 256; tile += 8) {
             // get the addr of the tile in the bg map
@@ -66,10 +70,6 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             }
         }
     } else {
-        // if (DISPCNT & (1 << 30)) {
-        //     log_fatal("handle");
-        // }
-
         // 16 colours / 16 palettes
         for (int tile = 0; tile < 256; tile += 8) {
             // mod 512 since we can have up to a max screen size of 512x512

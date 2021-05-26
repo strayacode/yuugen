@@ -33,21 +33,20 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
 
     // only update the framebuffer if any layers are enabled
     if (enabled) {
-        u16 pixel;
+        // set the initial pixel to be the colour at palette index 0 (the backdrop colour)
+        u16 pixel = ReadPaletteRAM<u16>(0);
 
         u8 priority = 3;
-        u8 priority_bg_index = 3;
         for (int i = 3; i >= 0; i--) {
             // only check priority if the bg layer is enabled as indicated by the variable enabled, which has taken into account window logic
             if ((enabled & (1 << i)) && (bg_layers[i][(256 * line) + x] != 0x8000)) {
                 if ((BGCNT[i] & 0x3) <= priority) {
-                    priority_bg_index = i;
                     priority = (BGCNT[i] & 0x3);
+                    pixel = bg_layers[i][(256 * line) + x];
                 }
             }
         }
-
-        pixel = bg_layers[priority_bg_index][(256 * line) + x];
+        
         if ((DISPCNT & (1 << 12)) && (obj_layer[(256 * line) + x].colour != 0x8000)) {
             // only draw an obj pixel instead of a bg pixel if it has a higher priority or same priority than the relative bg priority index
             if (obj_layer[(256 * line) + x].priority <= priority) {
@@ -57,5 +56,4 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
 
         framebuffer[(256 * line) + x] = Convert15To24(pixel);
     }
-
 }
