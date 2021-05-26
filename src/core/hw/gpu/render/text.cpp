@@ -23,9 +23,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
     } 
 
     if (BGCNT[bg_index] & (1 << 7)) {
-        // if (DISPCNT & (1 << 30)) {
-        //     log_fatal("handle");
-        // }
+        if (DISPCNT & (1 << 30)) {
+            log_fatal("handle");
+        }
         
         // 256 colours / 1 palette
         for (int tile = 0; tile < 256; tile += 8) {
