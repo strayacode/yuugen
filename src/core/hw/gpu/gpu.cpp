@@ -632,6 +632,9 @@ auto GPU::ReadExtPaletteBGA(u32 addr) -> T {
     return return_value;
 }
 
+template auto GPU::ReadExtPaletteBGB(u32 addr) -> u8;
+template auto GPU::ReadExtPaletteBGB(u32 addr) -> u16;
+template auto GPU::ReadExtPaletteBGB(u32 addr) -> u32;
 template <typename T>
 auto GPU::ReadExtPaletteBGB(u32 addr) -> T {
     T return_value = 0;

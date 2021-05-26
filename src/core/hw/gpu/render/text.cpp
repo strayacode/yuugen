@@ -13,6 +13,8 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
     u8 screen_size = (BGCNT[bg_index] >> 14) & 0x3;
 
+    u8 extended_palette_slot = bg_index + ((BGCNT[bg_index] >> 13) & 0x1) * 2;
+
     // for screen blocks, we know that each screen block occupies 0x800 bytes, and are ordered in a linear fashion
     // basic pseudocode:
     // if y >= 256 and screen height is 512, then move by 0x800 bytes if width is 256, otherwise by 0x800 * 2
@@ -23,10 +25,6 @@ void GPU2D::RenderText(int bg_index, u16 line) {
     } 
 
     if (BGCNT[bg_index] & (1 << 7)) {
-        if (DISPCNT & (1 << 30)) {
-            log_fatal("handle");
-        }
-        
         // 256 colours / 1 palette
         for (int tile = 0; tile < 256; tile += 8) {
             // get the addr of the tile in the bg map
@@ -49,6 +47,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             u32 tile_number = tile_info & 0x3FF;
             u8 horizontal_flip = (tile_info >> 10) & 0x1;
             u8 vertical_flip = (tile_info >> 11) & 0x1;
+            u8 palette_number = (tile_info >> 12) & 0xF;
 
             // times by 64 as each tile is 64 bytes long
             u32 character_addr = character_base + (tile_number * 64) + (vertical_flip ? ((7 - y % 8) * 8) : ((y % 8) * 8));
@@ -64,8 +63,19 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                     palette_index = gpu->ReadBGB<u8>(byte_offset);
                 }
 
-                u16 colour = palette_index == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>(palette_index * 2);
-                
+                u16 colour;
+
+                // check if extended palettes are enabled
+                if (DISPCNT & (1 << 30)) {
+                    if (engine_id == 1) {
+                        colour = palette_index == 0 ? COLOUR_TRANSPARENT : gpu->ReadExtPaletteBGA<u16>(extended_palette_slot * 0x2000 + (palette_number * 0xFF + palette_index) * 2);
+                    } else {
+                        colour = palette_index == 0 ? COLOUR_TRANSPARENT : gpu->ReadExtPaletteBGB<u16>(extended_palette_slot * 0x2000 + (palette_number * 0xFF + palette_index) * 2);
+                    }
+                } else {
+                    colour = palette_index == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>(palette_index * 2);
+                }
+
                 bg_layers[bg_index][(256 * line) + tile + j] = colour;
             }
         }
