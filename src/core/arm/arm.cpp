@@ -426,6 +426,8 @@ void ARM::Execute() {
                 return ARM_EOR(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x023:
                 return ARM_EOR(ARM_LOGICAL_SHIFT_RIGHT_REG());
+            case 0x024: case 0x02C:
+                return ARM_EOR(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x026: case 0x2E:
                 return ARM_EOR(ARM_ROTATE_RIGHT_IMM());
             case 0x027:

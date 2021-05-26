@@ -31,29 +31,26 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
         }
     }
 
-    // only update the framebuffer if any layers are enabled
-    if (enabled) {
-        // set the initial pixel to be the colour at palette index 0 (the backdrop colour)
-        u16 pixel = ReadPaletteRAM<u16>(0);
+    // set the initial pixel to be the colour at palette index 0 (the backdrop colour)
+    u16 pixel = ReadPaletteRAM<u16>(0);
 
-        u8 priority = 3;
-        for (int i = 3; i >= 0; i--) {
-            // only check priority if the bg layer is enabled as indicated by the variable enabled, which has taken into account window logic
-            if ((enabled & (1 << i)) && (bg_layers[i][(256 * line) + x] != 0x8000)) {
-                if ((BGCNT[i] & 0x3) <= priority) {
-                    priority = (BGCNT[i] & 0x3);
-                    pixel = bg_layers[i][(256 * line) + x];
-                }
+    u8 priority = 3;
+    for (int i = 3; i >= 0; i--) {
+        // only check priority if the bg layer is enabled as indicated by the variable enabled, which has taken into account window logic
+        if ((enabled & (1 << i)) && (bg_layers[i][(256 * line) + x] != 0x8000)) {
+            if ((BGCNT[i] & 0x3) <= priority) {
+                priority = (BGCNT[i] & 0x3);
+                pixel = bg_layers[i][(256 * line) + x];
             }
         }
-        
-        if ((DISPCNT & (1 << 12)) && (obj_layer[(256 * line) + x].colour != 0x8000)) {
-            // only draw an obj pixel instead of a bg pixel if it has a higher priority or same priority than the relative bg priority index
-            if (obj_layer[(256 * line) + x].priority <= priority) {
-                pixel = obj_layer[(256 * line) + x].colour;
-            }
-        }
-
-        framebuffer[(256 * line) + x] = Convert15To24(pixel);
     }
+    
+    if ((DISPCNT & (1 << 12)) && (obj_layer[(256 * line) + x].colour != 0x8000)) {
+        // only draw an obj pixel instead of a bg pixel if it has a higher priority or same priority than the relative bg priority index
+        if (obj_layer[(256 * line) + x].priority <= priority) {
+            pixel = obj_layer[(256 * line) + x].colour;
+        }
+    }
+
+    framebuffer[(256 * line) + x] = Convert15To24(pixel);
 }
