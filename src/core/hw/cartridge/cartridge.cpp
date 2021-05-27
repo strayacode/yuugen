@@ -69,7 +69,10 @@ void Cartridge::LoadRom(std::string rom_path) {
 
     switch (backup_type) {
     case FLASH:
-        backup = std::make_unique<FlashBackup>(save_path, SIZE_256K);
+        backup = std::make_unique<FlashBackup>(save_path, backup_size);
+        break;
+    case EEPROM:
+        backup = std::make_unique<EEPROMBackup>(save_path, backup_size);
         break;
     default:
         log_fatal("backup type %d not handled", backup_type);
@@ -105,7 +108,8 @@ void Cartridge::DetectBackupType() {
                 log_fatal("handle eeprom smol");
                 break;
             case 2: case 3: case 4:
-                log_fatal("handle eeprom");
+                backup_type = EEPROM;
+                break;
             case 5: case 6: case 7:
                 backup_type = FLASH;
                 break;

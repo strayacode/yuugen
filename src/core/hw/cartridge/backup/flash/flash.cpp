@@ -61,7 +61,7 @@ void FlashBackup::Reset() {
     write_enable_latch = false;
     write_in_progress = false;
 
-    // // check if the save exists, if not then create a new save
+    // check if the save exists, if not then create a new save
     std::ifstream file(path, std::ios::in | std::ios::binary);
 
     backup.resize(size);

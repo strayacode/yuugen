@@ -9,16 +9,9 @@
 #include <iostream>
 #include <algorithm>
 
-enum FlashBackupSize : u32 {
-    SIZE_256K = 0x40000,
-    SIZE_512K = 0x80000,
-    SIZE_1024K = 0x100000,
-    SIZE_8192K = 0x800000,
-};
-
-struct FlashBackup : public GenericBackup {
-    FlashBackup(std::string path, u32 size);
-
+struct EEPROMBackup : public GenericBackup {
+    EEPROMBackup(std::string path, u32 size);
+    
     auto Transfer(u8 data, u32 write_count) -> u8 override;
     void ReceiveCommand(u8 data) override;
     void Reset() override;
