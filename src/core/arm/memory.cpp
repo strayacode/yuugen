@@ -65,6 +65,8 @@ void Memory::LoadARM7Bios() {
 
     arm7_bios.insert(arm7_bios.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
 
+    file.close();
+
     log_debug("[Memory] ARM7 bios loaded successfully!");
 }
 
@@ -84,6 +86,8 @@ void Memory::LoadARM9Bios() {
     arm9_bios.reserve(0x8000);
 
     arm9_bios.insert(arm9_bios.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
+
+    file.close();
 
     log_debug("[Memory] ARM9 bios loaded successfully!");
 }

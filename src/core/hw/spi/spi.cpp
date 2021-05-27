@@ -60,6 +60,8 @@ void SPI::LoadFirmware() {
 
     firmware.insert(firmware.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
 
+    file.close();
+
     log_debug("[SPI] Firmware loaded successfully!");
 }
 

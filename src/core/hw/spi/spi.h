@@ -4,7 +4,6 @@
 #include <string.h>
 #include <vector>
 #include <fstream>
-#include <vector>
 #include <iterator>
 
 struct Core;

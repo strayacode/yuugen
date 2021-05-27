@@ -1,5 +1,7 @@
 #include <common/types.h>
 #include <common/log.h>
+#include <core/hw/cartridge/backup/generic_backup.h>
+#include <core/hw/cartridge/backup/flash/flash.h>
 #include <string.h>
 #include <fstream>
 #include <vector>
@@ -28,7 +30,7 @@ struct Cartridge {
 
     void WriteROMCTRL(u32 data);
     void WriteAUXSPICNT(u16 data);
-    void WriteAUXSPIDATA(u16 data);
+    void WriteAUXSPIDATA(u8 data);
 
     void ReceiveCommand(u8 command, int command_index);
     auto ReadCommand(int command_index) -> u8;
@@ -75,4 +77,8 @@ struct Cartridge {
 
     u64 seed0;
     u64 seed1;
+
+    u32 backup_write_count;
+
+    std::unique_ptr<GenericBackup> backup;
 };

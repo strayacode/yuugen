@@ -1,23 +1,40 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <common/backup.h>
+#include <common/log.h>
 #include <common/types.h>
+#include <core/hw/cartridge/backup/generic_backup.h>
+#include <vector>
+#include <fstream>
+#include <iterator>
+#include <iostream>
+#include <algorithm>
 
-enum class BackupSize {
-    SIZE_256K,
-    SIZE_512K,
-    SIZE_1024K,
-    SIZE_8192K,
+enum FlashBackupSize : u32 {
+    SIZE_256K = 0x40000,
+    SIZE_512K = 0x80000,
+    SIZE_1024K = 0x100000,
+    SIZE_8192K = 0x800000,
 };
 
-struct FlashBackup {
+struct FlashBackup : public GenericBackup {
     FlashBackup(std::string path, u32 size);
+    ~FlashBackup();
+    void SaveBackup();
+
+    auto Transfer(u8 data, u32 write_count) -> u8 override;
+    void ReceiveCommand(u8 command) override;
+    void Reset() override;
 
     std::string path;
 
     u32 size;
 
-    std::unique_ptr<Backup> backup;
+    u8 command;
+
+    u32 address;
+
+    std::vector<u8> backup;
+
+    bool write_enable_latch;
+    bool write_in_progress;
 };

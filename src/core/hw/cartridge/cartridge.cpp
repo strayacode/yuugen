@@ -20,6 +20,8 @@ void Cartridge::Reset() {
     rom_size = 0;
 
     seed0 = seed1 = 0;
+
+    backup_write_count = 0;
 }
 
 void Cartridge::LoadRom(std::string rom_path) {
@@ -44,6 +46,8 @@ void Cartridge::LoadRom(std::string rom_path) {
 
     rom_size = rom.size();
 
+    file.close();
+
     log_debug("[Cartridge] Rom data loaded");
     log_debug("[Cartridge] Size: %08lx", rom_size);
 
@@ -51,7 +55,8 @@ void Cartridge::LoadRom(std::string rom_path) {
 
     // now we want to do backup stuff
     std::string save_path = rom_path.replace(rom_path.find("nds"), 3, "sav");
-    printf("thing idk %s\n", save_path.c_str());
+
+    backup = std::make_unique<FlashBackup>(save_path, SIZE_256K);
 }
 
 void Cartridge::LoadHeaderData() {
@@ -191,9 +196,24 @@ void Cartridge::WriteAUXSPICNT(u16 data) {
     AUXSPICNT = data;
 }
 
-void Cartridge::WriteAUXSPIDATA(u16 data) {
-    // might be used for cartridge backup try to emulate later
-    AUXSPIDATA = data;
+void Cartridge::WriteAUXSPIDATA(u8 data) {
+    if (backup_write_count == 0) {
+        // interpret a new command
+        backup->ReceiveCommand(data);
+
+        AUXSPIDATA = 0;
+    } else {
+        // TODO: make this cleaner later
+        AUXSPIDATA = backup->Transfer(data, backup_write_count);
+    }
+    
+    if (AUXSPICNT & (1 << 6)) {
+        // keep selected
+        backup_write_count++;
+    } else {
+        // deselect
+        backup_write_count = 0;
+    }
 }
 
 void Cartridge::ReceiveCommand(u8 command, int command_index) {
