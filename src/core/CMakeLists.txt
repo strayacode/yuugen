@@ -6,6 +6,7 @@ add_library(core
     arm/memory.h arm/memory.cpp
     
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
+    hw/cartridge/backup/flash/flash.h hw/cartridge/backup/flash/flash.cpp
     hw/spi/spi.h hw/spi/spi.cpp
     scheduler/scheduler.h scheduler/scheduler.cpp
     hw/cp15/cp15.h hw/cp15/cp15.cpp

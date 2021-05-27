@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iterator>
+#include <memory>
 
 #pragma once
 

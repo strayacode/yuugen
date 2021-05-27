@@ -48,6 +48,10 @@ void Cartridge::LoadRom(std::string rom_path) {
     log_debug("[Cartridge] Size: %08lx", rom_size);
 
     LoadHeaderData();
+
+    // now we want to do backup stuff
+    std::string save_path = rom_path.replace(rom_path.find("nds"), 3, "sav");
+    printf("thing idk %s\n", save_path.c_str());
 }
 
 void Cartridge::LoadHeaderData() {
