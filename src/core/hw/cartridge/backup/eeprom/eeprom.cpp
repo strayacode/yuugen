@@ -6,8 +6,39 @@ EEPROMBackup::EEPROMBackup(std::string path, u32 size) : path(path), size(size) 
     
 auto EEPROMBackup::Transfer(u8 data, u32 write_count) -> u8 {
     switch (command) {
+    case 0x02:
+        // write to memory
+        // if we are dealing with 128K eeprom, we have 3 parameter bytes for a 24 bit address
+        // otherwise it's 2 parameter bytes for a 16 bit address
+    
+        if (write_count < ((size == 0x20000) ? 4 : 3)) {
+            address |= (data << ((size == 0x20000 ? 3 : 2 - write_count) * 8));
+        } else {
+            // write to the flash backup
+            if (address >= size) {
+                log_fatal("auxspi address is out of range");
+            }
+
+            backup[address] = data;
+
+            address++;
+        }
+        break;
     case 0x03:
         // read from memory
+        // if we are dealing with 128K eeprom, we have 3 parameter bytes for a 24 bit address
+        // otherwise it's 2 parameter bytes for a 16 bit address
+        if (write_count < ((size == 0x20000) ? 4 : 3)) {
+            address |= (data << ((size == 0x20000 ? 3 : 2 - write_count) * 8));
+        } else {
+            // read endless stream of bytes (keep incrementing the address unless chip is deselected)
+            // read data from firmware
+            if (address >= size) {
+                log_fatal("auxspi address is out of range");
+            }
+
+            return backup[address++];
+        }
         break;
     case 0x05:
         // read status register
@@ -49,5 +80,7 @@ void EEPROMBackup::Reset() {
 
 
 void EEPROMBackup::SaveBackup() {
-
+    std::ofstream file(path, std::ios::out | std::ios::binary);
+    std::copy(backup.begin(), backup.end(), std::ostream_iterator<u8>(file));
+    file.close();
 }
