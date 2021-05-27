@@ -6,17 +6,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <core/core.h>
-#include "menubar.h"
+// #include "menubar.h"
 
-struct MainWindow : public QMainWindow {
-Q_OBJECT
+struct MainWindow : public QWidget {
+    Q_OBJECT
 public:
 	MainWindow();
 	bool Initialise();
 	void closeEvent(QCloseEvent *event);
 
 private:
-    Menubar* menubar;
+    // Menubar* menubar;
 
 signals:
 

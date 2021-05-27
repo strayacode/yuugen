@@ -8,7 +8,6 @@ void Scheduler::Reset() {
 
 void Scheduler::Tick(int cycles) {
     current_time += cycles;
-    // printf("current time is %d size %d\n", current_time, events.size());
 }
 
 void Scheduler::ResetCurrentTime() {
@@ -43,7 +42,7 @@ auto Scheduler::CalculateEventIndex(Event& new_event) -> int {
     }
 }
 
-void Scheduler::Step() {
+void Scheduler::RunEvents() {
     // do any scheduler events that are meant to happen at the current moment
     while (events[0].start_time <= GetCurrentTime() && events.size() > 0) {
         // do the callback associated with that scheduler event

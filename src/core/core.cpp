@@ -80,27 +80,32 @@ void Core::RunFrame() {
 
     // run frame for total of 560190 arm9 cycles
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        for (int i = 0; i < 2; i++) {
-            arm9.Step();
+        // run both cpus until the next event
+        while (scheduler.events[0].start_time > scheduler.GetCurrentTime()) {
+            for (int i = 0; i < 2; i++) {
+                arm9.Step();
 
-            if (dma[1].enabled) {
-                dma[1].Transfer();
+                if (dma[1].enabled) {
+                    dma[1].Transfer();
+                }
+                if (timers[1].enabled) {
+                    timers[1].Tick(1);
+                }
             }
-            if (timers[1].enabled) {
-                timers[1].Tick(1);
+
+            arm7.Step();
+
+            if (dma[0].enabled) {
+                dma[0].Transfer();
             }
+            if (timers[0].enabled) {
+                timers[0].Tick(2);
+            }
+
+            scheduler.Tick(1);
         }
 
-        arm7.Step();
-
-        if (dma[0].enabled) {
-            dma[0].Transfer();
-        }
-        if (timers[0].enabled) {
-            timers[0].Tick(2);
-        }
-
-        scheduler.Tick(1);
-        scheduler.Step();
+        // do any events
+        scheduler.RunEvents();
     }
 }

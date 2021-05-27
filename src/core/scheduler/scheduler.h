@@ -15,7 +15,7 @@ struct Scheduler {
     void Tick(int cycles);
     auto GetCurrentTime() -> u64;
     void ResetCurrentTime();
-    void Step();
+    void RunEvents();
     void Add(u64 delay, std::function<void()> callback);
     auto CalculateEventIndex(Event& new_event) -> int;
 

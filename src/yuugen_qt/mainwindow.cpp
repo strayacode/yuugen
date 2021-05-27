@@ -5,8 +5,8 @@ MainWindow::MainWindow() {
 }
 
 bool MainWindow::Initialise() {
-    menubar = new Menubar(QMainWindow(this));
-    setMenuBar(menubar);
+    // menubar = new Menubar();
+    // setMenuBar(menubar);
 	show();
 
 	return true;
