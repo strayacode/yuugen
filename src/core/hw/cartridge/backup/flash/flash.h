@@ -18,12 +18,11 @@ enum FlashBackupSize : u32 {
 
 struct FlashBackup : public GenericBackup {
     FlashBackup(std::string path, u32 size);
-    ~FlashBackup();
-    void SaveBackup();
-
+   
     auto Transfer(u8 data, u32 write_count) -> u8 override;
     void ReceiveCommand(u8 command) override;
     void Reset() override;
+    void SaveBackup() override;
 
     std::string path;
 

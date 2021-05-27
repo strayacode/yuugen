@@ -4,11 +4,6 @@ FlashBackup::FlashBackup(std::string path, u32 size) : path(path), size(size) {
     Reset();
 }
 
-FlashBackup::~FlashBackup() {
-    printf("buruh\n");
-    SaveBackup();
-}
-
 auto FlashBackup::Transfer(u8 data, u32 write_count) -> u8 {
     switch (command) {
     case 0x03:
@@ -60,7 +55,6 @@ void FlashBackup::ReceiveCommand(u8 data) {
 }
 
 void FlashBackup::Reset() {
-    printf("path %s\n", path.c_str());
     command = 0;
     address = 0;
 
@@ -69,22 +63,20 @@ void FlashBackup::Reset() {
 
     // // check if the save exists, if not then create a new save
     std::ifstream file(path, std::ios::in | std::ios::binary);
+
+    backup.resize(size);
+
     if (file.good()) {
         // read in the backup
-        log_fatal("handle");
+        backup.insert(backup.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
     } else {
-        // create a new backup
-        backup.reserve(size);
-
-        // fill the backup if 0xFFs
+        // fill the backup with 0xFFs
         std::fill(backup.begin(), backup.end(), 0xFF);
     }
 }
 
 void FlashBackup::SaveBackup() {
-    printf("save backup\n");
     std::ofstream file(path, std::ios::out | std::ios::binary);
-
     std::copy(backup.begin(), backup.end(), std::ostream_iterator<u8>(file));
     file.close();
 }

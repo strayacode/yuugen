@@ -23,6 +23,7 @@ struct Core;
 
 struct Cartridge {
     Cartridge(Core* core);
+    ~Cartridge();
     void Reset();
     void LoadRom(std::string rom_path);
     void LoadHeaderData();

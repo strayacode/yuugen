@@ -5,6 +5,10 @@ Cartridge::Cartridge(Core* core) : core(core) {
 
 }
 
+Cartridge::~Cartridge() {
+    backup->SaveBackup();
+}
+
 void Cartridge::Reset() {
     rom.clear();
 
