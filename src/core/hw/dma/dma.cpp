@@ -20,6 +20,8 @@ void DMA::Transfer() {
     for (int i = 0; i < 4; i++) {
         // only do transfer if enabled obviously
         if (enabled & (1 << i)) {
+            enabled &= ~(1 << i);
+
             // make variables to make things easier
             u8 destination_control = (channel[i].DMACNT >> 21) & 0x3;
             u8 source_control = (channel[i].DMACNT >> 23) & 0x3;
