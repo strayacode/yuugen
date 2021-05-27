@@ -19,6 +19,12 @@ enum CartridgeCommand {
     SECOND_CHIP_ID = 0xB8,
 };
 
+enum BackupType {
+    EEPROM_SMALL,
+    EEPROM,
+    FLASH,
+};
+
 struct Core;
 
 struct Cartridge {
@@ -27,6 +33,8 @@ struct Cartridge {
     void Reset();
     void LoadRom(std::string rom_path);
     void LoadHeaderData();
+    void DetectBackupType();
+
     void DirectBoot();
 
     void WriteROMCTRL(u32 data);
@@ -56,7 +64,9 @@ struct Cartridge {
         u32 arm7_size; // specifies the amount of bytes to be transferred from the cartridge to memory
 
         u32 icon_title_offset; // specifies the offset in the rom image to where the icon and title is
-        // 0 = None
+        
+        // used to identify the backup type
+        u32 gamecode;
     } header;
 
     u32 transfer_count;
@@ -82,4 +92,7 @@ struct Cartridge {
     u32 backup_write_count;
 
     std::unique_ptr<GenericBackup> backup;
+
+    u32 backup_type;
+    u32 backup_size;
 };

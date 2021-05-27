@@ -65,6 +65,7 @@ void FlashBackup::Reset() {
     std::ifstream file(path, std::ios::in | std::ios::binary);
 
     backup.resize(size);
+    backup.reserve(size);
 
     if (file.good()) {
         // read in the backup

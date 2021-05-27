@@ -7,7 +7,7 @@ add_library(core
     
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
     hw/cartridge/backup/flash/flash.h hw/cartridge/backup/flash/flash.cpp
-    hw/cartridge/backup/generic_backup.h
+    hw/cartridge/backup/generic_backup.h hw/cartridge/save_database.h
     hw/spi/spi.h hw/spi/spi.cpp
     scheduler/scheduler.h scheduler/scheduler.cpp
     hw/cp15/cp15.h hw/cp15/cp15.cpp

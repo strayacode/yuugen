@@ -1,5 +1,6 @@
 #include <core/hw/cartridge/cartridge.h>
 #include <core/core.h>
+#include <core/hw/cartridge/save_database.h>
 
 Cartridge::Cartridge(Core* core) : core(core) {
 
@@ -26,6 +27,10 @@ void Cartridge::Reset() {
     seed0 = seed1 = 0;
 
     backup_write_count = 0;
+
+    backup_type = 0;
+
+    backup_size = 0;
 }
 
 void Cartridge::LoadRom(std::string rom_path) {
@@ -57,14 +62,23 @@ void Cartridge::LoadRom(std::string rom_path) {
 
     LoadHeaderData();
 
+    DetectBackupType();
+
     // now we want to do backup stuff
     std::string save_path = rom_path.replace(rom_path.find("nds"), 3, "sav");
 
-    backup = std::make_unique<FlashBackup>(save_path, SIZE_256K);
+    switch (backup_type) {
+    case FLASH:
+        backup = std::make_unique<FlashBackup>(save_path, SIZE_256K);
+        break;
+    default:
+        log_fatal("backup type %d not handled", backup_type);
+    }
 }
 
 void Cartridge::LoadHeaderData() {
     // load the u32 variables in the header struct from the respective areas of the rom
+    memcpy(&header.gamecode, &rom[0x0C], 4);
     memcpy(&header.arm9_rom_offset, &rom[0x20], 4);
     memcpy(&header.arm9_entrypoint, &rom[0x24], 4);
     memcpy(&header.arm9_ram_address, &rom[0x28], 4);
@@ -79,6 +93,36 @@ void Cartridge::LoadHeaderData() {
     log_debug("[ARM7]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm7_rom_offset, header.arm7_entrypoint, header.arm7_ram_address, header.arm7_size);
 
     log_debug("[Cartridge] Header data loaded");
+}
+
+void Cartridge::DetectBackupType() {
+    // loop through each entry in the save database
+    for (int i = 0; i < 6776; i++) {
+        if (header.gamecode == save_database[i].gamecode) {
+            // get the save type
+            switch (save_database[i].save_type) {
+            case 1:
+                log_fatal("handle eeprom smol");
+                break;
+            case 2: case 3: case 4:
+                log_fatal("handle eeprom");
+            case 5: case 6: case 7:
+                backup_type = FLASH;
+                break;
+            default:
+                log_fatal("handle savetype %02x", save_database[i].save_type);
+            }
+
+            // get the save size
+            backup_size = save_sizes[save_database[i].save_type];
+            return;
+        }
+    }
+
+    // if the game entry is not found in the save database,
+    // then default to flash 512K
+    backup_type = FLASH;
+    backup_size = SIZE_512K;
 }
 
 void Cartridge::WriteROMCTRL(u32 data) {
