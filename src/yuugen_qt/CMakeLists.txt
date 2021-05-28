@@ -12,11 +12,7 @@ set(SOURCES
     mainwindow.cpp
 )
 
-# Find the QtWidgets library
 find_package(Qt5 COMPONENTS Core Widgets)
 
-# Tell CMake to create the helloworld executable
 add_executable(yuugen ${SOURCES})
-
-# Add the Qt5 Widgets for linking
 target_link_libraries(yuugen PRIVATE core common yuugen_common Qt5::Widgets)

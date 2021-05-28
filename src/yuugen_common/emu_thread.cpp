@@ -32,6 +32,10 @@ void EmuThread::Run() {
 }
  
 void EmuThread::Stop() {
+    if (!running) {
+        return;
+    }
+
     // allow the emulator to first complete a frame, and then pause emulation
     running = false;
 

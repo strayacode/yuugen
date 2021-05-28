@@ -17,7 +17,7 @@ private:
     void CreateMenubar();
     void CreateFileMenu();
     void CreateEmulationMenu();
-
+    
     QAction* pause_action;
     QAction* stop_action;
     QAction* restart_action;
@@ -25,11 +25,15 @@ private:
     std::unique_ptr<Core> core;
     std::unique_ptr<EmuThread> emu_thread;
 
+    QTimer* render_timer;
+
+    int counter = 0;
+
 signals:
 
 public slots:
 
 private slots:
     void LoadRom();
-
+    void RenderScreen();
 };

@@ -8,6 +8,10 @@
 
 MainWindow::MainWindow() {
     CreateMenubar();
+
+    render_timer = new QTimer(this);
+    connect(render_timer, SIGNAL(timeout()), this, SLOT(RenderScreen()));
+
     setMinimumSize(256, 384);
 }
 
@@ -35,13 +39,58 @@ void MainWindow::CreateEmulationMenu() {
     restart_action = emulation_menu->addAction(tr("Restart"));
 
     pause_action->setEnabled(false);
+    pause_action->setCheckable(true);
     stop_action->setEnabled(false);
     restart_action->setEnabled(false);
+
+    connect(pause_action, &QAction::triggered, this, [this]() {
+        if (emu_thread->IsActive()) {
+            // first allow the emulator thread to finish a frame and then stop it and the render timer
+            emu_thread->Stop();
+            render_timer->stop();
+        } else {
+            emu_thread->Start();
+            render_timer->start();
+        }
+    });
+
+    connect(stop_action, &QAction::triggered, this, [this]() {
+        // stop the emulator thread
+        emu_thread->Stop();
+
+        pause_action->setEnabled(false);
+        stop_action->setEnabled(false);
+        restart_action->setEnabled(false);
+
+        // stop the render timer, as there isn't anything to render
+        render_timer->stop();
+    });
+
+    connect(restart_action, &QAction::triggered, this, [this]() {
+        // stop the emulator thread
+        emu_thread->Stop();
+
+        // stop the render timer, as there isn't anything to render
+        render_timer->stop();
+
+        // do a reset of the core
+        core->Reset();
+        core->DirectBoot();
+
+        // start the emulator thread again as well as the render timer
+        emu_thread->Start();
+        render_timer->start();
+    });
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
     // later this will be useful for saving the users configuration
     event->accept();
+}
+
+void MainWindow::RenderScreen() {
+    // TODO: split the renderwindow into its own separate struct and use setCentralWidget
+    update();
 }
 
 void MainWindow::LoadRom() {
@@ -75,6 +124,9 @@ void MainWindow::LoadRom() {
         stop_action->setEnabled(true);
         restart_action->setEnabled(true);
 
+
+        // start the draw timer so we can update the screen at 60 fps
+        render_timer->start(1000 / 60);
         emu_thread->Start();
     } 
 }
