@@ -34,6 +34,7 @@ private:
 
     QImage top_image, bottom_image;
 
+    QString path;
 signals:
 
 public slots:

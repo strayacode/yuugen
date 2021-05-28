@@ -56,7 +56,7 @@ void MainWindow::CreateEmulationMenu() {
             render_timer->stop();
         } else {
             emu_thread->Start();
-            render_timer->start();
+            render_timer->start(1000 / 60);
         }
     });
 
@@ -81,12 +81,18 @@ void MainWindow::CreateEmulationMenu() {
         render_timer->stop();
 
         // do a reset of the core
+        core = std::make_unique<Core>();
+        emu_thread = std::make_unique<EmuThread>(*core.get());
+
+        core->SetRomPath(path.toStdString());
         core->Reset();
+
+        // TODO: change this to check the Config struct first whether we should do direct or firmware boot
         core->DirectBoot();
 
         // start the emulator thread again as well as the render timer
         emu_thread->Start();
-        render_timer->start();
+        render_timer->start(1000 / 60);
     });
 
     connect(frame_limit_action, &QAction::triggered, this, [this]() {
@@ -223,19 +229,17 @@ void MainWindow::LoadRom() {
 
     // check if a file was selected
     if (dialog.exec()) {
-        
-
         // make unique core and emu_thread ptrs
         core = std::make_unique<Core>();
         emu_thread = std::make_unique<EmuThread>(*core.get());
 
         // get the first selection
-        QString path = dialog.selectedFiles().at(0);
+        path = dialog.selectedFiles().at(0);
 
         core->SetRomPath(path.toStdString());
         core->Reset();
 
-        // TODO: change this to check the Config struct first
+        // TODO: change this to check the Config struct first whether we should do direct or firmware boot
         core->DirectBoot();
 
         // allow emulation to be controlled now
