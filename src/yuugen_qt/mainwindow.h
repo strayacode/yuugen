@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <yuugen_common/emu_thread.h>
 #include <memory>
+#include <mutex>
 
 struct MainWindow : public QMainWindow {
     Q_OBJECT
@@ -29,5 +30,6 @@ signals:
 public slots:
 
 private slots:
+    void LoadRom();
 
 };
