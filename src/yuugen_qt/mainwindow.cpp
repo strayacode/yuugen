@@ -9,6 +9,9 @@
 MainWindow::MainWindow() {
     CreateMenubar();
 
+    top_image = QImage(256, 192, QImage::Format_RGB32);
+    bottom_image = QImage(256, 192, QImage::Format_RGB32);
+
     render_timer = new QTimer(this);
     connect(render_timer, SIGNAL(timeout()), this, SLOT(RenderScreen()));
 
@@ -37,11 +40,14 @@ void MainWindow::CreateEmulationMenu() {
     pause_action = emulation_menu->addAction(tr("Pause"));
     stop_action = emulation_menu->addAction(tr("Stop"));
     restart_action = emulation_menu->addAction(tr("Restart"));
+    frame_limit_action = emulation_menu->addAction(tr("Frame Limiter"));
 
     pause_action->setEnabled(false);
     pause_action->setCheckable(true);
     stop_action->setEnabled(false);
     restart_action->setEnabled(false);
+    frame_limit_action->setEnabled(false);
+    frame_limit_action->setCheckable(true);
 
     connect(pause_action, &QAction::triggered, this, [this]() {
         if (emu_thread->IsActive()) {
@@ -61,6 +67,7 @@ void MainWindow::CreateEmulationMenu() {
         pause_action->setEnabled(false);
         stop_action->setEnabled(false);
         restart_action->setEnabled(false);
+        frame_limit_action->setEnabled(false);
 
         // stop the render timer, as there isn't anything to render
         render_timer->stop();
@@ -81,16 +88,123 @@ void MainWindow::CreateEmulationMenu() {
         emu_thread->Start();
         render_timer->start();
     });
+
+    connect(frame_limit_action, &QAction::triggered, this, [this]() {
+        if (emu_thread) {
+            emu_thread->framelimiter = !emu_thread->framelimiter;
+        }
+    });
 }
 
-void MainWindow::closeEvent(QCloseEvent *event) {
+void MainWindow::closeEvent(QCloseEvent* event) {
     // later this will be useful for saving the users configuration
     event->accept();
 }
 
 void MainWindow::RenderScreen() {
-    // TODO: split the renderwindow into its own separate struct and use setCentralWidget
+    // trigger a paintEvent
     update();
+}
+
+void MainWindow::paintEvent(QPaintEvent* event) {
+    // only render if the emulator thread is running (slow)
+    if (emu_thread) {
+        // TODO: split the renderwindow into its own separate struct and use setCentralWidget
+        QPainter painter(this);
+        painter.fillRect(rect(), Qt::black);
+
+        memcpy(top_image.scanLine(0), core->gpu.GetFramebuffer(TOP_SCREEN), 256 * 192 * 4);
+        memcpy(bottom_image.scanLine(0), core->gpu.GetFramebuffer(BOTTOM_SCREEN), 256 * 192 * 4);
+
+        // TODO recenter and resize correctly
+        QSize window_dimensions = size();
+
+        QImage top_image_scaled = top_image.scaled(window_dimensions.width(), window_dimensions.height() / 2, Qt::KeepAspectRatio);
+        QImage bottom_image_scaled = bottom_image.scaled(window_dimensions.width(), window_dimensions.height() / 2, Qt::KeepAspectRatio);
+
+
+        painter.drawImage((window_dimensions.width() - top_image_scaled.width()) / 2, 0, top_image_scaled);
+        painter.drawImage((window_dimensions.width() - bottom_image_scaled.width()) / 2, bottom_image_scaled.height(), bottom_image_scaled);
+    }
+}
+
+// TODO: combine into 1 key handler function
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    event->accept();
+
+    if (emu_thread) {
+        switch (event->key()) {
+        case Qt::Key_D:
+            core->input.HandleInput(BUTTON_A, true);
+            break;
+        case Qt::Key_S:
+            core->input.HandleInput(BUTTON_B, true);
+            break;
+        case Qt::Key_Shift:
+            core->input.HandleInput(BUTTON_SELECT, true);
+            break;
+        case Qt::Key_Return:
+            core->input.HandleInput(BUTTON_START, true);
+            break;
+        case Qt::Key_Right:
+            core->input.HandleInput(BUTTON_RIGHT, true);
+            break;
+        case Qt::Key_Left:
+            core->input.HandleInput(BUTTON_LEFT, true);
+            break;
+        case Qt::Key_Up:
+            core->input.HandleInput(BUTTON_UP, true);
+            break;
+        case Qt::Key_Down:
+            core->input.HandleInput(BUTTON_DOWN, true);
+            break;
+        case Qt::Key_E:
+            core->input.HandleInput(BUTTON_R, true);
+            break;
+        case Qt::Key_W:
+            core->input.HandleInput(BUTTON_L, true);
+            break;
+        }
+    }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event) {
+    event->accept();
+
+    if (emu_thread) {
+        switch (event->key()) {
+        case Qt::Key_D:
+            core->input.HandleInput(BUTTON_A, false);
+            break;
+        case Qt::Key_S:
+            core->input.HandleInput(BUTTON_B, false);
+            break;
+        case Qt::Key_Shift:
+            core->input.HandleInput(BUTTON_SELECT, false);
+            break;
+        case Qt::Key_Return:
+            core->input.HandleInput(BUTTON_START, false);
+            break;
+        case Qt::Key_Right:
+            core->input.HandleInput(BUTTON_RIGHT, false);
+            break;
+        case Qt::Key_Left:
+            core->input.HandleInput(BUTTON_LEFT, false);
+            break;
+        case Qt::Key_Up:
+            core->input.HandleInput(BUTTON_UP, false);
+            break;
+        case Qt::Key_Down:
+            core->input.HandleInput(BUTTON_DOWN, false);
+            break;
+        case Qt::Key_E:
+            core->input.HandleInput(BUTTON_R, false);
+            break;
+        case Qt::Key_W:
+            core->input.HandleInput(BUTTON_L, false);
+            break;
+        }
+    }
 }
 
 void MainWindow::LoadRom() {
@@ -99,12 +213,17 @@ void MainWindow::LoadRom() {
     dialog.setDirectory("../roms");
     dialog.setNameFilter(tr("NDS ROMs (*.nds)"));
 
+    // pause the emulator thread if one was currently running
+    if (emu_thread) {
+        emu_thread->Stop();
+    }
+
+    // stop the render timer
+    render_timer->stop();
+
     // check if a file was selected
     if (dialog.exec()) {
-        // pause the emulator thread if one was currently running
-        if (emu_thread) {
-            emu_thread->Stop();
-        }
+        
 
         // make unique core and emu_thread ptrs
         core = std::make_unique<Core>();
@@ -123,7 +242,7 @@ void MainWindow::LoadRom() {
         pause_action->setEnabled(true);
         stop_action->setEnabled(true);
         restart_action->setEnabled(true);
-
+        frame_limit_action->setEnabled(true);
 
         // start the draw timer so we can update the screen at 60 fps
         render_timer->start(1000 / 60);
