@@ -1,18 +1,18 @@
 #pragma once
 
-#include <core/core.h>
 #include <thread>
+#include <mutex>
+#include <stdio.h>
+#include <core/core.h>
 
 struct EmuThread {
     EmuThread(Core& core);
-    void Start();
-    void Pause();
-    void Stop();
-    void Run();
 
     Core& core;
 
     bool running = false;
 
-    std::thread thread;
+    std::mutex run_mutex;
+
+    // std::thread thread;
 };

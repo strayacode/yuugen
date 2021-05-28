@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QMainWindow>
+#include <yuugen_common/emu_thread.h>
+#include <memory>
 
 struct MainWindow : public QMainWindow {
     Q_OBJECT
@@ -18,6 +20,9 @@ private:
     QAction* pause_action;
     QAction* stop_action;
     QAction* restart_action;
+
+    std::unique_ptr<Core> core;
+    std::unique_ptr<EmuThread> emu_thread;
 
 signals:
 

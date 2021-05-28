@@ -7,7 +7,10 @@ Cartridge::Cartridge(Core* core) : core(core) {
 }
 
 Cartridge::~Cartridge() {
-    backup->SaveBackup();
+    // only save if there is a backup already
+    if (backup) {
+        backup->SaveBackup();
+    }
 }
 
 void Cartridge::Reset() {

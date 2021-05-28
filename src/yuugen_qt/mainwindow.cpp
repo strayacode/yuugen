@@ -6,6 +6,8 @@
 
 
 MainWindow::MainWindow() {
+    core = std::make_unique<Core>();
+    emu_thread = std::make_unique<EmuThread>(*core.get());
     CreateMenubar();
 
     setMinimumSize(256, 384);

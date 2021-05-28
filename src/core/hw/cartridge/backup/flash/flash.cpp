@@ -78,6 +78,7 @@ void FlashBackup::Reset() {
 
 void FlashBackup::SaveBackup() {
     std::ofstream file(path, std::ios::out | std::ios::binary);
+
     std::copy(backup.begin(), backup.end(), std::ostream_iterator<u8>(file));
     file.close();
 }
