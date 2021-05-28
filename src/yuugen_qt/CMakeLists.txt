@@ -10,9 +10,7 @@ endif()
 set(SOURCES
     main.cpp
     mainwindow.cpp
-    menubar.cpp
 )
-
 
 # Find the QtWidgets library
 find_package(Qt5 COMPONENTS Core Widgets)
@@ -21,4 +19,4 @@ find_package(Qt5 COMPONENTS Core Widgets)
 add_executable(yuugen ${SOURCES})
 
 # Add the Qt5 Widgets for linking
-target_link_libraries(yuugen PRIVATE core common Qt5::Widgets)
+target_link_libraries(yuugen PRIVATE core common yuugen_common Qt5::Widgets)

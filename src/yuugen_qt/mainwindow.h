@@ -1,22 +1,23 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QCloseEvent>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <core/core.h>
-// #include "menubar.h"
-
-struct MainWindow : public QWidget {
+struct MainWindow : public QMainWindow {
     Q_OBJECT
 public:
 	MainWindow();
-	bool Initialise();
-	void closeEvent(QCloseEvent *event);
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
 
 private:
-    // Menubar* menubar;
+    void CreateMenubar();
+    void CreateFileMenu();
+    void CreateEmulationMenu();
+
+    QAction* pause_action;
+    QAction* stop_action;
+    QAction* restart_action;
 
 signals:
 
