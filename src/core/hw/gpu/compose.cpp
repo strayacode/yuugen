@@ -1,5 +1,5 @@
 #include <core/hw/gpu/gpu.h>
-#include <core/hw/gpu/gpu_2d.h>
+#include <core/hw/gpu/engine_2d/gpu_2d.h>
 
 void GPU2D::ComposeScanline(u16 line) {
     for (int i = 0; i < 256; i++) {

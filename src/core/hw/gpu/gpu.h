@@ -2,8 +2,8 @@
 
 #include <common/types.h>
 #include <common/memory_helpers.h>
-#include <core/hw/gpu/gpu_2d.h>
-#include <core/hw/gpu/gpu_3d.h>
+#include <core/hw/gpu/engine_2d/gpu_2d.h>
+#include <core/hw/gpu/engine_3d/render_engine.h>
 #include <string.h>
 #include <functional>
 
@@ -110,7 +110,7 @@ struct GPU {
 
     GPU2D engine_a, engine_b;
 
-    GPU3D engine_3d;
+    RenderEngine render_engine;
 
     u16 VCOUNT;
 

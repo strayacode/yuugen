@@ -1,5 +1,5 @@
 #include <core/hw/gpu/gpu.h>
-#include <core/hw/gpu/gpu_2d.h>
+#include <core/hw/gpu/engine_2d/gpu_2d.h>
 
 GPU2D::GPU2D(GPU* gpu, int engine_id) : gpu(gpu), engine_id(engine_id) {
 

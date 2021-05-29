@@ -45,7 +45,7 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
     case 0x0400004A:
         return core->gpu.engine_a.WINOUT;
     case 0x04000060:
-        return core->gpu.engine_3d.DISP3DCNT;
+        return core->gpu.render_engine.DISP3DCNT;
     case 0x0400006C:
         return core->gpu.engine_a.MASTER_BRIGHT;
     case 0x040000BA:
@@ -421,7 +421,7 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         core->gpu.engine_a.BLDY = data;
         break;
     case 0x04000060:
-        core->gpu.engine_3d.DISP3DCNT = data;
+        core->gpu.render_engine.DISP3DCNT = data;
         break;
     case 0x0400006C:
         // TODO: handle brightness properly later

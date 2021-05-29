@@ -1,4 +1,4 @@
-#include <core/hw/gpu/gpu_2d.h>
+#include <core/hw/gpu/engine_2d/gpu_2d.h>
 #include <core/hw/gpu/gpu.h>
 
 void GPU2D::RenderExtended(int bg_index, u16 line) {

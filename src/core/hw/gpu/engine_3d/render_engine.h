@@ -3,7 +3,7 @@
 #include <common/types.h>
 #include <common/log.h>
 
-struct GPU3D {
+struct RenderEngine {
     void Reset();
 
     u16 DISP3DCNT;
