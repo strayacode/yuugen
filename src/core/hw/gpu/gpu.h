@@ -4,6 +4,7 @@
 #include <common/memory_helpers.h>
 #include <core/hw/gpu/engine_2d/gpu_2d.h>
 #include <core/hw/gpu/engine_3d/render_engine.h>
+#include <core/hw/gpu/engine_3d/geometry_engine.h>
 #include <string.h>
 #include <functional>
 
@@ -111,6 +112,8 @@ struct GPU {
     GPU2D engine_a, engine_b;
 
     RenderEngine render_engine;
+    GeometryEngine geometry_engine;
+
 
     u16 VCOUNT;
 

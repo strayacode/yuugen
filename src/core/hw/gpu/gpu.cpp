@@ -1,7 +1,7 @@
 #include <core/hw/gpu/gpu.h>
 #include <core/core.h>
 
-GPU::GPU(Core* core) : core(core), engine_a(this, 1), engine_b(this , 0) {
+GPU::GPU(Core* core) : core(core), engine_a(this, 1), engine_b(this , 0), render_engine(this), geometry_engine(this) {
 
 }
 

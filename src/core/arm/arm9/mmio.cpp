@@ -112,11 +112,6 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
 }
 
 auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
-    if (in_range(0x4000320, 0x383)) {
-        // ignore 3d renderer writes for now
-        return 0;
-    }
-
     switch (addr) {
     case 0x04000000:
         return core->gpu.engine_a.DISPCNT;
@@ -190,6 +185,8 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return core->maths_unit.SQRT_PARAM & 0xFFFFFFFF;
     case 0x040002BC:
         return core->maths_unit.SQRT_PARAM >> 32;
+    case 0x04000600:
+        return core->gpu.geometry_engine.GXSTAT;
     case 0x04001000:
         return core->gpu.engine_b.DISPCNT;
     case 0x04004000:
@@ -318,11 +315,6 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
 }
 
 void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
-    if (in_range(0x4000320, 0x383)) {
-        // ignore 3d renderer writes for now
-        return;
-    }
-
     switch (addr) {
     case 0x04000000:
         core->gpu.engine_a.DISPCNT = (core->gpu.engine_a.DISPCNT & ~0xFFFF) | data;
@@ -614,8 +606,8 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
 }
 
 void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
-    if (in_range(0x4000320, 0x383)) {
-        // ignore 3d renderer writes for now
+    if (in_range(0x04000440, 0x188)) {
+        core->gpu.geometry_engine.InterpretCommand(addr, data);
         return;
     }
 
@@ -835,6 +827,9 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         break;
     case 0x04000304:
         core->gpu.POWCNT1 = data;
+        break;
+    case 0x04000600:
+        core->gpu.geometry_engine.GXSTAT = data;
         break;
     case 0x04001000:
         core->gpu.engine_b.DISPCNT = data;
