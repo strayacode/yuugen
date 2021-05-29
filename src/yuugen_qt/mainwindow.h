@@ -21,11 +21,13 @@ private:
     void CreateMenubar();
     void CreateFileMenu();
     void CreateEmulationMenu();
+    void CreateViewMenu();
     
     QAction* pause_action;
     QAction* stop_action;
     QAction* restart_action;
     QAction* frame_limit_action;
+    QAction* configure_action;
 
     std::unique_ptr<Core> core;
     std::unique_ptr<EmuThread> emu_thread;

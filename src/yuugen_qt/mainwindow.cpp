@@ -21,6 +21,7 @@ MainWindow::MainWindow() {
 void MainWindow::CreateMenubar() {
     CreateFileMenu();
     CreateEmulationMenu();
+    CreateViewMenu();
 }
 
 void MainWindow::CreateFileMenu() {
@@ -48,6 +49,10 @@ void MainWindow::CreateEmulationMenu() {
     restart_action->setEnabled(false);
     frame_limit_action->setEnabled(false);
     frame_limit_action->setCheckable(true);
+
+    emulation_menu->addSeparator();
+
+    configure_action = emulation_menu->addAction(tr("Configure..."));
 
     connect(pause_action, &QAction::triggered, this, [this]() {
         if (emu_thread->IsActive()) {
@@ -105,6 +110,27 @@ void MainWindow::CreateEmulationMenu() {
             emu_thread->Start();
             render_timer->start(1000 / 60);
         }
+    });
+}
+
+void MainWindow::CreateViewMenu() {
+    QMenu* view_menu = menuBar()->addMenu(tr("View"));
+    QMenu* window_size_menu = view_menu->addMenu(tr("Set Window Size"));
+
+    QAction* window_1x_action = window_size_menu->addAction(tr("Scale 1x"));
+    QAction* window_2x_action = window_size_menu->addAction(tr("Scale 2x"));
+    QAction* window_4x_action = window_size_menu->addAction(tr("Scale 4x"));
+
+    connect(window_1x_action, &QAction::triggered, this, [this]() {
+        resize(256, 384);  
+    });
+
+    connect(window_2x_action, &QAction::triggered, this, [this]() {
+        resize(512, 768);  
+    });
+
+    connect(window_4x_action, &QAction::triggered, this, [this]() {
+        resize(1024, 1536);  
     });
 }
 
