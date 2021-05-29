@@ -97,7 +97,13 @@ void MainWindow::CreateEmulationMenu() {
 
     connect(frame_limit_action, &QAction::triggered, this, [this]() {
         if (emu_thread) {
+            emu_thread->Stop();
+            render_timer->stop();
+
             emu_thread->framelimiter = !emu_thread->framelimiter;
+
+            emu_thread->Start();
+            render_timer->start(1000 / 60);
         }
     });
 }
