@@ -607,7 +607,7 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
 
 void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
     if (in_range(0x04000440, 0x188)) {
-        core->gpu.geometry_engine.InterpretCommand(addr, data);
+        core->gpu.geometry_engine.QueueCommand(addr, data);
         return;
     }
 
