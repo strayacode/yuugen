@@ -2,6 +2,9 @@
 
 #include <common/types.h>
 #include <common/log.h>
+#include <common/polygon.h>
+#include <common/vertex.h>
+#include <array>
 
 struct GPU;
 
@@ -20,6 +23,9 @@ struct RenderEngine {
     u16 FOG_OFFSET;
     u8 FOG_TABLE[0x20];
     u8 TOON_TABLE[0x40];
+
+    std::array<Polygon, 0xD000> polygon_ram;
+    std::array<Vertex, 0x12000> vertex_ram;
 
     GPU* gpu;
 };

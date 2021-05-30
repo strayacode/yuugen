@@ -1,4 +1,5 @@
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
+#include <core/core.h>
 
 void GeometryEngine::CommandSetMatrixMode() {
     // set the matrix mode
@@ -61,4 +62,29 @@ void GeometryEngine::CommandLoadUnitMatrix() {
 
     // also make sure to dequeue the entry even though its doesn't have a parameter, just a command
     DequeueEntry();
+}
+
+void GeometryEngine::CommandSwapBuffers() {
+    // halt the geometry engine
+    state = STATE_HALTED;
+
+    // read the parameter
+    u32 parameter = DequeueEntry().parameter;
+    printf("cmd\n");
+    // TODO: handle bit 0 and 1 of parameter later
+}
+
+void GeometryEngine::DoSwapBuffers() {
+    // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
+    gpu->render_engine.polygon_ram = polygon_ram;
+    gpu->render_engine.vertex_ram = vertex_ram;
+
+    // std::fill(std::begin(polygon_ram), std::end(polygon_ram), 0);
+    // std::fill(std::begin(vertex_ram), std::end(vertex_ram), 0);
+
+    // unhalt the geometry engine
+    state = STATE_RUNNING;
+    
+    // schedule more interpret commands events with 1 cycle delay
+    gpu->core->scheduler.Add(1, InterpretCommandTask);
 }

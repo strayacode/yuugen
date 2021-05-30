@@ -53,6 +53,7 @@ void GeometryEngine::Reset() {
     matrix_mode = 0;
     projection_pointer = 0;
     coordinate_pointer = 0;
+    state = STATE_RUNNING;
     // create an empty queue and swap it
     std::queue<Entry> empty_queue;
     fifo.swap(empty_queue);
@@ -134,12 +135,17 @@ void GeometryEngine::QueueEntry(Entry entry) {
         }
 
         // keep executing commands while the fifo is full
-        while (fifo.size() > 256) {
-            InterpretCommand();
+        // however only do it if the geometry engine is not halted
+        if (state == STATE_RUNNING) {
+            while (fifo.size() > 256) {
+                InterpretCommand();
+            }
         }
     }
 
-    InterpretCommand();
+    if (state == STATE_RUNNING) {
+        InterpretCommand();
+    }   
 }
 
 auto GeometryEngine::DequeueEntry() -> Entry {
@@ -190,6 +196,8 @@ void GeometryEngine::InterpretCommand() {
     // for a command to be executed successfully
     int total_size = fifo.size() + pipe.size();
 
+
+
     // don't execute any commands if none are in fifo or pipe
     if (total_size == 0) {
         return;
@@ -199,7 +207,7 @@ void GeometryEngine::InterpretCommand() {
 
     u8 param_count = parameter_count[entry.command].second;
 
-    if (param_count >= total_size) {
+    if (total_size >= param_count) {
         switch (entry.command) {
         case 0x10:
             CommandSetMatrixMode();
@@ -210,11 +218,15 @@ void GeometryEngine::InterpretCommand() {
         case 0x15:
             CommandLoadUnitMatrix();
             break;
+        case 0x50:
+            CommandSwapBuffers();
+            break;
         default:
             log_fatal("[GeometryEngine] Handle geometry command %02x", entry.command);
         }
-    }
-
-    // schedule more interpret commands events with 1 cycle delay
-    gpu->core->scheduler.Add(1, InterpretCommandTask);
+        if (state == STATE_RUNNING) {
+            // schedule more interpret commands events with 1 cycle delay
+            gpu->core->scheduler.Add(1, InterpretCommandTask);
+        }
+    } 
 }

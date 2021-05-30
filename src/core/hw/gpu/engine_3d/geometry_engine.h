@@ -3,14 +3,22 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <common/matrix.h>
+#include <common/polygon.h>
+#include <common/vertex.h>
 #include <queue>
 #include <functional>
+#include <array>
 
 struct GPU;
 
 struct Entry {
     u8 command;
     u32 parameter;
+};
+
+enum CurrentState : u8 {
+    STATE_HALTED = 0,
+    STATE_RUNNING = 1,
 };
 
 // notes:
@@ -37,9 +45,13 @@ struct GeometryEngine {
     void InterpretCommand();
     void QueueEntry(Entry entry);
     auto DequeueEntry() -> Entry;
+
     void CommandSetMatrixMode();
     void CommandPopCurrentMatrix();
     void CommandLoadUnitMatrix();
+    void CommandSwapBuffers();
+
+    void DoSwapBuffers();
 
     std::queue<Entry> fifo;
     std::queue<Entry> pipe;
@@ -54,6 +66,7 @@ struct GeometryEngine {
 
     u8 matrix_mode;
 
+    u8 state;
 
     Matrix projection_current;
     Matrix projection_stack;
@@ -66,6 +79,9 @@ struct GeometryEngine {
 
     u8 projection_pointer;
     u8 coordinate_pointer;
+
+    std::array<Polygon, 0xD000> polygon_ram;
+    std::array<Vertex, 0x12000> vertex_ram;
 
     GPU* gpu;
 
