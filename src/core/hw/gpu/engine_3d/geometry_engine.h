@@ -2,10 +2,11 @@
 
 #include <common/types.h>
 #include <common/log.h>
+#include <queue>
 
 struct GPU;
 
-struct FIFOEntry {
+struct Entry {
     u8 command;
     u32 parameter;
 };
@@ -21,7 +22,8 @@ struct GeometryEngine {
     void InterpretCommand(u32 addr, u32 data);
     void CommandMTX_MODE(u32 data);
 
-    u8 GXFIFO[0x40];
+    std::queue<Entry> gxfifo;
+
     u32 GXSTAT;
     u32 RAM_COUNT;
     u16 DISP_1DOT_DEPTH;

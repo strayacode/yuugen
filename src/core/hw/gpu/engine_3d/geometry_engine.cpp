@@ -7,6 +7,9 @@ GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {
 
 void GeometryEngine::Reset() {
     matrix_mode = 0;
+    // create an empty queue and swap it
+    std::queue<Entry> empty_queue;
+    gxfifo.swap(empty_queue);
 }
 
 void GeometryEngine::InterpretCommand(u32 addr, u32 data) {
