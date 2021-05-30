@@ -37,6 +37,8 @@ void GPU::Reset() {
 
     engine_a.Reset();
     engine_b.Reset();
+    geometry_engine.Reset();
+    render_engine.Reset();
 
     // schedule the first RenderScanlineStart event
     // we would expect hblank to start at 1536 (256 * 6) cycles

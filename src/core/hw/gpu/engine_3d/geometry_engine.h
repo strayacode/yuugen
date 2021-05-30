@@ -2,7 +2,9 @@
 
 #include <common/types.h>
 #include <common/log.h>
+#include <common/matrix.h>
 #include <queue>
+#include <functional>
 
 struct GPU;
 
@@ -33,8 +35,11 @@ struct GeometryEngine {
     void Reset();
     void QueueCommand(u32 addr, u32 data);
     void InterpretCommand();
-    void AddEntry(Entry entry);
-    void CommandMTX_MODE(u32 data);
+    void QueueEntry(Entry entry);
+    auto DequeueEntry() -> Entry;
+    void CommandSetMatrixMode();
+    void CommandPopCurrentMatrix();
+    void CommandLoadUnitMatrix();
 
     std::queue<Entry> fifo;
     std::queue<Entry> pipe;
@@ -49,5 +54,20 @@ struct GeometryEngine {
 
     u8 matrix_mode;
 
+
+    Matrix projection_current;
+    Matrix projection_stack;
+    Matrix coordinate_current;
+    Matrix coordinate_stack[31];
+    Matrix directional_current;
+    Matrix directional_stack[31];
+    // not sure about this but will look into later
+    Matrix texture_current;
+
+    u8 projection_pointer;
+    u8 coordinate_pointer;
+
     GPU* gpu;
+
+    std::function<void()> InterpretCommandTask = std::bind(&GeometryEngine::InterpretCommand, this);
 };

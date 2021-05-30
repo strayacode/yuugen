@@ -503,6 +503,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x04000304:
         core->gpu.POWCNT1 = data;
         break;
+    case 0x04000354:
+        core->gpu.render_engine.CLEAR_DEPTH = data;
+        break;
     case 0x04001000:
         core->gpu.engine_b.DISPCNT = (core->gpu.engine_b.DISPCNT & ~0xFFFF) | data;
         break;
@@ -827,6 +830,9 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         break;
     case 0x04000304:
         core->gpu.POWCNT1 = data;
+        break;
+    case 0x04000350:
+        core->gpu.render_engine.CLEAR_COLOR = data;
         break;
     case 0x04000600:
         core->gpu.geometry_engine.GXSTAT = data;

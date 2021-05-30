@@ -18,6 +18,7 @@ add_library(core
     hw/gpu/compose.cpp hw/gpu/engine_2d/render/object.cpp
     hw/gpu/engine_3d/render_engine.h hw/gpu/engine_3d/render_engine.cpp
     hw/gpu/engine_3d/geometry_engine.h hw/gpu/engine_3d/geometry_engine.cpp
+    hw/gpu/engine_3d/geometry_commands.cpp
     hw/dma/dma.h hw/dma/dma.cpp
     hw/input/input.h hw/input/input.cpp
     hw/ipc/ipc.h hw/ipc/ipc.cpp
