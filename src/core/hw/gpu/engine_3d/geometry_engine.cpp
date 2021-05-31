@@ -196,8 +196,6 @@ void GeometryEngine::InterpretCommand() {
     // for a command to be executed successfully
     int total_size = fifo.size() + pipe.size();
 
-
-
     // don't execute any commands if none are in fifo or pipe
     if (total_size == 0) {
         return;
@@ -212,14 +210,38 @@ void GeometryEngine::InterpretCommand() {
         case 0x10:
             CommandSetMatrixMode();
             break;
+        case 0x11:
+            CommandPushCurrentMatrix();
+            break;
         case 0x12:
             CommandPopCurrentMatrix();
             break;
         case 0x15:
             CommandLoadUnitMatrix();
             break;
+        case 0x18:
+            CommandMultiply4x4();
+            break;
+        case 0x19:
+            CommandMultiply4x3();
+            break;
+        case 0x1A:
+            CommandMultiply3x3();
+            break;
+        case 0x1C:
+            CommandMultiplyTranslation();
+            break;
+        case 0x29:
+            CommandSetPolygonAttributes();
+            break;
+        case 0x2A:
+            CommandSetTextureParameters();
+            break;
         case 0x50:
             CommandSwapBuffers();
+            break;
+        case 0x60:
+            CommandSetViewport();
             break;
         default:
             log_fatal("[GeometryEngine] Handle geometry command %02x", entry.command);
@@ -229,4 +251,16 @@ void GeometryEngine::InterpretCommand() {
             gpu->core->scheduler.Add(1, InterpretCommandTask);
         }
     } 
+}
+
+auto GeometryEngine::MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix {
+    Matrix new_matrix;
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            // each cell can be calculated with 4 multiplications
+            new_matrix.field[y][x] = a.field[y][0] * b.field[0][x] + a.field[y][1] * b.field[1][x] + a.field[y][2] * b.field[2][x] + a.field[y][3] * b.field[3][x];
+        }
+    }
+
+    return new_matrix;
 }

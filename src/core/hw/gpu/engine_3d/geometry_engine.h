@@ -48,10 +48,20 @@ struct GeometryEngine {
 
     void CommandSetMatrixMode();
     void CommandPopCurrentMatrix();
+    void CommandPushCurrentMatrix();
     void CommandLoadUnitMatrix();
     void CommandSwapBuffers();
+    void CommandSetTextureParameters();
+    void CommandSetPolygonAttributes();
+    void CommandSetViewport();
+    void CommandMultiply4x4();
+    void CommandMultiply4x3();
+    void CommandMultiply3x3();
+    void CommandMultiplyTranslation();
 
     void DoSwapBuffers();
+
+    auto MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix;
 
     std::queue<Entry> fifo;
     std::queue<Entry> pipe;

@@ -8,6 +8,9 @@
 
 struct GPU;
 
+// some things to think about:
+// check before dividing by w for polygon clipping
+
 struct RenderEngine {
     RenderEngine(GPU* gpu);
     void Reset();
@@ -26,6 +29,11 @@ struct RenderEngine {
 
     std::array<Polygon, 0xD000> polygon_ram;
     std::array<Vertex, 0x12000> vertex_ram;
+
+    u16 screen_x1;
+    u16 screen_x2;
+    u16 screen_y1;
+    u16 screen_y2;
 
     GPU* gpu;
 };

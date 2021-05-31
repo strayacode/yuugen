@@ -14,6 +14,15 @@ void GeometryEngine::CommandPopCurrentMatrix() {
     u8 new_pointer = coordinate_pointer - stack_offset;
 
     switch (matrix_mode) {
+    case 0:
+        // projection stack
+        if ((projection_pointer > 1) || (projection_pointer < 0)) {
+            GXSTAT |= (1 << 15);
+        } else {
+            projection_pointer--;
+            projection_current = projection_stack;
+        }
+        break;
     case 1: case 2:
         // mode 1 and 2 both have the same operation
         // set the error bit in GXSTAT if there is an underflow or overflow
@@ -22,9 +31,38 @@ void GeometryEngine::CommandPopCurrentMatrix() {
         } else {
             coordinate_current = coordinate_stack[new_pointer];
             directional_current = directional_stack[new_pointer];
-
             coordinate_pointer = new_pointer;
         }
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
+
+void GeometryEngine::CommandPushCurrentMatrix() {
+    // dequeue
+    DequeueEntry();
+
+    switch (matrix_mode) {
+    case 0:
+        // projection stack
+        if ((projection_pointer > 1) || (projection_pointer < 0)) {
+            GXSTAT |= (1 << 15);
+        } else {
+            projection_stack = projection_current;
+            projection_pointer++;
+        }
+        break;
+    case 1: case 2:
+        // mode 1 and 2 both have the same operation
+        if ((coordinate_pointer < 0) || (coordinate_pointer >= 31)) {
+            GXSTAT |= (1 << 15);
+        } else {
+            coordinate_stack[coordinate_pointer] = coordinate_current;
+            directional_stack[coordinate_pointer] = directional_current;
+            coordinate_pointer++;
+        }
+        
         break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
@@ -70,7 +108,7 @@ void GeometryEngine::CommandSwapBuffers() {
 
     // read the parameter
     u32 parameter = DequeueEntry().parameter;
-    printf("cmd\n");
+
     // TODO: handle bit 0 and 1 of parameter later
 }
 
@@ -87,4 +125,134 @@ void GeometryEngine::DoSwapBuffers() {
     
     // schedule more interpret commands events with 1 cycle delay
     gpu->core->scheduler.Add(1, InterpretCommandTask);
+}
+
+void GeometryEngine::CommandSetTextureParameters() {
+    u32 parameter = DequeueEntry().parameter;
+
+    // for now don't do anything when we don't have textures
+}
+
+void GeometryEngine::CommandSetPolygonAttributes() {
+    u32 parameter = DequeueEntry().parameter;
+
+    // for now don't do anything
+}
+
+void GeometryEngine::CommandSetViewport() {
+    // set the viewport of the render engines end for when it does rendering ig?
+    u32 parameter = DequeueEntry().parameter;
+
+    gpu->render_engine.screen_x1 = parameter & 0xFF;
+    gpu->render_engine.screen_y1 = (parameter >> 8) & 0xFF;
+    gpu->render_engine.screen_x2 = (parameter >> 16) & 0xFF;
+    gpu->render_engine.screen_y2 = (parameter >> 24) & 0xFF;
+}
+
+void GeometryEngine::CommandMultiply4x4() {
+    // create a new 4x4 matrix, and fill each cell with an s32 number
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        // projection
+        projection_current = MatrixMultiply(projection_current, matrix);
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
+
+void GeometryEngine::CommandMultiply4x3() {
+    // create a new 4x3 matrix, and fill each cell with an s32 number
+    Matrix matrix;
+
+    matrix.field[3][3] = 1;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 3; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    // TODO: just check the mode in matrix multiply or smth
+    switch (matrix_mode) {
+    case 0:
+        // projection
+        projection_current = MatrixMultiply(projection_current, matrix);
+        break;
+    case 2:
+        // coordinate and directional
+        coordinate_current = MatrixMultiply(coordinate_current, matrix);
+        directional_current = MatrixMultiply(directional_current, matrix);
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
+
+void GeometryEngine::CommandMultiply3x3() {
+    // create a new 3x3 matrix, and fill each cell with an s32 number
+    Matrix matrix;
+
+    matrix.field[3][3] = 1;
+
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    // TODO: just check the mode in matrix multiply or smth
+    switch (matrix_mode) {
+    case 0:
+        // projection
+        projection_current = MatrixMultiply(projection_current, matrix);
+        break;
+    case 2:
+        // coordinate and directional
+        coordinate_current = MatrixMultiply(coordinate_current, matrix);
+        directional_current = MatrixMultiply(directional_current, matrix);
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
+
+void GeometryEngine::CommandMultiplyTranslation() {
+    Matrix matrix;
+
+    // set up the unit matrix part
+    for (int i = 0; i < 4; i++) {
+        matrix.field[i][i] = 1;
+    }
+
+    // write to lowest row for 3 parameters
+    for (int j = 0; j < 3; j++) {
+        u32 parameter = DequeueEntry().parameter;
+        matrix.field[3][j] = (s32)parameter;
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        // projection
+        projection_current = MatrixMultiply(projection_current, matrix);
+        break;
+    case 2:
+        // coordinate and directional
+        coordinate_current = MatrixMultiply(coordinate_current, matrix);
+        directional_current = MatrixMultiply(directional_current, matrix);
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
 }
