@@ -57,14 +57,27 @@ struct GeometryEngine {
     void CommandMultiply4x4();
     void CommandMultiply4x3();
     void CommandMultiply3x3();
+    void CommandLoad4x4();
     void CommandMultiplyTranslation();
+    void CommandBeginVertexList();
+    void CommandSetVertexColour();
+    void CommandAddVertex16();
+    void CommandShininess();
+    void CommandSetTexturePaletteAddress();
 
     void DoSwapBuffers();
 
     auto MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix;
 
+    void AddVertex(Vertex v);
+
+    void WriteGXFIFO(u32 data);
+
     std::queue<Entry> fifo;
     std::queue<Entry> pipe;
+
+    u32 gxfifo;
+    int gxfifo_write_count;
 
     u32 GXSTAT;
     u32 RAM_COUNT;
@@ -75,6 +88,13 @@ struct GeometryEngine {
     u8 VECMTX_RESULT[0x24];
 
     u8 matrix_mode;
+
+    u8 polygon_type;
+
+    // TODO: sort this out correctly later
+    u16 vertex_colour;
+
+    u32 vertex_count;
 
     u8 state;
 

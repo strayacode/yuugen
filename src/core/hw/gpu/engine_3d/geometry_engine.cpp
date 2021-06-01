@@ -53,10 +53,33 @@ void GeometryEngine::Reset() {
     matrix_mode = 0;
     projection_pointer = 0;
     coordinate_pointer = 0;
+    polygon_type = 0;
+    vertex_colour = 0;
+    vertex_count = 0;
+    gxfifo = 0;
+    gxfifo_write_count = 0;
     state = STATE_RUNNING;
     // create an empty queue and swap it
     std::queue<Entry> empty_queue;
     fifo.swap(empty_queue);
+}
+
+void GeometryEngine::WriteGXFIFO(u32 data) {
+    if (gxfifo == 0) {
+        // commands should first be read in
+        gxfifo = data;
+    } else {
+        // there are commands that need to have parameters read in
+        QueueEntry({gxfifo & 0xFF, data});
+
+        gxfifo_write_count++;
+
+        if (gxfifo_write_count >= parameter_count[gxfifo & 0xFF].second) {
+            // now we have recieved enough parameters for a particular command, so we can move onto another command
+            gxfifo >>= 8;
+            gxfifo_write_count = 0;
+        }
+    }
 }
 
 void GeometryEngine::QueueCommand(u32 addr, u32 data) {
@@ -96,6 +119,12 @@ void GeometryEngine::QueueCommand(u32 addr, u32 data) {
         break;
     case 0x040004A8:
         QueueEntry({0x2A, data});
+        break;
+    case 0x040004AC:
+        QueueEntry({0x2B, data});
+        break;
+    case 0x040004D0:
+        QueueEntry({0x34, data});
         break;
     case 0x04000500:
         QueueEntry({0x40, data});
@@ -149,7 +178,12 @@ void GeometryEngine::QueueEntry(Entry entry) {
 }
 
 auto GeometryEngine::DequeueEntry() -> Entry {
+    if (pipe.size() == 0) {
+        return {0, 0};
+    }
+
     Entry front_entry = pipe.front();
+
     pipe.pop();
 
     // if the pipe is half empty (less than 3 entries)
@@ -192,6 +226,8 @@ auto GeometryEngine::DequeueEntry() -> Entry {
 }
 
 void GeometryEngine::InterpretCommand() {
+    // printf("before\n");
+
     // only interpret a command if there exists enough entries in both fifo and pipe
     // for a command to be executed successfully
     int total_size = fifo.size() + pipe.size();
@@ -205,8 +241,14 @@ void GeometryEngine::InterpretCommand() {
 
     u8 param_count = parameter_count[entry.command].second;
 
+    // printf("command %02x\n", entry.command);
+
     if (total_size >= param_count) {
         switch (entry.command) {
+        case 0x00:
+            // used to pad packed commands in gxfifo
+            DequeueEntry();
+            break;
         case 0x10:
             CommandSetMatrixMode();
             break;
@@ -218,6 +260,9 @@ void GeometryEngine::InterpretCommand() {
             break;
         case 0x15:
             CommandLoadUnitMatrix();
+            break;
+        case 0x16:
+            CommandLoad4x4();
             break;
         case 0x18:
             CommandMultiply4x4();
@@ -231,11 +276,30 @@ void GeometryEngine::InterpretCommand() {
         case 0x1C:
             CommandMultiplyTranslation();
             break;
+        case 0x20:
+            CommandSetVertexColour();
+            break;
+        case 0x23:
+            CommandAddVertex16();
+            break;
         case 0x29:
             CommandSetPolygonAttributes();
             break;
         case 0x2A:
             CommandSetTextureParameters();
+            break;
+        case 0x2B:
+            CommandSetTexturePaletteAddress();
+            break;
+        case 0x34:
+            CommandShininess();
+            break;
+        case 0x40:
+            CommandBeginVertexList();
+            break;
+        case 0x41:
+            // end vertex list doesn't do anything
+            DequeueEntry();
             break;
         case 0x50:
             CommandSwapBuffers();
@@ -250,7 +314,14 @@ void GeometryEngine::InterpretCommand() {
             // schedule more interpret commands events with 1 cycle delay
             gpu->core->scheduler.Add(1, InterpretCommandTask);
         }
-    } 
+    }
+
+    if (fifo.size() < 128 && !(GXSTAT & (1 << 25))) {
+        GXSTAT |= (1 << 25);
+        gpu->core->dma[1].Trigger(7);
+    }
+
+    // printf("after\n");
 }
 
 auto GeometryEngine::MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix {
@@ -263,4 +334,15 @@ auto GeometryEngine::MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix 
     }
 
     return new_matrix;
+}
+
+void GeometryEngine::AddVertex(Vertex v) {
+    if (vertex_count >= 6144) {
+        return;
+    }
+
+    // save the vertex to vertex ram
+    vertex_ram[vertex_count] = v;
+
+    vertex_count++;
 }

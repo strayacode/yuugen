@@ -6,7 +6,6 @@
 
 struct Core;
 
-
 // the NDS has 4 timers for each cpu, so 8 timers in total
 struct Timers {
     Timers(Core* core, int arch);

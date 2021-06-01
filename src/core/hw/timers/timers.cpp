@@ -120,14 +120,14 @@ void Timers::Overflow(int timer_index) {
     }
 }
 
-u16 Timers::ReadTMCNT_L(int timer_index) {
+auto Timers::ReadTMCNT_L(int timer_index) -> u16 {
     return timer[timer_index].counter;
 }
 
-u16 Timers::ReadTMCNT_H(int timer_index) {
+auto Timers::ReadTMCNT_H(int timer_index) -> u16 {
     return timer[timer_index].control;
 }
 
-u32 Timers::ReadTMCNT(int timer_index) {
+auto Timers::ReadTMCNT(int timer_index) -> u32 {
     return (ReadTMCNT_H(timer_index) << 8) | (ReadTMCNT_L(timer_index));
 }

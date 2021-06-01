@@ -35,5 +35,7 @@ struct RenderEngine {
     u16 screen_y1;
     u16 screen_y2;
 
+    u32 framebuffer[256 * 192];
+
     GPU* gpu;
 };

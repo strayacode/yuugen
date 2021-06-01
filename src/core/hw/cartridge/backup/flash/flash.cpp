@@ -6,6 +6,9 @@ FlashBackup::FlashBackup(std::string path, u32 size) : path(path), size(size) {
 
 auto FlashBackup::Transfer(u8 data, u32 write_count) -> u8 {
     switch (command) {
+    case 0x00:
+        // ignore this for now, seems to a command specific to IR stuff for pokemon games
+        break;
     case 0x03:
         // what we do will depend on the write count
         // on write_count < 4, we will set up the 3 byte address

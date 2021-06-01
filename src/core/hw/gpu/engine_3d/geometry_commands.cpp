@@ -256,3 +256,76 @@ void GeometryEngine::CommandMultiplyTranslation() {
         log_fatal("handle matrix mode %d", matrix_mode);
     }
 }
+
+void GeometryEngine::CommandBeginVertexList() {
+    // read in the parameter
+    u32 parameter = DequeueEntry().parameter;
+
+    polygon_type = parameter & 0x3;
+}
+
+void GeometryEngine::CommandSetVertexColour() {
+    // read in the parameter
+    u32 parameter = DequeueEntry().parameter;
+
+    vertex_colour = parameter & 0x7FFF;
+}
+
+void GeometryEngine::CommandAddVertex16() {
+    // read in the parameter
+    u32 parameter1 = DequeueEntry().parameter;
+    u32 parameter2 = DequeueEntry().parameter;
+
+    Vertex v;
+    v.x = parameter1 & 0xFFFF;
+    v.y = (parameter1 >> 16) & 0xFFFF;
+    v.z = parameter2 & 0xFFFF;
+
+    AddVertex(v);
+}
+
+void GeometryEngine::CommandShininess() {
+    // handle later lol
+    for (int i = 0; i < 32; i++) {
+        DequeueEntry();
+    }
+}
+
+void GeometryEngine::CommandSetTexturePaletteAddress() {
+    // handle later lol
+    DequeueEntry();
+}
+
+void GeometryEngine::CommandLoad4x4() {
+    // create a new 4x4 matrix, and fill each cell with an s32 number
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        // projection
+        projection_current = matrix;
+        break;
+    case 1:
+        // coordinate
+        coordinate_current = matrix;
+        break;
+    case 2:
+        // coordinate and directional
+        coordinate_current = matrix;
+        directional_current = matrix;
+        break;
+    case 3:
+        // texture
+        texture_current = matrix;
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
