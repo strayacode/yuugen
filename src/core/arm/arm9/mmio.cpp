@@ -616,12 +616,12 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
 
 void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
     if (addr >= 0x04000400 && addr < 0x04000440) {
-        // core->gpu.geometry_engine.WriteGXFIFO(data);
+        core->gpu.geometry_engine.WriteGXFIFO(data);
         return;
     }
     
     if (addr >= 0x04000440 && addr < 0x040005CC) {
-        // core->gpu.geometry_engine.QueueCommand(addr, data);
+        core->gpu.geometry_engine.QueueCommand(addr, data);
         return;
     }
 

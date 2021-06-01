@@ -52,7 +52,7 @@ GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {
 void GeometryEngine::Reset() {
     matrix_mode = 0;
     projection_pointer = 0;
-    coordinate_pointer = 0;
+    position_pointer = 0;
     polygon_type = 0;
     vertex_colour = 0;
     vertex_count = 0;
@@ -178,10 +178,6 @@ void GeometryEngine::QueueEntry(Entry entry) {
 }
 
 auto GeometryEngine::DequeueEntry() -> Entry {
-    if (pipe.size() == 0) {
-        return {0, 0};
-    }
-
     Entry front_entry = pipe.front();
 
     pipe.pop();
@@ -226,8 +222,6 @@ auto GeometryEngine::DequeueEntry() -> Entry {
 }
 
 void GeometryEngine::InterpretCommand() {
-    // printf("before\n");
-
     // only interpret a command if there exists enough entries in both fifo and pipe
     // for a command to be executed successfully
     int total_size = fifo.size() + pipe.size();
@@ -240,8 +234,6 @@ void GeometryEngine::InterpretCommand() {
     Entry entry = pipe.front();
 
     u8 param_count = parameter_count[entry.command].second;
-
-    // printf("command %02x\n", entry.command);
 
     if (total_size >= param_count) {
         switch (entry.command) {
@@ -320,8 +312,6 @@ void GeometryEngine::InterpretCommand() {
         GXSTAT |= (1 << 25);
         gpu->core->dma[1].Trigger(7);
     }
-
-    // printf("after\n");
 }
 
 auto GeometryEngine::MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix {
@@ -341,8 +331,14 @@ void GeometryEngine::AddVertex(Vertex v) {
         return;
     }
 
+    printf("add %d %d %d\n", v.x, v.y, v.z);
+
     // save the vertex to vertex ram
     vertex_ram[vertex_count] = v;
 
     vertex_count++;
+}
+
+void GeometryEngine::UpdateClipMatrix() {
+    clip_current = MatrixMultiply(position_current, projection_current);
 }

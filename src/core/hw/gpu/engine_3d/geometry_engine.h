@@ -36,7 +36,8 @@ enum CurrentState : u8 {
 // to add the entry to the fifo
 
 
-// TODO: use a lut for the number of parameters for different commands
+// the clip matrix is internally readjusted when recalculating position and projection matrices
+// when this happens, we have clip_matrix = current position * current projection
 
 struct GeometryEngine {
     GeometryEngine(GPU* gpu);
@@ -73,6 +74,8 @@ struct GeometryEngine {
 
     void WriteGXFIFO(u32 data);
 
+    void UpdateClipMatrix();
+
     std::queue<Entry> fifo;
     std::queue<Entry> pipe;
 
@@ -100,15 +103,17 @@ struct GeometryEngine {
 
     Matrix projection_current;
     Matrix projection_stack;
-    Matrix coordinate_current;
-    Matrix coordinate_stack[31];
+    Matrix position_current;
+    Matrix position_stack[31];
     Matrix directional_current;
     Matrix directional_stack[31];
     // not sure about this but will look into later
     Matrix texture_current;
 
+    Matrix clip_current;
+
     u8 projection_pointer;
-    u8 coordinate_pointer;
+    u8 position_pointer;
 
     std::array<Polygon, 0xD000> polygon_ram;
     std::array<Vertex, 0x12000> vertex_ram;

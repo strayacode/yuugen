@@ -11,7 +11,7 @@ void GeometryEngine::CommandSetMatrixMode() {
 void GeometryEngine::CommandPopCurrentMatrix() {
     u32 parameter = DequeueEntry().parameter;
     u8 stack_offset = parameter & (1 << 5) ? -parameter & 0x3F : parameter & 0x3F;
-    u8 new_pointer = coordinate_pointer - stack_offset;
+    u8 new_pointer = position_pointer - stack_offset;
 
     switch (matrix_mode) {
     case 0:
@@ -21,6 +21,7 @@ void GeometryEngine::CommandPopCurrentMatrix() {
         } else {
             projection_pointer--;
             projection_current = projection_stack;
+            UpdateClipMatrix();
         }
         break;
     case 1: case 2:
@@ -29,9 +30,10 @@ void GeometryEngine::CommandPopCurrentMatrix() {
         if ((new_pointer < 0) || (new_pointer >= 31)) {
             GXSTAT |= (1 << 15);
         } else {
-            coordinate_current = coordinate_stack[new_pointer];
+            position_current = position_stack[new_pointer];
             directional_current = directional_stack[new_pointer];
-            coordinate_pointer = new_pointer;
+            position_pointer = new_pointer;
+            UpdateClipMatrix();
         }
         break;
     default:
@@ -51,16 +53,18 @@ void GeometryEngine::CommandPushCurrentMatrix() {
         } else {
             projection_stack = projection_current;
             projection_pointer++;
+            UpdateClipMatrix();
         }
         break;
     case 1: case 2:
         // mode 1 and 2 both have the same operation
-        if ((coordinate_pointer < 0) || (coordinate_pointer >= 31)) {
+        if ((position_pointer < 0) || (position_pointer >= 31)) {
             GXSTAT |= (1 << 15);
         } else {
-            coordinate_stack[coordinate_pointer] = coordinate_current;
-            directional_stack[coordinate_pointer] = directional_current;
-            coordinate_pointer++;
+            position_stack[position_pointer] = position_current;
+            directional_stack[position_pointer] = directional_current;
+            position_pointer++;
+            UpdateClipMatrix();
         }
         
         break;
@@ -80,15 +84,18 @@ void GeometryEngine::CommandLoadUnitMatrix() {
     case 0:
         // projection
         projection_current = unit_matrix;
+        UpdateClipMatrix();
         break;
     case 1:
-        // coordinate
-        coordinate_current = unit_matrix;
+        // position
+        position_current = unit_matrix;
+        UpdateClipMatrix();
         break;
     case 2:
-        // coordinate and directional
-        coordinate_current = unit_matrix;
+        // position and directional
+        position_current = unit_matrix;
         directional_current = unit_matrix;
+        UpdateClipMatrix();
         break;
     case 3:
         // texture
@@ -164,6 +171,7 @@ void GeometryEngine::CommandMultiply4x4() {
     case 0:
         // projection
         projection_current = MatrixMultiply(projection_current, matrix);
+        UpdateClipMatrix();
         break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
@@ -188,11 +196,13 @@ void GeometryEngine::CommandMultiply4x3() {
     case 0:
         // projection
         projection_current = MatrixMultiply(projection_current, matrix);
+        UpdateClipMatrix();
         break;
     case 2:
-        // coordinate and directional
-        coordinate_current = MatrixMultiply(coordinate_current, matrix);
+        // position and directional
+        position_current = MatrixMultiply(position_current, matrix);
         directional_current = MatrixMultiply(directional_current, matrix);
+        UpdateClipMatrix();
         break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
@@ -217,11 +227,13 @@ void GeometryEngine::CommandMultiply3x3() {
     case 0:
         // projection
         projection_current = MatrixMultiply(projection_current, matrix);
+        UpdateClipMatrix();
         break;
     case 2:
-        // coordinate and directional
-        coordinate_current = MatrixMultiply(coordinate_current, matrix);
+        // position and directional
+        position_current = MatrixMultiply(position_current, matrix);
         directional_current = MatrixMultiply(directional_current, matrix);
+        UpdateClipMatrix();
         break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
@@ -246,11 +258,13 @@ void GeometryEngine::CommandMultiplyTranslation() {
     case 0:
         // projection
         projection_current = MatrixMultiply(projection_current, matrix);
+        UpdateClipMatrix();
         break;
     case 2:
-        // coordinate and directional
-        coordinate_current = MatrixMultiply(coordinate_current, matrix);
+        // position and directional
+        position_current = MatrixMultiply(position_current, matrix);
         directional_current = MatrixMultiply(directional_current, matrix);
+        UpdateClipMatrix();
         break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
@@ -311,15 +325,18 @@ void GeometryEngine::CommandLoad4x4() {
     case 0:
         // projection
         projection_current = matrix;
+        UpdateClipMatrix();
         break;
     case 1:
-        // coordinate
-        coordinate_current = matrix;
+        // position
+        position_current = matrix;
+        UpdateClipMatrix();
         break;
     case 2:
-        // coordinate and directional
-        coordinate_current = matrix;
+        // position and directional
+        position_current = matrix;
         directional_current = matrix;
+        UpdateClipMatrix();
         break;
     case 3:
         // texture
