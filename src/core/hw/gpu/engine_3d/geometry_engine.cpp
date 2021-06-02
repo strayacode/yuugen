@@ -231,6 +231,9 @@ void GeometryEngine::InterpretCommand() {
         case 0x13:
             CommandStoreCurrentMatrix();
             break;
+        case 0x14:
+            CommandRestoreCurrentMatrix();
+            break;
         case 0x15:
             CommandLoadUnitMatrix();
             break;
@@ -257,6 +260,9 @@ void GeometryEngine::InterpretCommand() {
             break;
         case 0x20:
             CommandSetVertexColour();
+            break;
+        case 0x22:
+            CommandSetTextureCoordinates();
             break;
         case 0x23:
             CommandAddVertex16();
@@ -343,13 +349,13 @@ auto GeometryEngine::MultiplyVertexVertex(const Vertex& a, const Vertex& b) -> u
     return result;
 }
 
-void GeometryEngine::AddVertex(Vertex v) {
+void GeometryEngine::AddVertex() {
     if (vertex_count >= 6144) {
         return;
     }
 
     // first save the vertex to vertex ram
-    vertex_ram[vertex_count] = v;
+    vertex_ram[vertex_count] = recent_vertex;
     PrintMatrix(clip_current);
     printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
 

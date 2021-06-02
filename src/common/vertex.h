@@ -7,7 +7,7 @@ struct Vertex {
         x = 0;
         y = 0;
         z = 0;
-        w = 1;
+        w = 1 << 12;
     }
 
     s32 x;

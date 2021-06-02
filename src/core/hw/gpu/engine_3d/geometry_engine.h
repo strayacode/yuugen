@@ -74,6 +74,8 @@ struct GeometryEngine {
     void CommandSetSpecularReflectEmission();
     void CommandSetLightColour();
     void CommandStoreCurrentMatrix();
+    void CommandRestoreCurrentMatrix();
+    void CommandSetTextureCoordinates();
 
     void DoSwapBuffers();
 
@@ -83,7 +85,7 @@ struct GeometryEngine {
 
     void PrintMatrix(const Matrix& a);
 
-    void AddVertex(Vertex v);
+    void AddVertex();
 
     void WriteGXFIFO(u32 data);
 
@@ -130,6 +132,8 @@ struct GeometryEngine {
 
     std::array<Polygon, 0xD000> polygon_ram;
     std::array<Vertex, 0x12000> vertex_ram;
+
+    Vertex recent_vertex;
 
     GPU* gpu;
 

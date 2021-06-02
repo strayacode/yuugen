@@ -103,6 +103,34 @@ void GeometryEngine::CommandStoreCurrentMatrix() {
     }
 }
 
+void GeometryEngine::CommandRestoreCurrentMatrix() {
+    u32 parameter = DequeueEntry().parameter;
+
+    switch (matrix_mode) {
+    case 0:
+        // projection stack
+        projection_current = projection_stack;
+        break;
+    case 1: case 2: {
+        // mode 1 and 2 both have the same operation
+        u8 stack_offset = parameter & 0x1F;
+
+        position_current = position_stack[stack_offset];
+        directional_current = directional_stack[stack_offset];
+
+        if (stack_offset == 31) {
+            GXSTAT |= (1 << 15);
+        }
+        break;
+    }
+    case 3:
+        // idk
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
+
 void GeometryEngine::CommandLoadUnitMatrix() {
     // also make sure to dequeue the entry even though its doesn't have a parameter, just a command
     DequeueEntry();
@@ -332,12 +360,11 @@ void GeometryEngine::CommandAddVertex16() {
     u32 parameter1 = DequeueEntry().parameter;
     u32 parameter2 = DequeueEntry().parameter;
 
-    Vertex v;
-    v.x = parameter1 & 0xFFFF;
-    v.y = (parameter1 >> 16) & 0xFFFF;
-    v.z = parameter2 & 0xFFFF;
+    recent_vertex.x = parameter1 & 0xFFFF;
+    recent_vertex.y = (parameter1 >> 16) & 0xFFFF;
+    recent_vertex.z = parameter2 & 0xFFFF;
 
-    AddVertex(v);
+    AddVertex();
 }
 
 void GeometryEngine::CommandShininess() {
@@ -442,6 +469,11 @@ void GeometryEngine::CommandSetSpecularReflectEmission() {
 }
 
 void GeometryEngine::CommandSetLightColour() {
+    // for now do nothing lol
+    DequeueEntry();
+}
+
+void GeometryEngine::CommandSetTextureCoordinates() {
     // for now do nothing lol
     DequeueEntry();
 }
