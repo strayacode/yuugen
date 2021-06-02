@@ -4,45 +4,22 @@
 #include <array>
 #include <tuple>
 
-static constexpr std::array<std::pair<int, int>, 38> parameter_count {{
-    {0x00, 0},
-    {0x10, 1},
-    {0x11, 0},
-    {0x12, 1},
-    {0x13, 1},
-    {0x14, 1},
-    {0x15, 0},
-    {0x16, 16},
-    {0x17, 12},
-    {0x18, 16},
-    {0x19, 12},
-    {0x1A, 9},
-    {0x1B, 3},
-    {0x1C, 3},
-    {0x20, 1},
-    {0x21, 1},
-    {0x22, 1},
-    {0x23, 2},
-    {0x24, 1},
-    {0x25, 1},
-    {0x26, 1},
-    {0x27, 1},
-    {0x28, 1},
-    {0x29, 1},
-    {0x2A, 1},
-    {0x2B, 1},
-    {0x30, 1},
-    {0x31, 1},
-    {0x32, 1},
-    {0x33, 1},
-    {0x34, 32},
-    {0x40, 1},
-    {0x41, 0},
-    {0x50, 1},
-    {0x60, 1},
-    {0x70, 3},
-    {0x71, 2},
-    {0x72, 1},
+static constexpr std::array<int, 256> parameter_count = {{
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 1, 1, 1, 0, 16, 12, 16, 12, 9, 3, 3, 0, 0, 0,
+    1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    1, 1, 1, 1, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 }};
 
 GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {
@@ -69,12 +46,13 @@ void GeometryEngine::WriteGXFIFO(u32 data) {
         // commands should first be read in
         gxfifo = data;
     } else {
+        u8 command = gxfifo & 0xFF;
         // there are commands that need to have parameters read in
-        QueueEntry({gxfifo & 0xFF, data});
+        QueueEntry({command, data});
 
         gxfifo_write_count++;
 
-        if (gxfifo_write_count >= parameter_count[gxfifo & 0xFF].second) {
+        if (gxfifo_write_count >= parameter_count[gxfifo & 0xFF]) {
             // now we have recieved enough parameters for a particular command, so we can move onto another command
             gxfifo >>= 8;
             gxfifo_write_count = 0;
@@ -233,7 +211,7 @@ void GeometryEngine::InterpretCommand() {
 
     Entry entry = pipe.front();
 
-    u8 param_count = parameter_count[entry.command].second;
+    u8 param_count = parameter_count[entry.command];
 
     if (total_size >= param_count) {
         switch (entry.command) {
@@ -314,7 +292,7 @@ void GeometryEngine::InterpretCommand() {
     }
 }
 
-auto GeometryEngine::MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix {
+auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix {
     Matrix new_matrix;
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
@@ -326,19 +304,49 @@ auto GeometryEngine::MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix 
     return new_matrix;
 }
 
+auto GeometryEngine::MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex {
+    Vertex new_vertex;
+
+    new_vertex.x = a.x * b.field[0][0] + a.y * b.field[1][0] + a.z * b.field[2][0] + a.w * b.field[3][0];
+    new_vertex.y = a.x * b.field[0][1] + a.y * b.field[1][1] + a.z * b.field[2][1] + a.w * b.field[3][1];
+    new_vertex.z = a.x * b.field[0][2] + a.y * b.field[1][2] + a.z * b.field[2][2] + a.w * b.field[3][2];
+    new_vertex.w = a.x * b.field[0][3] + a.y * b.field[1][3] + a.z * b.field[2][3] + a.w * b.field[3][3];
+
+    return new_vertex;
+}
+
+auto GeometryEngine::MultiplyVertexVertex(const Vertex& a, const Vertex& b) -> u32 {
+    // pretty much just a dot product lol
+    u32 result = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+
+    return result;
+}
+
 void GeometryEngine::AddVertex(Vertex v) {
     if (vertex_count >= 6144) {
         return;
     }
 
-    printf("add %d %d %d\n", v.x, v.y, v.z);
-
-    // save the vertex to vertex ram
+    // first save the vertex to vertex ram
     vertex_ram[vertex_count] = v;
+    PrintMatrix(clip_current);
+    printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
+
+    // then perform required multiplications
+    vertex_ram[vertex_count] = MultiplyVertexMatrix(vertex_ram[vertex_count], clip_current);
+
+    printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
 
     vertex_count++;
 }
 
+void GeometryEngine::PrintMatrix(const Matrix& a) {
+    printf("| %d %d %d %d |\n", a.field[0][0], a.field[0][1], a.field[0][2], a.field[0][3]);
+    printf("| %d %d %d %d |\n", a.field[1][0], a.field[1][1], a.field[1][2], a.field[1][3]);
+    printf("| %d %d %d %d |\n", a.field[2][0], a.field[2][1], a.field[2][2], a.field[2][3]);
+    printf("| %d %d %d %d |\n", a.field[3][0], a.field[3][1], a.field[3][2], a.field[3][3]);
+}
+
 void GeometryEngine::UpdateClipMatrix() {
-    clip_current = MatrixMultiply(position_current, projection_current);
+    clip_current = MultiplyMatrixMatrix(position_current, projection_current);
 }

@@ -74,11 +74,10 @@ void GeometryEngine::CommandPushCurrentMatrix() {
 }
 
 void GeometryEngine::CommandLoadUnitMatrix() {
+    // also make sure to dequeue the entry even though its doesn't have a parameter, just a command
+    DequeueEntry();
+    
     Matrix unit_matrix;
-    // set a diagonal row of ones
-    for (int i = 0; i < 4; i++) {
-        unit_matrix.field[i][i] = 1;
-    }
 
     switch (matrix_mode) {
     case 0:
@@ -104,9 +103,6 @@ void GeometryEngine::CommandLoadUnitMatrix() {
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
     }
-
-    // also make sure to dequeue the entry even though its doesn't have a parameter, just a command
-    DequeueEntry();
 }
 
 void GeometryEngine::CommandSwapBuffers() {
@@ -170,7 +166,7 @@ void GeometryEngine::CommandMultiply4x4() {
     switch (matrix_mode) {
     case 0:
         // projection
-        projection_current = MatrixMultiply(projection_current, matrix);
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
         UpdateClipMatrix();
         break;
     default:
@@ -181,8 +177,6 @@ void GeometryEngine::CommandMultiply4x4() {
 void GeometryEngine::CommandMultiply4x3() {
     // create a new 4x3 matrix, and fill each cell with an s32 number
     Matrix matrix;
-
-    matrix.field[3][3] = 1;
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 3; x++) {
@@ -195,13 +189,13 @@ void GeometryEngine::CommandMultiply4x3() {
     switch (matrix_mode) {
     case 0:
         // projection
-        projection_current = MatrixMultiply(projection_current, matrix);
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
         UpdateClipMatrix();
         break;
     case 2:
         // position and directional
-        position_current = MatrixMultiply(position_current, matrix);
-        directional_current = MatrixMultiply(directional_current, matrix);
+        position_current = MultiplyMatrixMatrix(position_current, matrix);
+        directional_current = MultiplyMatrixMatrix(directional_current, matrix);
         UpdateClipMatrix();
         break;
     default:
@@ -212,8 +206,6 @@ void GeometryEngine::CommandMultiply4x3() {
 void GeometryEngine::CommandMultiply3x3() {
     // create a new 3x3 matrix, and fill each cell with an s32 number
     Matrix matrix;
-
-    matrix.field[3][3] = 1;
 
     for (int y = 0; y < 3; y++) {
         for (int x = 0; x < 3; x++) {
@@ -226,13 +218,13 @@ void GeometryEngine::CommandMultiply3x3() {
     switch (matrix_mode) {
     case 0:
         // projection
-        projection_current = MatrixMultiply(projection_current, matrix);
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
         UpdateClipMatrix();
         break;
     case 2:
         // position and directional
-        position_current = MatrixMultiply(position_current, matrix);
-        directional_current = MatrixMultiply(directional_current, matrix);
+        position_current = MultiplyMatrixMatrix(position_current, matrix);
+        directional_current = MultiplyMatrixMatrix(directional_current, matrix);
         UpdateClipMatrix();
         break;
     default:
@@ -243,11 +235,6 @@ void GeometryEngine::CommandMultiply3x3() {
 void GeometryEngine::CommandMultiplyTranslation() {
     Matrix matrix;
 
-    // set up the unit matrix part
-    for (int i = 0; i < 4; i++) {
-        matrix.field[i][i] = 1;
-    }
-
     // write to lowest row for 3 parameters
     for (int j = 0; j < 3; j++) {
         u32 parameter = DequeueEntry().parameter;
@@ -257,13 +244,13 @@ void GeometryEngine::CommandMultiplyTranslation() {
     switch (matrix_mode) {
     case 0:
         // projection
-        projection_current = MatrixMultiply(projection_current, matrix);
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
         UpdateClipMatrix();
         break;
     case 2:
         // position and directional
-        position_current = MatrixMultiply(position_current, matrix);
-        directional_current = MatrixMultiply(directional_current, matrix);
+        position_current = MultiplyMatrixMatrix(position_current, matrix);
+        directional_current = MultiplyMatrixMatrix(directional_current, matrix);
         UpdateClipMatrix();
         break;
     default:

@@ -39,6 +39,8 @@ enum CurrentState : u8 {
 // the clip matrix is internally readjusted when recalculating position and projection matrices
 // when this happens, we have clip_matrix = current position * current projection
 
+// also in fixed point notation, 1.0 is equivalent to 1 << 12
+
 struct GeometryEngine {
     GeometryEngine(GPU* gpu);
     void Reset();
@@ -68,7 +70,11 @@ struct GeometryEngine {
 
     void DoSwapBuffers();
 
-    auto MatrixMultiply(const Matrix& a, const Matrix& b) -> Matrix;
+    auto MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix;
+    auto MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex;
+    auto MultiplyVertexVertex(const Vertex& a, const Vertex& b) -> u32;
+
+    void PrintMatrix(const Matrix& a);
 
     void AddVertex(Vertex v);
 
