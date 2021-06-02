@@ -477,3 +477,12 @@ void GeometryEngine::CommandSetTextureCoordinates() {
     // for now do nothing lol
     DequeueEntry();
 }
+
+void GeometryEngine::CommandSetVertexXZ() {
+    u32 parameter = DequeueEntry().parameter;
+
+    recent_vertex.x = parameter & 0xFFFF;
+    recent_vertex.z = (parameter >> 16) & 0xFFFF;
+
+    AddVertex();
+}

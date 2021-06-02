@@ -267,6 +267,9 @@ void GeometryEngine::InterpretCommand() {
         case 0x23:
             CommandAddVertex16();
             break;
+        case 0x26:
+            CommandSetVertexXZ();
+            break;
         case 0x29:
             CommandSetPolygonAttributes();
             break;
@@ -305,7 +308,15 @@ void GeometryEngine::InterpretCommand() {
             CommandSetViewport();
             break;
         default:
-            log_fatal("[GeometryEngine] Handle geometry command %02x", entry.command);
+            if (parameter_count[entry.command] == 0) {
+                DequeueEntry();
+            } else {
+                for (int i = 0; i < parameter_count[entry.command]; i++) {
+                    DequeueEntry();
+                }
+            }
+            // log_warn("[GeometryEngine] Handle geometry command %02x", entry.command);
+            break;
         }
         if (state == STATE_RUNNING) {
             // schedule more interpret commands events with 1 cycle delay
@@ -356,13 +367,13 @@ void GeometryEngine::AddVertex() {
 
     // first save the vertex to vertex ram
     vertex_ram[vertex_count] = recent_vertex;
-    PrintMatrix(clip_current);
-    printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
+    // PrintMatrix(clip_current);
+    // printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
 
     // then perform required multiplications
     vertex_ram[vertex_count] = MultiplyVertexMatrix(vertex_ram[vertex_count], clip_current);
 
-    printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
+    // printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
 
     vertex_count++;
 }
