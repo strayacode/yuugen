@@ -77,6 +77,7 @@ struct GeometryEngine {
     void CommandRestoreCurrentMatrix();
     void CommandSetTextureCoordinates();
     void CommandSetVertexXZ();
+    void CommandSetVertexRelative();
 
     void DoSwapBuffers();
 

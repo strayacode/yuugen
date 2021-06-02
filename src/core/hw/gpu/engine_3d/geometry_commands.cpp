@@ -486,3 +486,12 @@ void GeometryEngine::CommandSetVertexXZ() {
 
     AddVertex();
 }
+
+void GeometryEngine::CommandSetVertexRelative() {
+    u32 parameter = DequeueEntry().parameter;
+    recent_vertex.x += (s16)((parameter & 0x000003FF) << 6) >> 6;
+    recent_vertex.y += (s16)((parameter & 0x000FFC00) >> 4) >> 6;
+    recent_vertex.z += (s16)((parameter & 0x3FF00000) >> 14) >> 6;
+
+    AddVertex();
+}

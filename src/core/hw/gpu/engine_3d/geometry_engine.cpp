@@ -270,6 +270,9 @@ void GeometryEngine::InterpretCommand() {
         case 0x26:
             CommandSetVertexXZ();
             break;
+        case 0x28:
+            CommandSetVertexRelative();
+            break;
         case 0x29:
             CommandSetPolygonAttributes();
             break;
@@ -308,14 +311,14 @@ void GeometryEngine::InterpretCommand() {
             CommandSetViewport();
             break;
         default:
-            if (parameter_count[entry.command] == 0) {
-                DequeueEntry();
-            } else {
-                for (int i = 0; i < parameter_count[entry.command]; i++) {
-                    DequeueEntry();
-                }
-            }
-            // log_warn("[GeometryEngine] Handle geometry command %02x", entry.command);
+            // if (parameter_count[entry.command] == 0) {
+            //     DequeueEntry();
+            // } else {
+            //     for (int i = 0; i < parameter_count[entry.command]; i++) {
+            //         DequeueEntry();
+            //     }
+            // }
+            log_fatal("[GeometryEngine] Handle geometry command %02x", entry.command);
             break;
         }
         if (state == STATE_RUNNING) {
@@ -334,28 +337,31 @@ auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> M
     Matrix new_matrix;
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            // each cell can be calculated with 4 multiplications
-            new_matrix.field[y][x] = a.field[y][0] * b.field[0][x] + a.field[y][1] * b.field[1][x] + a.field[y][2] * b.field[2][x] + a.field[y][3] * b.field[3][x];
+            s64 value = 0;
+            for (int i = 0; i < 4; i++) {
+                value += (s64)a.field[y][i] * (s64)b.field[i][x];
+                new_matrix.field[y][x] = (s32)(value >> 12);
+            } 
         }
     }
-
     return new_matrix;
 }
 
 auto GeometryEngine::MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex {
     Vertex new_vertex;
-
-    new_vertex.x = a.x * b.field[0][0] + a.y * b.field[1][0] + a.z * b.field[2][0] + a.w * b.field[3][0];
-    new_vertex.y = a.x * b.field[0][1] + a.y * b.field[1][1] + a.z * b.field[2][1] + a.w * b.field[3][1];
-    new_vertex.z = a.x * b.field[0][2] + a.y * b.field[1][2] + a.z * b.field[2][2] + a.w * b.field[3][2];
-    new_vertex.w = a.x * b.field[0][3] + a.y * b.field[1][3] + a.z * b.field[2][3] + a.w * b.field[3][3];
+    // TODO: fix this
+    new_vertex.x = (s32)((s64)a.x * b.field[0][0] + (s64)a.y * b.field[1][0] + (s64)a.z * b.field[2][0] + (s64)a.w * b.field[3][0]) >> 12;
+    new_vertex.y = (s32)((s64)a.x * b.field[0][1] + (s64)a.y * b.field[1][1] + (s64)a.z * b.field[2][1] + (s64)a.w * b.field[3][1]) >> 12;
+    new_vertex.z = (s32)((s64)a.x * b.field[0][2] + (s64)a.y * b.field[1][2] + (s64)a.z * b.field[2][2] + (s64)a.w * b.field[3][2]) >> 12;
+    new_vertex.w = (s32)((s64)a.x * b.field[0][3] + (s64)a.y * b.field[1][3] + (s64)a.z * b.field[2][3] + (s64)a.w * b.field[3][3]) >> 12;
 
     return new_vertex;
 }
 
 auto GeometryEngine::MultiplyVertexVertex(const Vertex& a, const Vertex& b) -> u32 {
     // pretty much just a dot product lol
-    u32 result = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+    // TODO: maybe fix this?
+    u32 result = (s32)((s64)a.x * b.x + (s64)a.y * b.y + (s64)a.z * b.z + (s64)a.w * b.w) >> 12;
 
     return result;
 }
@@ -373,7 +379,17 @@ void GeometryEngine::AddVertex() {
     // then perform required multiplications
     vertex_ram[vertex_count] = MultiplyVertexMatrix(vertex_ram[vertex_count], clip_current);
 
-    // printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
+    // now transform into screen coordinates
+    // very quick but just put directly into a framebuffer for now lmao
+    u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1);
+    u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1);
+    u16 screen_x = (vertex_ram[vertex_count].x + vertex_ram[vertex_count].w) * screen_width / (2 * vertex_ram[vertex_count].w) + gpu->render_engine.screen_x1;
+    u16 screen_y = (vertex_ram[vertex_count].y + vertex_ram[vertex_count].w) * screen_height / (2 * vertex_ram[vertex_count].w) + gpu->render_engine.screen_y1;
+    screen_x &= 0x1FF;
+    screen_y &= 0xFF;
+    // write to framebuffer for 2d engine (shrug)
+    u32 offset = (192 - screen_y) * 256 + screen_x;
+    gpu->engine_a.framebuffer[offset] = 0xFFFFFF;
 
     vertex_count++;
 }
