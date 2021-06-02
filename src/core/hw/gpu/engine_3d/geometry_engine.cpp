@@ -228,11 +228,17 @@ void GeometryEngine::InterpretCommand() {
         case 0x12:
             CommandPopCurrentMatrix();
             break;
+        case 0x13:
+            CommandStoreCurrentMatrix();
+            break;
         case 0x15:
             CommandLoadUnitMatrix();
             break;
         case 0x16:
             CommandLoad4x4();
+            break;
+        case 0x17:
+            CommandLoad4x3();
             break;
         case 0x18:
             CommandMultiply4x4();
@@ -242,6 +248,9 @@ void GeometryEngine::InterpretCommand() {
             break;
         case 0x1A:
             CommandMultiply3x3();
+            break;
+        case 0x1B:
+            CommandMultiplyScale();
             break;
         case 0x1C:
             CommandMultiplyTranslation();
@@ -260,6 +269,18 @@ void GeometryEngine::InterpretCommand() {
             break;
         case 0x2B:
             CommandSetTexturePaletteAddress();
+            break;
+        case 0x30:
+            CommandSetDiffuseAmbientReflect();
+            break;
+        case 0x31:
+            CommandSetSpecularReflectEmission();
+            break;
+        case 0x32:
+            CommandSetLightDirectionVector();
+            break;
+        case 0x33:
+            CommandSetLightColour();
             break;
         case 0x34:
             CommandShininess();

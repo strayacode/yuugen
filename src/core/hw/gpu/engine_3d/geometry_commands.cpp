@@ -73,6 +73,36 @@ void GeometryEngine::CommandPushCurrentMatrix() {
     }
 }
 
+void GeometryEngine::CommandStoreCurrentMatrix() {
+    u32 parameter = DequeueEntry().parameter;
+    
+
+    switch (matrix_mode) {
+    case 0:
+        // projection stack
+        projection_stack = projection_current;
+        break;
+    case 1: case 2: {
+        // mode 1 and 2 both have the same operation
+    
+        u8 stack_offset = parameter & 0x1F;
+
+        position_stack[stack_offset] = position_current;
+        directional_stack[stack_offset] = directional_current;
+
+        if (stack_offset == 31) {
+            GXSTAT |= (1 << 15);
+        }
+        break;
+    }
+    case 3:
+        // idk
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
+
 void GeometryEngine::CommandLoadUnitMatrix() {
     // also make sure to dequeue the entry even though its doesn't have a parameter, just a command
     DequeueEntry();
@@ -258,6 +288,31 @@ void GeometryEngine::CommandMultiplyTranslation() {
     }
 }
 
+void GeometryEngine::CommandMultiplyScale() {
+    Matrix matrix;
+
+    // write in a diagonal row
+    for (int i = 0; i < 3; i++) {
+        u32 parameter = DequeueEntry().parameter;
+        matrix.field[i][i] = (s32)parameter;
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        // projection
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 2:
+        // only position
+        position_current = MultiplyMatrixMatrix(position_current, matrix);
+        UpdateClipMatrix();
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
+
 void GeometryEngine::CommandBeginVertexList() {
     // read in the parameter
     u32 parameter = DequeueEntry().parameter;
@@ -332,4 +387,61 @@ void GeometryEngine::CommandLoad4x4() {
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
     }
+}
+
+void GeometryEngine::CommandLoad4x3() {
+    // create a new 4x3 matrix, and fill the first 3 rows with s32 numbers
+    Matrix matrix;
+
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 4; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        // projection
+        projection_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 1:
+        // position
+        position_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 2:
+        // position and directional
+        position_current = matrix;
+        directional_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 3:
+        // texture
+        texture_current = matrix;
+        break;
+    default:
+        log_fatal("handle matrix mode %d", matrix_mode);
+    }
+}
+
+void GeometryEngine::CommandSetLightDirectionVector() {
+    // for now do nothing lol
+    DequeueEntry();
+}
+
+void GeometryEngine::CommandSetDiffuseAmbientReflect() {
+    // for now do nothing lol
+    DequeueEntry();
+}
+
+void GeometryEngine::CommandSetSpecularReflectEmission() {
+    // for now do nothing lol
+    DequeueEntry();
+}
+
+void GeometryEngine::CommandSetLightColour() {
+    // for now do nothing lol
+    DequeueEntry();
 }

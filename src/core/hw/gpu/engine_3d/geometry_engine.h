@@ -61,12 +61,19 @@ struct GeometryEngine {
     void CommandMultiply4x3();
     void CommandMultiply3x3();
     void CommandLoad4x4();
+    void CommandLoad4x3();
     void CommandMultiplyTranslation();
+    void CommandMultiplyScale();
     void CommandBeginVertexList();
     void CommandSetVertexColour();
     void CommandAddVertex16();
     void CommandShininess();
     void CommandSetTexturePaletteAddress();
+    void CommandSetLightDirectionVector();
+    void CommandSetDiffuseAmbientReflect();
+    void CommandSetSpecularReflectEmission();
+    void CommandSetLightColour();
+    void CommandStoreCurrentMatrix();
 
     void DoSwapBuffers();
 
