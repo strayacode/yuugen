@@ -47,7 +47,6 @@ struct GPU2D {
 
     u16 bg_layers[4][256 * 192];
 
-
     OBJPixel obj_layer[256 * 192];
 
     u32 DISPCNT;

@@ -39,6 +39,11 @@ void GeometryEngine::Reset() {
     // create an empty queue and swap it
     std::queue<Entry> empty_queue;
     fifo.swap(empty_queue);
+
+    vertex_ram.clear();
+    vertex_ram.reserve(6144);
+    vertex_ram.resize(6144);
+    polygon_ram.clear();
 }
 
 void GeometryEngine::WriteGXFIFO(u32 data) {
@@ -157,7 +162,6 @@ void GeometryEngine::QueueEntry(Entry entry) {
 
 auto GeometryEngine::DequeueEntry() -> Entry {
     Entry front_entry = pipe.front();
-
     pipe.pop();
 
     // if the pipe is half empty (less than 3 entries)
@@ -212,7 +216,6 @@ void GeometryEngine::InterpretCommand() {
     Entry entry = pipe.front();
 
     u8 param_count = parameter_count[entry.command];
-
     if (total_size >= param_count) {
         switch (entry.command) {
         case 0x00:
@@ -349,7 +352,6 @@ auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> M
 
 auto GeometryEngine::MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex {
     Vertex new_vertex;
-    // TODO: fix this
     new_vertex.x = (s32)((s64)a.x * b.field[0][0] + (s64)a.y * b.field[1][0] + (s64)a.z * b.field[2][0] + (s64)a.w * b.field[3][0]) >> 12;
     new_vertex.y = (s32)((s64)a.x * b.field[0][1] + (s64)a.y * b.field[1][1] + (s64)a.z * b.field[2][1] + (s64)a.w * b.field[3][1]) >> 12;
     new_vertex.z = (s32)((s64)a.x * b.field[0][2] + (s64)a.y * b.field[1][2] + (s64)a.z * b.field[2][2] + (s64)a.w * b.field[3][2]) >> 12;
@@ -360,38 +362,19 @@ auto GeometryEngine::MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> V
 
 auto GeometryEngine::MultiplyVertexVertex(const Vertex& a, const Vertex& b) -> u32 {
     // pretty much just a dot product lol
-    // TODO: maybe fix this?
     u32 result = (s32)((s64)a.x * b.x + (s64)a.y * b.y + (s64)a.z * b.z + (s64)a.w * b.w) >> 12;
 
     return result;
 }
 
 void GeometryEngine::AddVertex() {
-    if (vertex_count >= 6144) {
+    if (vertex_ram.size() >= 6144) {
         return;
     }
 
     // first save the vertex to vertex ram
-    vertex_ram[vertex_count] = recent_vertex;
-    // PrintMatrix(clip_current);
-    // printf("add %d %d %d\n", vertex_ram[vertex_count].x, vertex_ram[vertex_count].y, vertex_ram[vertex_count].z);
-
-    // then perform required multiplications
-    vertex_ram[vertex_count] = MultiplyVertexMatrix(vertex_ram[vertex_count], clip_current);
-
-    // now transform into screen coordinates
-    // very quick but just put directly into a framebuffer for now lmao
-    u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1);
-    u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1);
-    u16 screen_x = (vertex_ram[vertex_count].x + vertex_ram[vertex_count].w) * screen_width / (2 * vertex_ram[vertex_count].w) + gpu->render_engine.screen_x1;
-    u16 screen_y = (vertex_ram[vertex_count].y + vertex_ram[vertex_count].w) * screen_height / (2 * vertex_ram[vertex_count].w) + gpu->render_engine.screen_y1;
-    screen_x &= 0x1FF;
-    screen_y &= 0xFF;
-    // write to framebuffer for 2d engine (shrug)
-    u32 offset = (192 - screen_y) * 256 + screen_x;
-    gpu->engine_a.framebuffer[offset] = 0xFFFFFF;
-
-    vertex_count++;
+    Vertex result_vertex = MultiplyVertexMatrix(recent_vertex, clip_current);
+    vertex_ram.push_back(result_vertex);
 }
 
 void GeometryEngine::PrintMatrix(const Matrix& a) {
@@ -403,4 +386,32 @@ void GeometryEngine::PrintMatrix(const Matrix& a) {
 
 void GeometryEngine::UpdateClipMatrix() {
     clip_current = MultiplyMatrixMatrix(position_current, projection_current);
+}
+
+void GeometryEngine::DoSwapBuffers() {
+    // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
+    // for now we shall just render vertices
+    for (unsigned int i = 0; i < vertex_ram.size(); i++) {
+        if (vertex_ram[i].w != 0) {
+            u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1 + 1) & 0x1FF;
+            u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1 + 1) & 0xFF;
+            u16 render_x = ((s64)vertex_ram[i].x + vertex_ram[i].w) * screen_width / (2 * vertex_ram[i].w) + gpu->render_engine.screen_x1;
+            u16 render_y = (-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height / (2 * vertex_ram[i].w) + gpu->render_engine.screen_y1;
+            render_x &= 0x1FF;
+            render_y &= 0xFF;
+            gpu->render_engine.vertex_ram[i].x = render_x;
+            gpu->render_engine.vertex_ram[i].y = render_y;
+            // TODO: update z coord here
+        }
+    }
+
+    // empty polygon and vertex ram
+    polygon_ram.clear();
+    vertex_ram.clear();
+
+    // unhalt the geometry engine
+    state = STATE_RUNNING;
+    
+    // schedule more interpret commands events with 1 cycle delay
+    gpu->core->scheduler.Add(1, InterpretCommandTask);
 }

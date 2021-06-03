@@ -52,5 +52,10 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
         }
     }
 
+    // just render a 3d pixel on top lol
+    if (DISPCNT & (1 << 3)) {
+        pixel = gpu->render_engine.framebuffer[(256 * line) + x];
+    }
+
     framebuffer[(256 * line) + x] = Convert15To24(pixel);
 }

@@ -173,21 +173,6 @@ void GeometryEngine::CommandSwapBuffers() {
     // TODO: handle bit 0 and 1 of parameter later
 }
 
-void GeometryEngine::DoSwapBuffers() {
-    // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
-    gpu->render_engine.polygon_ram = polygon_ram;
-    gpu->render_engine.vertex_ram = vertex_ram;
-
-    // std::fill(std::begin(polygon_ram), std::end(polygon_ram), 0);
-    // std::fill(std::begin(vertex_ram), std::end(vertex_ram), 0);
-
-    // unhalt the geometry engine
-    state = STATE_RUNNING;
-    
-    // schedule more interpret commands events with 1 cycle delay
-    gpu->core->scheduler.Add(1, InterpretCommandTask);
-}
-
 void GeometryEngine::CommandSetTextureParameters() {
     u32 parameter = DequeueEntry().parameter;
 
@@ -357,6 +342,7 @@ void GeometryEngine::CommandSetVertexColour() {
 
 void GeometryEngine::CommandAddVertex16() {
     // read in the parameter
+    // TODO: fix segfault in add vertex?
     u32 parameter1 = DequeueEntry().parameter;
     u32 parameter2 = DequeueEntry().parameter;
 

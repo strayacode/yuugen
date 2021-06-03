@@ -7,7 +7,7 @@
 #include <common/vertex.h>
 #include <queue>
 #include <functional>
-#include <array>
+#include <vector>
 
 struct GPU;
 
@@ -132,8 +132,8 @@ struct GeometryEngine {
     u8 projection_pointer;
     u8 position_pointer;
 
-    std::array<Polygon, 0xD000> polygon_ram;
-    std::array<Vertex, 0x12000> vertex_ram;
+    std::vector<Polygon> polygon_ram;
+    std::vector<Vertex> vertex_ram;
 
     Vertex recent_vertex;
 

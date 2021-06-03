@@ -55,6 +55,12 @@ void GPU::RenderScanlineStart() {
         core->dma[1].Trigger(2);
     }
 
+    // TODO: try to only do this when 3d is enabled
+    if (VCOUNT == 215) {
+        // 3d render engine renders 48 scanlines early in vblank period
+        render_engine.Render();
+    }
+
     DISPSTAT7 |= (1 << 1);
     DISPSTAT9 |= (1 << 1);
     

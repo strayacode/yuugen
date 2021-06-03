@@ -486,6 +486,8 @@ void ARM::Execute() {
                 return ARM_ADDS(ARM_LOGICAL_SHIFT_RIGHT_IMM());
             case 0x094: case 0x09C:
                 return ARM_ADDS(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
+            case 0x095:
+                return ARM_ADDS(ARM_ARITHMETIC_SHIFT_RIGHT_REG());
             case 0x096: case 0x09E:
                 return ARM_ADDS(ARM_ROTATE_RIGHT_IMM());
             case 0x099:
@@ -712,6 +714,8 @@ void ARM::Execute() {
                 return ARM_MVN(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x1F0: case 0x1F8:
                 return ARM_MVNS(ARM_LOGICAL_SHIFT_LEFT_IMMS());
+            case 0x1F4: case 0x1FC:
+                return ARM_MVNS(ARM_ARITHMETIC_SHIFT_RIGHT_IMMS());
             case 0x1FB:
                 return ARM_LDRH_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x1FD:

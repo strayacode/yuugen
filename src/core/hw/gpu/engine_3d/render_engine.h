@@ -4,7 +4,7 @@
 #include <common/log.h>
 #include <common/polygon.h>
 #include <common/vertex.h>
-#include <array>
+#include <vector>
 
 struct GPU;
 
@@ -14,6 +14,7 @@ struct GPU;
 struct RenderEngine {
     RenderEngine(GPU* gpu);
     void Reset();
+    void Render();
 
     u16 DISP3DCNT;
     u8 RDLINES_COUNT;
@@ -27,8 +28,8 @@ struct RenderEngine {
     u8 FOG_TABLE[0x20];
     u8 TOON_TABLE[0x40];
 
-    std::array<Polygon, 0xD000> polygon_ram;
-    std::array<Vertex, 0x12000> vertex_ram;
+    std::vector<Polygon> polygon_ram;
+    std::vector<Vertex> vertex_ram;
 
     u16 screen_x1;
     u16 screen_x2;
