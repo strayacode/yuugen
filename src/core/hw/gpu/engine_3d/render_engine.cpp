@@ -13,7 +13,6 @@ void RenderEngine::Reset() {
     vertex_ram.clear();
     polygon_ram.clear();
     vertex_ram.reserve(6144);
-    vertex_ram.resize(6144);
 }
 
 void RenderEngine::Render() {

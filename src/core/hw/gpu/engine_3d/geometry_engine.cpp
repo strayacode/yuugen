@@ -42,7 +42,6 @@ void GeometryEngine::Reset() {
 
     vertex_ram.clear();
     vertex_ram.reserve(6144);
-    vertex_ram.resize(6144);
     polygon_ram.clear();
 }
 
@@ -389,9 +388,15 @@ void GeometryEngine::UpdateClipMatrix() {
 }
 
 void GeometryEngine::DoSwapBuffers() {
+    // clear the render engines vertex and polygon ram before writing to it
+    gpu->render_engine.polygon_ram.clear();
+    gpu->render_engine.vertex_ram.clear();
+
     // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
     // for now we shall just render vertices
+    printf("size %d\n", vertex_ram.size());
     for (unsigned int i = 0; i < vertex_ram.size(); i++) {
+        printf("ok\n");
         if (vertex_ram[i].w != 0) {
             u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1 + 1) & 0x1FF;
             u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1 + 1) & 0xFF;
@@ -399,8 +404,12 @@ void GeometryEngine::DoSwapBuffers() {
             u16 render_y = (-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height / (2 * vertex_ram[i].w) + gpu->render_engine.screen_y1;
             render_x &= 0x1FF;
             render_y &= 0xFF;
-            gpu->render_engine.vertex_ram[i].x = render_x;
-            gpu->render_engine.vertex_ram[i].y = render_y;
+
+            Vertex render_vertex;
+
+            render_vertex.x = render_x;
+            render_vertex.y = render_y;
+            gpu->render_engine.vertex_ram.push_back(render_vertex);
             // TODO: update z coord here
         }
     }
