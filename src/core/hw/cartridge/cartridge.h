@@ -3,6 +3,7 @@
 #include <core/hw/cartridge/backup/generic_backup.h>
 #include <core/hw/cartridge/backup/flash/flash.h>
 #include <core/hw/cartridge/backup/eeprom/eeprom.h>
+#include <core/hw/cartridge/backup/no_backup/no_backup.h>
 #include <string.h>
 #include <fstream>
 #include <vector>
@@ -24,6 +25,7 @@ enum BackupType {
     EEPROM_SMALL,
     EEPROM,
     FLASH,
+    NO_BACKUP,
 };
 
 struct Core;

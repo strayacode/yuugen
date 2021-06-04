@@ -77,6 +77,9 @@ void Cartridge::LoadRom(std::string rom_path) {
     case EEPROM:
         backup = std::make_unique<EEPROMBackup>(save_path, backup_size);
         break;
+    case NO_BACKUP:
+        backup = std::make_unique<NoBackup>(save_path, 0);
+        break;
     default:
         log_fatal("backup type %d not handled", backup_type);
     }
@@ -107,6 +110,9 @@ void Cartridge::DetectBackupType() {
         if (header.gamecode == save_database[i].gamecode) {
             // get the save type
             switch (save_database[i].save_type) {
+            case 0:
+                backup_type = NO_BACKUP;
+                break;
             case 1:
                 log_fatal("handle eeprom smol");
                 break;
