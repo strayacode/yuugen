@@ -75,8 +75,17 @@ void GeometryEngine::QueueCommand(u32 addr, u32 data) {
     case 0x04000448:
         QueueEntry({0x12, data});
         break;
+    case 0x0400044C:
+        QueueEntry({0x13, data});
+        break;
     case 0x04000454:
         QueueEntry({0x15, data});
+        break;
+    case 0x04000458:
+        QueueEntry({0x16, data});
+        break;
+    case 0x0400045C:
+        QueueEntry({0x17, data});
         break;
     case 0x04000460:
         QueueEntry({0x18, data});
@@ -87,11 +96,20 @@ void GeometryEngine::QueueCommand(u32 addr, u32 data) {
     case 0x04000468:
         QueueEntry({0x1A, data});
         break;
+    case 0x0400046C:
+        QueueEntry({0x1B, data});
+        break;
     case 0x04000470:
         QueueEntry({0x1C, data});
         break;
     case 0x04000480:
         QueueEntry({0x20, data});
+        break;
+    case 0x04000484:
+        QueueEntry({0x21, data});
+        break;
+    case 0x04000488:
+        QueueEntry({0x22, data});
         break;
     case 0x0400048C:
         QueueEntry({0x23, data});
@@ -104,6 +122,18 @@ void GeometryEngine::QueueCommand(u32 addr, u32 data) {
         break;
     case 0x040004AC:
         QueueEntry({0x2B, data});
+        break;
+    case 0x040004C0:
+        QueueEntry({0x30, data});
+        break;
+    case 0x040004C4:
+        QueueEntry({0x31, data});
+        break;
+    case 0x040004C8:
+        QueueEntry({0x32, data});
+        break;
+    case 0x040004CC:
+        QueueEntry({0x33, data});
         break;
     case 0x040004D0:
         QueueEntry({0x34, data});
@@ -263,14 +293,26 @@ void GeometryEngine::InterpretCommand() {
         case 0x20:
             CommandSetVertexColour();
             break;
+        case 0x21:
+            CommandSetVertexNormal();
+            break;
         case 0x22:
             CommandSetTextureCoordinates();
             break;
         case 0x23:
             CommandAddVertex16();
             break;
+        case 0x24:
+            CommandAddVertex10();
+            break;
+        case 0x25:
+            CommandSetVertexXY();
+            break;
         case 0x26:
             CommandSetVertexXZ();
+            break;
+        case 0x27:
+            CommandSetVertexYZ();
             break;
         case 0x28:
             CommandSetVertexRelative();
@@ -313,14 +355,14 @@ void GeometryEngine::InterpretCommand() {
             CommandSetViewport();
             break;
         default:
-            // if (parameter_count[entry.command] == 0) {
-            //     DequeueEntry();
-            // } else {
-            //     for (int i = 0; i < parameter_count[entry.command]; i++) {
-            //         DequeueEntry();
-            //     }
-            // }
-            log_fatal("[GeometryEngine] Handle geometry command %02x", entry.command);
+            if (parameter_count[entry.command] == 0) {
+                DequeueEntry();
+            } else {
+                for (int i = 0; i < parameter_count[entry.command]; i++) {
+                    DequeueEntry();
+                }
+            }
+            // log_fatal("[GeometryEngine] Handle geometry command %02x", entry.command);
             break;
         }
         if (state == STATE_RUNNING) {
@@ -376,22 +418,22 @@ void GeometryEngine::AddVertex() {
     vertex_ram.push_back(result_vertex);
 
     // check whether we should add a polygon
-    switch (polygon_type) {
-    case 0:
-        // triangle (3 vertices)
-        if (vertex_ram.size() % 3 == 0) {
-            AddPolygon();
-        }
-        break;
-    case 1:
-        // quad (4 vertices)
-        if (vertex_ram.size() % 4 == 0) {
-            AddPolygon();
-        }
-        break;
-    default:
-        log_fatal("handle polygon type %d", polygon_type);
-    }
+    // switch (polygon_type) {
+    // case 0:
+    //     // triangle (3 vertices)
+    //     if (vertex_ram.size() % 3 == 0) {
+    //         AddPolygon();
+    //     }
+    //     break;
+    // case 1:
+    //     // quad (4 vertices)
+    //     if (vertex_ram.size() % 4 == 0) {
+    //         AddPolygon();
+    //     }
+    //     break;
+    // default:
+    //     log_fatal("handle polygon type %d", polygon_type);
+    // }
 }
 
 void GeometryEngine::AddPolygon() {

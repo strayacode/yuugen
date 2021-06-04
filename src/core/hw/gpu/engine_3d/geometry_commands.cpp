@@ -342,13 +342,22 @@ void GeometryEngine::CommandSetVertexColour() {
 
 void GeometryEngine::CommandAddVertex16() {
     // read in the parameter
-    // TODO: fix segfault in add vertex?
     u32 parameter1 = DequeueEntry().parameter;
     u32 parameter2 = DequeueEntry().parameter;
 
     recent_vertex.x = (s16)(parameter1 & 0xFFFF);
     recent_vertex.y = (s16)((parameter1 >> 16) & 0xFFFF);
     recent_vertex.z = (s16)(parameter2 & 0xFFFF);
+
+    AddVertex();
+}
+
+void GeometryEngine::CommandAddVertex10() {
+    // read in the parameter
+    u32 parameter = DequeueEntry().parameter;
+    recent_vertex.x = (s16)(parameter & 0x000003FF) << 6;
+    recent_vertex.y = (s16)(parameter & 0x000FFC00) >> 4;
+    recent_vertex.z = (s16)(parameter & 0x3FF00000) >> 14;
 
     AddVertex();
 }
@@ -464,10 +473,28 @@ void GeometryEngine::CommandSetTextureCoordinates() {
     DequeueEntry();
 }
 
+void GeometryEngine::CommandSetVertexXY() {
+    u32 parameter = DequeueEntry().parameter;
+
+    recent_vertex.x = (s16)(parameter & 0xFFFF);
+    recent_vertex.y = (s16)((parameter >> 16) & 0xFFFF);
+
+    AddVertex();
+}
+
 void GeometryEngine::CommandSetVertexXZ() {
     u32 parameter = DequeueEntry().parameter;
 
     recent_vertex.x = (s16)(parameter & 0xFFFF);
+    recent_vertex.z = (s16)((parameter >> 16) & 0xFFFF);
+
+    AddVertex();
+}
+
+void GeometryEngine::CommandSetVertexYZ() {
+    u32 parameter = DequeueEntry().parameter;
+
+    recent_vertex.y = (s16)(parameter & 0xFFFF);
     recent_vertex.z = (s16)((parameter >> 16) & 0xFFFF);
 
     AddVertex();
@@ -480,4 +507,9 @@ void GeometryEngine::CommandSetVertexRelative() {
     recent_vertex.z += (s16)((parameter & 0x3FF00000) >> 14) >> 6;
 
     AddVertex();
+}
+
+void GeometryEngine::CommandSetVertexNormal() {
+    // do nothing for now
+    DequeueEntry();
 }

@@ -67,6 +67,7 @@ struct GeometryEngine {
     void CommandBeginVertexList();
     void CommandSetVertexColour();
     void CommandAddVertex16();
+    void CommandAddVertex10();
     void CommandShininess();
     void CommandSetTexturePaletteAddress();
     void CommandSetLightDirectionVector();
@@ -76,8 +77,11 @@ struct GeometryEngine {
     void CommandStoreCurrentMatrix();
     void CommandRestoreCurrentMatrix();
     void CommandSetTextureCoordinates();
+    void CommandSetVertexXY();
     void CommandSetVertexXZ();
+    void CommandSetVertexYZ();
     void CommandSetVertexRelative();
+    void CommandSetVertexNormal();
 
     void DoSwapBuffers();
 
