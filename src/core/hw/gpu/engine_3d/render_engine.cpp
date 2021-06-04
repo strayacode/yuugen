@@ -21,7 +21,12 @@ void RenderEngine::Render() {
 
     // just draw vertices for now lmao
     for (int i = 0; i < vertex_ram.size(); i++) {
-        u32 offset = (vertex_ram[i].y * 256) + vertex_ram[i].x;
-        framebuffer[offset] = 0xFFFFFF;
+        if (vertex_ram[i].x >= 0 && vertex_ram[i].x < 256) {
+            if (vertex_ram[i].y >= 0 && vertex_ram[i].y < 192) {
+                u32 offset = (vertex_ram[i].y * 256) + vertex_ram[i].x;
+                framebuffer[offset] = 0xFFFFFF;
+            }
+        }
+        
     }
 }

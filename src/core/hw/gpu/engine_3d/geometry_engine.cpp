@@ -374,6 +374,28 @@ void GeometryEngine::AddVertex() {
     // first save the vertex to vertex ram
     Vertex result_vertex = MultiplyVertexMatrix(recent_vertex, clip_current);
     vertex_ram.push_back(result_vertex);
+
+    // check whether we should add a polygon
+    switch (polygon_type) {
+    case 0:
+        // triangle (3 vertices)
+        if (vertex_ram.size() % 3 == 0) {
+            AddPolygon();
+        }
+        break;
+    case 1:
+        // quad (4 vertices)
+        if (vertex_ram.size() % 4 == 0) {
+            AddPolygon();
+        }
+        break;
+    default:
+        log_fatal("handle polygon type %d", polygon_type);
+    }
+}
+
+void GeometryEngine::AddPolygon() {
+
 }
 
 void GeometryEngine::PrintMatrix(const Matrix& a) {
@@ -394,9 +416,7 @@ void GeometryEngine::DoSwapBuffers() {
 
     // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
     // for now we shall just render vertices
-    printf("size %d\n", vertex_ram.size());
     for (unsigned int i = 0; i < vertex_ram.size(); i++) {
-        printf("ok\n");
         if (vertex_ram[i].w != 0) {
             u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1 + 1) & 0x1FF;
             u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1 + 1) & 0xFF;

@@ -88,6 +88,7 @@ struct GeometryEngine {
     void PrintMatrix(const Matrix& a);
 
     void AddVertex();
+    void AddPolygon();
 
     void WriteGXFIFO(u32 data);
 
@@ -136,6 +137,7 @@ struct GeometryEngine {
     std::vector<Vertex> vertex_ram;
 
     Vertex recent_vertex;
+    Polygon recent_polygon;
 
     GPU* gpu;
 
