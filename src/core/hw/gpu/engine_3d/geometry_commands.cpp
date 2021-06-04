@@ -346,9 +346,9 @@ void GeometryEngine::CommandAddVertex16() {
     u32 parameter1 = DequeueEntry().parameter;
     u32 parameter2 = DequeueEntry().parameter;
 
-    recent_vertex.x = parameter1 & 0xFFFF;
-    recent_vertex.y = (parameter1 >> 16) & 0xFFFF;
-    recent_vertex.z = parameter2 & 0xFFFF;
+    recent_vertex.x = (s16)(parameter1 & 0xFFFF);
+    recent_vertex.y = (s16)((parameter1 >> 16) & 0xFFFF);
+    recent_vertex.z = (s16)(parameter2 & 0xFFFF);
 
     AddVertex();
 }
@@ -467,8 +467,8 @@ void GeometryEngine::CommandSetTextureCoordinates() {
 void GeometryEngine::CommandSetVertexXZ() {
     u32 parameter = DequeueEntry().parameter;
 
-    recent_vertex.x = parameter & 0xFFFF;
-    recent_vertex.z = (parameter >> 16) & 0xFFFF;
+    recent_vertex.x = (s16)(parameter & 0xFFFF);
+    recent_vertex.z = (s16)((parameter >> 16) & 0xFFFF);
 
     AddVertex();
 }
