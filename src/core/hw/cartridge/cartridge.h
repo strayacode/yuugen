@@ -36,6 +36,7 @@ struct Cartridge {
     void Reset();
     void LoadRom(std::string rom_path);
     void LoadHeaderData();
+    void LoadSecureArea();
     void DetectBackupType();
 
     void DirectBoot();

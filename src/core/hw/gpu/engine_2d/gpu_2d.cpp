@@ -12,10 +12,12 @@ void GPU2D::Reset() {
     memset(BGCNT, 0, 4 * sizeof(u16));
     memset(BGHOFS, 0, 4 * sizeof(u16));
     memset(BGVOFS, 0, 4 * sizeof(u16));
-    memset(BG2P, 0, 4 * sizeof(u16));
-    memset(BG3P, 0, 4 * sizeof(u16));
     memset(WINH, 0, 2 * sizeof(u16));
     memset(WINV, 0, 2 * sizeof(u16));
+    memset(BGPA, 0, 2 * sizeof(u16));
+    memset(BGPB, 0, 2 * sizeof(u16));
+    memset(BGPC, 0, 2 * sizeof(u16));
+    memset(BGPD, 0, 2 * sizeof(u16));
 
     for (int i = 0; i < 4; i++) {
         memset(bg_layers[i], 0, 256 * 192 * sizeof(u16));
@@ -24,10 +26,12 @@ void GPU2D::Reset() {
     memset(obj_layer, 0, 256 * 192 * sizeof(OBJPixel));
 
     DISPCNT = 0;
-    BG2X = 0;
-    BG2Y = 0;
-    BG3X = 0;
-    BG3Y = 0;
+    BGX[0] = BGX[1] = 0;
+    BGY[0] = BGY[1] = 0;
+
+    internal_x[0] = internal_x[1] = 0;
+    internal_y[0] = internal_y[1] = 0;
+
     WININ = 0;
     WINOUT = 0;
     MOSAIC = 0;
@@ -99,6 +103,14 @@ void GPU2D::RenderScanline(u16 line) {
     // reset all the bg layers and the obj layer
     for (int i = 0; i < 4; i++) {
         memset(&bg_layers[i][256 * line], 0, 256 * sizeof(u16));
+    }
+
+    // reload the internal registers at the start of vblank
+    if (line == 192) {
+        internal_x[0] = BGX[0];
+        internal_y[0] = BGY[0];
+        internal_x[1] = BGX[1];
+        internal_y[1] = BGY[1];
     }
 
     // set the obj layer to be fully transparent
@@ -206,4 +218,18 @@ void GPU2D::RenderGraphicsDisplay(u16 line) {
     }
 
     ComposeScanline(line);
+}
+
+void GPU2D::WriteBGX(int bg_index, u32 data) {
+    BGX[bg_index - 2] = data;
+
+    // load the internal register
+    internal_x[bg_index - 2] = data;
+}
+    
+void GPU2D::WriteBGY(int bg_index, u32 data) {
+    BGY[bg_index - 2] = data;
+
+    // load the internal register
+    internal_y[bg_index - 2] = data;
 }

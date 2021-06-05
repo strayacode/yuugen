@@ -42,4 +42,8 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
             bg_layers[bg_index][(256 * line) + pixel] = colour;
         }
     }
+
+    // increment the internal registers
+    internal_x[bg_index - 2] += BGPB[bg_index - 2];
+    internal_y[bg_index - 2] += BGPD[bg_index - 2];
 }

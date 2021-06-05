@@ -104,6 +104,10 @@ void Cartridge::LoadHeaderData() {
     log_debug("[Cartridge] Header data loaded");
 }
 
+void Cartridge::LoadSecureArea() {
+    
+}
+
 void Cartridge::DetectBackupType() {
     // loop through each entry in the save database
     for (int i = 0; i < 6776; i++) {

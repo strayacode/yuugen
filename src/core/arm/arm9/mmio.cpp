@@ -359,28 +359,28 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         core->gpu.engine_a.BGVOFS[3] = data;
         break;
     case 0x04000020:
-        core->gpu.engine_a.BG2P[0] = data;
+        core->gpu.engine_a.BGPA[0] = data;
         break;
     case 0x04000022:
-        core->gpu.engine_a.BG2P[1] = data;
+        core->gpu.engine_a.BGPB[0] = data;
         break;
     case 0x04000024:
-        core->gpu.engine_a.BG2P[2] = data;
+        core->gpu.engine_a.BGPC[0] = data;
         break;
     case 0x04000026:
-        core->gpu.engine_a.BG2P[3] = data;
+        core->gpu.engine_a.BGPD[0] = data;
         break;
     case 0x04000030:
-        core->gpu.engine_a.BG3P[0] = data;
+        core->gpu.engine_a.BGPA[1] = data;
         break;
     case 0x04000032:
-        core->gpu.engine_a.BG3P[1] = data;
+        core->gpu.engine_a.BGPB[1] = data;
         break;
     case 0x04000034:
-        core->gpu.engine_a.BG3P[2] = data;
+        core->gpu.engine_a.BGPC[1] = data;
         break;
     case 0x04000036:
-        core->gpu.engine_a.BG3P[3] = data;
+        core->gpu.engine_a.BGPD[1] = data;
         break;
     case 0x04000040:
         core->gpu.engine_a.WINH[0] = data;
@@ -552,28 +552,28 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         core->gpu.engine_b.BGVOFS[3] = data;
         break;
     case 0x04001020:
-        core->gpu.engine_b.BG2P[0] = data;
+        core->gpu.engine_b.BGPA[0] = data;
         break;
     case 0x04001022:
-        core->gpu.engine_b.BG2P[1] = data;
+        core->gpu.engine_b.BGPB[0] = data;
         break;
     case 0x04001024:
-        core->gpu.engine_b.BG2P[2] = data;
+        core->gpu.engine_b.BGPC[0] = data;
         break;
     case 0x04001026:
-        core->gpu.engine_b.BG2P[3] = data;
+        core->gpu.engine_b.BGPD[0] = data;
         break;
     case 0x04001030:
-        core->gpu.engine_b.BG3P[0] = data;
+        core->gpu.engine_b.BGPA[1] = data;
         break;
     case 0x04001032:
-        core->gpu.engine_b.BG3P[1] = data;
+        core->gpu.engine_b.BGPB[1] = data;
         break;
     case 0x04001034:
-        core->gpu.engine_b.BG3P[2] = data;
+        core->gpu.engine_b.BGPC[1] = data;
         break;
     case 0x04001036:
-        core->gpu.engine_b.BG3P[3] = data;
+        core->gpu.engine_b.BGPD[1] = data;
         break;
     case 0x04001040:
         core->gpu.engine_b.WINH[0] = data;
@@ -657,32 +657,32 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         core->gpu.engine_a.BGVOFS[3] = data >> 16;
         break;
     case 0x04000020:
-        core->gpu.engine_a.BG2P[0] = data & 0xFFFF;
-        core->gpu.engine_a.BG2P[1] = data >> 16;
+        core->gpu.engine_a.BGPA[0] = data & 0xFFFF;
+        core->gpu.engine_a.BGPB[0] = data >> 16;
         break;
     case 0x04000024:
-        core->gpu.engine_a.BG2P[2] = data & 0xFFFF;
-        core->gpu.engine_a.BG2P[3] = data >> 16;
+        core->gpu.engine_a.BGPC[0] = data & 0xFFFF;
+        core->gpu.engine_a.BGPD[0] = data >> 16;
         break;
     case 0x04000028:
-        core->gpu.engine_a.BG2X = data;
+        core->gpu.engine_a.WriteBGX(2, data);
         break;
     case 0x0400002C:
-        core->gpu.engine_a.BG2Y = data;
+        core->gpu.engine_a.WriteBGY(2, data);
         break;
     case 0x04000030:
-        core->gpu.engine_a.BG3P[0] = data & 0xFFFF;
-        core->gpu.engine_a.BG3P[1] = data >> 16;
+        core->gpu.engine_a.BGPA[1] = data & 0xFFFF;
+        core->gpu.engine_a.BGPB[1] = data >> 16;
         break;
     case 0x04000034:
-        core->gpu.engine_a.BG3P[2] = data & 0xFFFF;
-        core->gpu.engine_a.BG3P[3] = data >> 16;
+        core->gpu.engine_a.BGPC[1] = data & 0xFFFF;
+        core->gpu.engine_a.BGPD[1] = data >> 16;
         break;
     case 0x04000038:
-        core->gpu.engine_a.BG3X = data;
+        core->gpu.engine_a.WriteBGX(3, data);
         break;
     case 0x0400003C:
-        core->gpu.engine_a.BG3Y = data;
+        core->gpu.engine_a.WriteBGY(3, data);
         break;
     case 0x04000040:
         core->gpu.engine_a.WINH[0] = data & 0xFFFF;
@@ -915,32 +915,32 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         core->gpu.engine_b.BGVOFS[3] = data >> 16;
         break;
     case 0x04001020:
-        core->gpu.engine_b.BG2P[0] = data & 0xFFFF;
-        core->gpu.engine_b.BG2P[1] = data >> 16;
+        core->gpu.engine_b.BGPA[0] = data & 0xFFFF;
+        core->gpu.engine_b.BGPB[0] = data >> 16;
         break;
     case 0x04001024:
-        core->gpu.engine_b.BG2P[2] = data & 0xFFFF;
-        core->gpu.engine_b.BG2P[3] = data >> 16;
+        core->gpu.engine_b.BGPC[0] = data & 0xFFFF;
+        core->gpu.engine_b.BGPD[0] = data >> 16;
         break;
     case 0x04001028:
-        core->gpu.engine_b.BG2X = data;
+        core->gpu.engine_b.WriteBGX(2, data);
         break;
     case 0x0400102C:
-        core->gpu.engine_b.BG2Y = data;
+        core->gpu.engine_b.WriteBGY(2, data);
         break;
     case 0x04001030:
-        core->gpu.engine_b.BG3P[0] = data & 0xFFFF;
-        core->gpu.engine_b.BG3P[1] = data >> 16;
+        core->gpu.engine_b.BGPA[1] = data & 0xFFFF;
+        core->gpu.engine_b.BGPB[1] = data >> 16;
         break;
     case 0x04001034:
-        core->gpu.engine_b.BG3P[2] = data & 0xFFFF;
-        core->gpu.engine_b.BG3P[3] = data >> 16;
+        core->gpu.engine_b.BGPC[1] = data & 0xFFFF;
+        core->gpu.engine_b.BGPD[1] = data >> 16;
         break;
     case 0x04001038:
-        core->gpu.engine_b.BG3X = data;
+        core->gpu.engine_b.WriteBGX(3, data);
         break;
     case 0x0400103C:
-        core->gpu.engine_b.BG3Y = data;
+        core->gpu.engine_b.WriteBGY(3, data);
         break;
     case 0x04001040:
         core->gpu.engine_b.WINH[0] = data & 0xFFFF;

@@ -43,6 +43,9 @@ struct GPU2D {
     void ComposeScanline(u16 line);
     void ComposePixel(u16 line, u16 x);
 
+    void WriteBGX(int bg_index, u32 data);
+    void WriteBGY(int bg_index, u32 data);
+
     u32 framebuffer[256 * 192];
 
     u16 bg_layers[4][256 * 192];
@@ -57,12 +60,16 @@ struct GPU2D {
     u16 BGCNT[4];
     u16 BGHOFS[4];
     u16 BGVOFS[4];
-    u16 BG2P[4];
-    u32 BG2X;
-    u32 BG2Y;
-    u32 BG3X;
-    u32 BG3Y;
-    u16 BG3P[4];
+    u16 BGPA[2];
+    u16 BGPB[2];
+    u16 BGPC[2];
+    u16 BGPD[2];
+    u32 BGX[2];
+    u32 BGY[2];
+
+    u32 internal_x[2];
+    u32 internal_y[2];
+
     u16 WINH[2];
     u16 WINV[2];
     u16 WININ;
