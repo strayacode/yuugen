@@ -27,14 +27,14 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         break;
     }
 
-    printf("extended rendering\n");
+    // printf("extended rendering\n");
 
     if (!(BGCNT[bg_index] & (1 << 7))) {
         // 16 bit bgmap entries
-        log_warn("[GPU2D] Handle 16 bit bg map entries");
+        // log_warn("[GPU2D] Handle 16 bit bg map entries");
     } else if ((BGCNT[bg_index] & (1 << 7)) && (BGCNT[bg_index] & (1 << 2))) {
         // direct colour bitmap
-        log_warn("[GPU2D] Handle direct colour bitmap");
+        // log_warn("[GPU2D] Handle direct colour bitmap");
         for (int pixel = 0; pixel < 256; pixel++) {
             u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
             u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
@@ -51,7 +51,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         }
     } else {
         // 256 colour bitmap
-        log_warn("[GPU2D] Handle 256 colour bitmap");
+        // log_warn("[GPU2D] Handle 256 colour bitmap");
         for (int pixel = 0; pixel < 256; pixel++) {
             u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
             u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;

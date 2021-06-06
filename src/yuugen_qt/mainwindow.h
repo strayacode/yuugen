@@ -18,8 +18,7 @@ protected:
     void keyReleaseEvent(QKeyEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
-
-    // TODO: add mouseMoveEvent for dragging while holding down left click
+    void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
     void CreateMenubar();

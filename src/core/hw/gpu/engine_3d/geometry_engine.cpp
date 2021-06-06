@@ -171,8 +171,8 @@ void GeometryEngine::QueueEntry(Entry entry) {
         GXSTAT &= ~(1 << 26);
 
         // check if fifo is over half capacity
-        if (fifo.size() >= 128) {
-            GXSTAT |= (1 << 25);
+        if (fifo.size() >= 128 && (GXSTAT & (1 << 25))) {
+            GXSTAT &= ~(1 << 25);
         }
 
         // keep executing commands while the fifo is full
@@ -204,28 +204,6 @@ auto GeometryEngine::DequeueEntry() -> Entry {
         if (fifo.size()) {
             pipe.push(fifo.front());
             fifo.pop();
-        }
-
-        // check gxfifo irq
-        switch (GXSTAT >> 30) {
-        case 0:
-            // irq is never sent
-            break;
-        case 1:
-            // less than half full
-            if (fifo.size() < 128) {
-                gpu->core->arm9.SendInterrupt(21);
-            }
-            break;
-        case 2:
-            // fifo empty
-            if (!fifo.size()) {
-                gpu->core->arm9.SendInterrupt(21);
-            }
-            break;
-        case 3:
-            // reserved
-            break;
         }
     }
 
@@ -371,9 +349,30 @@ void GeometryEngine::InterpretCommand() {
         }
     }
 
+    if (fifo.size() == 0) {
+        GXSTAT |= (1 << 26);
+    }
+
     if (fifo.size() < 128 && !(GXSTAT & (1 << 25))) {
         GXSTAT |= (1 << 25);
         gpu->core->dma[1].Trigger(7);
+        printf("do dma lol\n");
+    }
+
+    // check gxfifo irq
+    switch (GXSTAT >> 30) {
+    case 1:
+        // less than half full
+        if (GXSTAT & (1 << 25)) {
+            gpu->core->arm9.SendInterrupt(21);
+        }
+        break;
+    case 2:
+        // fifo empty
+        if (GXSTAT & (1 << 26)) {
+            gpu->core->arm9.SendInterrupt(21);
+        }
+        break;
     }
 }
 

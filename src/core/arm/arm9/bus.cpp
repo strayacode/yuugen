@@ -105,7 +105,7 @@ template void Memory::ARM9Write(u32 addr, u32 data);
 template <typename T>
 void Memory::ARM9Write(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
-    
+
     if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&core->cp15.itcm[addr & 0x7FFF], &data, sizeof(T));
         return;

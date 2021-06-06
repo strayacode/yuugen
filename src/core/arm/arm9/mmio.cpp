@@ -112,6 +112,10 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
 }
 
 auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
+    if (in_range(0x04000640, 0x40)) {
+        return core->gpu.geometry_engine.clip_current.field[(addr - 0x04000640) / 4][(addr - 0x04000640) % 4];
+    }
+
     switch (addr) {
     case 0x04000000:
         return core->gpu.engine_a.DISPCNT;
@@ -315,6 +319,10 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
 }
 
 void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
+    if (in_range(0x04000330, 0x10)) {
+        return;
+    }
+
     switch (addr) {
     case 0x04000000:
         core->gpu.engine_a.DISPCNT = (core->gpu.engine_a.DISPCNT & ~0xFFFF) | data;
@@ -502,6 +510,9 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
         break;
     case 0x04000304:
         core->gpu.POWCNT1 = data;
+        break;
+    case 0x04000340:
+        core->gpu.render_engine.ALPHA_TEST_REF = data;
         break;
     case 0x04000354:
         core->gpu.render_engine.CLEAR_DEPTH = data;

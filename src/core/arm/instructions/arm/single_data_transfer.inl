@@ -4,13 +4,14 @@ INSTRUCTION(ARM_STR_PRE, u32 op2) {
     u8 rn = (instruction >> 16) & 0xF;
     
     u32 address = regs.r[rn] + op2;
-    if (rd == 15) {
-        log_fatal("handle");
-    }
 
     WriteWord(address, regs.r[rd]);
 
-    regs.r[15] += 4;
+    if (rd == 15) {
+        ARMFlushPipeline();
+    } else {
+        regs.r[15] += 4;
+    }
 }
 
 INSTRUCTION(ARM_STR_PRE_WRITEBACK, u32 op2) {

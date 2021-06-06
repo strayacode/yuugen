@@ -257,7 +257,7 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
         int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
         int y = ((event->y() - 22) / scale) - 192;
         
-        if ((y >= 0) && event->button() == Qt::LeftButton) {
+        if ((y >= 0) && (x >= 0) && event->button() == Qt::LeftButton) {
             core->input.SetTouch(true);
             core->input.SetPoint(x, y);
         }
@@ -273,8 +273,23 @@ void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
         int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
         int y = ((event->y() - 22) / scale) - 192;
         
-        if ((y >= 0) && event->button() == Qt::LeftButton) {
+        if ((y >= 0) && (x >= 0) && event->button() == Qt::LeftButton) {
             core->input.SetTouch(false);
+            core->input.SetPoint(x, y);
+        }
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent* event) {
+    event->accept();
+
+    if (emu_thread) {
+        int window_width = size().width();
+        float scale = screen_height / 384.0;
+        int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
+        int y = ((event->y() - 22) / scale) - 192;
+        
+        if ((y >= 0) && (x >= 0)) {
             core->input.SetPoint(x, y);
         }
     }

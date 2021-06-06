@@ -454,6 +454,8 @@ void ARM::Execute() {
                 return ARM_SUBS(ARM_LOGICAL_SHIFT_RIGHT_IMMS());
             case 0x054: case 0x05C:
                 return ARM_SUBS(ARM_ARITHMETIC_SHIFT_RIGHT_IMMS());
+            case 0x05F: case 0x07F:
+                return ARM_LDRSH_POST(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x060: case 0x068:
                 return ARM_RSB(ARM_LOGICAL_SHIFT_LEFT_IMM());
             case 0x062: case 0x06A:
@@ -520,6 +522,8 @@ void ARM::Execute() {
                 return ARM_LDRH_POST(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x0DD: case 0x0FD:
                 return ARM_LDRSB_POST(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
+            case 0x0DF: case 0x0FF:
+                return ARM_LDRSH_POST(ARM_HALFWORD_SIGNED_DATA_TRANSFER_IMM());
             case 0x0E4: case 0x0EC:
                 return ARM_RSC(ARM_ARITHMETIC_SHIFT_RIGHT_IMM());
             case 0x0E9:
@@ -558,6 +562,8 @@ void ARM::Execute() {
                 return ARM_LDRH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x11D:
                 return ARM_LDRSB_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
+            case 0x11F:
+                return ARM_LDRSH_PRE(-ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x120:
                 return ARM_MSR_CPSR_REG();
             case 0x121:
