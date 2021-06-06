@@ -15,7 +15,8 @@ MainWindow::MainWindow() {
     render_timer = new QTimer(this);
     connect(render_timer, SIGNAL(timeout()), this, SLOT(RenderScreen()));
 
-    setMinimumSize(256, 384);
+    // account for menubar
+    setMinimumSize(256, 384 + 22);
 }
 
 void MainWindow::CreateMenubar() {
@@ -126,15 +127,15 @@ void MainWindow::CreateViewMenu() {
     QAction* window_4x_action = window_size_menu->addAction(tr("Scale 4x"));
 
     connect(window_1x_action, &QAction::triggered, this, [this]() {
-        resize(256, 384);  
+        resize(256, 384 + 22);  
     });
 
     connect(window_2x_action, &QAction::triggered, this, [this]() {
-        resize(512, 768);  
+        resize(512, 768 + 22);  
     });
 
     connect(window_4x_action, &QAction::triggered, this, [this]() {
-        resize(1024, 1536);  
+        resize(1024, 1536 + 22);  
     });
 }
 
@@ -161,12 +162,11 @@ void MainWindow::paintEvent(QPaintEvent* event) {
         // TODO recenter and resize correctly
         QSize window_dimensions = size();
 
-        QImage top_image_scaled = top_image.scaled(window_dimensions.width(), window_dimensions.height() / 2, Qt::KeepAspectRatio);
-        QImage bottom_image_scaled = bottom_image.scaled(window_dimensions.width(), window_dimensions.height() / 2, Qt::KeepAspectRatio);
+        QImage top_image_scaled = top_image.scaled(window_dimensions.width(), window_dimensions.height() / 2 - 11, Qt::KeepAspectRatio);
+        QImage bottom_image_scaled = bottom_image.scaled(window_dimensions.width(), window_dimensions.height() / 2 - 11, Qt::KeepAspectRatio);
 
-
-        painter.drawImage((window_dimensions.width() - top_image_scaled.width()) / 2, 0, top_image_scaled);
-        painter.drawImage((window_dimensions.width() - bottom_image_scaled.width()) / 2, bottom_image_scaled.height(), bottom_image_scaled);
+        painter.drawImage((window_dimensions.width() - top_image_scaled.width()) / 2, 22, top_image_scaled);
+        painter.drawImage((window_dimensions.width() - bottom_image_scaled.width()) / 2, bottom_image_scaled.height() + 22, bottom_image_scaled);
     }
 }
 
