@@ -1,10 +1,5 @@
 #include <QtWidgets>
 #include "mainwindow.h"
-#include <iostream>
-
-// some notes:
-// use setCentralWidget for our renderer frontend
-
 
 MainWindow::MainWindow() {
     CreateMenubar();
@@ -17,6 +12,8 @@ MainWindow::MainWindow() {
 
     // account for menubar
     setMinimumSize(256, 384 + 22);
+
+    screen_width = screen_height = 0;
 }
 
 void MainWindow::CreateMenubar() {
@@ -159,11 +156,13 @@ void MainWindow::paintEvent(QPaintEvent* event) {
         memcpy(top_image.scanLine(0), core->gpu.GetFramebuffer(TOP_SCREEN), 256 * 192 * 4);
         memcpy(bottom_image.scanLine(0), core->gpu.GetFramebuffer(BOTTOM_SCREEN), 256 * 192 * 4);
 
-        // TODO recenter and resize correctly
         QSize window_dimensions = size();
 
         QImage top_image_scaled = top_image.scaled(window_dimensions.width(), window_dimensions.height() / 2 - 11, Qt::KeepAspectRatio);
         QImage bottom_image_scaled = bottom_image.scaled(window_dimensions.width(), window_dimensions.height() / 2 - 11, Qt::KeepAspectRatio);
+
+        screen_width = top_image_scaled.width();
+        screen_height = top_image_scaled.height() * 2;
 
         painter.drawImage((window_dimensions.width() - top_image_scaled.width()) / 2, 22, top_image_scaled);
         painter.drawImage((window_dimensions.width() - bottom_image_scaled.width()) / 2, bottom_image_scaled.height() + 22, bottom_image_scaled);
@@ -249,6 +248,38 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
     }
 }
 
+void MainWindow::mousePressEvent(QMouseEvent* event) {
+    event->accept();
+
+    if (emu_thread) {
+        int window_width = size().width();
+        float scale = screen_height / 384.0;
+        int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
+        int y = ((event->y() - 22) / scale) - 192;
+        
+        if ((y >= 0) && event->button() == Qt::LeftButton) {
+            core->input.SetTouch(true);
+            core->input.SetPoint(x, y);
+        }
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
+    event->accept();
+
+    if (emu_thread) {
+        int window_width = size().width();
+        float scale = screen_height / 384.0;
+        int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
+        int y = ((event->y() - 22) / scale) - 192;
+        
+        if ((y >= 0) && event->button() == Qt::LeftButton) {
+            core->input.SetTouch(false);
+            core->input.SetPoint(x, y);
+        }
+    }
+}
+
 void MainWindow::LoadRom() {
     QFileDialog dialog(this);
     dialog.setAcceptMode(QFileDialog::AcceptOpen);
@@ -304,7 +335,8 @@ void MainWindow::BootFirmware() {
     emu_thread = std::make_unique<EmuThread>(*core.get());
 
     // give an empty path
-    core->SetRomPath("");
+    path = "";
+    core->SetRomPath(path.toStdString());
     core->Reset();
     core->FirmwareBoot();
 

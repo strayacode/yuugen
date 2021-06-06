@@ -16,6 +16,10 @@ protected:
     void paintEvent(QPaintEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+
+    // TODO: add mouseMoveEvent for dragging while holding down left click
 
 private:
     void CreateMenubar();
@@ -35,6 +39,9 @@ private:
     QTimer* render_timer;
 
     QImage top_image, bottom_image;
+
+    int screen_width;
+    int screen_height;
 
     QString path;
 signals:
