@@ -4,9 +4,28 @@
 void GPU2D::RenderExtended(int bg_index, u16 line) {
     u32 data_base = vram_addr + ((BGCNT[bg_index] >> 8) & 0x1F) * 0x4000;
     u8 screen_size = (BGCNT[bg_index] >> 14) & 0x3;
-    // if (screen_size != 1) {
-    //     log_fatal("handle");
-    // }
+
+    u16 size_x = 0;
+    u16 size_y = 0;
+
+    switch (screen_size) {
+    case 0:
+        size_x = 128;
+        size_y = 128;
+        break;
+    case 1:
+        size_x = 256;
+        size_y = 256;
+        break;
+    case 2:
+        size_x = 512;
+        size_y = 256;
+        break;
+    case 3:
+        size_x = 512;
+        size_y = 512;
+        break;
+    }
 
     printf("extended rendering\n");
 
@@ -17,7 +36,11 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         // direct colour bitmap
         log_warn("[GPU2D] Handle direct colour bitmap");
         for (int pixel = 0; pixel < 256; pixel++) {
-            u32 data_addr = data_base + (pixel * 2);
+            u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
+            u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
+
+            u32 data_addr = data_base + (coord_y * size_x + coord_x) * 2;
+
             u16 colour;
             if (engine_id == 1) {
                 colour = gpu->ReadBGA<u16>(data_addr);
@@ -30,7 +53,11 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         // 256 colour bitmap
         log_warn("[GPU2D] Handle 256 colour bitmap");
         for (int pixel = 0; pixel < 256; pixel++) {
-            u32 data_addr = data_base + (pixel * 2);
+            u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
+            u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
+
+            u32 data_addr = data_base + (coord_y * size_x + coord_x);
+
             u8 palette_index;
             if (engine_id == 1) {
                 palette_index = gpu->ReadBGA<u8>(data_addr);

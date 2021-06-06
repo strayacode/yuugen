@@ -44,4 +44,5 @@ public slots:
 private slots:
     void LoadRom();
     void RenderScreen();
+    void BootFirmware();
 };

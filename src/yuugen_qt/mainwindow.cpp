@@ -54,6 +54,10 @@ void MainWindow::CreateEmulationMenu() {
 
     configure_action = emulation_menu->addAction(tr("Configure..."));
 
+    QAction* boot_firmware_action = emulation_menu->addAction(tr("Boot Firmware"));
+
+    connect(boot_firmware_action, &QAction::triggered, this, &MainWindow::BootFirmware);
+
     connect(pause_action, &QAction::triggered, this, [this]() {
         if (emu_thread->IsActive()) {
             // first allow the emulator thread to finish a frame and then stop it and the render timer
@@ -284,4 +288,33 @@ void MainWindow::LoadRom() {
         render_timer->start(1000 / 60);
         emu_thread->Start();
     } 
+}
+
+void MainWindow::BootFirmware() {
+    // pause the emulator thread if one was currently running
+    if (emu_thread) {
+        emu_thread->Stop();
+    }
+
+    // stop the render timer
+    render_timer->stop();
+
+    // make unique core and emu_thread ptrs
+    core = std::make_unique<Core>();
+    emu_thread = std::make_unique<EmuThread>(*core.get());
+
+    // give an empty path
+    core->SetRomPath("");
+    core->Reset();
+    core->FirmwareBoot();
+
+    // allow emulation to be controlled now
+    pause_action->setEnabled(true);
+    stop_action->setEnabled(true);
+    restart_action->setEnabled(true);
+    frame_limit_action->setEnabled(true);
+
+    // start the draw timer so we can update the screen at 60 fps
+    render_timer->start(1000 / 60);
+    emu_thread->Start();
 }

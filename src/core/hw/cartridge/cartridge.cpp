@@ -37,6 +37,13 @@ void Cartridge::Reset() {
 }
 
 void Cartridge::LoadRom(std::string rom_path) {
+    if (rom_path == "") {
+        // if no rom is given then don't load one
+        // set to 0 backup size, so that no backup exists
+        backup_size = 0;
+        return;
+    }
+
     std::ifstream file(rom_path, std::ios::binary);
 
     if (!file) {
@@ -200,35 +207,38 @@ auto Cartridge::ReadData() -> u32 {
         return data;
     }
 
-    // check the first command in the command buffer
-    switch (command_buffer[0]) {
-    case READ_HEADER:
-        // return the cartridge header repeated every 0x1000 bytes
-        memcpy(&data, &rom[transfer_count & 0xFFF], 4);
-        break;
-    case DUMMY_COMMAND:
-        // data remains as 0xFFFFFFFF
-        break;
-    case READ_DATA: {
-        // get the address from the 4 parameter bytes after the command byte in command buffer
-        u32 address = (command_buffer[1] << 24) | (command_buffer[2] << 16) | (command_buffer[3] << 8) | (command_buffer[4]);
-        if (address < 0x8000) {
-            address = 0x8000 + (address & 0x1FF);
-        }
+    // only do commands if a rom exists
+    if (rom_size) {
+        // check the first command in the command buffer
+        switch (command_buffer[0]) {
+        case READ_HEADER:
+            // return the cartridge header repeated every 0x1000 bytes
+            memcpy(&data, &rom[transfer_count & 0xFFF], 4);
+            break;
+        case DUMMY_COMMAND:
+            // data remains as 0xFFFFFFFF
+            break;
+        case READ_DATA: {
+            // get the address from the 4 parameter bytes after the command byte in command buffer
+            u32 address = (command_buffer[1] << 24) | (command_buffer[2] << 16) | (command_buffer[3] << 8) | (command_buffer[4]);
+            if (address < 0x8000) {
+                address = 0x8000 + (address & 0x1FF);
+            }
 
-        if (address + transfer_count >= rom_size) {
-            log_fatal("[Cartridge] Read data command exceeds rom size");
-        }
+            if (address + transfer_count >= rom_size) {
+                log_fatal("[Cartridge] Read data command exceeds rom size");
+            }
 
-        // otherwise read
-        memcpy(&data, &rom[address + transfer_count], 4);
-        break;
-    }
-    case FIRST_CHIP_ID: case SECOND_CHIP_ID:
-        data = 0x1FC2;
-        break;
-    default:
-        log_fatal("[Cartridge] Handle cartridge command %02x", command_buffer[0]);
+            // otherwise read
+            memcpy(&data, &rom[address + transfer_count], 4);
+            break;
+        }
+        case FIRST_CHIP_ID: case SECOND_CHIP_ID:
+            data = 0x1FC2;
+            break;
+        default:
+            log_fatal("[Cartridge] Handle cartridge command %02x", command_buffer[0]);
+        }
     }
 
     // after reading a word from the cartridge we must increment transfer_count by 4 as we just read 4 bytes
@@ -262,6 +272,11 @@ void Cartridge::WriteAUXSPICNT(u16 data) {
 }
 
 void Cartridge::WriteAUXSPIDATA(u8 data) {
+    // don't set if no backup exists
+    if (backup_size == 0) {
+        return;
+    }
+
     if (backup_write_count == 0) {
         // interpret a new command
         backup->ReceiveCommand(data);
