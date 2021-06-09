@@ -9,6 +9,7 @@
 #include <fstream>
 #include <vector>
 #include <iterator>
+#include <array>
 
 enum MemoryRegion {
     REGION_ARM7_BIOS = 0x00,
@@ -36,7 +37,7 @@ struct Memory {
     void Reset();
     void DirectBoot();
 
-    // general memory read/write handlers
+    // regular memory read/write handlers
     template <typename T>
     auto ARM7Read(u32 addr) -> T;
 
@@ -48,6 +49,19 @@ struct Memory {
 
     template <typename T>
     void ARM9Write(u32 addr, T data);
+
+    // software fastmem read/write handlers
+    template <typename T>
+    auto ARM7FastRead(u32 addr) -> T;
+
+    template <typename T>
+    void ARM7FastWrite(u32 addr, T data);
+
+    template <typename T>
+    auto ARM9FastRead(u32 addr) -> T;
+
+    template <typename T>
+    void ARM9FastWrite(u32 addr, T data);
 
     // mmio handlers
     auto ARM7ReadByteIO(u32 addr) -> u8;
@@ -75,6 +89,9 @@ struct Memory {
     auto CartridgeAccessRights() -> bool;
 
     void MapSharedMemory(u8 data);
+
+    void UpdateARM9MemoryMap(u32 low_addr, u32 high_addr);
+    void UpdateARM7MemoryMap(u32 low_addr, u32 high_addr);
 
     Core* core;
 
@@ -108,4 +125,10 @@ struct Memory {
 
     SharedMemoryConfig arm9_shared_memory_config;
     SharedMemoryConfig arm7_shared_memory_config;
+
+    std::array<u8*, 0x100000> arm7_page_table;
+    std::array<u8*, 0x100000> arm9_page_table;
+
+    // each page is 4kb
+    int static constexpr page_size = 0x1000;
 };

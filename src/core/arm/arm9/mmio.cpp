@@ -190,6 +190,7 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
     case 0x040002BC:
         return core->maths_unit.SQRT_PARAM >> 32;
     case 0x04000600:
+        // printf("bit 24 25 26 %02x\n", (core->gpu.geometry_engine.GXSTAT >> 24) & 0x7);
         return core->gpu.geometry_engine.GXSTAT;
     case 0x04001000:
         return core->gpu.engine_b.DISPCNT;
@@ -320,6 +321,10 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
 
 void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     if (in_range(0x04000330, 0x10)) {
+        return;
+    }
+
+    if (in_range(0x04000380, 0x40)) {
         return;
     }
 
@@ -632,7 +637,7 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
     }
     
     if (addr >= 0x04000440 && addr < 0x040005CC) {
-        core->gpu.geometry_engine.QueueCommand(addr, data);
+        core->gpu.geometry_engine.QueueCommand(addr - 0x04000440, data);
         return;
     }
 

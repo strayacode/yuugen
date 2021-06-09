@@ -20,15 +20,13 @@ void DMA::Transfer() {
     for (int i = 0; i < 4; i++) {
         // only do transfer if enabled obviously
         if (enabled & (1 << i)) {
-            // enabled &= ~(1 << i);
+            enabled &= ~(1 << i);
 
             // make variables to make things easier
             u8 destination_control = (channel[i].DMACNT >> 21) & 0x3;
             u8 source_control = (channel[i].DMACNT >> 23) & 0x3;
 
             u8 start_timing = (channel[i].DMACNT >> 27) & 0x7;
-
-            u32 write_count = 0;
             
             // check the transfer type (either halfwords or words)
             if (channel[i].DMACNT & (1 << 26)) {
@@ -70,11 +68,6 @@ void DMA::Transfer() {
                         // fixed
                         break;
                     }
-
-                    if (start_timing == 7 && ++write_count == 112) {
-                        // gxfifo dma transfers can only do 112 writes
-                        break;
-                    }
                 }
             } else {
                 // halfword transfer
@@ -114,11 +107,6 @@ void DMA::Transfer() {
                         // fixed
                         break;
                     }
-
-                    if (start_timing == 7 && ++write_count == 112) {
-                        // gxfifo dma transfers can only do 112 writes
-                        break;
-                    }
                 }
             }
 
@@ -145,14 +133,6 @@ void DMA::Transfer() {
                 // disable the dma channel after the transfer is finished
                 enabled &= ~(1 << i);
                 channel[i].DMACNT &= ~(1 << 31);
-            }
-
-            if (start_timing == 7) {
-                channel[i].internal_length -= write_count;
-                if (channel[i].internal_length > 0 && core->gpu.geometry_engine.GXSTAT & (1 << 25)) {
-                    // there are still gxfifo dmas todo if fifo is less than half empty
-                    enabled |= (1 << i);
-                }
             }
         }
     }
@@ -195,11 +175,6 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     // enable bit gets turned off alter the appropriate bit in enabled
     if (!(channel[channel_index].DMACNT & (1 << 31))) {
         enabled &= ~(1 << channel_index);
-    }
-
-    if (channel[channel_index].DMACNT & ((1 << 31)) && start_timing == 7 && core->gpu.geometry_engine.GXSTAT & (1 << 25)) {
-        // keep doing gxfifo dmas if the fifo is half empty
-        enabled |= (1 << channel_index);
     }
 
     // don't load internal registers if enable bit wasn't changed from 0 to 1

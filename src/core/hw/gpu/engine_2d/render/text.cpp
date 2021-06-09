@@ -76,7 +76,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                     colour = palette_index == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>(palette_index * 2);
                 }
 
-                bg_layers[bg_index][(256 * line) + tile + j] = colour;
+                u16 offset = (256 * line) + tile - (x % 8) + (horizontal_flip ? (7 - j) : j);
+
+                bg_layers[bg_index][offset] = colour;
             }
         }
     } else {

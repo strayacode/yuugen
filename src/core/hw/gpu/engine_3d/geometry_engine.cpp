@@ -65,157 +65,61 @@ void GeometryEngine::WriteGXFIFO(u32 data) {
 }
 
 void GeometryEngine::QueueCommand(u32 addr, u32 data) {
-    switch (addr) {
-    case 0x04000440:
-        QueueEntry({0x10, data});
-        break;
-    case 0x04000444:
-        QueueEntry({0x11, data});
-        break;
-    case 0x04000448:
-        QueueEntry({0x12, data});
-        break;
-    case 0x0400044C:
-        QueueEntry({0x13, data});
-        break;
-    case 0x04000454:
-        QueueEntry({0x15, data});
-        break;
-    case 0x04000458:
-        QueueEntry({0x16, data});
-        break;
-    case 0x0400045C:
-        QueueEntry({0x17, data});
-        break;
-    case 0x04000460:
-        QueueEntry({0x18, data});
-        break;
-    case 0x04000464:
-        QueueEntry({0x19, data});
-        break;
-    case 0x04000468:
-        QueueEntry({0x1A, data});
-        break;
-    case 0x0400046C:
-        QueueEntry({0x1B, data});
-        break;
-    case 0x04000470:
-        QueueEntry({0x1C, data});
-        break;
-    case 0x04000480:
-        QueueEntry({0x20, data});
-        break;
-    case 0x04000484:
-        QueueEntry({0x21, data});
-        break;
-    case 0x04000488:
-        QueueEntry({0x22, data});
-        break;
-    case 0x0400048C:
-        QueueEntry({0x23, data});
-        break;
-    case 0x040004A4:
-        QueueEntry({0x29, data});
-        break;
-    case 0x040004A8:
-        QueueEntry({0x2A, data});
-        break;
-    case 0x040004AC:
-        QueueEntry({0x2B, data});
-        break;
-    case 0x040004C0:
-        QueueEntry({0x30, data});
-        break;
-    case 0x040004C4:
-        QueueEntry({0x31, data});
-        break;
-    case 0x040004C8:
-        QueueEntry({0x32, data});
-        break;
-    case 0x040004CC:
-        QueueEntry({0x33, data});
-        break;
-    case 0x040004D0:
-        QueueEntry({0x34, data});
-        break;
-    case 0x04000500:
-        QueueEntry({0x40, data});
-        break;
-    case 0x04000504:
-        QueueEntry({0x41, data});
-        break;
-    case 0x04000540:
-        QueueEntry({0x50, data});
-        break;
-    case 0x04000580:
-        QueueEntry({0x60, data});
-        break;
-    default:
-        log_fatal("[GeometryEngine] Undefined geometry command defined by address %08x with data %08x", addr, data);
-    }
+    u8 command = (addr >> 2) & 0xFF;
+
+    QueueEntry({command, data});
 }
 
 void GeometryEngine::QueueEntry(Entry entry) {
     if (fifo.size() == 0 && pipe.size() < 4) {
-        // add the entry to the pipe
+        // if fifo is empty and pipe is not full, push to the pipe
         pipe.push(entry);
-        
     } else {
-        // add the entry to the fifo
-        fifo.push(entry);
+        // before writing to the pipe, if the fifo is full keep executing commands
+        if (fifo.size() >= 256) {
+            GXSTAT &= ~(1 << 27);
+            InterpretCommand();
+        }
 
-        // update bits 16..24 (for number of fifo entries)
-        GXSTAT = (GXSTAT & ~0x1FF0000) | (fifo.size() << 16);
-
-        // fifo is not empty anymore
-        GXSTAT &= ~(1 << 26);
-
-        // check if fifo is over half capacity
         if (fifo.size() >= 128 && (GXSTAT & (1 << 25))) {
             GXSTAT &= ~(1 << 25);
         }
 
-        // keep executing commands while the fifo is full
-        // however only do it if the geometry engine is not halted
-        if (state == STATE_RUNNING) {
-            while (fifo.size() > 256) {
-                InterpretCommand();
-            }
-        }
+        fifo.push(entry);
     }
 
-    if (state == STATE_RUNNING) {
-        InterpretCommand();
-    }   
+    InterpretCommand();
 }
 
 auto GeometryEngine::DequeueEntry() -> Entry {
-    Entry front_entry = pipe.front();
+    Entry entry = pipe.front();
+
     pipe.pop();
 
-    // if the pipe is half empty (less than 3 entries)
-    // then move the first 2 entries from the fifo to the pipe if any exist
+    // if the pipe is running half empty
+    // move 2 entries from the fifo to the pipe
     if (pipe.size() < 3) {
-        if (fifo.size()) {
+        if (fifo.size() > 0) {
             pipe.push(fifo.front());
             fifo.pop();
         }
 
-        if (fifo.size()) {
+        CheckGXFIFOInterrupt();
+
+        if (fifo.size() > 0) {
             pipe.push(fifo.front());
             fifo.pop();
         }
+
+        CheckGXFIFOInterrupt();
     }
 
-    return front_entry;
+    return entry;
 }
 
 void GeometryEngine::InterpretCommand() {
-    // only interpret a command if there exists enough entries in both fifo and pipe
-    // for a command to be executed successfully
     int total_size = fifo.size() + pipe.size();
 
-    // don't execute any commands if none are in fifo or pipe
     if (total_size == 0) {
         return;
     }
@@ -224,155 +128,17 @@ void GeometryEngine::InterpretCommand() {
 
     u8 param_count = parameter_count[entry.command];
     if (total_size >= param_count) {
-        switch (entry.command) {
-        case 0x00:
-            // used to pad packed commands in gxfifo
+        // for now just make sure to remove the entries from the pipe
+        DequeueEntry();
+        for (int i = 1; i < param_count; i++) {
             DequeueEntry();
-            break;
-        case 0x10:
-            CommandSetMatrixMode();
-            break;
-        case 0x11:
-            CommandPushCurrentMatrix();
-            break;
-        case 0x12:
-            CommandPopCurrentMatrix();
-            break;
-        case 0x13:
-            CommandStoreCurrentMatrix();
-            break;
-        case 0x14:
-            CommandRestoreCurrentMatrix();
-            break;
-        case 0x15:
-            CommandLoadUnitMatrix();
-            break;
-        case 0x16:
-            CommandLoad4x4();
-            break;
-        case 0x17:
-            CommandLoad4x3();
-            break;
-        case 0x18:
-            CommandMultiply4x4();
-            break;
-        case 0x19:
-            CommandMultiply4x3();
-            break;
-        case 0x1A:
-            CommandMultiply3x3();
-            break;
-        case 0x1B:
-            CommandMultiplyScale();
-            break;
-        case 0x1C:
-            CommandMultiplyTranslation();
-            break;
-        case 0x20:
-            CommandSetVertexColour();
-            break;
-        case 0x21:
-            CommandSetVertexNormal();
-            break;
-        case 0x22:
-            CommandSetTextureCoordinates();
-            break;
-        case 0x23:
-            CommandAddVertex16();
-            break;
-        case 0x24:
-            CommandAddVertex10();
-            break;
-        case 0x25:
-            CommandSetVertexXY();
-            break;
-        case 0x26:
-            CommandSetVertexXZ();
-            break;
-        case 0x27:
-            CommandSetVertexYZ();
-            break;
-        case 0x28:
-            CommandSetVertexRelative();
-            break;
-        case 0x29:
-            CommandSetPolygonAttributes();
-            break;
-        case 0x2A:
-            CommandSetTextureParameters();
-            break;
-        case 0x2B:
-            CommandSetTexturePaletteAddress();
-            break;
-        case 0x30:
-            CommandSetDiffuseAmbientReflect();
-            break;
-        case 0x31:
-            CommandSetSpecularReflectEmission();
-            break;
-        case 0x32:
-            CommandSetLightDirectionVector();
-            break;
-        case 0x33:
-            CommandSetLightColour();
-            break;
-        case 0x34:
-            CommandShininess();
-            break;
-        case 0x40:
-            CommandBeginVertexList();
-            break;
-        case 0x41:
-            // end vertex list doesn't do anything
-            DequeueEntry();
-            break;
-        case 0x50:
-            CommandSwapBuffers();
-            break;
-        case 0x60:
-            CommandSetViewport();
-            break;
-        default:
-            if (parameter_count[entry.command] == 0) {
-                DequeueEntry();
-            } else {
-                for (int i = 0; i < parameter_count[entry.command]; i++) {
-                    DequeueEntry();
-                }
-            }
-            // log_fatal("[GeometryEngine] Handle geometry command %02x", entry.command);
-            break;
         }
-        if (state == STATE_RUNNING) {
-            // schedule more interpret commands events with 1 cycle delay
-            gpu->core->scheduler.Add(1, InterpretCommandTask);
-        }
-    }
 
-    if (fifo.size() == 0) {
-        GXSTAT |= (1 << 26);
+        gpu->core->scheduler.Add(2, InterpretCommandTask);
     }
 
     if (fifo.size() < 128 && !(GXSTAT & (1 << 25))) {
         GXSTAT |= (1 << 25);
-        gpu->core->dma[1].Trigger(7);
-        printf("do dma lol\n");
-    }
-
-    // check gxfifo irq
-    switch (GXSTAT >> 30) {
-    case 1:
-        // less than half full
-        if (GXSTAT & (1 << 25)) {
-            gpu->core->arm9.SendInterrupt(21);
-        }
-        break;
-    case 2:
-        // fifo empty
-        if (GXSTAT & (1 << 26)) {
-            gpu->core->arm9.SendInterrupt(21);
-        }
-        break;
     }
 }
 
@@ -451,37 +217,54 @@ void GeometryEngine::UpdateClipMatrix() {
 }
 
 void GeometryEngine::DoSwapBuffers() {
-    // clear the render engines vertex and polygon ram before writing to it
-    gpu->render_engine.polygon_ram.clear();
-    gpu->render_engine.vertex_ram.clear();
+    // // clear the render engines vertex and polygon ram before writing to it
+    // gpu->render_engine.polygon_ram.clear();
+    // gpu->render_engine.vertex_ram.clear();
 
-    // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
-    // for now we shall just render vertices
-    for (unsigned int i = 0; i < vertex_ram.size(); i++) {
-        if (vertex_ram[i].w != 0) {
-            u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1 + 1) & 0x1FF;
-            u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1 + 1) & 0xFF;
-            u16 render_x = ((s64)vertex_ram[i].x + vertex_ram[i].w) * screen_width / (2 * vertex_ram[i].w) + gpu->render_engine.screen_x1;
-            u16 render_y = (-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height / (2 * vertex_ram[i].w) + gpu->render_engine.screen_y1;
-            render_x &= 0x1FF;
-            render_y &= 0xFF;
+    // // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
+    // // for now we shall just render vertices
+    // for (unsigned int i = 0; i < vertex_ram.size(); i++) {
+    //     if (vertex_ram[i].w != 0) {
+    //         u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1 + 1) & 0x1FF;
+    //         u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1 + 1) & 0xFF;
+    //         u16 render_x = ((s64)vertex_ram[i].x + vertex_ram[i].w) * screen_width / (2 * vertex_ram[i].w) + gpu->render_engine.screen_x1;
+    //         u16 render_y = (-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height / (2 * vertex_ram[i].w) + gpu->render_engine.screen_y1;
+    //         render_x &= 0x1FF;
+    //         render_y &= 0xFF;
 
-            Vertex render_vertex;
+    //         Vertex render_vertex;
 
-            render_vertex.x = render_x;
-            render_vertex.y = render_y;
-            gpu->render_engine.vertex_ram.push_back(render_vertex);
-            // TODO: update z coord here
-        }
-    }
+    //         render_vertex.x = render_x;
+    //         render_vertex.y = render_y;
+    //         gpu->render_engine.vertex_ram.push_back(render_vertex);
+    //         // TODO: update z coord here
+    //     }
+    // }
 
-    // empty polygon and vertex ram
-    polygon_ram.clear();
-    vertex_ram.clear();
+    // // empty polygon and vertex ram
+    // polygon_ram.clear();
+    // vertex_ram.clear();
 
-    // unhalt the geometry engine
-    state = STATE_RUNNING;
+    // // unhalt the geometry engine
+    // state = STATE_RUNNING;
     
-    // schedule more interpret commands events with 1 cycle delay
-    gpu->core->scheduler.Add(1, InterpretCommandTask);
+    // // schedule more interpret commands events with 1 cycle delay
+    // gpu->core->scheduler.Add(1, InterpretCommandTask);
+}
+
+void GeometryEngine::CheckGXFIFOInterrupt() {
+    switch ((GXSTAT >> 30) & 0x3) {
+    case 1:
+        // trigger interrupt if fifo is less than half full
+        if (fifo.size() < 128) {
+            gpu->core->arm9.SendInterrupt(21);
+        }
+        break;
+    case 2:
+        // trigger interrupt if fifo is empty
+        if (fifo.size() == 0) {
+            gpu->core->arm9.SendInterrupt(21);
+        }
+        break;
+    }
 }

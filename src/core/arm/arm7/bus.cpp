@@ -1,6 +1,26 @@
 #include <core/arm/memory.h>
 #include <core/core.h>
 
+void Memory::UpdateARM7MemoryMap(u32 low_addr, u32 high_addr) {
+    
+}
+
+template auto Memory::ARM7FastRead(u32 addr) -> u8;
+template auto Memory::ARM7FastRead(u32 addr) -> u16;
+template auto Memory::ARM7FastRead(u32 addr) -> u32;
+template <typename T>
+auto Memory::ARM7FastRead(u32 addr) -> T {
+
+}
+
+template void Memory::ARM7FastWrite(u32 addr, u8 data);
+template void Memory::ARM7FastWrite(u32 addr, u16 data);
+template void Memory::ARM7FastWrite(u32 addr, u32 data);
+template <typename T>
+void Memory::ARM7FastWrite(u32 addr, T data) {
+
+}
+
 template auto Memory::ARM7Read(u32 addr) -> u8;
 template auto Memory::ARM7Read(u32 addr) -> u16;
 template auto Memory::ARM7Read(u32 addr) -> u32;

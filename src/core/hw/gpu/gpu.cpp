@@ -354,6 +354,7 @@ void GPU::WriteBGA(u32 addr, T data) {
 template auto GPU::ReadBGA(u32 addr) -> u8;
 template auto GPU::ReadBGA(u32 addr) -> u16;
 template auto GPU::ReadBGA(u32 addr) -> u32;
+template auto GPU::ReadBGA(u32 addr) -> u64;
 template <typename T>
 auto GPU::ReadBGA(u32 addr) -> T {
     T return_value = 0;
@@ -430,6 +431,7 @@ void GPU::WriteBGB(u32 addr, T data) {
 template auto GPU::ReadBGB(u32 addr) -> u8;
 template auto GPU::ReadBGB(u32 addr) -> u16;
 template auto GPU::ReadBGB(u32 addr) -> u32;
+template auto GPU::ReadBGB(u32 addr) -> u64;
 template <typename T>
 auto GPU::ReadBGB(u32 addr) -> T {
     T return_value = 0;

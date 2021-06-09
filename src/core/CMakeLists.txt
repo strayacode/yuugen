@@ -1,3 +1,5 @@
+set(SOFTWARE_FASTMEM ON)
+
 add_library(core
     core.h core.cpp
     arm/arm7/bus.cpp arm/arm7/mmio.cpp

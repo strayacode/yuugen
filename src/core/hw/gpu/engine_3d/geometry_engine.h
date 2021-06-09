@@ -85,6 +85,8 @@ struct GeometryEngine {
 
     void DoSwapBuffers();
 
+    void CheckGXFIFOInterrupt();
+
     auto MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix;
     auto MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex;
     auto MultiplyVertexVertex(const Vertex& a, const Vertex& b) -> u32;

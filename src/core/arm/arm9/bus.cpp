@@ -1,6 +1,56 @@
 #include <core/arm/memory.h>
 #include <core/core.h>
 
+
+void Memory::UpdateARM9MemoryMap(u32 low_addr, u32 high_addr) {
+    for (u32 addr = low_addr; addr < high_addr; addr += page_size) {
+        // get the pagetable index
+        int index = addr >> 12;
+        switch (addr >> 24) {
+        case 0x02:
+            arm9_page_table[index] = &main_memory[addr & 0x3FFFFF];
+            break;
+        case 0x03:
+            switch (WRAMCNT) {
+            case 0:
+                arm9_page_table[index] = &shared_wram[addr & 0x7FFF];
+                break;
+            case 1:
+                arm9_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+                break;
+            case 2:
+                arm9_page_table[index] = &shared_wram[addr & 0x3FFF];
+                break;
+            case 3:
+                // just set to a nullptr to indicate we should return 0
+                arm9_page_table[index] = nullptr;
+                break;
+            }
+            break;
+        default:
+            // set as a nullptr, which indicates that we should do a regular read
+            arm9_page_table[index] = nullptr;
+            break;
+        }
+    }
+}
+
+template auto Memory::ARM9FastRead(u32 addr) -> u8;
+template auto Memory::ARM9FastRead(u32 addr) -> u16;
+template auto Memory::ARM9FastRead(u32 addr) -> u32;
+template <typename T>
+auto Memory::ARM9FastRead(u32 addr) -> T {
+
+}
+
+template void Memory::ARM9FastWrite(u32 addr, u8 data);
+template void Memory::ARM9FastWrite(u32 addr, u16 data);
+template void Memory::ARM9FastWrite(u32 addr, u32 data);
+template <typename T>
+void Memory::ARM9FastWrite(u32 addr, T data) {
+
+}
+
 template auto Memory::ARM9Read(u32 addr) -> u8;
 template auto Memory::ARM9Read(u32 addr) -> u16;
 template auto Memory::ARM9Read(u32 addr) -> u32;
@@ -105,6 +155,10 @@ template void Memory::ARM9Write(u32 addr, u32 data);
 template <typename T>
 void Memory::ARM9Write(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
+
+    if (addr == 0x021d1c84 && core->arm9.instruction == 0xe5812000) {
+        core->arm9.DebugRegisters();
+    }
 
     if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&core->cp15.itcm[addr & 0x7FFF], &data, sizeof(T));
