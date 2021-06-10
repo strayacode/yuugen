@@ -2,7 +2,7 @@
 #include <core/core.h>
 
 Memory::Memory(Core* core) : core(core) {
-    
+
 }
 
 void Memory::Reset() {
@@ -25,6 +25,10 @@ void Memory::Reset() {
 
     LoadARM7Bios();
     LoadARM9Bios();
+
+    // setup the arm7 and arm9 page tables
+    UpdateARM7MemoryMap(0, 0xFFFFFFFF);
+    UpdateARM9MemoryMap(0, 0xFFFFFFFF);
 }
 
 void Memory::DirectBoot() {
@@ -118,4 +122,12 @@ auto Memory::CartridgeAccessRights() -> bool {
     } else {
         return true; // 1 = ARMv5
     }
+}
+
+void Memory::WriteWRAMCNT(u8 data) {
+    WRAMCNT = data & 0x3;
+
+    // now we must update the memory map for the shared wram space specifically
+    UpdateARM7MemoryMap(0x03000000, 0x04000000);
+    UpdateARM9MemoryMap(0x03000000, 0x04000000);
 }

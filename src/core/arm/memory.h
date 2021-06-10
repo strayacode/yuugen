@@ -86,6 +86,8 @@ struct Memory {
 
     void WriteHALTCNT(u8 data);
 
+    void WriteWRAMCNT(u8 data);
+
     auto CartridgeAccessRights() -> bool;
 
     void MapSharedMemory(u8 data);
@@ -126,8 +128,10 @@ struct Memory {
     SharedMemoryConfig arm9_shared_memory_config;
     SharedMemoryConfig arm7_shared_memory_config;
 
-    std::array<u8*, 0x100000> arm7_page_table;
-    std::array<u8*, 0x100000> arm9_page_table;
+    std::array<u8*, 0x100000> arm7_read_page_table;
+    std::array<u8*, 0x100000> arm9_read_page_table;
+    std::array<u8*, 0x100000> arm7_write_page_table;
+    std::array<u8*, 0x100000> arm9_write_page_table;
 
     // each page is 4kb
     int static constexpr page_size = 0x1000;

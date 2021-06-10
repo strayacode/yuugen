@@ -118,8 +118,7 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
 
 auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
     if (in_range(0x04000400, 0x100)) {
-        // for now just return 0
-        return 0;
+        return core->spu.ReadWord(addr);
     }
 
     switch (addr) {

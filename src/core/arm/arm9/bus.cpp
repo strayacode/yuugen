@@ -3,33 +3,49 @@
 
 
 void Memory::UpdateARM9MemoryMap(u32 low_addr, u32 high_addr) {
-    for (u32 addr = low_addr; addr < high_addr; addr += page_size) {
+    for (u64 addr = low_addr; addr < high_addr; addr += 0x1000) {
         // get the pagetable index
         int index = addr >> 12;
         switch (addr >> 24) {
         case 0x02:
-            arm9_page_table[index] = &main_memory[addr & 0x3FFFFF];
+            arm9_read_page_table[index] = &main_memory[addr & 0x3FFFFF];
+            arm9_write_page_table[index] = &main_memory[addr & 0x3FFFFF];
             break;
         case 0x03:
             switch (WRAMCNT) {
             case 0:
-                arm9_page_table[index] = &shared_wram[addr & 0x7FFF];
+                arm9_read_page_table[index] = &shared_wram[addr & 0x7FFF];
+                arm9_write_page_table[index] = &shared_wram[addr & 0x7FFF];
                 break;
             case 1:
-                arm9_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+                arm9_read_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+                arm9_write_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
                 break;
             case 2:
-                arm9_page_table[index] = &shared_wram[addr & 0x3FFF];
+                arm9_read_page_table[index] = &shared_wram[addr & 0x3FFF];
+                arm9_write_page_table[index] = &shared_wram[addr & 0x3FFF];
                 break;
             case 3:
                 // just set to a nullptr to indicate we should return 0
-                arm9_page_table[index] = nullptr;
+                arm9_read_page_table[index] = nullptr;
+                arm9_write_page_table[index] = nullptr;
                 break;
             }
             break;
+        case 0xFF:
+            if ((addr & 0xFFFF0000) == 0xFFFF0000) {
+                arm9_read_page_table[index] = &arm9_bios[addr & 0x7FFF];
+                arm9_write_page_table[index] = nullptr;
+            } else {
+                arm9_read_page_table[index] = nullptr;
+                arm9_write_page_table[index] = nullptr;
+            }
+
+            break;
         default:
-            // set as a nullptr, which indicates that we should do a regular read
-            arm9_page_table[index] = nullptr;
+            // set as a nullptr, which indicates that we should do a regular read / write
+            arm9_read_page_table[index] = nullptr;
+            arm9_write_page_table[index] = nullptr;
             break;
         }
     }
@@ -104,7 +120,6 @@ auto Memory::ARM9Read(u32 addr) -> T {
             }
             break;
         case REGION_VRAM:
-            // TODO: make vram memory handlers applicable to u8, u16 and u32
             if (addr >= 0x06800000) {
                 return_value = core->gpu.ReadLCDC<T>(addr);
             } else if (in_range(0x06000000, 0x200000)) {
@@ -155,10 +170,6 @@ template void Memory::ARM9Write(u32 addr, u32 data);
 template <typename T>
 void Memory::ARM9Write(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
-
-    if (addr == 0x021d1c84 && core->arm9.instruction == 0xe5812000) {
-        core->arm9.DebugRegisters();
-    }
 
     if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&core->cp15.itcm[addr & 0x7FFF], &data, sizeof(T));

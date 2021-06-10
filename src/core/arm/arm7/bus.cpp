@@ -2,7 +2,16 @@
 #include <core/core.h>
 
 void Memory::UpdateARM7MemoryMap(u32 low_addr, u32 high_addr) {
-    
+    for (u64 addr = low_addr; addr < high_addr; addr += 0x1000) {
+        // get the pagetable index
+        int index = addr >> 12;
+        switch (addr >> 24) {
+        default:
+            // set as a nullptr, which indicates that we should do a regular read
+            arm7_read_page_table[index] = nullptr;
+            break;
+        }
+    }
 }
 
 template auto Memory::ARM7FastRead(u32 addr) -> u8;
