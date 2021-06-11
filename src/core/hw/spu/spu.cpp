@@ -47,6 +47,10 @@ void SPU::WriteByte(u32 addr, u8 data) {
     u8 channel_index = (addr >> 4) & 0xF;
     // check which data in the channel should be changed
     switch (addr & 0xF) {
+    case 0x00:
+        // write to 1st byte of SOUNDCNT
+        channel[channel_index].SOUNDCNT = (channel[channel_index].SOUNDCNT & ~0x000000FF) | data;
+        break;
     case 0x02:
         // write to 3rd byte of SOUNDCNT
         channel[channel_index].SOUNDCNT = (channel[channel_index].SOUNDCNT & ~0x00FF0000) | (data << 16);

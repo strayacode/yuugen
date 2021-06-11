@@ -163,7 +163,7 @@ void SPI::FirmwareTransfer(u8 data) {
             SPIDATA = firmware[address];
 
             // increment the address after reading a byte into SPIDATA
-            address++;
+            address += (SPICNT & (1 << 10)) ? 2 : 1;
         }
         break;
     case 0x05:

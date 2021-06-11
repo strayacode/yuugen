@@ -20,11 +20,11 @@ struct CP15 {
 
     auto GetDTCMBase() -> u32;
 
-    auto GetITCMEnabled() -> bool;
-    auto GetDTCMEnabled() -> bool;
+    auto GetITCMWriteEnabled() -> bool;
+    auto GetDTCMWriteEnabled() -> bool;
 
-    auto GetITCMLoadMode() -> bool;
-    auto GetDTCMLoadMode() -> bool;
+    auto GetITCMReadEnabled() -> bool;
+    auto GetDTCMReadEnabled() -> bool;
 
     auto GetExceptionBase() -> u32;
 

@@ -44,6 +44,8 @@ auto Memory::ARM9ReadHalfIO(u32 addr) -> u16 {
         return core->gpu.engine_a.WININ;
     case 0x0400004A:
         return core->gpu.engine_a.WINOUT;
+    case 0x04000050:
+        return core->gpu.engine_a.BLDCNT;
     case 0x04000060:
         return core->gpu.render_engine.DISP3DCNT;
     case 0x0400006C:
@@ -190,7 +192,6 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
     case 0x040002BC:
         return core->maths_unit.SQRT_PARAM >> 32;
     case 0x04000600:
-        // printf("bit 24 25 26 %02x\n", (core->gpu.geometry_engine.GXSTAT >> 24) & 0x7);
         return core->gpu.geometry_engine.GXSTAT;
     case 0x04001000:
         return core->gpu.engine_b.DISPCNT;

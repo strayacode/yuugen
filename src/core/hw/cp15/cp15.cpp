@@ -142,12 +142,9 @@ void CP15::DirectBoot() {
     Write(9, 1, 1, 0x00000020);
 }
 
-
-
 auto CP15::GetITCMSize() -> u32 {
     return itcm_size;
 }
-
 
 auto CP15::GetDTCMSize() -> u32 {
     return dtcm_size;
@@ -157,21 +154,20 @@ auto CP15::GetDTCMBase() -> u32 {
     return dtcm_base;
 }
 
-auto CP15::GetITCMEnabled() -> bool {
+auto CP15::GetITCMWriteEnabled() -> bool {
     return (control_register & (1 << 18));
 }
 
-auto CP15::GetDTCMEnabled() -> bool {
+auto CP15::GetDTCMWriteEnabled() -> bool {
     return (control_register & (1 << 16));
 }
 
-auto CP15::GetITCMLoadMode() -> bool {
-    return (control_register & (1 << 19));
+auto CP15::GetITCMReadEnabled() -> bool {
+    return !(control_register & (1 << 19)) && (control_register & (1 << 18));
 }
 
-
-auto CP15::GetDTCMLoadMode() -> bool {
-    return (control_register & (1 << 17));
+auto CP15::GetDTCMReadEnabled() -> bool {
+    return !(control_register & (1 << 17)) && (control_register & (1 << 16));
 }
 
 auto CP15::GetExceptionBase() -> u32 {

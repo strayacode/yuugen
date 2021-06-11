@@ -692,6 +692,8 @@ void ARM::Execute() {
                 return ARM_MOVS(ARM_ARITHMETIC_SHIFT_RIGHT_REGS());
             case 0x1B6: case 0x1BE:
                 return ARM_MOVS(ARM_ROTATE_RIGHT_IMMS());
+            case 0x1BB:
+                return ARM_LDRH_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x1BD:
                 return ARM_LDRSB_PRE_WRITEBACK(ARM_HALFWORD_SIGNED_DATA_TRANSFER_REG());
             case 0x1C0: case 0x1C8:
@@ -1028,6 +1030,8 @@ void ARM::Execute() {
                 return ARM_LDR_PRE(ARM_RPAR());
             case 0x796: case 0x79E:
                 return ARM_LDR_PRE(ARM_RPRR());
+            case 0x7A0: case 0x7A8:
+                return ARM_STR_PRE_WRITEBACK(ARM_RPLL());
             case 0x7B0: case 0x7B8:
                 return ARM_LDR_PRE_WRITEBACK(ARM_RPLL());
             case 0x7B2: case 0x7BA:

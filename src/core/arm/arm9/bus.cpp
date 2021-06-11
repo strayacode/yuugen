@@ -76,10 +76,9 @@ auto Memory::ARM9Read(u32 addr) -> T {
 
     T return_value = 0;
 
-    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize()) && !core->cp15.GetITCMLoadMode()) {
+    if (core->cp15.GetITCMReadEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&return_value, &core->cp15.itcm[addr & 0x7FFF], sizeof(T));
-    } else if (core->cp15.GetDTCMEnabled() && 
-        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize()) && !core->cp15.GetDTCMLoadMode()) {
+    } else if (core->cp15.GetDTCMReadEnabled() && in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize())) {
         memcpy(&return_value, &core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], sizeof(T));
     } else {
         switch (addr >> 24) {
@@ -171,12 +170,10 @@ template <typename T>
 void Memory::ARM9Write(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
 
-    if (core->cp15.GetITCMEnabled() && (addr < core->cp15.GetITCMSize())) {
+    if (core->cp15.GetITCMWriteEnabled() && (addr < core->cp15.GetITCMSize())) {
         memcpy(&core->cp15.itcm[addr & 0x7FFF], &data, sizeof(T));
         return;
-    } else if (core->cp15.GetDTCMEnabled() && 
-        in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize())) {
-
+    } else if (core->cp15.GetDTCMWriteEnabled() && in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize())) {
         memcpy(&core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF], &data, sizeof(T));
         return;
     } else {
