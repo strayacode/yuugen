@@ -53,9 +53,14 @@ auto CP15::Read(u32 cn, u32 cm, u32 cp) -> u32 {
 
 void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
     switch ((cn << 16) | (cm << 8) | cp) {
-    case 0x010000:
+    case 0x010000: {
         control_register = data;
+
+        // update the itcm and dtcm memory map, as now flags may have changed
+        core->memory.UpdateARM9MemoryMap(0, itcm_size);
+        core->memory.UpdateARM9MemoryMap(dtcm_base, dtcm_base + dtcm_size);
         break;
+    }
     case 0x020000:
         // pu cachability bits for data/unified protection region
         break;
@@ -100,7 +105,11 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
     case 0x070E02:
         // clean and invalidate data cache line
         break;
-    case 0x090100:
+    case 0x090100: {
+        // keep old copy of base and size to unmap certain areas
+        u32 old_dtcm_base = dtcm_base;
+        u32 old_dtcm_size = dtcm_size;
+
         // write to raw register
         dtcm_reg = data;
 
@@ -115,9 +124,18 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         // dtcm size 512 shl n
         dtcm_size = 512 << dtcm_size;
 
+        // now make sure to remap dtcm
+        core->memory.UpdateARM9MemoryMap(old_dtcm_base, old_dtcm_base + old_dtcm_size);
+        core->memory.UpdateARM9MemoryMap(dtcm_base, dtcm_base + dtcm_size);
+
         log_debug("[CP15]\nDtcm Size: 0x%08x\nDtcm Base: 0x%08x", dtcm_size, dtcm_base);
         break;
-    case 0x090101:
+    }
+    case 0x090101: {
+        // keep old copy of base and size to unmap certain areas
+        u32 old_itcm_base = itcm_base;
+        u32 old_itcm_size = itcm_size;
+
         // write to raw register
         itcm_reg = data;
 
@@ -126,9 +144,13 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
 
         // itcm size 512 shl n
         itcm_size = 512 << itcm_size;
+
+        // now make sure to remap itcm
+        core->memory.UpdateARM9MemoryMap(0, std::max(old_itcm_size, itcm_size));
         
         log_debug("[CP15]\nItcm Size: 0x%08x\nItcm Base: 0x%08x", itcm_size, itcm_base);
         break;
+    }
     default:
         log_fatal("undefined register write C%d, C%d, C%d with data 0x%08x", cn, cm, cp, data);
     }

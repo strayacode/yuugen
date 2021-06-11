@@ -49,12 +49,11 @@ void Core::Reset() {
 }
 
 void Core::DirectBoot() {
+    cp15.DirectBoot();
     memory.DirectBoot();
     cartridge.DirectBoot();
     arm9.DirectBoot();
     arm7.DirectBoot();
-
-    cp15.DirectBoot();
     spi.DirectBoot();
 }
 

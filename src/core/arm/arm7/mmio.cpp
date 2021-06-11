@@ -6,6 +6,11 @@ auto Memory::ARM7ReadByteIO(u32 addr) -> u8 {
         return core->spu.ReadByte(addr);
     }
 
+    if (in_range(0x04800000, 0x100000)) {
+        // TODO: implement wifi regs correctly
+        return 0;
+    }
+
     switch (addr) {
     case 0x04000138:
         return core->rtc.ReadRTC();
@@ -30,6 +35,11 @@ auto Memory::ARM7ReadByteIO(u32 addr) -> u8 {
 }
 
 auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
+    if (in_range(0x04800000, 0x100000)) {
+        // TODO: implement wifi regs correctly
+        return 0;
+    }
+
     switch (addr) {
     case 0x04000004:
         return core->gpu.DISPSTAT7;
@@ -119,6 +129,11 @@ auto Memory::ARM7ReadHalfIO(u32 addr) -> u16 {
 auto Memory::ARM7ReadWordIO(u32 addr) -> u32 {
     if (in_range(0x04000400, 0x100)) {
         return core->spu.ReadWord(addr);
+    }
+
+    if (in_range(0x04800000, 0x100000)) {
+        // TODO: implement wifi regs correctly
+        return 0;
     }
 
     switch (addr) {

@@ -3,50 +3,92 @@
 
 
 void Memory::UpdateARM9MemoryMap(u32 low_addr, u32 high_addr) {
+    // for mapping itcm and dtcm:
+    // itcm has higher priority than dtcm
+    // do UpdateARM9MemoryMap for old itcm and dtcm range, this will make the pages now not in the range
+    // as nullptr. then do another UpdateARM9MemoryMap to make sure the itcm and range is fully covered
+
     for (u64 addr = low_addr; addr < high_addr; addr += 0x1000) {
         // get the pagetable index
         int index = addr >> 12;
-        switch (addr >> 24) {
-        case 0x02:
-            arm9_read_page_table[index] = &main_memory[addr & 0x3FFFFF];
-            arm9_write_page_table[index] = &main_memory[addr & 0x3FFFFF];
-            break;
-        case 0x03:
-            switch (WRAMCNT) {
-            case 0:
-                arm9_read_page_table[index] = &shared_wram[addr & 0x7FFF];
-                arm9_write_page_table[index] = &shared_wram[addr & 0x7FFF];
-                break;
-            case 1:
-                arm9_read_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
-                arm9_write_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
-                break;
-            case 2:
-                arm9_read_page_table[index] = &shared_wram[addr & 0x3FFF];
-                arm9_write_page_table[index] = &shared_wram[addr & 0x3FFF];
-                break;
-            case 3:
-                // just set to a nullptr to indicate we should return 0
-                arm9_read_page_table[index] = nullptr;
-                arm9_write_page_table[index] = nullptr;
-                break;
-            }
-            break;
-        case 0xFF:
-            if ((addr & 0xFFFF0000) == 0xFFFF0000) {
-                arm9_read_page_table[index] = &arm9_bios[addr & 0x7FFF];
-                arm9_write_page_table[index] = nullptr;
-            } else {
-                arm9_read_page_table[index] = nullptr;
-                arm9_write_page_table[index] = nullptr;
-            }
 
-            break;
-        default:
-            // set as a nullptr, which indicates that we should do a regular read / write
-            arm9_read_page_table[index] = nullptr;
-            arm9_write_page_table[index] = nullptr;
-            break;
+        if (core->cp15.GetITCMReadEnabled() && (addr < core->cp15.GetITCMSize())) {
+            arm9_read_page_table[index] = &core->cp15.itcm[addr & 0x7FFF];
+        } else if (core->cp15.GetDTCMReadEnabled() && in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize())) {
+            arm9_read_page_table[index] = &core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF];
+        } else {
+            switch (addr >> 24) {
+            case 0x02:
+                arm9_read_page_table[index] = &main_memory[addr & 0x3FFFFF];
+                break;
+            case 0x03:
+                switch (WRAMCNT) {
+                case 0:
+                    arm9_read_page_table[index] = &shared_wram[addr & 0x7FFF];
+                    break;
+                case 1:
+                    arm9_read_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+                    break;
+                case 2:
+                    arm9_read_page_table[index] = &shared_wram[addr & 0x3FFF];
+                    break;
+                case 3:
+                    // just set to a nullptr to indicate we should return 0
+                    arm9_read_page_table[index] = nullptr;
+                    break;
+                }
+                break;
+            case 0xFF:
+                if ((addr & 0xFFFF0000) == 0xFFFF0000) {
+                    arm9_read_page_table[index] = &arm9_bios[addr & 0x7FFF];
+                } else {
+                    arm9_read_page_table[index] = nullptr;
+                }
+
+                break;
+            default:
+                // set as a nullptr, which indicates that we should do a regular read / write
+                arm9_read_page_table[index] = nullptr;
+                break;
+            }
+        }
+    }
+
+    for (u64 addr = low_addr; addr < high_addr; addr += 0x1000) {
+        // get the pagetable index
+        int index = addr >> 12;
+
+        if (core->cp15.GetITCMWriteEnabled() && (addr < core->cp15.GetITCMSize())) {
+            arm9_write_page_table[index] = &core->cp15.itcm[addr & 0x7FFF];
+        } else if (core->cp15.GetDTCMWriteEnabled() && in_range(core->cp15.GetDTCMBase(), core->cp15.GetDTCMSize())) {
+            arm9_write_page_table[index] = &core->cp15.dtcm[(addr - core->cp15.GetDTCMBase()) & 0x3FFF];
+        } else {
+            switch (addr >> 24) {
+            case 0x02:
+                arm9_write_page_table[index] = &main_memory[addr & 0x3FFFFF];
+                break;
+            case 0x03:
+                switch (WRAMCNT) {
+                case 0:
+                    arm9_write_page_table[index] = &shared_wram[addr & 0x7FFF];
+                    break;
+                case 1:
+                    arm9_write_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+                    break;
+                case 2:
+                    arm9_write_page_table[index] = &shared_wram[addr & 0x3FFF];
+                    break;
+                case 3:
+                    // just set to a nullptr to indicate we should return 0
+                    arm9_write_page_table[index] = nullptr;
+                    break;
+                }
+                break;
+            default:
+                // set as a nullptr, which indicates that we should do a regular read / write
+                arm9_write_page_table[index] = nullptr;
+                break;
+            }
         }
     }
 }
@@ -56,7 +98,74 @@ template auto Memory::ARM9FastRead(u32 addr) -> u16;
 template auto Memory::ARM9FastRead(u32 addr) -> u32;
 template <typename T>
 auto Memory::ARM9FastRead(u32 addr) -> T {
+    addr &= ~(sizeof(T) - 1);
 
+    T return_value = 0;
+
+    int index = addr >> 12;
+    if (arm9_read_page_table[index]) {
+        memcpy(&return_value, &arm9_read_page_table[index][addr & 0xFFF], sizeof(T));
+    } else {
+        // default back to regular read
+        switch (addr >> 24) {
+        case REGION_IO:
+            if constexpr (std::is_same_v<T, u8>) {
+                return ARM9ReadByteIO(addr);
+            } else if constexpr (std::is_same_v<T, u16>) {
+                return ARM9ReadHalfIO(addr);
+            } else if constexpr (std::is_same_v<T, u32>) {
+                return ARM9ReadWordIO(addr);
+            }
+            break;
+        case REGION_PALETTE_RAM:
+            if ((addr & 0x7FF) < 400) {
+                // this is the first block which is assigned to engine a
+                memcpy(&return_value, &core->gpu.engine_a.palette_ram[addr & 0x3FF], sizeof(T));
+            } else {
+                // write to engine b's palette ram
+                memcpy(&return_value, &core->gpu.engine_b.palette_ram[addr & 0x3FF], sizeof(T));
+            }
+            break;
+        case REGION_VRAM:
+            if (addr >= 0x06800000) {
+                return_value = core->gpu.ReadLCDC<T>(addr);
+            } else if (in_range(0x06000000, 0x200000)) {
+                return_value = core->gpu.ReadBGA<T>(addr);
+            } else if (in_range(0x06200000, 0x200000)) {
+                return_value = core->gpu.ReadBGB<T>(addr);
+            } else if (in_range(0x06400000, 0x200000)) {
+                return_value = core->gpu.ReadOBJA<T>(addr);
+            } else if (in_range(0x06600000, 0x200000)) {
+                return_value = core->gpu.ReadOBJB<T>(addr);
+            } else {
+                log_warn("[ARM9] Undefined %ld-bit vram read %08x", sizeof(T) * 8, addr);
+            }
+
+            break;
+        case REGION_OAM:
+            if ((addr & 0x7FF) < 0x400) {
+                // this is the first block of oam which is 1kb and is assigned to engine a
+                return_value = core->gpu.engine_a.ReadOAM<T>(addr);
+            } else {
+                // write to engine b's palette ram
+                return_value = core->gpu.engine_b.ReadOAM<T>(addr);
+            }
+
+            break;
+        case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+            // check if the arm9 has access rights to the gba slot
+            // if not return 0
+            if (EXMEMCNT & (1 << 7)) {
+                return 0;
+            }
+            // otherwise return openbus (0xFFFFFFFF)
+            return 0xFF * sizeof(T);
+        default:
+            log_fatal("[ARM9] Undefined %ld-bit read %08x", sizeof(T) * 8, addr);
+        }
+    }
+
+    return return_value;
 }
 
 template void Memory::ARM9FastWrite(u32 addr, u8 data);
@@ -64,7 +173,70 @@ template void Memory::ARM9FastWrite(u32 addr, u16 data);
 template void Memory::ARM9FastWrite(u32 addr, u32 data);
 template <typename T>
 void Memory::ARM9FastWrite(u32 addr, T data) {
+    addr &= ~(sizeof(T) - 1);
 
+    int index = addr >> 12;
+
+    if (arm9_write_page_table[index]) {
+        memcpy(&arm9_write_page_table[index][addr & 0xFFF], &data, sizeof(T));
+    } else {
+        switch (addr >> 24) {
+        case REGION_IO:
+            if constexpr (std::is_same_v<T, u8>) {
+                return ARM9WriteByteIO(addr, data);
+            } else if constexpr (std::is_same_v<T, u16>) {
+                return ARM9WriteHalfIO(addr, data);
+            } else if constexpr (std::is_same_v<T, u32>) {
+                return ARM9WriteWordIO(addr, data);
+            }
+            break;
+        case REGION_PALETTE_RAM:
+            if ((addr & 0x7FF) < 0x400) {
+                // this is the first block of oam which is 1kb and is assigned to engine a
+                core->gpu.engine_a.WritePaletteRAM<T>(addr, data);
+            } else {
+                // write to engine b's palette ram
+                core->gpu.engine_b.WritePaletteRAM<T>(addr, data);
+            }
+
+            break;
+        case REGION_VRAM:
+            if (addr >= 0x06800000) {
+                core->gpu.WriteLCDC<T>(addr, data);
+            } else if (in_range(0x06000000, 0x200000)) {
+                core->gpu.WriteBGA<T>(addr, data);
+            } else if (in_range(0x06200000, 0x200000)) {
+                core->gpu.WriteBGB<T>(addr, data);
+            } else if (in_range(0x06400000, 0x200000)) {
+                core->gpu.WriteOBJA<T>(addr, data);
+            } else if (in_range(0x06600000, 0x200000)) {
+                core->gpu.WriteOBJB<T>(addr, data);
+            } else {
+                log_warn("[ARM9] Undefined %ld-bit vram write %08x = %08x", sizeof(T) * 8, addr, data);
+            }
+
+            break;
+        case REGION_OAM:
+            if (sizeof(T) == 1) {
+                log_fatal("[ARM9] 8-bit oam write is undefined behaviour");
+            }
+
+            if ((addr & 0x7FF) < 0x400) {
+                // this is the first block of oam which is 1kb and is assigned to engine a
+                core->gpu.engine_a.WriteOAM<T>(addr, data);
+            } else {
+                // write to engine b's palette ram
+                core->gpu.engine_b.WriteOAM<T>(addr, data);
+            }
+
+            break;
+        case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+            // for now do nothing lol
+            break;
+        default:
+            log_fatal("[ARM9] Undefined %ld-bit write %08x = %08x", sizeof(T) * 8, addr, data);
+        }
+    }
 }
 
 template auto Memory::ARM9Read(u32 addr) -> u8;

@@ -3,6 +3,7 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <string.h>
+#include <algorithm>
 
 struct Core;
 

@@ -96,6 +96,9 @@ void SPU::WriteWord(u32 addr, u32 data) {
     case 0x04:
         channel[channel_index].SOUNDSAD = data;
         break;
+    case 0x08:
+        channel[channel_index].SOUNDTMR = data;
+        break;
     case 0x0C:
         channel[channel_index].SOUNDLEN = data;
         break;
