@@ -292,7 +292,7 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
         core->gpu.VRAMCNT_G = data;
         break;
     case 0x04000247:
-        WRAMCNT = data;
+        WriteWRAMCNT(data);
         break;
     case 0x04000248:
         core->gpu.VRAMCNT_H = data;
@@ -821,7 +821,7 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         core->gpu.VRAMCNT_E = data & 0xFF;
         core->gpu.VRAMCNT_F = (data >> 8) & 0xFF;
         core->gpu.VRAMCNT_G = (data >> 16) & 0xFF;
-        WRAMCNT = (data >> 24) & 0xFF;
+        WriteWRAMCNT((data >> 24) & 0xFF);
         break;
     case 0x04000280:
         core->maths_unit.DIVCNT = data;

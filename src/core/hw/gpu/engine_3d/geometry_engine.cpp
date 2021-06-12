@@ -104,8 +104,6 @@ auto GeometryEngine::DequeueEntry() -> Entry {
             fifo.pop();
         }
 
-        CheckGXFIFOInterrupt();
-
         if (fifo.size() > 0) {
             pipe.push(fifo.front());
             fifo.pop();
@@ -135,10 +133,10 @@ void GeometryEngine::InterpretCommand() {
         }
 
         gpu->core->scheduler.Add(2, InterpretCommandTask);
-    }
 
-    if (fifo.size() < 128 && !(GXSTAT & (1 << 25))) {
-        GXSTAT |= (1 << 25);
+        if (fifo.size() < 128 && !(GXSTAT & (1 << 25))) {
+            GXSTAT |= (1 << 25);
+        }
     }
 }
 

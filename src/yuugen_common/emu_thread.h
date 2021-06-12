@@ -5,14 +5,16 @@
 #include <ratio>
 #include <stdio.h>
 #include <core/core.h>
+#include <functional>
 
 struct EmuThread {
-    EmuThread(Core& core);
+    EmuThread(Core& core, std::function<void(int fps)> update_fps);
     ~EmuThread();
     void Start();
     void Run();
     void Stop();
     auto IsActive() -> bool;
+    auto GetFPS() -> int;
 
     Core& core;
 
@@ -24,4 +26,6 @@ struct EmuThread {
     std::thread thread;
 
     using frame = std::chrono::duration<int, std::ratio<1, 60>>;
+
+    std::function<void(int fps)> update_fps;
 };

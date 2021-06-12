@@ -89,7 +89,14 @@ void MainWindow::CreateEmulationMenu() {
 
         // do a reset of the core
         core = std::make_unique<Core>();
-        emu_thread = std::make_unique<EmuThread>(*core.get());
+        emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
+            UpdateTitle(fps);
+        });
+
+        // make sure to set frame limited or not if frame limiter is checked
+        if (frame_limit_action->isChecked()) {
+            emu_thread->framelimiter = true;
+        }
 
         core->SetRomPath(path.toStdString());
         core->Reset();
@@ -313,7 +320,14 @@ void MainWindow::LoadRom() {
     if (dialog.exec()) {
         // make unique core and emu_thread ptrs
         core = std::make_unique<Core>();
-        emu_thread = std::make_unique<EmuThread>(*core.get());
+        emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
+            UpdateTitle(fps);
+        });
+
+        // make sure to set frame limited or not if frame limiter is checked
+        if (frame_limit_action->isChecked()) {
+            emu_thread->framelimiter = true;
+        }
 
         // get the first selection
         path = dialog.selectedFiles().at(0);
@@ -347,7 +361,14 @@ void MainWindow::BootFirmware() {
 
     // make unique core and emu_thread ptrs
     core = std::make_unique<Core>();
-    emu_thread = std::make_unique<EmuThread>(*core.get());
+    emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
+        UpdateTitle(fps);
+    });
+
+    // make sure to set frame limited or not if frame limiter is checked
+    if (frame_limit_action->isChecked()) {
+        emu_thread->framelimiter = true;
+    }
 
     // give an empty path
     path = "";
@@ -364,4 +385,9 @@ void MainWindow::BootFirmware() {
     // start the draw timer so we can update the screen at 60 fps
     render_timer->start(1000 / 60);
     emu_thread->Start();
+}
+
+void MainWindow::UpdateTitle(int fps) {
+    QString title = "yuugen [" + QString::number(fps) + " FPS | " + QString::number(1000.0 / fps, 'f', 2) + " ms]";
+    this->setWindowTitle(title);
 }

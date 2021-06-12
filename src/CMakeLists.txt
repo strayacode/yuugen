@@ -1,5 +1,5 @@
-set(FRONTEND_SDL ON)
-set(FRONTEND_QT OFF)
+set(FRONTEND_SDL OFF)
+set(FRONTEND_QT ON)
 
 add_subdirectory(common)
 add_subdirectory(core)

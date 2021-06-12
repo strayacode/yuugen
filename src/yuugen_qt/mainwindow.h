@@ -5,6 +5,7 @@
 #include <string.h>
 #include <memory>
 #include <mutex>
+#include <functional>
 
 struct MainWindow : public QMainWindow {
     Q_OBJECT
@@ -25,6 +26,7 @@ private:
     void CreateFileMenu();
     void CreateEmulationMenu();
     void CreateViewMenu();
+    void UpdateTitle(int fps);
     
     QAction* pause_action;
     QAction* stop_action;

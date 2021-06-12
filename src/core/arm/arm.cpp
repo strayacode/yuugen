@@ -11,7 +11,7 @@ auto ARM::ReadByte(u32 addr) -> u8 {
     if (arch == ARMv5) {
         return core->memory.ARM9FastRead<u8>(addr);
     } else {
-        return core->memory.ARM7Read<u8>(addr);
+        return core->memory.ARM7FastRead<u8>(addr);
     }
 }
 
@@ -19,7 +19,7 @@ auto ARM::ReadHalf(u32 addr) -> u16 {
     if (arch == ARMv5) {
         return core->memory.ARM9FastRead<u16>(addr);
     } else {
-        return core->memory.ARM7Read<u16>(addr);
+        return core->memory.ARM7FastRead<u16>(addr);
     }
 }
 
@@ -27,7 +27,7 @@ auto ARM::ReadWord(u32 addr) -> u32 {
     if (arch == ARMv5) {
         return core->memory.ARM9FastRead<u32>(addr);
     } else {
-        return core->memory.ARM7Read<u32>(addr);
+        return core->memory.ARM7FastRead<u32>(addr);
     }
 }
 
@@ -35,7 +35,7 @@ void ARM::WriteByte(u32 addr, u8 data) {
     if (arch == ARMv5) {
         core->memory.ARM9FastWrite<u8>(addr, data);
     } else {
-        core->memory.ARM7Write<u8>(addr, data);
+        core->memory.ARM7FastWrite<u8>(addr, data);
     }
 }
 
@@ -44,7 +44,7 @@ void ARM::WriteHalf(u32 addr, u16 data) {
     if (arch == ARMv5) {
         core->memory.ARM9FastWrite<u16>(addr, data);
     } else {
-        core->memory.ARM7Write<u16>(addr, data);
+        core->memory.ARM7FastWrite<u16>(addr, data);
     }
 }
 
@@ -53,7 +53,7 @@ void ARM::WriteWord(u32 addr, u32 data) {
     if (arch == ARMv5) {
         core->memory.ARM9FastWrite<u32>(addr, data);
     } else {
-        core->memory.ARM7Write<u32>(addr, data);
+        core->memory.ARM7FastWrite<u32>(addr, data);
     }
 }
 

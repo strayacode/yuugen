@@ -173,6 +173,11 @@ void Memory::ARM7WriteByteIO(u32 addr, u8 data) {
         return;
     }
 
+    if (in_range(0x04800000, 0x100000)) {
+        // TODO: implement wifi regs correctly
+        return;
+    }
+
     switch (addr) {
     case 0x04000138:
         core->rtc.WriteRTC(data);
@@ -227,6 +232,11 @@ void Memory::ARM7WriteHalfIO(u32 addr, u16 data) {
     if (in_range(0x04000400, 0x100)) {
         // write to an spu channel
         core->spu.WriteHalf(addr, data);
+        return;
+    }
+
+    if (in_range(0x04800000, 0x100000)) {
+        // TODO: implement wifi regs correctly
         return;
     }
 
@@ -377,6 +387,11 @@ void Memory::ARM7WriteWordIO(u32 addr, u32 data) {
     if (in_range(0x04000400, 0x100)) {
         // write to an spu channel
         core->spu.WriteWord(addr, data);
+        return;
+    }
+
+    if (in_range(0x04800000, 0x100000)) {
+        // TODO: implement wifi regs correctly
         return;
     }
 
