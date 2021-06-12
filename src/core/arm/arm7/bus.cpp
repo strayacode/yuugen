@@ -15,31 +15,31 @@ void Memory::UpdateARM7MemoryMap(u32 low_addr, u32 high_addr) {
             arm7_read_page_table[index] = &main_memory[addr & 0x3FFFFF];
             arm7_write_page_table[index] = &main_memory[addr & 0x3FFFFF];
             break;
-        case 0x03:
-            if (addr < 0x03800000) {
-                switch (WRAMCNT) {
-                case 0:
-                    arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
-                    arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
-                    break;
-                case 1:
-                    arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
-                    arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
-                    break;
-                case 2:
-                    arm7_read_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
-                    arm7_write_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
-                    break;
-                case 3:
-                    arm7_read_page_table[index] = &shared_wram[addr & 0x7FFF];
-                    arm7_write_page_table[index] = &shared_wram[addr & 0x7FFF];
-                    break;
-                }
-            } else {
-                arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
-                arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
-            }
-            break;
+        // case 0x03:
+        //     if (addr < 0x03800000) {
+        //         switch (WRAMCNT) {
+        //         case 0:
+        //             arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
+        //             arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
+        //             break;
+        //         case 1:
+        //             arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
+        //             arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
+        //             break;
+        //         case 2:
+        //             arm7_read_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+        //             arm7_write_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+        //             break;
+        //         case 3:
+        //             arm7_read_page_table[index] = &shared_wram[addr & 0x7FFF];
+        //             arm7_write_page_table[index] = &shared_wram[addr & 0x7FFF];
+        //             break;
+        //         }
+        //     } else {
+        //         arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
+        //         arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
+        //     }
+        //     break;
         default:
             // set as a nullptr, which indicates that we should do a regular read / write
             arm7_read_page_table[index] = nullptr;
@@ -109,8 +109,6 @@ auto Memory::ARM7FastRead(u32 addr) -> T {
             }
             // otherwise return openbus (0xFFFFFFFF)
             return 0xFF * sizeof(T);
-        default:
-            log_fatal("[ARM7] undefined %ld-bit read %08x", sizeof(T) * 8, addr);
         }
     }
 
@@ -234,8 +232,6 @@ auto Memory::ARM7Read(u32 addr) -> T {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFF * sizeof(T);
-    default:
-        log_fatal("[ARM7] undefined %ld-bit read %08x", sizeof(T) * 8, addr);
     }
 
     return return_value;

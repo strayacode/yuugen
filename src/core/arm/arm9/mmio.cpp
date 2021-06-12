@@ -121,8 +121,32 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
     switch (addr) {
     case 0x04000000:
         return core->gpu.engine_a.DISPCNT;
+    case 0x04000004:
+        return (core->gpu.VCOUNT << 16) | (core->gpu.DISPSTAT9);
+    case 0x04000008:
+        return (core->gpu.engine_a.BGCNT[1] << 16) | (core->gpu.engine_a.BGCNT[0]);
+    case 0x0400000C:
+        return (core->gpu.engine_a.BGCNT[3] << 16) | (core->gpu.engine_a.BGCNT[2]);
     case 0x04000048:
         return (core->gpu.engine_a.WINOUT << 16) | core->gpu.engine_a.WININ;
+    case 0x0400004C:
+        return 0;
+    case 0x04000050:
+        return (core->gpu.engine_a.BLDALPHA << 16) | (core->gpu.engine_a.BLDCNT);
+    case 0x04000054:
+        return core->gpu.engine_a.BLDY;
+    case 0x04000058:
+        return 0;
+    case 0x0400005C:
+        return 0;
+    case 0x04000060:
+        return core->gpu.render_engine.DISP3DCNT;
+    case 0x04000064:
+        return 0;
+    case 0x04000068:
+        return 0;
+    case 0x0400006C:
+        return 0;
     case 0x040000B0:
         return core->dma[1].channel[0].source;
     case 0x040000B4:
@@ -155,6 +179,8 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return core->dma[1].DMAFILL[2];
     case 0x040000EC:
         return core->dma[1].DMAFILL[3];
+    case 0x04000100:
+        return core->timers[1].ReadTMCNT(0);
     case 0x04000180:
         return core->ipc.ReadIPCSYNC9();
     case 0x040001A4:

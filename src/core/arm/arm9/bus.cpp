@@ -160,8 +160,6 @@ auto Memory::ARM9FastRead(u32 addr) -> T {
             }
             // otherwise return openbus (0xFFFFFFFF)
             return 0xFF * sizeof(T);
-        default:
-            log_fatal("[ARM9] Undefined %ld-bit read %08x", sizeof(T) * 8, addr);
         }
     }
 
@@ -233,8 +231,6 @@ void Memory::ARM9FastWrite(u32 addr, T data) {
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
             // for now do nothing lol
             break;
-        default:
-            log_fatal("[ARM9] Undefined %ld-bit write %08x = %08x", sizeof(T) * 8, addr, data);
         }
     }
 }
@@ -327,8 +323,6 @@ auto Memory::ARM9Read(u32 addr) -> T {
         case REGION_ARM9_BIOS:
             memcpy(&return_value, &arm9_bios[addr & 0x7FFF], sizeof(T));
             break;
-        default:
-            log_fatal("[ARM9] Undefined %ld-bit read %08x", sizeof(T) * 8, addr);
         }
     }
 
@@ -426,8 +420,6 @@ void Memory::ARM9Write(u32 addr, T data) {
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
             // for now do nothing lol
             break;
-        default:
-            log_fatal("[ARM9] Undefined %ld-bit write %08x = %08x", sizeof(T) * 8, addr, data);
         }
     }
 }

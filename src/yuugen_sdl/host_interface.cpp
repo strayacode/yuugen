@@ -63,6 +63,7 @@ void HostInterface::Run(std::string path) {
     core->DirectBoot();
 
     auto frame_start = std::chrono::system_clock::now();
+
     while (true) {
         core->RunFrame();
 
