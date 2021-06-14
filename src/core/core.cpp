@@ -90,6 +90,8 @@ void Core::RunFrame() {
                 if (timers[1].enabled) {
                     timers[1].Tick(1);
                 }
+
+                gpu.geometry_engine.InterpretCommand();
             }
 
             arm7.Step();

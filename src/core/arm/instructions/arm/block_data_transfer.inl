@@ -94,21 +94,14 @@ INSTRUCTION(ARM_LDM_INCREMENT_BEFORE_WRITEBACK) {
     
     if (instruction & (1 << 15)) {
         // handle arm9 behaviour
-        if (arch == ARMv5) {
-            if (regs.r[15] & 0x1) {
-                // switch to thumb mode
-                regs.cpsr |= (1 << 5);
+        if ((arch == ARMv5) && (regs.r[15] & 0x1)) {
+            // switch to thumb mode
+            regs.cpsr |= (1 << 5);
 
-                // halfword align the address
-                regs.r[15] &= ~1;
+            // halfword align the address
+            regs.r[15] &= ~1;
 
-                ThumbFlushPipeline();
-            } else {
-                // word align the address
-                regs.r[15] &= ~3;
-
-                ARMFlushPipeline();
-            }
+            ThumbFlushPipeline();
         } else {
             // word align the address
             regs.r[15] &= ~3;
@@ -148,23 +141,15 @@ INSTRUCTION(ARM_LDM_INCREMENT_AFTER_WRITEBACK) {
     }
     
     if (instruction & (1 << 15)) {
-        // log_fatal("handle");
         // handle arm9 behaviour
-        if (arch == ARMv5) {
-            if (regs.r[15] & 0x1) {
-                // switch to thumb mode
-                regs.cpsr |= (1 << 5);
+        if ((arch == ARMv5) && (regs.r[15] & 0x1)) {
+            // switch to thumb mode
+            regs.cpsr |= (1 << 5);
 
-                // halfword align the address
-                regs.r[15] &= ~1;
+            // halfword align the address
+            regs.r[15] &= ~1;
 
-                ThumbFlushPipeline();
-            } else {
-                // word align the address
-                regs.r[15] &= ~3;
-
-                ARMFlushPipeline();
-            }
+            ThumbFlushPipeline();
         } else {
             // word align the address
             regs.r[15] &= ~3;
@@ -337,7 +322,7 @@ INSTRUCTION(ARM_LDM_DECREMENT_AFTER_WRITEBACK) {
     // if arm7 then no writeback if rn in rlist
 
     if (arch == ARMv5) {
-        if (((instruction & 0xFFFF) == (unsigned int)(1 << rn) )|| !(((instruction & 0xFFFF) >> rn) == 1)) {
+        if (((instruction & 0xFFFF) == (unsigned int)(1 << rn) ) || !(((instruction & 0xFFFF) >> rn) == 1)) {
             regs.r[rn] = writeback;
         }
     } else {

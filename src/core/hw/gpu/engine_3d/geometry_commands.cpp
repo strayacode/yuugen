@@ -36,6 +36,10 @@ void GeometryEngine::CommandPopCurrentMatrix() {
             UpdateClipMatrix();
         }
         break;
+    case 3:
+        // texture stack
+        texture_current = texture_stack;
+        break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
     }
@@ -67,6 +71,10 @@ void GeometryEngine::CommandPushCurrentMatrix() {
             UpdateClipMatrix();
         }
         
+        break;
+    case 3:
+        // texture matrix
+        texture_stack = texture_current;
         break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
@@ -212,11 +220,20 @@ void GeometryEngine::CommandMultiply4x4() {
         projection_current = MultiplyMatrixMatrix(projection_current, matrix);
         UpdateClipMatrix();
         break;
+    case 1: 
+        // position
+        position_current = MultiplyMatrixMatrix(position_current, matrix);
+        UpdateClipMatrix();
+        break;
     case 2:
         // position and directional
         position_current = MultiplyMatrixMatrix(position_current, matrix);
         directional_current = MultiplyMatrixMatrix(directional_current, matrix);
         UpdateClipMatrix();
+        break;
+    case 3:
+        // texture
+        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
         break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
@@ -247,6 +264,10 @@ void GeometryEngine::CommandMultiply4x3() {
         directional_current = MultiplyMatrixMatrix(directional_current, matrix);
         UpdateClipMatrix();
         break;
+    case 3:
+        // texture
+        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
     }
@@ -276,6 +297,10 @@ void GeometryEngine::CommandMultiply3x3() {
         directional_current = MultiplyMatrixMatrix(directional_current, matrix);
         UpdateClipMatrix();
         break;
+    case 3:
+        // texture
+        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);
     }
@@ -301,6 +326,10 @@ void GeometryEngine::CommandMultiplyTranslation() {
         position_current = MultiplyMatrixMatrix(position_current, matrix);
         directional_current = MultiplyMatrixMatrix(directional_current, matrix);
         UpdateClipMatrix();
+        break;
+    case 3:
+        // texture
+        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
         break;
     default:
         log_fatal("handle matrix mode %d", matrix_mode);

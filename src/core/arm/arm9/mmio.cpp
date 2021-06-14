@@ -118,6 +118,10 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
         return core->gpu.geometry_engine.clip_current.field[(addr - 0x04000640) / 4][(addr - 0x04000640) % 4];
     }
 
+    if (in_range(0x04000680, 0x24)) {
+        return core->gpu.geometry_engine.directional_current.field[(addr - 0x04000680) / 3][(addr - 0x04000680) % 3];
+    }
+
     switch (addr) {
     case 0x04000000:
         return core->gpu.engine_a.DISPCNT;
@@ -218,7 +222,7 @@ auto Memory::ARM9ReadWordIO(u32 addr) -> u32 {
     case 0x040002BC:
         return core->maths_unit.SQRT_PARAM >> 32;
     case 0x04000600:
-        return core->gpu.geometry_engine.GXSTAT;
+        return core->gpu.geometry_engine.ReadGXSTAT();
     case 0x04001000:
         return core->gpu.engine_b.DISPCNT;
     case 0x04004000:
@@ -664,7 +668,7 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
     }
     
     if (addr >= 0x04000440 && addr < 0x040005CC) {
-        core->gpu.geometry_engine.QueueCommand(addr - 0x04000440, data);
+        core->gpu.geometry_engine.QueueCommand(addr - 0x04000400, data);
         return;
     }
 

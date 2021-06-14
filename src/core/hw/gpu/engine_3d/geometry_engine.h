@@ -100,6 +100,9 @@ struct GeometryEngine {
 
     void UpdateClipMatrix();
 
+    auto ReadGXSTAT() -> u32;
+    void WriteGXSTAT();
+
     std::queue<Entry> fifo;
     std::queue<Entry> pipe;
 
@@ -133,6 +136,7 @@ struct GeometryEngine {
     Matrix directional_stack[31];
     // not sure about this but will look into later
     Matrix texture_current;
+    Matrix texture_stack;
 
     Matrix clip_current;
 

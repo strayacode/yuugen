@@ -72,23 +72,13 @@ void GeometryEngine::QueueCommand(u32 addr, u32 data) {
 
 void GeometryEngine::QueueEntry(Entry entry) {
     if (fifo.size() == 0 && pipe.size() < 4) {
-        // if fifo is empty and pipe is not full, push to the pipe
+        // add the entry to the pipe
         pipe.push(entry);
+        
     } else {
-        // before writing to the pipe, if the fifo is full keep executing commands
-        if (fifo.size() >= 256) {
-            GXSTAT &= ~(1 << 27);
-            InterpretCommand();
-        }
-
-        if (fifo.size() >= 128 && (GXSTAT & (1 << 25))) {
-            GXSTAT &= ~(1 << 25);
-        }
-
+        // add the entry to the fifo
         fifo.push(entry);
     }
-
-    InterpretCommand();
 }
 
 auto GeometryEngine::DequeueEntry() -> Entry {
@@ -126,17 +116,127 @@ void GeometryEngine::InterpretCommand() {
 
     u8 param_count = parameter_count[entry.command];
     if (total_size >= param_count) {
-        // for now just make sure to remove the entries from the pipe
-        DequeueEntry();
-        for (int i = 1; i < param_count; i++) {
+        switch (entry.command) {
+        case 0x00:
+            // used to pad packed commands in gxfifo
             DequeueEntry();
+            break;
+        case 0x10:
+            CommandSetMatrixMode();
+            break;
+        case 0x11:
+            CommandPushCurrentMatrix();
+            break;
+        case 0x12:
+            CommandPopCurrentMatrix();
+            break;
+        case 0x13:
+            CommandStoreCurrentMatrix();
+            break;
+        case 0x14:
+            CommandRestoreCurrentMatrix();
+            break;
+        case 0x15:
+            CommandLoadUnitMatrix();
+            break;
+        case 0x16:
+            CommandLoad4x4();
+            break;
+        case 0x17:
+            CommandLoad4x3();
+            break;
+        case 0x18:
+            CommandMultiply4x4();
+            break;
+        case 0x19:
+            CommandMultiply4x3();
+            break;
+        case 0x1A:
+            CommandMultiply3x3();
+            break;
+        case 0x1B:
+            CommandMultiplyScale();
+            break;
+        case 0x1C:
+            CommandMultiplyTranslation();
+            break;
+        case 0x20:
+            CommandSetVertexColour();
+            break;
+        case 0x21:
+            CommandSetVertexNormal();
+            break;
+        case 0x22:
+            CommandSetTextureCoordinates();
+            break;
+        case 0x23:
+            CommandAddVertex16();
+            break;
+        case 0x24:
+            CommandAddVertex10();
+            break;
+        case 0x25:
+            CommandSetVertexXY();
+            break;
+        case 0x26:
+            CommandSetVertexXZ();
+            break;
+        case 0x27:
+            CommandSetVertexYZ();
+            break;
+        case 0x28:
+            CommandSetVertexRelative();
+            break;
+        case 0x29:
+            CommandSetPolygonAttributes();
+            break;
+        case 0x2A:
+            CommandSetTextureParameters();
+            break;
+        case 0x2B:
+            CommandSetTexturePaletteAddress();
+            break;
+        case 0x30:
+            CommandSetDiffuseAmbientReflect();
+            break;
+        case 0x31:
+            CommandSetSpecularReflectEmission();
+            break;
+        case 0x32:
+            CommandSetLightDirectionVector();
+            break;
+        case 0x33:
+            CommandSetLightColour();
+            break;
+        case 0x34:
+            CommandShininess();
+            break;
+        case 0x40:
+            CommandBeginVertexList();
+            break;
+        case 0x41:
+            // end vertex list doesn't do anything
+            DequeueEntry();
+            break;
+        case 0x50:
+            CommandSwapBuffers();
+            break;
+        case 0x60:
+            CommandSetViewport();
+            break;
+        default:
+            if (parameter_count[entry.command] == 0) {
+                DequeueEntry();
+            } else {
+                for (int i = 0; i < parameter_count[entry.command]; i++) {
+                    DequeueEntry();
+                }
+            }
+            // log_fatal("[GeometryEngine] Handle geometry command %02x", entry.command);
+            break;
         }
 
-        gpu->core->scheduler.Add(2, InterpretCommandTask);
-
-        if (fifo.size() < 128 && !(GXSTAT & (1 << 25))) {
-            GXSTAT |= (1 << 25);
-        }
+        // gpu->core->scheduler.Add(2, InterpretCommandTask);
     }
 }
 
@@ -215,33 +315,33 @@ void GeometryEngine::UpdateClipMatrix() {
 }
 
 void GeometryEngine::DoSwapBuffers() {
-    // // clear the render engines vertex and polygon ram before writing to it
-    // gpu->render_engine.polygon_ram.clear();
-    // gpu->render_engine.vertex_ram.clear();
+    // clear the render engines vertex and polygon ram before writing to it
+    gpu->render_engine.polygon_ram.clear();
+    gpu->render_engine.vertex_ram.clear();
 
-    // // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
-    // // for now we shall just render vertices
-    // for (unsigned int i = 0; i < vertex_ram.size(); i++) {
-    //     if (vertex_ram[i].w != 0) {
-    //         u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1 + 1) & 0x1FF;
-    //         u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1 + 1) & 0xFF;
-    //         u16 render_x = ((s64)vertex_ram[i].x + vertex_ram[i].w) * screen_width / (2 * vertex_ram[i].w) + gpu->render_engine.screen_x1;
-    //         u16 render_y = (-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height / (2 * vertex_ram[i].w) + gpu->render_engine.screen_y1;
-    //         render_x &= 0x1FF;
-    //         render_y &= 0xFF;
+    // replace the render engines vertex and polygon ram with the geometry engines and empty the geometry engines
+    // for now we shall just render vertices
+    for (unsigned int i = 0; i < vertex_ram.size(); i++) {
+        if (vertex_ram[i].w != 0) {
+            u16 screen_width = (gpu->render_engine.screen_x2 - gpu->render_engine.screen_x1 + 1) & 0x1FF;
+            u16 screen_height = (gpu->render_engine.screen_y2 - gpu->render_engine.screen_y1 + 1) & 0xFF;
+            u16 render_x = ((s64)vertex_ram[i].x + vertex_ram[i].w) * screen_width / (2 * vertex_ram[i].w) + gpu->render_engine.screen_x1;
+            u16 render_y = (-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height / (2 * vertex_ram[i].w) + gpu->render_engine.screen_y1;
+            render_x &= 0x1FF;
+            render_y &= 0xFF;
 
-    //         Vertex render_vertex;
+            Vertex render_vertex;
 
-    //         render_vertex.x = render_x;
-    //         render_vertex.y = render_y;
-    //         gpu->render_engine.vertex_ram.push_back(render_vertex);
-    //         // TODO: update z coord here
-    //     }
-    // }
+            render_vertex.x = render_x;
+            render_vertex.y = render_y;
+            gpu->render_engine.vertex_ram.push_back(render_vertex);
+            // TODO: update z coord here
+        }
+    }
 
-    // // empty polygon and vertex ram
-    // polygon_ram.clear();
-    // vertex_ram.clear();
+    // empty polygon and vertex ram
+    polygon_ram.clear();
+    vertex_ram.clear();
 
     // // unhalt the geometry engine
     // state = STATE_RUNNING;
@@ -265,4 +365,32 @@ void GeometryEngine::CheckGXFIFOInterrupt() {
         }
         break;
     }
+}
+
+auto GeometryEngine::ReadGXSTAT() -> u32 {
+    u32 data = 0;
+
+    data |= (fifo.size() << 16);
+
+    if (fifo.size() == 256) {
+        data |= (1 << 24);
+    }
+
+    if (fifo.size() < 128) {
+        data |= (1 << 25);
+    }
+
+    if (fifo.size() == 0) {
+        data |= (1 << 26);
+    }
+
+    u8 fifo_irq_mode = (GXSTAT >> 30) & 0x3;
+
+    data |= (fifo_irq_mode << 30);
+
+    return data;
+}
+
+void GeometryEngine::WriteGXSTAT() {
+
 }

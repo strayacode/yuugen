@@ -132,8 +132,7 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         break;
     }
     case 0x090101: {
-        // keep old copy of base and size to unmap certain areas
-        u32 old_itcm_base = itcm_base;
+        // keep old copy of size to unmap certain areas
         u32 old_itcm_size = itcm_size;
 
         // write to raw register
