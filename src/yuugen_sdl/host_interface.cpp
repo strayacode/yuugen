@@ -2,6 +2,9 @@
 
 HostInterface::HostInterface() {
     core = std::make_unique<Core>();
+    emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
+        UpdateTitle(fps);
+    });
 }
 
 bool HostInterface::Initialise() {
@@ -62,11 +65,9 @@ void HostInterface::Run(std::string path) {
     core->Reset();
     core->DirectBoot();
 
-    auto frame_start = std::chrono::system_clock::now();
+    emu_thread->Start();
 
     while (true) {
-        core->RunFrame();
-
         SDL_UpdateTexture(top_texture, nullptr, core->gpu.GetFramebuffer(TOP_SCREEN), sizeof(u32) * 256);
         SDL_UpdateTexture(bottom_texture, nullptr, core->gpu.GetFramebuffer(BOTTOM_SCREEN), sizeof(u32) * 256);
 
@@ -126,16 +127,14 @@ void HostInterface::Run(std::string path) {
             }
         }
 
-        frames++;
-
-        auto frame_end = std::chrono::system_clock::now();
-        if ((frame_end - frame_start) >= std::chrono::milliseconds(1000)) {
-            snprintf(window_title, 40, "yuugen [%d FPS | %0.2f ms]", frames, 1000.0 / frames);
-            SDL_SetWindowTitle(window, window_title);
-            frame_start = std::chrono::system_clock::now();
-            frames = 0;
-        }
+        SDL_Delay(1000 / 60);
     }
+}
+
+void HostInterface::UpdateTitle(int fps) {
+    char window_title[40];
+    snprintf(window_title, 40, "yuugen [%d FPS | %0.2f ms]", fps, 1000.0 / fps);
+    SDL_SetWindowTitle(window, window_title);
 }
 
 void HostInterface::Cleanup() {

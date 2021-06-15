@@ -3,7 +3,7 @@
 #include <QVBoxLayout>
 #include <QCheckBox>
 
-ConfigWindow::ConfigWindow(QWidget* parent, Config& config) : QDialog(parent), config(config) {
+ConfigWindow::ConfigWindow(QWidget* parent) : QDialog(parent) {
     SetupLayout();
     SetupGeneralWidget();
 }
@@ -25,8 +25,8 @@ void ConfigWindow::SetupGeneralWidget() {
     software_fastmem = new QCheckBox(tr("Enabled Software Fast Memory"));
     halt_optimisation = new QCheckBox(tr("Enable ARM Halt Optimisation"));
 
-    software_fastmem->setChecked(config.software_fastmem);
-    halt_optimisation->setChecked(config.halt_optimisation);
+    // software_fastmem->setChecked(config.software_fastmem);
+    // halt_optimisation->setChecked(config.halt_optimisation);
 
     connect(software_fastmem, &QCheckBox::toggled, this, &ConfigWindow::OnSaveConfig);
     connect(halt_optimisation, &QCheckBox::toggled, this, &ConfigWindow::OnSaveConfig);
@@ -37,6 +37,6 @@ void ConfigWindow::SetupGeneralWidget() {
 }
 
 void ConfigWindow::OnSaveConfig() {
-    config.software_fastmem = software_fastmem->isChecked();
-    config.halt_optimisation = halt_optimisation->isChecked();
+    // config.software_fastmem = software_fastmem->isChecked();
+    // config.halt_optimisation = halt_optimisation->isChecked();
 }

@@ -1,6 +1,6 @@
 #include <core/core.h>
 
-Core::Core(Config& config) : 
+Core::Core() : 
     cartridge(this),
     memory(this),
     arm7(this, ARMv4),
@@ -13,8 +13,7 @@ Core::Core(Config& config) :
     interrupt {Interrupt(this, 0), Interrupt(this, 1)},
     timers {Timers(this, 0), Timers(this, 1)},
     spu(this),
-    rtc(this),
-    config(config) {
+    rtc(this) {
 
 }
 

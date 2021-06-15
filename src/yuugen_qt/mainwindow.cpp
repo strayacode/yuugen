@@ -91,7 +91,7 @@ void MainWindow::CreateEmulationMenu() {
         render_timer->stop();
 
         // do a reset of the core
-        core = std::make_unique<Core>(config);
+        core = std::make_unique<Core>();
         emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
             UpdateTitle(fps);
         });
@@ -128,7 +128,7 @@ void MainWindow::CreateEmulationMenu() {
 }
 
 void MainWindow::OpenConfigWindow() {
-    config_window = new ConfigWindow(this, config);
+    config_window = new ConfigWindow(this);
 
     config_window->show();
     config_window->raise();
@@ -332,7 +332,7 @@ void MainWindow::LoadRom() {
     // check if a file was selected
     if (dialog.exec()) {
         // make unique core and emu_thread ptrs
-        core = std::make_unique<Core>(config);
+        core = std::make_unique<Core>();
         emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
             UpdateTitle(fps);
         });
@@ -376,7 +376,7 @@ void MainWindow::BootFirmware() {
     render_timer->stop();
 
     // make unique core and emu_thread ptrs
-    core = std::make_unique<Core>(config);
+    core = std::make_unique<Core>();
     emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
         UpdateTitle(fps);
     });

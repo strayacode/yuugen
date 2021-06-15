@@ -7,14 +7,17 @@
 #include <SDL2/SDL.h>
 #include <common/log.h>
 #include <common/types.h>
+#include <yuugen_common/emu_thread.h>
 
 struct HostInterface {
     HostInterface();
     auto Initialise() -> bool;
     void Run(std::string path);
     void Cleanup();
+    void UpdateTitle(int fps);
 
     std::unique_ptr<Core> core;
+    std::unique_ptr<EmuThread> emu_thread;
 
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
@@ -26,7 +29,5 @@ struct HostInterface {
 
     SDL_Event event;
 
-    int frames = 0;
-    char window_title[40];
     int window_size = 1;
 };
