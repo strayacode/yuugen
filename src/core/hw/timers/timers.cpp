@@ -14,7 +14,6 @@ void Timers::Reset() {
 }
 
 void Timers::WriteTMCNT_L(int timer_index, u16 data) {
-    // writing to tmcnt_l initialises the reload value for the timer
     timer[timer_index].reload_value = data;
 }
 
@@ -86,12 +85,10 @@ void Timers::Tick(int cycles) {
                 }
             }
         }
-
     }
 }
 
 void Timers::Overflow(int timer_index) {
-    // on timer overflows the reload value is automatically stored in the counter
     timer[timer_index].counter = timer[timer_index].reload_value;
 
     if (timer[timer_index].control & (1 << 6)) {
@@ -101,19 +98,13 @@ void Timers::Overflow(int timer_index) {
             core->arm7.SendInterrupt(3 + timer_index);
         }
     }
-    // the index of this timer that overflows cant be 3 as the next index is out of range
-    // also the next timer must have count up timing enabled and the timer itself must be enabled
+    
     if (timer_index < 3) {
         if ((timer[timer_index + 1].control & (1 << 2)) && (timer[timer_index + 1].control & (1 << 7))) {
-            // in count up timing the prescaler value is ignored and instead
-            // the timer counter is incremented only when the previous timer counter overflows. can't be used for timer 0
-            // as there's no timer -1
-            // increment the next timer by 1 only if its not 0xFFFF too,
-            // in that case we overflow the next timer afterwards
+            // in count up timing the next timer is incremented on overflow
             if (timer[timer_index + 1].counter == 0xFFFF) {
                 Overflow(timer_index + 1);
             } else {
-                // increment next timer by 1
                 timer[timer_index + 1].counter++;
             }
         }
