@@ -3,13 +3,14 @@
 #include <string.h>
 #include <common/log.h>
 #include <common/types.h>
+#include <functional>
 
 struct Core;
 
 struct DMA {
     DMA(Core* core, int arch);
     void Reset();
-    void Transfer();
+    void Transfer(int channel_index);
     void Trigger(u8 mode);
 
     void WriteDMACNT_L(int channel_index, u16 data);
@@ -40,8 +41,7 @@ struct DMA {
         u32 DMACNT;
     } channel[4];
 
-    // bits 0..3 are used to correspond to whether a specific channel 0..3 is enabled
-    u8 enabled;
+    std::function<void()> TransferEvent[4];
 
     u32 DMAFILL[4];  
 };

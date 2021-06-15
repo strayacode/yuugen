@@ -209,6 +209,20 @@ void GPU2D::RenderGraphicsDisplay(u16 line) {
             RenderExtended(3, line);
         }
         break;
+    case 4:
+        if (DISPCNT & (1 << 8)) {
+            RenderText(0, line);
+        }
+        if (DISPCNT & (1 << 9)) {
+            RenderText(1, line);
+        }
+        if (DISPCNT & (1 << 10)) {
+            RenderAffine(2, line);
+        }
+        if (DISPCNT & (1 << 11)) {
+            RenderExtended(3, line);
+        }
+        break;
     case 5:
         if (DISPCNT & (1 << 8)) {
             RenderText(0, line);

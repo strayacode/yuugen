@@ -81,24 +81,26 @@ void Core::RunFrame() {
     while (scheduler.GetCurrentTime() < frame_end_time) {
         // run both cpus until the next event
         while (scheduler.events[0].start_time > scheduler.GetCurrentTime()) {
+            // if (arm9.Halted() && arm7.Halted()) {
+            //     // step the scheduler until the next event
+            //     scheduler.Tick(scheduler.events[0].start_time - scheduler.GetCurrentTime());
+            //     break;
+            // }
+
+            // TODO: put timers on the scheduler
+
             for (int i = 0; i < 2; i++) {
                 arm9.Step();
 
-                if (dma[1].enabled) {
-                    dma[1].Transfer();
-                }
                 if (timers[1].enabled) {
                     timers[1].Tick(1);
                 }
 
-                gpu.geometry_engine.InterpretCommand();
+                // gpu.geometry_engine.InterpretCommand();
             }
 
             arm7.Step();
 
-            if (dma[0].enabled) {
-                dma[0].Transfer();
-            }
             if (timers[0].enabled) {
                 timers[0].Tick(2);
             }

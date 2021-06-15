@@ -93,6 +93,8 @@ struct ARM {
     void Step();
     void Execute();
 
+    auto Halted() -> bool;
+
     bool IsARM();
 
     void GenerateConditionTable();

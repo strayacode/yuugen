@@ -350,7 +350,7 @@ void GeometryEngine::CommandMultiplyScale() {
         // projection
         projection_current = MultiplyMatrixMatrix(projection_current, matrix);
         UpdateClipMatrix();
-        break;
+        break; 
     case 2:
         // only position
         position_current = MultiplyMatrixMatrix(position_current, matrix);
