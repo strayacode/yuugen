@@ -17,9 +17,10 @@
 #include <core/hw/maths_unit/maths_unit.h>
 #include <core/hw/wifi/wifi.h>
 #include <string>
+#include <yuugen_common/config.h>
 
 struct Core {
-    Core();
+    Core(Config& config);
     void Reset();
     void DirectBoot();
     void FirmwareBoot();
@@ -61,4 +62,6 @@ struct Core {
     Wifi wifi;
 
     std::string rom_path;
+
+    Config& config;
 };

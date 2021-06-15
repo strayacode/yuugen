@@ -41,10 +41,8 @@ void Config::SaveConfig() {
     for (it = config.begin(); it != config.end(); it++) {
         // not good
         if (it->first == "software_fastmem") {
-            printf("yes\n");
             file << "software_fastmem = " << (software_fastmem ? "true" : "false") << "\n";
         } else if (it->first == "halt_optimisation") {
-            printf("yes\n");
             file << "halt_optimisation = " << (halt_optimisation ? "true" : "false") << "\n";
         }
     }
