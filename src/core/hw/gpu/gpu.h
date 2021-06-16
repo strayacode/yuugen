@@ -84,6 +84,12 @@ struct GPU {
     template <typename T>
     auto ReadExtPaletteOBJB(u32 addr) -> T;
 
+    template <typename T>
+    auto ReadVRAM(u32 addr) -> T;
+
+    template <typename T>
+    void WriteVRAM(u32 addr, T data);
+
     void RenderScanlineStart();
     void RenderScanlineFinish();
 

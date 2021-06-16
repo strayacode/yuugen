@@ -259,6 +259,11 @@ void GPU::MapVRAM() {
                 bga[(ofs * 0x20) + i] = &VRAM_D[i * 0x1000];
             }
             break;
+        case 4:
+            for (int i = 0; i < 32; i++) {
+                objb[i] = &VRAM_D[i * 0x1000];
+            }
+            break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_D));
         }
@@ -331,6 +336,72 @@ void GPU::MapVRAM() {
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_A));
         }
+    }
+}
+
+template auto GPU::ReadVRAM(u32 addr) -> u8;
+template auto GPU::ReadVRAM(u32 addr) -> u16;
+template auto GPU::ReadVRAM(u32 addr) -> u32;
+template <typename T>
+auto GPU::ReadVRAM(u32 addr) -> T {
+    T return_value = 0;
+
+    u8 region = (addr >> 20) & 0xF;
+
+    u32 offset = addr - (region * 0x100000) - 0x06000000;
+
+    int page = offset >> 12;
+    int index = offset & 0xFFF;
+
+    switch (region) {
+    case 0x0: case 0x1:
+        memcpy(&return_value, &bga[page][index], sizeof(T));
+        break;
+    case 0x2: case 0x3:
+        memcpy(&return_value, &bgb[page][index], sizeof(T));
+        break;
+    case 0x4: case 0x5:
+        memcpy(&return_value, &obja[page][index], sizeof(T));
+        break;
+    case 0x6: case 0x7:
+        memcpy(&return_value, &objb[page][index], sizeof(T));
+        break;
+    default:
+        memcpy(&return_value, &lcdc[page][index], sizeof(T));
+        break;
+    }
+
+    return return_value;
+}
+
+template void GPU::WriteVRAM(u32 addr, u8 data);
+template void GPU::WriteVRAM(u32 addr, u16 data);
+template void GPU::WriteVRAM(u32 addr, u32 data);
+template <typename T>
+void GPU::WriteVRAM(u32 addr, T data) {
+    u8 region = (addr >> 20) & 0xF;
+
+    u32 offset = addr - (region * 0x100000) - 0x06000000;
+
+    int page = offset >> 12;
+    int index = offset & 0xFFF;
+
+    switch (region) {
+    case 0x0: case 0x1:
+        memcpy(&bga[page][index], &data, sizeof(T));
+        break;
+    case 0x2: case 0x3:
+        memcpy(&bgb[page][index], &data, sizeof(T));
+        break;
+    case 0x4: case 0x5:
+        memcpy(&obja[page][index], &data, sizeof(T));
+        break;
+    case 0x6: case 0x7:
+        memcpy(&objb[page][index], &data, sizeof(T));
+        break;
+    default:
+        memcpy(&lcdc[page][index], &data, sizeof(T));
+        break;
     }
 }
 
