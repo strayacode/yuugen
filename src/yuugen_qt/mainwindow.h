@@ -2,7 +2,6 @@
 
 #include <QMainWindow>
 #include <yuugen_common/emu_thread.h>
-#include <yuugen_common/config.h>
 #include "configwindow.h"
 #include <string.h>
 #include <memory>
@@ -38,8 +37,6 @@ private:
 
     std::unique_ptr<Core> core;
     std::unique_ptr<EmuThread> emu_thread;
-
-    Config config;
 
     QTimer* render_timer;
 

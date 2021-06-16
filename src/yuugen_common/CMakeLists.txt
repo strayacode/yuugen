@@ -1,6 +1,5 @@
 add_library(yuugen_common
     emu_thread.h emu_thread.cpp
-    config.h config.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

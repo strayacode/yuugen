@@ -44,6 +44,8 @@ void GPU::Reset() {
     // we would expect hblank to start at 1536 (256 * 6) cycles
     // but actually the hblank flag stays 0 until 1606 cycles have passed
     core->scheduler.Add(1606, RenderScanlineStartTask);
+
+    MapVRAM();
 }
 
 void GPU::RenderScanlineStart() {
@@ -175,6 +177,161 @@ auto GPU::GetVRAMCNTOffset(u8 vramcnt) -> int {
 
 auto GPU::GetVRAMCNTEnabled(u8 vramcnt) -> bool {
     return (vramcnt & (1 << 7));
+}
+
+void GPU::MapVRAM() {
+    // we will map vram blocks in increments of 4kb
+    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_I);
+        switch (GetVRAMCNTMST(VRAMCNT_I)) {
+        case 0:
+            for (int i = 0; i < 4; i++) {
+                lcdc[i + 0xA0] = &VRAM_I[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_I));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_H)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_H);
+        switch (GetVRAMCNTMST(VRAMCNT_H)) {
+        case 0:
+            for (int i = 0; i < 8; i++) {
+                lcdc[i + 0x98] = &VRAM_H[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_H));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_G);
+        switch (GetVRAMCNTMST(VRAMCNT_G)) {
+        case 0:
+            for (int i = 0; i < 4; i++) {
+                lcdc[i + 0x94] = &VRAM_G[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_G));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_F);
+        switch (GetVRAMCNTMST(VRAMCNT_F)) {
+        case 0:
+            for (int i = 0; i < 4; i++) {
+                lcdc[i + 0x90] = &VRAM_F[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_F));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_E)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_E);
+        switch (GetVRAMCNTMST(VRAMCNT_E)) {
+        case 0:
+            for (int i = 0; i < 16; i++) {
+                lcdc[i + 0x80] = &VRAM_E[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_E));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_D);
+        switch (GetVRAMCNTMST(VRAMCNT_D)) {
+        case 0:
+            for (int i = 0; i < 32; i++) {
+                lcdc[i + 0x60] = &VRAM_D[i * 0x1000];
+            }
+            break;
+        case 1:
+            for (int i = 0; i < 32; i++) {
+                bga[(ofs * 0x20) + i] = &VRAM_D[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_D));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_C);
+        switch (GetVRAMCNTMST(VRAMCNT_C)) {
+        case 0:
+            for (int i = 0; i < 32; i++) {
+                lcdc[i + 0x40] = &VRAM_C[i * 0x1000];
+            }
+            break;
+        case 1:
+            for (int i = 0; i < 32; i++) {
+                bga[(ofs * 0x20) + i] = &VRAM_C[i * 0x1000];
+            }
+            break;
+        case 4:
+            for (int i = 0; i < 32; i++) {
+                bgb[i] = &VRAM_C[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_C));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_B)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_B);
+        switch (GetVRAMCNTMST(VRAMCNT_B)) {
+        case 0:
+            for (int i = 0; i < 32; i++) {
+                lcdc[i + 0x20] = &VRAM_B[i * 0x1000];
+            }
+            break;
+        case 1:
+            for (int i = 0; i < 32; i++) {
+                bga[(ofs * 0x20) + i] = &VRAM_B[i * 0x1000];
+            }
+            break;
+        case 2:
+            for (int i = 0; i < 32; i++) {
+                obja[((ofs & 0x1) * 0x20) + i] = &VRAM_B[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_B));
+        }
+    }
+
+    if (GetVRAMCNTEnabled(VRAMCNT_A)) {
+        u8 ofs = GetVRAMCNTOffset(VRAMCNT_A);
+        switch (GetVRAMCNTMST(VRAMCNT_A)) {
+        case 0:
+            for (int i = 0; i < 32; i++) {
+                lcdc[i] = &VRAM_A[i * 0x1000];
+            }
+            break;
+        case 1:
+            for (int i = 0; i < 32; i++) {
+                bga[(ofs * 0x20) + i] = &VRAM_A[i * 0x1000];
+            }
+            break;
+        case 2:
+            for (int i = 0; i < 32; i++) {
+                obja[((ofs & 0x1) * 0x20) + i] = &VRAM_A[i * 0x1000];
+            }
+            break;
+        default:
+            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_A));
+        }
+    }
 }
 
 template void GPU::WriteLCDC(u32 addr, u8 data);

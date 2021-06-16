@@ -97,7 +97,7 @@ void Core::RunFrame() {
                     timers[1].Tick(1);
                 }
 
-                gpu.geometry_engine.InterpretCommand();
+                // gpu.geometry_engine.InterpretCommand();
             }
 
             arm7.Step();

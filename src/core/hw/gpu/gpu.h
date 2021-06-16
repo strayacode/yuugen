@@ -7,6 +7,7 @@
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
 #include <string.h>
 #include <functional>
+#include <array>
 
 struct Core;
 
@@ -14,6 +15,12 @@ enum Screen {
     BOTTOM_SCREEN,
     TOP_SCREEN,
 };
+
+// notes on the new vram mapping approach:
+// split each vram region into 4kb pages
+// on vramcnt writes remap certain regions
+// to avoid overhead hopefully just remap a specific block
+// for a specific vramcnt
 
 struct GPU {
     GPU(Core* core);
@@ -80,6 +87,8 @@ struct GPU {
     void RenderScanlineStart();
     void RenderScanlineFinish();
 
+    void MapVRAM();
+
     u16 POWCNT1;
     
     u8 VRAMCNT_A;
@@ -108,6 +117,12 @@ struct GPU {
     u8 VRAM_G[0x4000];
     u8 VRAM_H[0x8000];
     u8 VRAM_I[0x4000];
+
+    std::array<u8*, 0xA4> lcdc;
+    std::array<u8*, 0x80> bga;
+    std::array<u8*, 0x20> obja;
+    std::array<u8*, 0x40> bgb;
+    std::array<u8*, 0x20> objb;    
 
     GPU2D engine_a, engine_b;
 

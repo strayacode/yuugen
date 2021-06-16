@@ -284,9 +284,11 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
         break;
     case 0x04000240:
         core->gpu.VRAMCNT_A = data;
+        core->gpu.MapVRAM();
         break;
     case 0x04000241:
         core->gpu.VRAMCNT_B = data;
+        core->gpu.MapVRAM();
         break;
     case 0x04000242:
         core->gpu.VRAMCNT_C = data;
@@ -299,6 +301,8 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
             // reset bit 0
             core->gpu.VRAMSTAT &= ~1;
         }
+
+        core->gpu.MapVRAM();
         break;
     case 0x04000243:
         core->gpu.VRAMCNT_D = data;
@@ -311,24 +315,31 @@ void Memory::ARM9WriteByteIO(u32 addr, u8 data) {
             // reset bit 0
             core->gpu.VRAMSTAT &= ~(1 << 1);
         }
+
+        core->gpu.MapVRAM();
         break;
     case 0x04000244:
         core->gpu.VRAMCNT_E = data;
+        core->gpu.MapVRAM();
         break;
     case 0x04000245:
         core->gpu.VRAMCNT_F = data;
+        core->gpu.MapVRAM();
         break;
     case 0x04000246:
         core->gpu.VRAMCNT_G = data;
+        core->gpu.MapVRAM();
         break;
     case 0x04000247:
         WriteWRAMCNT(data);
         break;
     case 0x04000248:
         core->gpu.VRAMCNT_H = data;
+        core->gpu.MapVRAM();
         break;
     case 0x04000249:
         core->gpu.VRAMCNT_I = data;
+        core->gpu.MapVRAM();
         break;
     case 0x04000300:
         POSTFLG9 = data;
@@ -532,6 +543,8 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x04000248:
         core->gpu.VRAMCNT_H = data & 0xFF;
         core->gpu.VRAMCNT_I = data >> 8;
+
+        core->gpu.MapVRAM();
         break;
     case 0x04000280:
         core->maths_unit.DIVCNT = data;
@@ -845,6 +858,8 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         core->gpu.VRAMCNT_B = (data >> 8) & 0xFF;
         core->gpu.VRAMCNT_C = (data >> 16) & 0xFF;
         core->gpu.VRAMCNT_D = (data >> 24) & 0xFF;
+
+        core->gpu.MapVRAM();
         break;
     case 0x04000244:
         // sets vramcnt_e, vramcnt_f, vramcnt_g and wramcnt
