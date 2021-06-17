@@ -127,7 +127,7 @@ void HostInterface::Run(std::string path) {
             }
         }
 
-        SDL_Delay(1000 / 60);
+        SDL_Delay(17);
     }
 }
 

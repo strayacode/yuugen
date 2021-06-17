@@ -43,9 +43,9 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
 
             u16 colour;
             if (engine_id == 1) {
-                colour = gpu->ReadBGA<u16>(data_addr);
+                colour = gpu->ReadVRAM<u16>(data_addr);
             } else {
-                colour = gpu->ReadBGB<u16>(data_addr);
+                colour = gpu->ReadVRAM<u16>(data_addr);
             }
             bg_layers[bg_index][(256 * line) + pixel] = colour;
         }
@@ -60,9 +60,9 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
 
             u8 palette_index;
             if (engine_id == 1) {
-                palette_index = gpu->ReadBGA<u8>(data_addr);
+                palette_index = gpu->ReadVRAM<u8>(data_addr);
             } else {
-                palette_index = gpu->ReadBGB<u8>(data_addr);
+                palette_index = gpu->ReadVRAM<u8>(data_addr);
             }
             u16 colour = ReadPaletteRAM<u16>(palette_index * 2);
 

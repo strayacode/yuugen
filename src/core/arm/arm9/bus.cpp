@@ -128,19 +128,6 @@ auto Memory::ARM9FastRead(u32 addr) -> T {
             break;
         case REGION_VRAM:
             return core->gpu.ReadVRAM<T>(addr);
-            // if (addr >= 0x06800000) {
-            //     return_value = core->gpu.ReadLCDC<T>(addr);
-            // } else if (in_range(0x06000000, 0x200000)) {
-            //     return_value = core->gpu.ReadBGA<T>(addr);
-            // } else if (in_range(0x06200000, 0x200000)) {
-            //     return_value = core->gpu.ReadBGB<T>(addr);
-            // } else if (in_range(0x06400000, 0x200000)) {
-            //     return_value = core->gpu.ReadOBJA<T>(addr);
-            // } else if (in_range(0x06600000, 0x200000)) {
-            //     return_value = core->gpu.ReadOBJB<T>(addr);
-            // } else {
-            //     log_warn("[ARM9] Undefined %ld-bit vram read %08x", sizeof(T) * 8, addr);
-            // }
         case REGION_OAM:
             if ((addr & 0x7FF) < 0x400) {
                 // this is the first block of oam which is 1kb and is assigned to engine a
@@ -197,32 +184,9 @@ void Memory::ARM9FastWrite(u32 addr, T data) {
             }
 
             break;
-        case REGION_VRAM: {
+        case REGION_VRAM:
             core->gpu.WriteVRAM(addr, data);
-            // if (addr >= 0x06800000) {
-            //     int offset = addr - 0x06800000;
-            //     printf("write to page %d\n", offset >> 12);
-            //     memcpy(&core->gpu.lcdc[offset >> 12][offset & 0xFFF], &data, sizeof(T));
-            // } else {
-            //     log_fatal("handle vram write addr %08x", addr);
-            // }
-            // if (addr >= 0x06800000) {
-            //     core->gpu.lcdc[]
-            //     core->gpu.WriteLCDC<T>(addr, data);
-            // } else if (in_range(0x06000000, 0x200000)) {
-            //     core->gpu.WriteBGA<T>(addr, data);
-            // } else if (in_range(0x06200000, 0x200000)) {
-            //     core->gpu.WriteBGB<T>(addr, data);
-            // } else if (in_range(0x06400000, 0x200000)) {
-            //     core->gpu.WriteOBJA<T>(addr, data);
-            // } else if (in_range(0x06600000, 0x200000)) {
-            //     core->gpu.WriteOBJB<T>(addr, data);
-            // } else {
-            //     log_warn("[ARM9] Undefined %ld-bit vram write %08x = %08x", sizeof(T) * 8, addr, data);
-            // }
-
             break;
-        }
         case REGION_OAM:
             if (sizeof(T) == 1) {
                 log_fatal("[ARM9] 8-bit oam write is undefined behaviour");
@@ -296,21 +260,7 @@ auto Memory::ARM9Read(u32 addr) -> T {
             }
             break;
         case REGION_VRAM:
-            if (addr >= 0x06800000) {
-                return_value = core->gpu.ReadLCDC<T>(addr);
-            } else if (in_range(0x06000000, 0x200000)) {
-                return_value = core->gpu.ReadBGA<T>(addr);
-            } else if (in_range(0x06200000, 0x200000)) {
-                return_value = core->gpu.ReadBGB<T>(addr);
-            } else if (in_range(0x06400000, 0x200000)) {
-                return_value = core->gpu.ReadOBJA<T>(addr);
-            } else if (in_range(0x06600000, 0x200000)) {
-                return_value = core->gpu.ReadOBJB<T>(addr);
-            } else {
-                log_warn("[ARM9] Undefined %ld-bit vram read %08x", sizeof(T) * 8, addr);
-            }
-
-            break;
+            return core->gpu.ReadVRAM<T>(addr);
         case REGION_OAM:
             if ((addr & 0x7FF) < 0x400) {
                 // this is the first block of oam which is 1kb and is assigned to engine a
@@ -397,20 +347,7 @@ void Memory::ARM9Write(u32 addr, T data) {
 
             break;
         case REGION_VRAM:
-            if (addr >= 0x06800000) {
-                core->gpu.WriteLCDC<T>(addr, data);
-            } else if (in_range(0x06000000, 0x200000)) {
-                core->gpu.WriteBGA<T>(addr, data);
-            } else if (in_range(0x06200000, 0x200000)) {
-                core->gpu.WriteBGB<T>(addr, data);
-            } else if (in_range(0x06400000, 0x200000)) {
-                core->gpu.WriteOBJA<T>(addr, data);
-            } else if (in_range(0x06600000, 0x200000)) {
-                core->gpu.WriteOBJB<T>(addr, data);
-            } else {
-                log_warn("[ARM9] Undefined %ld-bit vram write %08x = %08x", sizeof(T) * 8, addr, data);
-            }
-
+            core->gpu.WriteVRAM(addr, data);
             break;
         case REGION_OAM:
             if (sizeof(T) == 1) {

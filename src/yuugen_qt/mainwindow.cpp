@@ -124,15 +124,9 @@ void MainWindow::CreateEmulationMenu() {
         }
     });
 
-    connect(configure_action, &QAction::triggered, this, &MainWindow::OpenConfigWindow);
-}
-
-void MainWindow::OpenConfigWindow() {
-    config_window = new ConfigWindow(this);
-
-    config_window->show();
-    config_window->raise();
-    config_window->activateWindow();
+    connect(configure_action, &QAction::triggered, this, [this]() {
+        
+    });
 }
 
 void MainWindow::CreateViewMenu() {

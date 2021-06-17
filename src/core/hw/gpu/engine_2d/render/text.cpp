@@ -38,9 +38,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             }
             u16 tile_info;
             if (engine_id == 1) {
-                tile_info = gpu->ReadBGA<u16>(screen_addr);
+                tile_info = gpu->ReadVRAM<u16>(screen_addr);
             } else {
-                tile_info = gpu->ReadBGB<u16>(screen_addr);
+                tile_info = gpu->ReadVRAM<u16>(screen_addr);
             }
 
             // now we need to decode what the tile info means
@@ -58,9 +58,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
                 u8 palette_index;
                 if (engine_id == 1) {
-                    palette_index = gpu->ReadBGA<u8>(byte_offset);
+                    palette_index = gpu->ReadVRAM<u8>(byte_offset);
                 } else {
-                    palette_index = gpu->ReadBGB<u8>(byte_offset);
+                    palette_index = gpu->ReadVRAM<u8>(byte_offset);
                 }
 
                 u16 colour;
@@ -93,9 +93,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
             u16 tile_info;
             if (engine_id == 1) {
-                tile_info = gpu->ReadBGA<u16>(screen_addr);
+                tile_info = gpu->ReadVRAM<u16>(screen_addr);
             } else {
-                tile_info = gpu->ReadBGB<u16>(screen_addr);
+                tile_info = gpu->ReadVRAM<u16>(screen_addr);
             }
 
             // now we need to decode what the tile info means
@@ -110,9 +110,9 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             u32 tile_offset = character_addr + (vertical_flip ? ((7 - y % 8) * 4) : ((y % 8) * 4));
             u32 palette_indices;
             if (engine_id == 1) {
-                palette_indices = gpu->ReadBGA<u32>(tile_offset);
+                palette_indices = gpu->ReadVRAM<u32>(tile_offset);
             } else {
-                palette_indices = gpu->ReadBGB<u32>(tile_offset);
+                palette_indices = gpu->ReadVRAM<u32>(tile_offset);
             }
 
             for (int j = 0; j < 8; j++) {

@@ -867,6 +867,8 @@ void Memory::ARM9WriteWordIO(u32 addr, u32 data) {
         core->gpu.VRAMCNT_F = (data >> 8) & 0xFF;
         core->gpu.VRAMCNT_G = (data >> 16) & 0xFF;
         WriteWRAMCNT((data >> 24) & 0xFF);
+
+        core->gpu.MapVRAM();
         break;
     case 0x04000280:
         core->maths_unit.DIVCNT = data;

@@ -89,9 +89,9 @@ void GPU2D::RenderObjects(u16 line) {
                 u8 palette_index;
                 u32 offset = obj_base + (j / 8) * 64 + (j % 8);
                 if (engine_id == 1) {
-                    palette_index = gpu->ReadOBJA<u8>(offset);
+                    palette_index = gpu->ReadVRAM<u8>(offset);
                 } else {
-                    palette_index = gpu->ReadOBJB<u8>(offset);
+                    palette_index = gpu->ReadVRAM<u8>(offset);
                 }
 
                 u16 colour;
@@ -132,9 +132,9 @@ void GPU2D::RenderObjects(u16 line) {
                 u8 palette_indices;
                 u32 offset = obj_base + (j / 8) * 32 + ((j % 8) / 2);
                 if (engine_id == 1) {
-                    palette_indices = gpu->ReadOBJA<u8>(offset);
+                    palette_indices = gpu->ReadVRAM<u8>(offset);
                 } else {
-                    palette_indices = gpu->ReadOBJB<u8>(offset);
+                    palette_indices = gpu->ReadVRAM<u8>(offset);
                 }
 
                 // we will only need 4 bits for the palette index, since we have the palette number already

@@ -10,7 +10,6 @@ endif()
 set(SOURCES
     main.cpp
     mainwindow.cpp
-    configwindow.cpp
 )
 
 find_package(Qt5 COMPONENTS Core Widgets)

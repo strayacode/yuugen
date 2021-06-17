@@ -2,7 +2,6 @@
 
 #include <QMainWindow>
 #include <yuugen_common/emu_thread.h>
-#include "configwindow.h"
 #include <string.h>
 #include <memory>
 #include <mutex>
@@ -46,8 +45,6 @@ private:
     int screen_height;
 
     QString path;
-
-    ConfigWindow* config_window = nullptr;
 signals:
 
 public slots:
@@ -56,5 +53,4 @@ private slots:
     void LoadRom();
     void RenderScreen();
     void BootFirmware();
-    void OpenConfigWindow();
 };

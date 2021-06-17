@@ -37,40 +37,10 @@ struct GPU {
     void WriteDISPSTAT9(u16 data);
 
     template <typename T>
-    void WriteLCDC(u32 addr, T data);
-
-    template <typename T>
-    void WriteBGA(u32 addr, T data);
-
-    template <typename T>
-    void WriteBGB(u32 addr, T data);
-
-    template <typename T>
-    auto ReadLCDC(u32 addr) -> T;
-
-    template <typename T>
-    auto ReadBGA(u32 addr) -> T;
-
-    template <typename T>
-    auto ReadBGB(u32 addr) -> T;
-
-    template <typename T>
     auto ReadARM7(u32 addr) -> T;
 
     template <typename T>
     void WriteARM7(u32 addr, T data);
-
-    template <typename T>
-    void WriteOBJA(u32 addr, T data);
-
-    template <typename T>
-    void WriteOBJB(u32 addr, T data);
-
-    template <typename T>
-    auto ReadOBJA(u32 addr) -> T;
-
-    template <typename T>
-    auto ReadOBJB(u32 addr) -> T;
 
     template <typename T>
     auto ReadExtPaletteBGA(u32 addr) -> T;
