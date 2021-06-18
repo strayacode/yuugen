@@ -41,12 +41,8 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
 
             u32 data_addr = data_base + (coord_y * size_x + coord_x) * 2;
 
-            u16 colour;
-            if (engine_id == 1) {
-                colour = gpu->ReadVRAM<u16>(data_addr);
-            } else {
-                colour = gpu->ReadVRAM<u16>(data_addr);
-            }
+            u16 colour = gpu->ReadVRAM<u16>(data_addr);
+            
             bg_layers[bg_index][(256 * line) + pixel] = colour;
         }
     } else {
@@ -58,12 +54,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
 
             u32 data_addr = data_base + (coord_y * size_x + coord_x);
 
-            u8 palette_index;
-            if (engine_id == 1) {
-                palette_index = gpu->ReadVRAM<u8>(data_addr);
-            } else {
-                palette_index = gpu->ReadVRAM<u8>(data_addr);
-            }
+            u8 palette_index = gpu->ReadVRAM<u8>(data_addr);
             u16 colour = ReadPaletteRAM<u16>(palette_index * 2);
 
             bg_layers[bg_index][(256 * line) + pixel] = colour;
