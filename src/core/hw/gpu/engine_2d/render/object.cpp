@@ -3,9 +3,9 @@
 
 void GPU2D::RenderObjects(u16 line) {
     // check for 1d / 2d mapping
-    // if (!(DISPCNT & (1 << 4))) {
-    //     log_fatal("handle 2d obj mapping");
-    // }
+    if (!(DISPCNT & (1 << 4))) {
+        // log_fatal("handle 2d obj mapping");
+    }
 
     // assume 1d mapping for now
     // each object in oam consists of 6 bytes
@@ -52,9 +52,9 @@ void GPU2D::RenderObjects(u16 line) {
         u8 mode = (attribute[0] >> 10) & 0x3;
 
         // for now we will just ignore semi transparent and window objs
-        // if (mode != 0) {
-        //     log_fatal("[GPU2D] handle non-normal object %d", mode);
-        // }
+        if (mode != 0) {
+            // log_fatal("[GPU2D] handle non-normal object %d", mode);
+        }
 
         if (attribute[0] & (1 << 8)) {
             // log_fatal("[GPU2D] handle rotscal object");
@@ -86,14 +86,9 @@ void GPU2D::RenderObjects(u16 line) {
                 // make sure that when j has been incremented by 8, we move onto the next 8x8 tile
                 // and we know that each 8x8 tile occupies 64 bytes in 8bpp mode
                 // we must also increment by a byte for each time j is incremented
-                u8 palette_index;
                 u32 offset = obj_base + (j / 8) * 64 + (j % 8);
-                if (engine_id == 1) {
-                    palette_index = gpu->ReadVRAM<u8>(offset);
-                } else {
-                    palette_index = gpu->ReadVRAM<u8>(offset);
-                }
-
+                u8 palette_index = gpu->ReadVRAM<u8>(offset);
+                
                 u16 colour;
 
                 if (DISPCNT & (1 << 31)) {
@@ -107,8 +102,14 @@ void GPU2D::RenderObjects(u16 line) {
                 }
 
                 u16 layer_offset = horizontal_flip ? x + width - j - 1 : x + j;
-                obj_layer[(256 * line) + layer_offset].colour = colour;
-                obj_layer[(256 * line) + layer_offset].priority = priority;
+
+                // // only update a specific obj pixel if this one has lower priority and is non transparent too
+                if (colour != 0x8000) {
+                    if (priority < obj_layer[(256 * line) + layer_offset].priority) {
+                        obj_layer[(256 * line) + layer_offset].colour = colour;
+                        obj_layer[(256 * line) + layer_offset].priority = priority;
+                    }
+                }
             }
         } else {
             // 16 colour / 16 palette
@@ -129,14 +130,9 @@ void GPU2D::RenderObjects(u16 line) {
                 // make sure that when j has been incremented by 8, we move onto the next 8x8 tile
                 // and we know that each 8x8 tile occupies 32 bytes in 4bpp mode
                 // we must also increment by a byte for each time j is incremented by 2 (as each pixel occupies 4 bits)
-                u8 palette_indices;
                 u32 offset = obj_base + (j / 8) * 32 + ((j % 8) / 2);
-                if (engine_id == 1) {
-                    palette_indices = gpu->ReadVRAM<u8>(offset);
-                } else {
-                    palette_indices = gpu->ReadVRAM<u8>(offset);
-                }
-
+                u8 palette_indices = gpu->ReadVRAM<u8>(offset);
+                
                 // we will only need 4 bits for the palette index, since we have the palette number already
                 // if j is odd, then access the top 4 bits of the byte, otherwise access the lower 4 bits of the byte
                 u8 palette_index = (j & 0x1) ? (palette_indices >> 4) : (palette_indices & 0xF);

@@ -189,6 +189,11 @@ void GPU::MapVRAM() {
                 lcdc[i + 0xA0] = &VRAM_I[i * 0x1000];
             }
             break;
+        case 2:
+            for (int i = 0; i < 4; i++) {
+                objb[i + 0x08] = &VRAM_I[i * 0x1000];
+            }
+            break;
         case 3:
             // obj extended palette
             // handle later
@@ -290,11 +295,11 @@ void GPU::MapVRAM() {
             for (int i = 0; i < 16; i++) {
                 obja[i] = &VRAM_E[i * 1000];
             }
+        case 3:
+            // handle texture later
+            break;
         case 4:
             // handle extpal later
-            // for (int i = 0; i < 16; i++) {
-            //     lcdc[i + 0x80] = &VRAM_E[i * 0x1000];
-            // }
             break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_E));
@@ -318,6 +323,9 @@ void GPU::MapVRAM() {
             for (int i = 0; i < 32; i++) {
                 arm7_vram[(ofs & 0x1) * 0x20 + i] = &VRAM_D[i * 0x1000];
             }
+            break;
+        case 3:
+            // handle texture later
             break;
         case 4:
             for (int i = 0; i < 32; i++) {
