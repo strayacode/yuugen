@@ -17,6 +17,7 @@
 #include <core/hw/maths_unit/maths_unit.h>
 #include <core/hw/wifi/wifi.h>
 #include <string>
+#include <algorithm>
 
 struct Core {
     Core();

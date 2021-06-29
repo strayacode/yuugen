@@ -1,5 +1,6 @@
 #include <core/hw/gpu/gpu.h>
 #include <core/hw/gpu/engine_2d/gpu_2d.h>
+#include <core/core.h>
 
 GPU2D::GPU2D(GPU* gpu, int engine_id) : gpu(gpu), engine_id(engine_id) {
 
@@ -105,8 +106,8 @@ void GPU2D::RenderScanline(u16 line) {
         memset(&bg_layers[i][256 * line], 0, 256 * sizeof(u16));
     }
 
-    // reload the internal registers at the start of vblank
-    if (line == 192) {
+    // reload the internal registers
+    if (line == 0) {
         internal_x[0] = BGX[0];
         internal_y[0] = BGY[0];
         internal_x[1] = BGX[1];

@@ -232,6 +232,8 @@ void GPU::MapVRAM() {
                 bga[(ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10 + i] = &VRAM_G[i * 0x1000];
             }
             break;
+        case 3:
+            break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_G));
         }
@@ -248,6 +250,11 @@ void GPU::MapVRAM() {
         case 1:
             for (int i = 0; i < 4; i++) {
                 bga[(ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10 + i] = &VRAM_F[i * 0x1000];
+            }
+            break;
+        case 2:
+            for (int i = 0; i < 4; i++) {
+                obja[(ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10 + i] = &VRAM_F[i * 0x1000];
             }
             break;
         case 5:
@@ -346,6 +353,8 @@ void GPU::MapVRAM() {
                 obja[((ofs & 0x1) * 0x20) + i] = &VRAM_B[i * 0x1000];
             }
             break;
+        case 3:
+            break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_B));
         }
@@ -369,6 +378,8 @@ void GPU::MapVRAM() {
                 obja[((ofs & 0x1) * 0x20) + i] = &VRAM_A[i * 0x1000];
             }
             break;
+        case 3:
+            break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_A));
         }
@@ -386,25 +397,31 @@ auto GPU::ReadVRAM(u32 addr) -> T {
 
     u32 offset = addr - (region * 0x100000) - 0x06000000;
 
-    int page = offset >> 12;
+    int page_index = offset >> 12;
     int index = offset & 0xFFF;
+
+    u8* page = nullptr;
 
     switch (region) {
     case 0x0: case 0x1:
-        memcpy(&return_value, &bga[page][index], sizeof(T));
+        page = bga[page_index];
         break;
     case 0x2: case 0x3:
-        memcpy(&return_value, &bgb[page][index], sizeof(T));
+        page = bgb[page_index];
         break;
     case 0x4: case 0x5:
-        memcpy(&return_value, &obja[page][index], sizeof(T));
+        page = obja[page_index];
         break;
     case 0x6: case 0x7:
-        memcpy(&return_value, &objb[page][index], sizeof(T));
+        page = objb[page_index];
         break;
     default:
-        memcpy(&return_value, &lcdc[page][index], sizeof(T));
+        page = lcdc[page_index];
         break;
+    }
+
+    if (page != nullptr) {
+        memcpy(&return_value, &page[index], sizeof(T));
     }
 
     return return_value;

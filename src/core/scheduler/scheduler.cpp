@@ -19,6 +19,10 @@ auto Scheduler::GetCurrentTime() -> u64 {
     return current_time;
 }
 
+auto Scheduler::GetEventTime() -> u64 {
+    return events[0].start_time;
+}
+
 auto Scheduler::CalculateEventIndex(Event& new_event) -> int {
     // this is pretty much just a binary search lol
     int lower_bound = 0;

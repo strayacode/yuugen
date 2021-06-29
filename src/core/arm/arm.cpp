@@ -388,8 +388,6 @@ void ARM::Execute() {
         HandleInterrupt();
     }
 
-    counter++;
-
     if (IsARM()) {
         if (ConditionEvaluate(instruction >> 28)) {
             u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);

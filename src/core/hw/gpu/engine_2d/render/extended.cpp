@@ -1,5 +1,6 @@
 #include <core/hw/gpu/engine_2d/gpu_2d.h>
 #include <core/hw/gpu/gpu.h>
+#include <core/core.h>
 
 void GPU2D::RenderExtended(int bg_index, u16 line) {
     u32 data_base = vram_addr + ((BGCNT[bg_index] >> 8) & 0x1F) * 0x4000;
@@ -27,7 +28,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         break;
     }
 
-    printf("extended rendering\n");
+    // printf("extended rendering\n");
 
     if (!(BGCNT[bg_index] & (1 << 7))) {
         // 16 bit bgmap entries
