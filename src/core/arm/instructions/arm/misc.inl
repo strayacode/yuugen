@@ -255,10 +255,8 @@ u32 ARM_ROTATE_RIGHT_REG() {
         result = regs.r[rm];
     } else if (shift_amount == 0) {
         result = regs.r[rm];
-        SetConditionFlag(C_FLAG, regs.r[rm] >> 31);
     } else {
         result = (regs.r[rm] >> shift_amount) | (regs.r[rm] << (32 - shift_amount));
-        SetConditionFlag(C_FLAG, regs.r[rm] & (1 << (shift_amount - 1)));
     }
 
     return result;

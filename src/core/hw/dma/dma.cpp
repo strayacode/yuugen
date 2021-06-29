@@ -118,6 +118,7 @@ void DMA::Transfer(int channel_index) {
     }
 
     if (channel[channel_index].DMACNT & (1 << 25) && start_timing != 0) {
+        
         // restart the internal registers
         channel[channel_index].internal_length = channel[channel_index].DMACNT & 0x1FFFFF;
 
@@ -141,8 +142,7 @@ void DMA::Trigger(u8 mode) {
         }
 
         if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == mode)) {
-            // start a dma transfer on the next cycle
-            core->scheduler.Add(1, TransferEvent[channel_index]);
+            Transfer(channel_index);
         }
     }
 }
@@ -185,8 +185,7 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
 
     if (start_timing == 0) {
-        // start a dma transfer on the next cycle
-        core->scheduler.Add(1, TransferEvent[channel_index]);
+        Transfer(channel_index);
     }
 }
 

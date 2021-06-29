@@ -380,7 +380,6 @@ template auto GPU::ReadVRAM(u32 addr) -> u16;
 template auto GPU::ReadVRAM(u32 addr) -> u32;
 template <typename T>
 auto GPU::ReadVRAM(u32 addr) -> T {
-    // printf("address read %08x\n", addr);
     T return_value = 0;
 
     u8 region = (addr >> 20) & 0xF;
@@ -416,43 +415,37 @@ template void GPU::WriteVRAM(u32 addr, u16 data);
 template void GPU::WriteVRAM(u32 addr, u32 data);
 template <typename T>
 void GPU::WriteVRAM(u32 addr, T data) {
-    // printf("address %08x\n", addr);
     u8 region = (addr >> 20) & 0xF;
 
     u32 offset = addr - (region * 0x100000) - 0x06000000;
 
-    int page = offset >> 12;
+    int page_index = offset >> 12;
     int index = offset & 0xFFF;
 
-    // printf("rrergion %d page %d\n", region, page);
-
-    u8* dest = nullptr;
+    u8* page = nullptr;
 
     switch (region) {
     case 0x0: case 0x1:
-        dest = &bga[page][index];
+        page = bga[page_index];
         break;
     case 0x2: case 0x3:
-        dest = &bgb[page][index];
+        page = bgb[page_index];
         break;
     case 0x4: case 0x5:
-        dest = &obja[page][index];
+        page = obja[page_index];
         break;
     case 0x6: case 0x7:
-        dest = &objb[page][index];
+        page = objb[page_index];
         break;
     default:
-        dest = &lcdc[page][index];
+        page = lcdc[page_index];
         break;
     }
 
-    // printf("%p\n", dest);
-
-    if (dest != nullptr) {
-        memcpy(dest, &data, sizeof(T));
+    // make sure the page has been mapped
+    if (page != nullptr) {
+        memcpy(&page[index], &data, sizeof(T));
     }
-
-    // printf("done\n");
 }
 
 template auto GPU::ReadARM7(u32 addr) -> u8;
