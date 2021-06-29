@@ -27,11 +27,6 @@ enum MemoryRegion {
 
 struct Core;
 
-struct SharedMemoryConfig {
-    u16 mask;
-    u8* base;
-};
-
 struct Memory {
     Memory(Core* core);
     void Reset();
@@ -125,14 +120,8 @@ struct Memory {
     // the arm7 provides io ports for the link port but it doesn't seem to be used
     u16 SIOCNT;
 
-    SharedMemoryConfig arm9_shared_memory_config;
-    SharedMemoryConfig arm7_shared_memory_config;
-
     std::array<u8*, 0x100000> arm7_read_page_table;
     std::array<u8*, 0x100000> arm9_read_page_table;
     std::array<u8*, 0x100000> arm7_write_page_table;
     std::array<u8*, 0x100000> arm9_write_page_table;
-
-    // each page is 4kb
-    int static constexpr page_size = 0x1000;
 };

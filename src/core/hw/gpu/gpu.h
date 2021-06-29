@@ -37,12 +37,6 @@ struct GPU {
     void WriteDISPSTAT9(u16 data);
 
     template <typename T>
-    auto ReadARM7(u32 addr) -> T;
-
-    template <typename T>
-    void WriteARM7(u32 addr, T data);
-
-    template <typename T>
     auto ReadExtPaletteBGA(u32 addr) -> T;
 
     template <typename T>
@@ -98,7 +92,8 @@ struct GPU {
     std::array<u8*, 0x80> bga;
     std::array<u8*, 0x20> obja;
     std::array<u8*, 0x40> bgb;
-    std::array<u8*, 0x20> objb;    
+    std::array<u8*, 0x20> objb;
+    std::array<u8*, 0x40> arm7_vram;    
 
     GPU2D engine_a, engine_b;
 

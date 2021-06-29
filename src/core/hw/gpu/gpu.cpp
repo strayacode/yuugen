@@ -234,6 +234,12 @@ void GPU::MapVRAM() {
             break;
         case 3:
             break;
+        case 4:
+            // handle extended palette later
+            break;
+        case 5:
+            // handle extended palette later
+            break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_G));
         }
@@ -257,6 +263,8 @@ void GPU::MapVRAM() {
                 obja[(ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10 + i] = &VRAM_F[i * 0x1000];
             }
             break;
+        case 3:
+            break;
         case 5:
             // obj ext palette handle later
             break;
@@ -278,6 +286,10 @@ void GPU::MapVRAM() {
                 bga[i] = &VRAM_E[i * 0x1000];
             }
             break;
+        case 2:
+            for (int i = 0; i < 16; i++) {
+                obja[i] = &VRAM_E[i * 1000];
+            }
         case 4:
             // handle extpal later
             // for (int i = 0; i < 16; i++) {
@@ -302,6 +314,11 @@ void GPU::MapVRAM() {
                 bga[(ofs * 0x20) + i] = &VRAM_D[i * 0x1000];
             }
             break;
+        case 2:
+            for (int i = 0; i < 32; i++) {
+                arm7_vram[(ofs & 0x1) * 0x20 + i] = &VRAM_D[i * 0x1000];
+            }
+            break;
         case 4:
             for (int i = 0; i < 32; i++) {
                 objb[i] = &VRAM_D[i * 0x1000];
@@ -323,6 +340,11 @@ void GPU::MapVRAM() {
         case 1:
             for (int i = 0; i < 32; i++) {
                 bga[(ofs * 0x20) + i] = &VRAM_C[i * 0x1000];
+            }
+            break;
+        case 2:
+            for (int i = 0; i < 32; i++) {
+                arm7_vram[(ofs & 0x1) * 0x20 + i] = &VRAM_C[i * 0x1000];
             }
             break;
         case 4:
@@ -462,45 +484,6 @@ void GPU::WriteVRAM(u32 addr, T data) {
     // make sure the page has been mapped
     if (page != nullptr) {
         memcpy(&page[index], &data, sizeof(T));
-    }
-}
-
-template auto GPU::ReadARM7(u32 addr) -> u8;
-template auto GPU::ReadARM7(u32 addr) -> u16;
-template auto GPU::ReadARM7(u32 addr) -> u32;
-template <typename T>
-auto GPU::ReadARM7(u32 addr) -> T {
-    T return_value = 0;
-    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
-            memcpy(&return_value, &VRAM_C[addr & 0x1FFFF], sizeof(T));
-        }
-    }
-
-    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
-            memcpy(&return_value, &VRAM_D[addr & 0x1FFFF], sizeof(T));
-        }
-    }
-
-    return return_value;
-}
-
-template void GPU::WriteARM7(u32 addr, u8 data);
-template void GPU::WriteARM7(u32 addr, u16 data);
-template void GPU::WriteARM7(u32 addr, u32 data);
-template <typename T>
-void GPU::WriteARM7(u32 addr, T data) {
-    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
-            memcpy(&VRAM_C[addr & 0x1FFFF], &data, sizeof(T));
-        }
-    }
-
-    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
-            memcpy(&VRAM_D[addr & 0x1FFFF], &data, sizeof(T));
-        }
     }
 }
 

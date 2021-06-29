@@ -40,6 +40,10 @@ void Memory::UpdateARM7MemoryMap(u32 low_addr, u32 high_addr) {
         //         arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
         //     }
         //     break;
+        // case 0x06:
+        //     arm7_read_page_table[index] = core->gpu.arm7_vram[index];
+        //     arm7_write_page_table[index] = core->gpu.arm7_vram[index];
+        //     break;
         default:
             // set as a nullptr, which indicates that we should do a regular read / write
             arm7_read_page_table[index] = nullptr;
@@ -99,7 +103,7 @@ auto Memory::ARM7FastRead(u32 addr) -> T {
             }
             break;
         case REGION_VRAM:
-            return_value = core->gpu.ReadARM7<T>(addr);
+            memcpy(&return_value, &core->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], sizeof(T));
             break;
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
             // check if the arm9 has access rights to the gba slot
@@ -163,7 +167,7 @@ void Memory::ARM7FastWrite(u32 addr, T data) {
             }
             break;
         case REGION_VRAM:
-            core->gpu.WriteARM7<T>(addr, data);
+            memcpy(&core->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], &data, sizeof(T));
             break;
         case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
             // for now do nothing lol
@@ -222,7 +226,7 @@ auto Memory::ARM7Read(u32 addr) -> T {
         }
         break;
     case REGION_VRAM:
-        return_value = core->gpu.ReadARM7<T>(addr);
+        memcpy(&return_value, &core->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], sizeof(T));
         break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // check if the arm9 has access rights to the gba slot
@@ -283,7 +287,7 @@ void Memory::ARM7Write(u32 addr, T data) {
         }
         break;
     case REGION_VRAM:
-        core->gpu.WriteARM7<T>(addr, data);
+        memcpy(&core->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], &data, sizeof(T));
         break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // for now do nothing lol

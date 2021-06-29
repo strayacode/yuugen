@@ -185,7 +185,7 @@ void Memory::ARM9FastWrite(u32 addr, T data) {
 
             break;
         case REGION_VRAM:
-            core->gpu.WriteVRAM(addr, data);
+            core->gpu.WriteVRAM<T>(addr, data);
             break;
         case REGION_OAM:
             if (sizeof(T) == 1) {
@@ -347,7 +347,7 @@ void Memory::ARM9Write(u32 addr, T data) {
 
             break;
         case REGION_VRAM:
-            core->gpu.WriteVRAM(addr, data);
+            core->gpu.WriteVRAM<T>(addr, data);
             break;
         case REGION_OAM:
             if (sizeof(T) == 1) {
