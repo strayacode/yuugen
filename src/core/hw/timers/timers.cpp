@@ -120,5 +120,5 @@ auto Timers::ReadTMCNT_H(int timer_index) -> u16 {
 }
 
 auto Timers::ReadTMCNT(int timer_index) -> u32 {
-    return (ReadTMCNT_H(timer_index) << 8) | (ReadTMCNT_L(timer_index));
+    return (ReadTMCNT_H(timer_index) << 16) | (ReadTMCNT_L(timer_index));
 }
