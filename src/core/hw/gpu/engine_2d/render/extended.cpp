@@ -28,43 +28,39 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         break;
     }
 
-    // printf("extended rendering\n");
-
     if (!(BGCNT[bg_index] & (1 << 7))) {
         // 16 bit bgmap entries
         // log_warn("[GPU2D] Handle 16 bit bg map entries");
     } else if ((BGCNT[bg_index] & (1 << 7)) && (BGCNT[bg_index] & (1 << 2))) {
         // direct colour bitmap
-        // log_warn("[GPU2D] Handle direct colour bitmap");
         for (int pixel = 0; pixel < 256; pixel++) {
             u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
             u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
 
+            // don't draw the pixel if the x and y coordinates are not inside the dimensions of the bitmap
+            if (coord_x < 0 || coord_x >= size_x || coord_y < 0 || coord_y >= size_y) {
+                continue;
+            }
+
             u32 data_addr = data_base + (coord_y * size_x + coord_x) * 2;
 
-            u16 colour;
-            if (engine_id == 1) {
-                colour = gpu->ReadVRAM<u16>(data_addr);
-            } else {
-                colour = gpu->ReadVRAM<u16>(data_addr);
-            }
+            u16 colour = gpu->ReadVRAM<u16>(data_addr);
             bg_layers[bg_index][(256 * line) + pixel] = colour;
         }
     } else {
         // 256 colour bitmap
-        // log_warn("[GPU2D] Handle 256 colour bitmap");
         for (int pixel = 0; pixel < 256; pixel++) {
             u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
             u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
 
-            u32 data_addr = data_base + (coord_y * size_x + coord_x);
-
-            u8 palette_index;
-            if (engine_id == 1) {
-                palette_index = gpu->ReadVRAM<u8>(data_addr);
-            } else {
-                palette_index = gpu->ReadVRAM<u8>(data_addr);
+            // don't draw the pixel if the x and y coordinates are not inside the dimensions of the bitmap
+            if (coord_x < 0 || coord_x >= size_x || coord_y < 0 || coord_y >= size_y) {
+                continue;
             }
+
+            u32 data_addr = data_base + (coord_y * size_x + coord_x);
+            
+            u8 palette_index = gpu->ReadVRAM<u8>(data_addr);
             u16 colour = ReadPaletteRAM<u16>(palette_index * 2);
 
             bg_layers[bg_index][(256 * line) + pixel] = colour;

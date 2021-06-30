@@ -270,6 +270,9 @@ void GPU::MapVRAM() {
             break;
         case 3:
             break;
+        case 4:
+            // handle ext palette later
+            break;
         case 5:
             // obj ext palette handle later
             break;
