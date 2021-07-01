@@ -470,6 +470,10 @@ void Memory::ARM9WriteHalfIO(u32 addr, u16 data) {
     case 0x04000060:
         core->gpu.render_engine.DISP3DCNT = data;
         break;
+    case 0x04000068:
+        // DISP_MMEM_FIFO
+        // handle later
+        break;
     case 0x0400006C:
         // TODO: handle brightness properly later
         core->gpu.engine_a.MASTER_BRIGHT = data;

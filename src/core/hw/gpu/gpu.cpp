@@ -358,6 +358,9 @@ void GPU::MapVRAM() {
                 arm7_vram[(ofs & 0x1) * 0x20 + i] = &VRAM_C[i * 0x1000];
             }
             break;
+        case 3:
+            // handle texture later
+            break;
         case 4:
             for (int i = 0; i < 32; i++) {
                 bgb[i] = &VRAM_C[i * 0x1000];

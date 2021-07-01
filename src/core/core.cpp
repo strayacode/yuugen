@@ -84,11 +84,6 @@ void Core::RunFrame() {
 
         for (u32 i = 0; i < cycles; i++) {
             arm9.Step();
-
-            if (timers[1].enabled) {
-                timers[1].Tick(1);
-            }
-
             arm9.Step();
 
             if (timers[1].enabled) {
@@ -98,7 +93,7 @@ void Core::RunFrame() {
             arm7.Step();
 
             if (timers[0].enabled) {
-                timers[0].Tick(2);
+                timers[0].Tick(1);
             }
         }
 
