@@ -4,7 +4,8 @@ add_library(core
     core.h core.cpp
     arm/arm7/bus.cpp arm/arm7/mmio.cpp
     arm/arm9/bus.cpp arm/arm9/mmio.cpp
-    arm/arm.h arm/arm.cpp
+    arm/arm7.h arm/arm7.cpp
+    arm/arm9.h arm/arm9.cpp
     arm/memory.h arm/memory.cpp
     
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp

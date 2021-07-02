@@ -1,63 +1,39 @@
-#include <core/arm/arm.h>
+#include <core/arm/arm9.h>
 #include <core/core.h>
 #include <stdio.h>
 
-ARM::ARM(Core* core, int arch) : core(core), arch(arch) {
+ARM9::ARM9(Core* core, int arch) : core(core), arch(arch) {
     log_buffer = fopen("../../log-stuff/yuugen.log", "w");
     GenerateConditionTable();
 }
 
-auto ARM::ReadByte(u32 addr) -> u8 {
-    if (arch == ARMv5) {
-        return core->memory.ARM9FastRead<u8>(addr);
-    } else {
-        return core->memory.ARM7FastRead<u8>(addr);
-    }
+auto ARM9::ReadByte(u32 addr) -> u8 {
+    return core->memory.ARM9FastRead<u8>(addr);
 }
 
-auto ARM::ReadHalf(u32 addr) -> u16 {
-    if (arch == ARMv5) {
-        return core->memory.ARM9FastRead<u16>(addr);
-    } else {
-        return core->memory.ARM7FastRead<u16>(addr);
-    }
+auto ARM9::ReadHalf(u32 addr) -> u16 {
+    return core->memory.ARM9FastRead<u16>(addr);
 }
 
-auto ARM::ReadWord(u32 addr) -> u32 {
-    if (arch == ARMv5) {
-        return core->memory.ARM9FastRead<u32>(addr);
-    } else {
-        return core->memory.ARM7FastRead<u32>(addr);
-    }
+auto ARM9::ReadWord(u32 addr) -> u32 {
+    return core->memory.ARM9FastRead<u32>(addr);
 }
 
-void ARM::WriteByte(u32 addr, u8 data) {
-    if (arch == ARMv5) {
-        core->memory.ARM9FastWrite<u8>(addr, data);
-    } else {
-        core->memory.ARM7FastWrite<u8>(addr, data);
-    }
+void ARM9::WriteByte(u32 addr, u8 data) {
+    core->memory.ARM9FastWrite<u8>(addr, data);
 }
 
 
-void ARM::WriteHalf(u32 addr, u16 data) {
-    if (arch == ARMv5) {
-        core->memory.ARM9FastWrite<u16>(addr, data);
-    } else {
-        core->memory.ARM7FastWrite<u16>(addr, data);
-    }
+void ARM9::WriteHalf(u32 addr, u16 data) {
+    core->memory.ARM9FastWrite<u16>(addr, data);
 }
 
 
-void ARM::WriteWord(u32 addr, u32 data) {
-    if (arch == ARMv5) {
-        core->memory.ARM9FastWrite<u32>(addr, data);
-    } else {
-        core->memory.ARM7FastWrite<u32>(addr, data);
-    }
+void ARM9::WriteWord(u32 addr, u32 data) {
+    core->memory.ARM9FastWrite<u32>(addr, data);
 }
 
-void ARM::Reset() {
+void ARM9::Reset() {
     // initialise all registers 0 
     for (int i = 0; i < 16; i++) {
         regs.r[i] = 0;
@@ -85,11 +61,11 @@ void ARM::Reset() {
     pipeline[0] = pipeline[1] = 0;
 }
 
-bool ARM::IsARM() {
+bool ARM9::IsARM() {
     return (!(regs.cpsr & (1 << 5)));
 }
 
-void ARM::DirectBoot() {
+void ARM9::DirectBoot() {
     // set general purpose registers r0-r11 to 0 regardless of the cpu arch
     for (int i = 0; i < 12; i++) {
         regs.r[i] = 0;
@@ -123,7 +99,7 @@ void ARM::DirectBoot() {
     ARMFlushPipeline();
 }
 
-void ARM::FirmwareBoot() {
+void ARM9::FirmwareBoot() {
     if (arch == ARMv5) {
         // make arm9 start at arm9 bios
         regs.r[15] = 0xFFFF0000;
@@ -138,7 +114,7 @@ void ARM::FirmwareBoot() {
     ARMFlushPipeline();
 }
 
-void ARM::GenerateConditionTable() {
+void ARM9::GenerateConditionTable() {
     // iterate through each combination of bits 28..31
     for (int i = 0; i < 16; i++) {
         bool n_flag = i & 8;
@@ -166,7 +142,7 @@ void ARM::GenerateConditionTable() {
     }
 }
 
-bool ARM::ConditionEvaluate(u8 condition) {
+bool ARM9::ConditionEvaluate(u8 condition) {
     if (condition == CONDITION_NV) {
         if (arch == ARMv5) {
             // using arm decoding table this can only occur for branch and branch with link and change to thumb
@@ -182,11 +158,11 @@ bool ARM::ConditionEvaluate(u8 condition) {
     return condition_table[condition][regs.cpsr >> 28];
 }
 
-bool ARM::GetConditionFlag(int condition_flag) {
+bool ARM9::GetConditionFlag(int condition_flag) {
     return (regs.cpsr & (1 << condition_flag));
 }
 
-void ARM::SetConditionFlag(int condition_flag, int value) {
+void ARM9::SetConditionFlag(int condition_flag, int value) {
     if (value) {
         regs.cpsr |= (1 << condition_flag);
     } else {
@@ -195,7 +171,7 @@ void ARM::SetConditionFlag(int condition_flag, int value) {
 }
 
 // TODO: make cleaner later
-void ARM::SwitchMode(u8 new_mode) {
+void ARM9::SwitchMode(u8 new_mode) {
     if ((regs.cpsr & 0x1F) == new_mode) {
         return;
     }
@@ -263,32 +239,32 @@ void ARM::SwitchMode(u8 new_mode) {
     regs.cpsr = (regs.cpsr & ~0x1F) | new_mode;
 }
 
-bool ARM::HasSPSR() {
+bool ARM9::HasSPSR() {
     u8 current_mode = regs.cpsr & 0x1F;
 
     return (current_mode != USR && current_mode != SYS);
 }
 
-bool ARM::PrivilegedMode() {
+bool ARM9::PrivilegedMode() {
     u8 current_mode = regs.cpsr & 0x1F;
     return (current_mode != USR);
 }
 
-void ARM::ARMFlushPipeline() {
+void ARM9::ARMFlushPipeline() {
     regs.r[15] &= ~3;
     pipeline[0] = ReadWord(regs.r[15]);
     pipeline[1] = ReadWord(regs.r[15] + 4);
     regs.r[15] += 8;
 }
 
-void ARM::ThumbFlushPipeline() {
+void ARM9::ThumbFlushPipeline() {
     regs.r[15] &= ~1;
     pipeline[0] = ReadHalf(regs.r[15]);
     pipeline[1] = ReadHalf(regs.r[15] + 2);
     regs.r[15] += 4;
 }
 
-void ARM::SendInterrupt(int interrupt) {
+void ARM9::SendInterrupt(int interrupt) {
     // set the appropriate bit in IF
     core->interrupt[arch].IF |= (1 << interrupt);
     // check if the interrupt is enabled too
@@ -297,7 +273,7 @@ void ARM::SendInterrupt(int interrupt) {
     }
 }
 
-auto ARM::GetCurrentSPSR() -> u32 {
+auto ARM9::GetCurrentSPSR() -> u32 {
     switch (regs.cpsr & 0x1F) {
     case FIQ:
         return regs.spsr_fiq;
@@ -315,7 +291,7 @@ auto ARM::GetCurrentSPSR() -> u32 {
     }
 }
 
-void ARM::SetCurrentSPSR(u32 data) {
+void ARM9::SetCurrentSPSR(u32 data) {
     switch (regs.cpsr & 0x1F) {
     case FIQ:
         regs.spsr_fiq = data;
@@ -338,7 +314,7 @@ void ARM::SetCurrentSPSR(u32 data) {
     }
 }
 
-void ARM::HandleInterrupt() {
+void ARM9::HandleInterrupt() {
     halted = false;
     
     regs.spsr_irq = regs.cpsr;
@@ -364,7 +340,7 @@ void ARM::HandleInterrupt() {
     instruction = pipeline[0];
 }
 
-void ARM::Step() {
+void ARM9::Step() {
     // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
     instruction = pipeline[0]; // store the current executing instruction 
     // shift the pipeline
@@ -379,7 +355,7 @@ void ARM::Step() {
     Execute();
 }
 
-void ARM::Execute() {
+void ARM9::Execute() {
     if (halted) {
         return;
     }
@@ -1635,7 +1611,7 @@ void ARM::Execute() {
     }
 }
 
-void ARM::ARM_MRC() {
+void ARM9::ARM_MRC() {
     // armv5 exclusive as it involves coprocessor transfers
     u8 cp = (instruction >> 8) & 0xF;
     u8 crm = instruction & 0xF;
@@ -1666,7 +1642,7 @@ void ARM::ARM_MRC() {
     regs.r[15] += 4;
 }
 
-void ARM::ARM_MCR() {
+void ARM9::ARM_MCR() {
     // armv5 exclusive as it involves coprocessor transfers
     if (arch == ARMv4) {
         return;
@@ -1681,7 +1657,7 @@ void ARM::ARM_MCR() {
     regs.r[15] += 4;
 }
 
-void ARM::ARM_SWI() {
+void ARM9::ARM_SWI() {
     // store the cpsr in spsr_svc
     regs.spsr_svc = regs.cpsr;
 
@@ -1699,7 +1675,7 @@ void ARM::ARM_SWI() {
     ARMFlushPipeline();
 }
 
-void ARM::THUMB_SWI() {
+void ARM9::THUMB_SWI() {
     // store the cpsr in spsr_svc
     regs.spsr_svc = regs.cpsr;
 
@@ -1719,7 +1695,7 @@ void ARM::THUMB_SWI() {
     ARMFlushPipeline();
 }
 
-void ARM::ARM_UND() {
+void ARM9::ARM_UND() {
     // store the cpsr in spsr_und
     regs.spsr_und = regs.cpsr;
 
@@ -1737,21 +1713,21 @@ void ARM::ARM_UND() {
     ARMFlushPipeline();
 }
 
-void ARM::Halt() {
+void ARM9::Halt() {
     halted = true;
 }
 
-auto ARM::Halted() -> bool {
+auto ARM9::Halted() -> bool {
     return halted;
 }
 
-void ARM::LogRegisters() {
+void ARM9::LogRegisters() {
     fprintf(log_buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x r5: %08x r6: %08x r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x cpsr: %08x\n",
         regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], 
         regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction, regs.cpsr);
 }
 
-void ARM::DebugRegisters() {
+void ARM9::DebugRegisters() {
     printf("r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x r5: %08x r6: %08x r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x cpsr: %08x\n",
         regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], 
         regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction, regs.cpsr);

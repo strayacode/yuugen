@@ -66,8 +66,8 @@ enum CPUCondition {
     CONDITION_NV = 15,
 };
 
-struct ARM {
-    ARM(Core* core, int arch);
+struct ARM9 {
+    ARM9(Core* core, int arch);
 
     void Reset();
 

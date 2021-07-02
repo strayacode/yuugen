@@ -1,7 +1,8 @@
 #pragma once
 
 #include <core/arm/memory.h>
-#include <core/arm/arm.h>
+#include <core/arm/arm7.h>
+#include <core/arm/arm9.h>
 #include <core/scheduler/scheduler.h>
 #include <core/hw/cartridge/cartridge.h>
 #include <core/hw/spi/spi.h>
@@ -32,8 +33,8 @@ struct Core {
     Cartridge cartridge;
 
     Memory memory;
-    ARM arm7;
-    ARM arm9;
+    ARM7 arm7;
+    ARM9 arm9;
 
     Scheduler scheduler;
 
