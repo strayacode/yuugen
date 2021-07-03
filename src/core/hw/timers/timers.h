@@ -3,6 +3,7 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <string.h>
+#include <functional>
 
 struct Core;
 
@@ -19,22 +20,29 @@ struct Timers {
 
     auto ReadTMCNT(int timer_index) -> u32;
 
-    void Tick(int cycles);
     void Overflow(int timer_index);
+    void ActivateChannel(int timer_index);
+    void DeactivateChannel(int timer_index);
+
+    int GetEventId(int timer_index);
 
     struct Timer {
         u16 control;
         // use u32 so we can detect an overflow
         u32 counter;
         u16 reload_value;
-        u16 cycles_left;
-        u16 cycles_per_count; // specifies the number of ticks that must pass until counter can
-        // be incremented
-    } timer[4];
 
-    u8 enabled;
+        u64 activation_time;
+        bool active = false;
+
+        int shift;
+    } timer[4];
 
     Core* core;
 
     int arch;
+
+    static constexpr int shifts[4] = {0, 6, 8, 10};
+
+    std::function<void()> OverflowEvent[4];
 };

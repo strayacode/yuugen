@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 ARM9::ARM9(Core* core, int arch) : core(core), arch(arch) {
-    log_buffer = fopen("../../log-stuff/yuugen.log", "w");
+    log_buffer = fopen("../../log-stuff/yuugen1.log", "w");
     GenerateConditionTable();
 }
 

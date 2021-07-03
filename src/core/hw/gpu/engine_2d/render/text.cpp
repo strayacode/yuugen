@@ -49,7 +49,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
             // now we want to write some specific row of 8 pixels in a tile to the bg layer
             for (int j = 0; j < 8; j++) {
-                u32 byte_offset = character_addr + (horizontal_flip ? (7 - j) : j);
+                u32 byte_offset = character_addr + j;
 
                 u8 palette_index = gpu->ReadVRAM<u8>(byte_offset);
 
@@ -66,7 +66,11 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                     colour = palette_index == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>(palette_index * 2);
                 }
 
-                bg_layers[bg_index][(256 * line) + tile + j] = colour;
+                u16 offset = tile + (horizontal_flip ? (7 - j) : j);
+
+                if (offset >= 0 && offset <= 0xFF) {
+                    bg_layers[bg_index][(256 * line) + offset] = colour;
+                }
             }
         }
     } else {

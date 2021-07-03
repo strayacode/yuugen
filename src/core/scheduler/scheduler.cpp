@@ -4,6 +4,8 @@ void Scheduler::Reset() {
     events.clear();
 
     current_time = 0;
+    printf("%ld\n", current_time);
+    SchedulerDebug();
 }
 
 void Scheduler::Tick(int cycles) {
@@ -26,24 +28,19 @@ auto Scheduler::GetEventTime() -> u64 {
 auto Scheduler::CalculateEventIndex(Event& new_event) -> int {
     // this is pretty much just a binary search lol
     int lower_bound = 0;
-    int upper_bound = events.size();
-
-    if (upper_bound == 0) {
-        // just add the event normally without checking anything
-        return 0;
-    } else {
-        while (lower_bound < upper_bound) {
-            int mid = (lower_bound + upper_bound) / 2;
-            if (new_event.start_time > events[mid].start_time) {
-                lower_bound = mid + 1;
-            } else {
-                upper_bound = mid - 1;
-            }
+    int upper_bound = events.size() - 1;
+   
+    while (lower_bound <= upper_bound) {
+        int mid = (lower_bound + upper_bound) / 2;
+        
+        if (new_event.start_time > events[mid].start_time) {
+            lower_bound = mid + 1;
+        } else {
+            upper_bound = mid - 1;
         }
-
-        // finally return the index
-        return lower_bound;
     }
+
+    return lower_bound;
 }
 
 void Scheduler::RunEvents() {
@@ -60,8 +57,33 @@ void Scheduler::RunEvents() {
 void Scheduler::Add(u64 delay, std::function<void()> callback) {
     Event new_event;
     new_event.callback = callback;
+    new_event.id = NoneEvent;
     new_event.start_time = GetCurrentTime() + delay;
     int index = CalculateEventIndex(new_event);
 
     events.insert(events.begin() + index, new_event);
+}
+
+void Scheduler::AddWithId(u64 delay, int id, std::function<void()> callback) {
+    Event new_event;
+    new_event.callback = callback;
+    new_event.id = id;
+    new_event.start_time = GetCurrentTime() + delay;
+    int index = CalculateEventIndex(new_event);
+
+    events.insert(events.begin() + index, new_event);
+}
+
+void Scheduler::Cancel(int id) {
+    for (int i = 0; i < events.size(); i++) {
+        if (events[i].id == id) {
+            events.erase(events.begin() + i);
+        }
+    }
+}
+
+void Scheduler::SchedulerDebug() {
+    for (Event event : events) {
+        printf("start time: %ld, id: %d\n", event.start_time, event.id);
+    }
 }

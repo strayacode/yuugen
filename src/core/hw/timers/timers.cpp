@@ -2,15 +2,15 @@
 #include <core/core.h>
 
 Timers::Timers(Core* core, int arch) : core(core), arch(arch) {
-
+    for (int i = 0; i < 4; i++) {
+        OverflowEvent[i] = std::bind(&Timers::Overflow, this, i);
+    }
 }
 
 void Timers::Reset() {
-    for (int i = 0; i < 4; i++) {
-        memset(&timer[i], 0, sizeof(Timer));
-    }
-
-    enabled = 0;
+    // for (int i = 0; i < 4; i++) {
+    //     memset(&timer[i], 0, sizeof(Timer));
+    // }
 }
 
 void Timers::WriteTMCNT_L(int timer_index, u16 data) {
@@ -18,73 +18,38 @@ void Timers::WriteTMCNT_L(int timer_index, u16 data) {
 }
 
 void Timers::WriteTMCNT_H(int timer_index, u16 data) {
+    bool change = false;
+
     // if count up timing is enabled the prescalar value is ignored so instead the timer increments when the previous counter overflows? hmm
     // count up timing cant be used on timer 0 too
-    
-    // set bits 0..1 to the number of cycles that must pass before the counter can increment by 1
-    // in a specific timer channel
-    switch (data & 0x3) {
-    case 0:
-        timer[timer_index].cycles_per_count = 1;
-        timer[timer_index].cycles_left = 1;
-        break;
-    case 1:
-        timer[timer_index].cycles_per_count = 64;
-        timer[timer_index].cycles_left = 64;
-        break;
-    case 2:
-        timer[timer_index].cycles_per_count = 256;
-        timer[timer_index].cycles_left = 256;
-        break;
-    case 3:
-        timer[timer_index].cycles_per_count = 1024;
-        timer[timer_index].cycles_left = 1024;
-        break;
-    }
 
+    // if a timer was currently already scheduled,
+    // we must cancel it as we are now altering the timer
+    if (timer[timer_index].active) {
+        DeactivateChannel(timer_index);
+    }
+    
+    // set the timer shift
+    int shift = shifts[data & 0x3];
+    if (timer[timer_index].shift != shift) {
+        timer[timer_index].shift = shifts[data & 0x3];
+        change = true;
+    }
 
     // if the timer has gone from disabled to enabled then reload tmcnt_l with the reload value
     if (!(timer[timer_index].control & (1 << 7)) && (data & (1 << 7))) {
         timer[timer_index].counter = timer[timer_index].reload_value;
+        change = true;
     }
 
     // set control
     timer[timer_index].control = (timer[timer_index].control & ~0xC7) | (data & 0xC7);
-    
-    // set enable bits
-    // but a counter in count up mode is disabled as the previous timer when it overflows will cause an increment in this timer
-    if ((timer[timer_index].control & (1 << 7)) && ((timer_index == 0) || !(timer[timer_index].control & (1 << 2)))) {
-        enabled |= (1 << timer_index);
-    } else {
-        enabled &= ~(1 << timer_index);
-    }
-}
 
-void Timers::Tick(int cycles) {
-    // check each timer and see if they're enabled,
-    // if so then increment the counter for that channel
-    for (int i = 0; i < 4; i++) {
-        if (enabled & (1 << i)) {
-            // only increment timer with prescaler selection if 
-            // count up timing is disabled
-            if (!(timer[i].control & (1 << 2))) {
-                // first decrement from cycles_left
-                timer[i].cycles_left -= cycles;
-
-                // if the required amount of cycles has passed,
-                // then increment the actual counter
-                if (timer[i].cycles_left == 0) {
-                    timer[i].counter++;
-                    // reset the cycles_left back to the original value
-                    timer[i].cycles_left += timer[i].cycles_per_count;
-                }
-
-                // handle overflow
-                if (timer[i].counter > 0xFFFF) {
-                    Overflow(i);
-                }
-            }
-        }
+    // a timer in count up mode is disabled as the previous timer when it overflows will cause an increment in this timer
+    if (change && (timer[timer_index].control & (1 << 7)) && ((timer_index == 0) || !(timer[timer_index].control & (1 << 2)))) {
+        // this signifies that the channel is not in count up mode
+        // so activate the channel
+        ActivateChannel(timer_index);
     }
 }
 
@@ -98,20 +63,68 @@ void Timers::Overflow(int timer_index) {
             core->arm7.SendInterrupt(3 + timer_index);
         }
     }
+
+    // reactivate the timer if it's not in count up mode
+    if ((timer_index == 0) || !(timer[timer_index + 1].control & (1 << 2))) {
+        ActivateChannel(timer_index);
+    }
     
     if (timer_index < 3) {
         if ((timer[timer_index + 1].control & (1 << 2)) && (timer[timer_index + 1].control & (1 << 7))) {
-            // in count up timing the next timer is incremented on overflow
-            if (timer[timer_index + 1].counter == 0xFFFF) {
+            // in count up mode the next timer is incremented on overflow
+            if (++timer[timer_index + 1].counter == 0x10000) {
                 Overflow(timer_index + 1);
-            } else {
-                timer[timer_index + 1].counter++;
             }
         }
     }
 }
 
+void Timers::ActivateChannel(int timer_index) {
+    // this function is called when a timer is placed on the scheduler
+
+    // make sure the timer is now marked as active
+    timer[timer_index].active = true;
+
+    // store the activation time
+    timer[timer_index].activation_time = core->scheduler.GetCurrentTime();
+
+    // determine the delay of the event
+    // for this we must see how many cycles are left internally until the
+    // timer overflows, and multiply that by the prescalar value
+    u64 delay = (0x10000 - timer[timer_index].counter) << timer[timer_index].shift;
+
+    // now add the event
+    core->scheduler.AddWithId(delay, GetEventId(timer_index), OverflowEvent[timer_index]);
+}
+
+void Timers::DeactivateChannel(int timer_index) {
+    // this function is called when a timer is altered while a timer is on the scheduler
+
+    // mark the timer as not active anymore
+    timer[timer_index].active = false;
+
+    // update the counter of the timer
+    timer[timer_index].counter += (core->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
+
+    if (timer[timer_index].counter >= 0x10000) {
+        log_fatal("handle");
+    }
+
+    // cancel the event
+    core->scheduler.Cancel(GetEventId(timer_index));
+}
+
+// TODO: inline small functions later
+int Timers::GetEventId(int timer_index) {
+    int id = TimerEvent + (arch * 4) + timer_index;
+
+    return id;
+}
+
 auto Timers::ReadTMCNT_L(int timer_index) -> u16 {
+    // we need to now update counter to be relative to the time that has passed since
+    // the timer was placed on the scheduler
+    timer[timer_index].counter += (core->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
     return timer[timer_index].counter;
 }
 
