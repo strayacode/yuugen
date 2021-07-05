@@ -56,3 +56,7 @@ auto EmuThread::IsActive() -> bool {
 auto EmuThread::GetFPS() -> int {
     return frames;
 }
+
+void EmuThread::ToggleFramelimiter() {
+    framelimiter = !framelimiter;
+}

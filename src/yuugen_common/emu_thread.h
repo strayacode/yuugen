@@ -15,6 +15,7 @@ struct EmuThread {
     void Stop();
     auto IsActive() -> bool;
     auto GetFPS() -> int;
+    void ToggleFramelimiter();
 
     Core& core;
 

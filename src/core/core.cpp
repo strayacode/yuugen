@@ -81,12 +81,34 @@ void Core::RunFrame() {
 
     // run frame for total of 560190 arm9 cycles
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        arm9.Step();
-        arm9.Step();
-        arm7.Step();
+        // while (scheduler.events[0].start_time > scheduler.GetCurrentTime()) {
+        //     if (arm9.Halted() && arm7.Halted()) {
+        //         // step the scheduler until the next event
+        //         // maybe we can just set current time to be event time?
+        //         scheduler.Tick(scheduler.events[0].start_time - scheduler.GetCurrentTime());
+        //         break;
+        //     }
+
+        //     // TODO: put timers on the scheduler
+        //     arm9.Step();
+        //     arm9.Step();
+        //     arm7.Step();
+
+        //     scheduler.Tick(1);
+        // }
+
+        // // do any events
+        // scheduler.RunEvents();
+
+        u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
+        for (u32 i = 0; i < cycles; i++) {
+            arm9.Step();
+            arm9.Step();
+            arm7.Step();
+        }
 
         // make sure to tick the scheduler by cycles
-        scheduler.Tick(1);
+        scheduler.Tick(cycles);
 
         // do any events
         scheduler.RunEvents();
