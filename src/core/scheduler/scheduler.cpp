@@ -4,7 +4,6 @@ void Scheduler::Reset() {
     events.clear();
 
     current_time = 0;
-    printf("%ld\n", current_time);
     SchedulerDebug();
 }
 

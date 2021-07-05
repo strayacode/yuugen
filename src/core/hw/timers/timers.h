@@ -2,8 +2,10 @@
 
 #include <common/types.h>
 #include <common/log.h>
+#include <common/log_file.h>
 #include <string.h>
 #include <functional>
+#include <memory>
 
 struct Core;
 
@@ -45,4 +47,6 @@ struct Timers {
     static constexpr int shifts[4] = {0, 6, 8, 10};
 
     std::function<void()> OverflowEvent[4];
+
+    std::unique_ptr<LogFile> log_file;
 };

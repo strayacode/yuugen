@@ -81,16 +81,12 @@ void Core::RunFrame() {
 
     // run frame for total of 560190 arm9 cycles
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        // determine the number of cycles to run the arm9 and arm7 for
-        u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
-        for (u32 i = 0; i < cycles; i++) {
-            arm9.Step();
-            arm9.Step();
-            arm7.Step();
-        }
+        arm9.Step();
+        arm9.Step();
+        arm7.Step();
 
         // make sure to tick the scheduler by cycles
-        scheduler.Tick(cycles);
+        scheduler.Tick(1);
 
         // do any events
         scheduler.RunEvents();

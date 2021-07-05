@@ -18,8 +18,6 @@ void Timers::WriteTMCNT_L(int timer_index, u16 data) {
 }
 
 void Timers::WriteTMCNT_H(int timer_index, u16 data) {
-    bool change = false;
-
     // if count up timing is enabled the prescalar value is ignored so instead the timer increments when the previous counter overflows? hmm
     // count up timing cant be used on timer 0 too
 
@@ -30,23 +28,18 @@ void Timers::WriteTMCNT_H(int timer_index, u16 data) {
     }
     
     // set the timer shift
-    int shift = shifts[data & 0x3];
-    if (timer[timer_index].shift != shift) {
-        timer[timer_index].shift = shifts[data & 0x3];
-        change = true;
-    }
+    timer[timer_index].shift = shifts[data & 0x3];
 
     // if the timer has gone from disabled to enabled then reload tmcnt_l with the reload value
     if (!(timer[timer_index].control & (1 << 7)) && (data & (1 << 7))) {
         timer[timer_index].counter = timer[timer_index].reload_value;
-        change = true;
     }
 
     // set control
     timer[timer_index].control = (timer[timer_index].control & ~0xC7) | (data & 0xC7);
 
     // a timer in count up mode is disabled as the previous timer when it overflows will cause an increment in this timer
-    if (change && (timer[timer_index].control & (1 << 7)) && ((timer_index == 0) || !(timer[timer_index].control & (1 << 2)))) {
+    if ((timer[timer_index].control & (1 << 7)) && ((timer_index == 0) || !(timer[timer_index].control & (1 << 2)))) {
         // this signifies that the channel is not in count up mode
         // so activate the channel
         ActivateChannel(timer_index);
@@ -65,7 +58,7 @@ void Timers::Overflow(int timer_index) {
     }
 
     // reactivate the timer if it's not in count up mode
-    if ((timer_index == 0) || !(timer[timer_index + 1].control & (1 << 2))) {
+    if ((timer_index == 0) || !(timer[timer_index].control & (1 << 2))) {
         ActivateChannel(timer_index);
     }
     
@@ -124,7 +117,7 @@ int Timers::GetEventId(int timer_index) {
 auto Timers::ReadTMCNT_L(int timer_index) -> u16 {
     // we need to now update counter to be relative to the time that has passed since
     // the timer was placed on the scheduler
-    timer[timer_index].counter += (core->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
+    timer[timer_index].counter = (core->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
     return timer[timer_index].counter;
 }
 
