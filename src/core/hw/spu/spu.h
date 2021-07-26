@@ -4,10 +4,11 @@
 #include <common/log.h>
 #include <string.h>
 
-struct Core;
+class HW;
 
-struct SPU {
-    SPU(Core* core);
+class SPU {
+public:
+    SPU(HW* hw);
     void Reset();
 
     auto ReadByte(u32 addr) -> u8;
@@ -27,7 +28,7 @@ struct SPU {
         void WriteSOUNDCNT(u32 data);
     } channel[16];
 
-    Core* core;
+    HW* hw;
 
     // used by the arm7
     u16 SOUNDCNT;

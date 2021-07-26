@@ -1,6 +1,6 @@
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
 #include <core/hw/gpu/gpu.h>
-#include <core/core.h>
+#include <core/hw/hw.h>
 #include <array>
 #include <tuple>
 
@@ -357,13 +357,13 @@ void GeometryEngine::CheckGXFIFOInterrupt() {
     case 1:
         // trigger interrupt if fifo is less than half full
         if (fifo.size() < 128) {
-            gpu->core->arm9.SendInterrupt(21);
+            gpu->hw->arm9.SendInterrupt(21);
         }
         break;
     case 2:
         // trigger interrupt if fifo is empty
         if (fifo.size() == 0) {
-            gpu->core->arm9.SendInterrupt(21);
+            gpu->hw->arm9.SendInterrupt(21);
         }
         break;
     }

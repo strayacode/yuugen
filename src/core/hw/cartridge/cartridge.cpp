@@ -1,8 +1,8 @@
 #include <core/hw/cartridge/cartridge.h>
-#include <core/core.h>
+#include <core/hw/hw.h>
 #include <core/hw/cartridge/save_database.h>
 
-Cartridge::Cartridge(Core* core) : core(core) {
+Cartridge::Cartridge(HW* hw) : hw(hw) {
 
 }
 
@@ -178,8 +178,8 @@ void Cartridge::StartTransfer() {
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {
-            core->arm7.SendInterrupt(19);
-            core->arm9.SendInterrupt(19);
+            hw->arm7.SendInterrupt(19);
+            hw->arm9.SendInterrupt(19);
         }
     } else {
         // since we are starting a new transfer transfer_count must start at 0
@@ -190,10 +190,10 @@ void Cartridge::StartTransfer() {
         ROMCTRL |= (1 << 23);
 
         // start a dma transfer to read from rom
-        if (core->memory.CartridgeAccessRights()) {
-            core->dma[1].Trigger(5);
+        if (hw->CartridgeAccessRights()) {
+            hw->dma[1].Trigger(5);
         } else {
-            core->dma[0].Trigger(2);
+            hw->dma[0].Trigger(2);
         }
     }
     
@@ -251,15 +251,15 @@ auto Cartridge::ReadData() -> u32 {
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {
-            core->arm7.SendInterrupt(19);
-            core->arm9.SendInterrupt(19);
+            hw->arm7.SendInterrupt(19);
+            hw->arm9.SendInterrupt(19);
         }
     } else {
         // trigger another nds cartridge dma
-        if (core->memory.CartridgeAccessRights()) {
-            core->dma[1].Trigger(5);
+        if (hw->CartridgeAccessRights()) {
+            hw->dma[1].Trigger(5);
         } else {
-            core->dma[0].Trigger(2);
+            hw->dma[0].Trigger(2);
         }
     }
 
@@ -307,17 +307,17 @@ auto Cartridge::ReadCommand(int command_index) -> u8 {
 void Cartridge::DirectBoot() {
     // first transfer the cartridge header (this is taken from rom address 0 and loaded into main memory at address 0x27FFE00)
     for (u32 i = 0; i < 0x170; i++) {
-        core->memory.ARM9Write<u8>(0x027FFE00 + i, rom[i]);
+        hw->ARM9Write<u8>(0x027FFE00 + i, rom[i]);
     }
 
     // next transfer the arm9 code
     for (u32 i = 0; i < header.arm9_size; i++) {
-        core->memory.ARM9Write<u8>(header.arm9_ram_address + i, rom[header.arm9_rom_offset + i]);
+        hw->ARM9Write<u8>(header.arm9_ram_address + i, rom[header.arm9_rom_offset + i]);
     }
 
     // finally transfer the arm7 code
     for (u32 i = 0; i < header.arm7_size; i++) {
-        core->memory.ARM7Write<u8>(header.arm7_ram_address + i, rom[header.arm7_rom_offset + i]);
+        hw->ARM7Write<u8>(header.arm7_ram_address + i, rom[header.arm7_rom_offset + i]);
     }
 
     log_debug("[Cartridge] Data transferred into memory");

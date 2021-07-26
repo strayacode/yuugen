@@ -13,12 +13,11 @@
 
 #define INSTRUCTION(NAME, ...) void NAME(__VA_ARGS__)
 
-struct Core;
+class HW;
 
-
-
-struct ARM7 {
-    ARM7(Core* core, int arch);
+class ARM7 {
+public:
+    ARM7(HW* hw, int arch);
 
     enum CPUArch {
         ARMv4 = 0,
@@ -166,7 +165,7 @@ struct ARM7 {
 
     u32 instruction;
 
-    Core* core;
+    HW* hw;
 
     int arch;
 

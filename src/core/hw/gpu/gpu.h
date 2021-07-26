@@ -9,7 +9,7 @@
 #include <functional>
 #include <array>
 
-struct Core;
+class HW;
 
 enum Screen {
     BOTTOM_SCREEN,
@@ -22,8 +22,9 @@ enum Screen {
 // to avoid overhead hopefully just remap a specific block
 // for a specific vramcnt
 
-struct GPU {
-    GPU(Core* core);
+class GPU {
+public:
+    GPU(HW* hw);
 
     auto GetFramebuffer(Screen screen) -> const u32*;
     void Reset();
@@ -75,7 +76,7 @@ struct GPU {
 
     u16 DISPSTAT7, DISPSTAT9;
 
-    Core* core;
+    HW* hw;
 
     // understanding: these blocks of vram make up 656kb and are able to be dynamically mapped to the vram region
     u8 VRAM_A[0x20000];
@@ -99,7 +100,6 @@ struct GPU {
 
     RenderEngine render_engine;
     GeometryEngine geometry_engine;
-
 
     u16 VCOUNT;
 

@@ -1,7 +1,7 @@
 #include <core/hw/spu/spu.h>
-#include <core/core.h>
+#include <core/hw/hw.h>
 
-SPU::SPU(Core* core) : core(core) {
+SPU::SPU(HW* hw) : hw(hw) {
 
 }
 

@@ -6,10 +6,11 @@
 #include <fstream>
 #include <iterator>
 
-struct Core;
+class HW;
 
-struct SPI {
-    SPI(Core* core);
+class SPI {
+public:
+    SPI(HW* hw);
     void Reset();
     void WriteSPICNT(u16 data);
     void WriteSPIDATA(u8 data);
@@ -47,7 +48,7 @@ struct SPI {
     // Write/Program/Erase in Progess
     bool write_in_progress;
 
-    Core* core;
+    HW* hw;
 
     u16 adc_x1;
     u16 adc_x2;

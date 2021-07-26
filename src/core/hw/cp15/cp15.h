@@ -5,10 +5,11 @@
 #include <string.h>
 #include <algorithm>
 
-struct Core;
+class HW;
 
-struct CP15 {
-    CP15(Core* core);
+class CP15 {
+public:
+    CP15(HW* hw);
 
     void Reset();
     void DirectBoot();
@@ -45,5 +46,5 @@ struct CP15 {
     u32 dtcm_size;
     u32 itcm_size;
 
-    Core* core;
+    HW* hw;
 };

@@ -1,7 +1,7 @@
 #include <core/hw/interrupt/interrupt.h>
-#include <core/core.h>
+#include <core/hw/hw.h>
 
-Interrupt::Interrupt(Core* core, int arch) : core(core), arch(arch) {
+Interrupt::Interrupt(HW* hw, int arch) : hw(hw), arch(arch) {
 
 }
 

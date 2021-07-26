@@ -2,10 +2,11 @@
 
 #include <common/types.h>
 
-struct Core;
+class HW;
 
-struct Interrupt {
-    Interrupt(Core* core, int arch);
+class Interrupt {
+public:
+    Interrupt(HW* hw, int arch);
 
     void Reset();
 
@@ -13,7 +14,7 @@ struct Interrupt {
     u32 IE;
     u32 IF;
 
-    Core* core;
+    HW* hw;
 
     int arch;
 };

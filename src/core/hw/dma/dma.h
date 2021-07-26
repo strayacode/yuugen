@@ -5,10 +5,11 @@
 #include <common/types.h>
 #include <functional>
 
-struct Core;
+class HW;
 
-struct DMA {
-    DMA(Core* core, int arch);
+class DMA {
+public:
+    DMA(HW* hw, int arch);
     void Reset();
     void Transfer(int channel_index);
     void Trigger(u8 mode);
@@ -25,7 +26,7 @@ struct DMA {
     auto ReadLength(int channel_index) -> u32;
     void WriteLength(int channel_index, u32 data);
 
-    Core* core;
+    HW* hw;
 
     int arch;
 

@@ -2,12 +2,11 @@ set(SOFTWARE_FASTMEM ON)
 
 add_library(core
     core.h core.cpp
-    arm/arm7/bus.cpp arm/arm7/mmio.cpp
-    arm/arm9/bus.cpp arm/arm9/mmio.cpp
     arm/arm7.h arm/arm7.cpp
     arm/arm9.h arm/arm9.cpp
-    arm/memory.h arm/memory.cpp
     
+    hw/hw.h hw/hw.cpp
+    hw/bus.cpp hw/mmio.cpp
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
     hw/cartridge/backup/flash/flash.h hw/cartridge/backup/flash/flash.cpp
     hw/cartridge/backup/eeprom/eeprom.h hw/cartridge/backup/eeprom/eeprom.cpp

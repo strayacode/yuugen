@@ -5,10 +5,11 @@
 #include <string.h>
 #include <queue>
 
-struct Core;
+class HW;
 
-struct IPC {
-    IPC(Core* core);
+class IPC {
+public:
+    IPC(HW* hw);
     void Reset();
 
     void WriteIPCSYNC7(u16 data);
@@ -43,5 +44,5 @@ struct IPC {
     u32 fifo7recv;
     u32 fifo9recv;
 
-    Core* core;
+    HW* hw;
 };

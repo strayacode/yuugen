@@ -3,10 +3,11 @@
 #include <common/log.h>
 #include <ctime>
 
-struct Core;
+class HW;
 
-struct RTC {
-    RTC(Core* core);
+class RTC {
+public:
+    RTC(HW* hw);
     void Reset();
 
     auto ReadRTC() -> u8;
@@ -17,7 +18,7 @@ struct RTC {
 
     u8 RTC_REG;
 
-    Core* core;
+    HW* hw;
 
     u8 write_count;
     u8 command;

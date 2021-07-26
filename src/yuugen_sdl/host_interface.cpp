@@ -61,16 +61,16 @@ bool HostInterface::Initialise() {
 }
 
 void HostInterface::Run(std::string path) {
-    core->SetRomPath(path);
-    core->Reset();
-    core->DirectBoot();
+    core->hw.SetRomPath(path);
+    core->hw.Reset();
+    core->hw.DirectBoot();
 
-    emu_thread->ToggleFramelimiter();
+    // emu_thread->ToggleFramelimiter();
     emu_thread->Start();
 
     while (true) {
-        SDL_UpdateTexture(top_texture, nullptr, core->gpu.GetFramebuffer(TOP_SCREEN), sizeof(u32) * 256);
-        SDL_UpdateTexture(bottom_texture, nullptr, core->gpu.GetFramebuffer(BOTTOM_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_texture, nullptr, core->hw.gpu.GetFramebuffer(TOP_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(bottom_texture, nullptr, core->hw.gpu.GetFramebuffer(BOTTOM_SCREEN), sizeof(u32) * 256);
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_area);
@@ -85,34 +85,34 @@ void HostInterface::Run(std::string path) {
                 bool key_pressed = event.type == SDL_KEYDOWN;
                 switch (event.key.keysym.sym) {
                 case SDLK_d:
-                    core->input.HandleInput(BUTTON_A, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_A, key_pressed);
                     break;
                 case SDLK_s:
-                    core->input.HandleInput(BUTTON_B, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_B, key_pressed);
                     break;
                 case SDLK_RSHIFT:
-                    core->input.HandleInput(BUTTON_SELECT, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_SELECT, key_pressed);
                     break;
                 case SDLK_RETURN:
-                    core->input.HandleInput(BUTTON_START, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_START, key_pressed);
                     break;
                 case SDLK_RIGHT:
-                    core->input.HandleInput(BUTTON_RIGHT, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_RIGHT, key_pressed);
                     break;
                 case SDLK_LEFT:
-                    core->input.HandleInput(BUTTON_LEFT, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_LEFT, key_pressed);
                     break;
                 case SDLK_UP:
-                    core->input.HandleInput(BUTTON_UP, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_UP, key_pressed);
                     break;
                 case SDLK_DOWN:
-                    core->input.HandleInput(BUTTON_DOWN, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_DOWN, key_pressed);
                     break;
                 case SDLK_e:
-                    core->input.HandleInput(BUTTON_R, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_R, key_pressed);
                     break;
                 case SDLK_w:
-                    core->input.HandleInput(BUTTON_L, key_pressed);
+                    core->hw.input.HandleInput(BUTTON_L, key_pressed);
                     break;
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
@@ -122,8 +122,8 @@ void HostInterface::Run(std::string path) {
                 if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
                     // only do a touchscreen event if it occurs in the bottom screen
                     bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
-                    core->input.SetTouch(button_pressed);
-                    core->input.SetPoint(x, y);
+                    core->hw.input.SetTouch(button_pressed);
+                    core->hw.input.SetPoint(x, y);
                 }
             }
         }

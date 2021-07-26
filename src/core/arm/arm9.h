@@ -13,8 +13,6 @@
 
 #define INSTRUCTION(NAME, ...) void NAME(__VA_ARGS__)
 
-struct Core;
-
 enum CPUArch {
     ARMv4 = 0,
     ARMv5 = 1,
@@ -66,8 +64,11 @@ enum CPUCondition {
     CONDITION_NV = 15,
 };
 
-struct ARM9 {
-    ARM9(Core* core, int arch);
+class HW;
+
+class ARM9 { 
+public:
+    ARM9(HW* hw, int arch);
 
     void Reset();
 
@@ -164,7 +165,7 @@ struct ARM9 {
 
     u32 instruction;
 
-    Core* core;
+    HW* hw;
 
     int arch;
 

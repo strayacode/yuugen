@@ -1,7 +1,7 @@
 #include <core/hw/timers/timers.h>
-#include <core/core.h>
+#include <core/hw/hw.h>
 
-Timers::Timers(Core* core, int arch) : core(core), arch(arch) {
+Timers::Timers(HW* hw, int arch) : hw(hw), arch(arch) {
     for (int i = 0; i < 4; i++) {
         OverflowEvent[i] = std::bind(&Timers::Overflow, this, i);
     }
@@ -51,9 +51,9 @@ void Timers::Overflow(int timer_index) {
 
     if (timer[timer_index].control & (1 << 6)) {
         if (arch == 1) {
-            core->arm9.SendInterrupt(3 + timer_index);
+            hw->arm9.SendInterrupt(3 + timer_index);
         } else {
-            core->arm7.SendInterrupt(3 + timer_index);
+            hw->arm7.SendInterrupt(3 + timer_index);
         }
     }
 
@@ -79,7 +79,7 @@ void Timers::ActivateChannel(int timer_index) {
     timer[timer_index].active = true;
 
     // store the activation time
-    timer[timer_index].activation_time = core->scheduler.GetCurrentTime();
+    timer[timer_index].activation_time = hw->scheduler.GetCurrentTime();
 
     // determine the delay of the event
     // for this we must see how many cycles are left internally until the
@@ -87,7 +87,7 @@ void Timers::ActivateChannel(int timer_index) {
     u64 delay = (0x10000 - timer[timer_index].counter) << timer[timer_index].shift;
 
     // now add the event
-    core->scheduler.AddWithId(delay, GetEventId(timer_index), OverflowEvent[timer_index]);
+    hw->scheduler.AddWithId(delay, GetEventId(timer_index), OverflowEvent[timer_index]);
 }
 
 void Timers::DeactivateChannel(int timer_index) {
@@ -97,14 +97,14 @@ void Timers::DeactivateChannel(int timer_index) {
     timer[timer_index].active = false;
 
     // update the counter of the timer
-    timer[timer_index].counter += (core->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
+    timer[timer_index].counter += (hw->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
 
     if (timer[timer_index].counter >= 0x10000) {
         log_fatal("handle");
     }
 
     // cancel the event
-    core->scheduler.Cancel(GetEventId(timer_index));
+    hw->scheduler.Cancel(GetEventId(timer_index));
 }
 
 // TODO: inline small functions later
@@ -117,7 +117,7 @@ int Timers::GetEventId(int timer_index) {
 auto Timers::ReadTMCNT_L(int timer_index) -> u16 {
     // we need to now update counter to be relative to the time that has passed since
     // the timer was placed on the scheduler
-    timer[timer_index].counter = (core->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
+    timer[timer_index].counter = (hw->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
     return timer[timer_index].counter;
 }
 

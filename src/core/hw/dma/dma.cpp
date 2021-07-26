@@ -1,8 +1,8 @@
 #include <core/hw/dma/dma.h>
-#include <core/core.h>
+#include <core/hw/hw.h>
 
 
-DMA::DMA(Core* core, int arch) : core(core), arch(arch) {
+DMA::DMA(HW* hw, int arch) : hw(hw), arch(arch) {
     for (int i = 0; i < 4; i++) {
         TransferEvent[i] = std::bind(&DMA::Transfer, this, i);
     }
@@ -30,9 +30,9 @@ void DMA::Transfer(int channel_index) {
         // loop through all the data units specified by internal length
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
             if (arch == ARMv5) {
-                core->memory.ARM9Write<u32>(channel[channel_index].internal_destination, core->memory.ARM9Read<u32>(channel[channel_index].internal_source));
+                hw->ARM9Write<u32>(channel[channel_index].internal_destination, hw->ARM9Read<u32>(channel[channel_index].internal_source));
             } else {
-                core->memory.ARM7Write<u32>(channel[channel_index].internal_destination, core->memory.ARM7Read<u32>(channel[channel_index].internal_source));
+                hw->ARM7Write<u32>(channel[channel_index].internal_destination, hw->ARM7Read<u32>(channel[channel_index].internal_source));
             }
 
             // case 2 is just fixed so nothing happens
@@ -69,9 +69,9 @@ void DMA::Transfer(int channel_index) {
         // halfword transfer
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
             if (arch == ARMv5) {
-                core->memory.ARM9Write<u16>(channel[channel_index].internal_destination, core->memory.ARM9Read<u16>(channel[channel_index].internal_source));
+                hw->ARM9Write<u16>(channel[channel_index].internal_destination, hw->ARM9Read<u16>(channel[channel_index].internal_source));
             } else {
-                core->memory.ARM7Write<u16>(channel[channel_index].internal_destination, core->memory.ARM7Read<u16>(channel[channel_index].internal_source));
+                hw->ARM7Write<u16>(channel[channel_index].internal_destination, hw->ARM7Read<u16>(channel[channel_index].internal_source));
             }
 
             // case 2 is just fixed so nothing happens
@@ -110,10 +110,10 @@ void DMA::Transfer(int channel_index) {
     if (channel[channel_index].DMACNT & (1 << 30)) {
         if (arch == ARMv5) {
             // arm9
-            core->arm9.SendInterrupt(8 + channel_index);
+            hw->arm9.SendInterrupt(8 + channel_index);
         } else {
             // arm7
-            core->arm7.SendInterrupt(8 + channel_index);
+            hw->arm7.SendInterrupt(8 + channel_index);
         }
     }
 

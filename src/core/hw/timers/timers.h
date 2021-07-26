@@ -7,11 +7,12 @@
 #include <functional>
 #include <memory>
 
-struct Core;
+class HW;
 
 // the NDS has 4 timers for each cpu, so 8 timers in total
-struct Timers {
-    Timers(Core* core, int arch);
+class Timers {
+public:
+    Timers(HW* hw, int arch);
     void Reset();
 
     void WriteTMCNT_L(int timer_index, u16 data);
@@ -40,7 +41,7 @@ struct Timers {
         int shift;
     } timer[4];
 
-    Core* core;
+    HW* hw;
 
     int arch;
 

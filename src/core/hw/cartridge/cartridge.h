@@ -28,10 +28,11 @@ enum BackupType {
     NO_BACKUP,
 };
 
-struct Core;
+class HW;
 
-struct Cartridge {
-    Cartridge(Core* core);
+class Cartridge {
+public:
+    Cartridge(HW* hw);
     ~Cartridge();
     void Reset();
     void LoadRom(std::string rom_path);
@@ -84,7 +85,7 @@ struct Cartridge {
 
     u8 command;
 
-    Core* core;
+    HW* hw;
 
     std::vector<u8> rom;
 

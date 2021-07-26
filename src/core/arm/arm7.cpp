@@ -1,35 +1,35 @@
 #include <core/arm/arm7.h>
-#include <core/core.h>
+#include <core/hw/hw.h>
 #include <stdio.h>
 
-ARM7::ARM7(Core* core, int arch) : core(core), arch(arch) {
+ARM7::ARM7(HW* hw, int arch) : hw(hw), arch(arch) {
     log_buffer = fopen("../../log-stuff/yuugen.log", "w");
     GenerateConditionTable();
 }
 
 auto ARM7::ReadByte(u32 addr) -> u8 {
-    return core->memory.ARM7FastRead<u8>(addr);
+    return hw->ARM7FastRead<u8>(addr);
 }
 
 auto ARM7::ReadHalf(u32 addr) -> u16 {
-    return core->memory.ARM7FastRead<u16>(addr);
+    return hw->ARM7FastRead<u16>(addr);
 }
 
 auto ARM7::ReadWord(u32 addr) -> u32 {
-    return core->memory.ARM7FastRead<u32>(addr);
+    return hw->ARM7FastRead<u32>(addr);
 }
 
 void ARM7::WriteByte(u32 addr, u8 data) {
-    core->memory.ARM7FastWrite<u8>(addr, data);
+    hw->ARM7FastWrite<u8>(addr, data);
 }
 
 void ARM7::WriteHalf(u32 addr, u16 data) {
-    core->memory.ARM7FastWrite<u16>(addr, data);
+    hw->ARM7FastWrite<u16>(addr, data);
 }
 
 
 void ARM7::WriteWord(u32 addr, u32 data) {
-    core->memory.ARM7FastWrite<u32>(addr, data);
+    hw->ARM7FastWrite<u32>(addr, data);
 }
 
 void ARM7::Reset() {
@@ -81,13 +81,13 @@ void ARM7::DirectBoot() {
         regs.r[13] = 0x0380FD80;
         regs.r_banked[BANK_IRQ][5] = 0x0380FF80;
         regs.r_banked[BANK_SVC][5] = 0x0380FFC0;
-        regs.r[12] = regs.r[14] = regs.r[15] = core->cartridge.header.arm7_entrypoint;
+        regs.r[12] = regs.r[14] = regs.r[15] = hw->cartridge.header.arm7_entrypoint;
 
     } else if (arch == ARMv5) {
         regs.r[13] = 0x03002F7C;
         regs.r_banked[BANK_IRQ][5] = 0x03003F80;
         regs.r_banked[BANK_SVC][5] = 0x03003FC0;
-        regs.r[12] = regs.r[14] = regs.r[15] = core->cartridge.header.arm9_entrypoint;
+        regs.r[12] = regs.r[14] = regs.r[15] = hw->cartridge.header.arm9_entrypoint;
 
     }
 
@@ -265,9 +265,9 @@ void ARM7::ThumbFlushPipeline() {
 
 void ARM7::SendInterrupt(int interrupt) {
     // set the appropriate bit in IF
-    core->interrupt[arch].IF |= (1 << interrupt);
+    hw->interrupt[arch].IF |= (1 << interrupt);
     // check if the interrupt is enabled too
-    if (core->interrupt[arch].IE & (1 << interrupt)) {
+    if (hw->interrupt[arch].IE & (1 << interrupt)) {
         halted = false;
     }
 }
@@ -331,7 +331,7 @@ void ARM7::HandleInterrupt() {
 
     // check the exception base and jump to the correct address in the bios
     // also only use cp15 exception base from control register if arm9
-    regs.r[15] = ((arch) ? core->cp15.GetExceptionBase() : 0x00000000) + 0x18;
+    regs.r[15] = ((arch) ? hw->cp15.GetExceptionBase() : 0x00000000) + 0x18;
     
     ARMFlushPipeline();
 
@@ -359,7 +359,7 @@ void ARM7::Execute() {
         return;
     }
 
-    if (core->interrupt[arch].IME && ((core->interrupt[arch].IE & core->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
+    if (hw->interrupt[arch].IME && ((hw->interrupt[arch].IE & hw->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
         HandleInterrupt();
     }
 
@@ -1628,7 +1628,7 @@ void ARM7::ARM_MRC() {
         }
     }
 
-    u32 data = core->cp15.Read(crn, crm, opcode2);
+    u32 data = hw->cp15.Read(crn, crm, opcode2);
 
     if (rd == 15) {
         // set flags instead
@@ -1651,7 +1651,7 @@ void ARM7::ARM_MCR() {
     u8 crn = (instruction >> 16) & 0xF;
     u8 opcode2 = (instruction >> 5) & 0x7;
     u8 rd = (instruction >> 12) & 0xF;
-    core->cp15.Write(crn, crm, opcode2, regs.r[rd]);
+    hw->cp15.Write(crn, crm, opcode2, regs.r[rd]);
 
     regs.r[15] += 4;
 }
@@ -1669,7 +1669,7 @@ void ARM7::ARM_SWI() {
     regs.r[14] = regs.r[15] - 4;
     // check the exception base and jump to the correct address in the bios
     // also only use cp15 exception base from control register if arm9
-    regs.r[15] = ((arch) ? core->cp15.GetExceptionBase() : 0x00000000) + 0x08;
+    regs.r[15] = ((arch) ? hw->cp15.GetExceptionBase() : 0x00000000) + 0x08;
     
     ARMFlushPipeline();
 }
@@ -1689,7 +1689,7 @@ void ARM7::THUMB_SWI() {
     
     regs.r[14] = regs.r[15] - 2;
     // check the exception base and jump to the correct address in the bios
-    regs.r[15] = ((arch) ? core->cp15.GetExceptionBase() : 0x00000000) + 0x08;
+    regs.r[15] = ((arch) ? hw->cp15.GetExceptionBase() : 0x00000000) + 0x08;
     
     ARMFlushPipeline();
 }
@@ -1707,7 +1707,7 @@ void ARM7::ARM_UND() {
     regs.r[14] = regs.r[15] - 4;
     // check the exception base and jump to the correct address in the bios
     // also only use cp15 exception base from control register if arm9
-    regs.r[15] = ((arch) ? core->cp15.GetExceptionBase() : 0x00000000) + 0x04;
+    regs.r[15] = ((arch) ? hw->cp15.GetExceptionBase() : 0x00000000) + 0x04;
     
     ARMFlushPipeline();
 }

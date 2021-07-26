@@ -1,7 +1,7 @@
 #include <core/hw/gpu/gpu.h>
-#include <core/core.h>
+#include <core/hw/hw.h>
 
-GPU::GPU(Core* core) : core(core), engine_a(this, 1), engine_b(this , 0), render_engine(this), geometry_engine(this) {
+GPU::GPU(HW* hw) : hw(hw), engine_a(this, 1), engine_b(this , 0), render_engine(this), geometry_engine(this) {
 
 }
 
@@ -43,7 +43,7 @@ void GPU::Reset() {
     // schedule the first RenderScanlineStart event
     // we would expect hblank to start at 1536 (256 * 6) cycles
     // but actually the hblank flag stays 0 until 1606 cycles have passed
-    core->scheduler.Add(1606, RenderScanlineStartTask);
+    hw->scheduler.Add(1606, RenderScanlineStartTask);
 
     MapVRAM();
 }
@@ -54,7 +54,7 @@ void GPU::RenderScanlineStart() {
         engine_b.RenderScanline(VCOUNT);
 
         // trigger an arm9 dma transfer on hblank (only for visible scanlines)
-        core->dma[1].Trigger(2);
+        hw->dma[1].Trigger(2);
     }
 
     // TODO: try to only do this when 3d is enabled
@@ -67,11 +67,11 @@ void GPU::RenderScanlineStart() {
     DISPSTAT9 |= (1 << 1);
     
     if (DISPSTAT7 & (1 << 4)) {
-        core->arm7.SendInterrupt(1);
+        hw->arm7.SendInterrupt(1);
     }
 
     if (DISPSTAT9 & (1 << 4)) {
-        core->arm9.SendInterrupt(1);
+        hw->arm9.SendInterrupt(1);
     }
 
     // ARM9 DMA exclusive
@@ -79,10 +79,10 @@ void GPU::RenderScanlineStart() {
     // if so trigger a start of display dma transfer
     // TODO: on scanline 194 automatically clear the enable bit in DMA
     if ((VCOUNT > 1) && (VCOUNT < 194)) {
-        core->dma[1].Trigger(3);
+        hw->dma[1].Trigger(3);
     }
 
-    core->scheduler.Add(524, RenderScanlineFinishTask);
+    hw->scheduler.Add(524, RenderScanlineFinishTask);
 }
 
 void GPU::RenderScanlineFinish() {
@@ -96,18 +96,18 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT9 |= 1;
 
         if (DISPSTAT7 & (1 << 3)) {
-            core->arm7.SendInterrupt(0);
+            hw->arm7.SendInterrupt(0);
         }
 
         if (DISPSTAT9 & (1 << 3)) {
-            core->arm9.SendInterrupt(0);
+            hw->arm9.SendInterrupt(0);
         }
 
-        core->dma[0].Trigger(1);
-        core->dma[1].Trigger(1);
+        hw->dma[0].Trigger(1);
+        hw->dma[1].Trigger(1);
 
         // swap buffers
-        core->gpu.geometry_engine.DoSwapBuffers();
+        hw->gpu.geometry_engine.DoSwapBuffers();
 
         break;
     case 262:
@@ -126,7 +126,7 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT7 |= (1 << 2);
 
         if (DISPSTAT7 & (1 << 5)) {
-            core->arm7.SendInterrupt(2);
+            hw->arm7.SendInterrupt(2);
         }
 
     } else if (DISPSTAT7 & (1 << 2)) {
@@ -137,14 +137,14 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT9 |= (1 << 2);
 
         if (DISPSTAT9 & (1 << 5)) {
-            core->arm9.SendInterrupt(2);
+            hw->arm9.SendInterrupt(2);
         }
 
     } else if (DISPSTAT9 & (1 << 2)) {
         DISPSTAT9 &= ~(1 << 2);
     }
 
-    core->scheduler.Add(1606, RenderScanlineStartTask);
+    hw->scheduler.Add(1606, RenderScanlineStartTask);
 }
 
 void GPU::WriteDISPSTAT7(u16 data) {
