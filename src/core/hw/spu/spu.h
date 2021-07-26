@@ -4,6 +4,14 @@
 #include <common/log.h>
 #include <string.h>
 
+enum ChannelRegisters {
+    REG_SOUNDCNT = 0x0,
+    REG_SOUNDSAD = 0x4,
+    REG_SOUNDTMR = 0x8,
+    REG_SOUNDPNT = 0xA,
+    REG_SOUNDLEN = 0xC,
+};
+
 class HW;
 
 class SPU {
@@ -19,11 +27,11 @@ public:
     void WriteWord(u32 addr, u32 data);
 
     struct SPUChannel {
-        u32 SOUNDCNT; // sound control
-        u32 SOUNDSAD; // sound source address
-        u16 SOUNDTMR; // timer register
-        u16 SOUNDPNT; // loop start register
-        u32 SOUNDLEN; // sound length register
+        u32 soundcnt; // sound control
+        u32 soundsad; // sound source address
+        u16 soundtmr; // timer register
+        u16 soundpnt; // loop start register
+        u32 soundlen; // sound length register
 
         void WriteSOUNDCNT(u32 data);
     } channel[16];
