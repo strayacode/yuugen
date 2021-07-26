@@ -26,14 +26,15 @@ public:
     void WriteHalf(u32 addr, u16 data);
     void WriteWord(u32 addr, u32 data);
 
+    void WriteSOUNDCNT(int channel_index, u32 data);
+    void RunChannel(int channel_index);
+
     struct SPUChannel {
         u32 soundcnt; // sound control
         u32 soundsad; // sound source address
         u16 soundtmr; // timer register
         u16 soundpnt; // loop start register
         u32 soundlen; // sound length register
-
-        void WriteSOUNDCNT(u32 data);
     } channel[16];
 
     HW* hw;

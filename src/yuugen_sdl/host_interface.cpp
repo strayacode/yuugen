@@ -65,7 +65,7 @@ void HostInterface::Run(std::string path) {
     core->hw.Reset();
     core->hw.DirectBoot();
 
-    // emu_thread->ToggleFramelimiter();
+    emu_thread->ToggleFramelimiter();
     emu_thread->Start();
 
     while (true) {

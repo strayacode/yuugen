@@ -49,15 +49,15 @@ void SPU::WriteByte(u32 addr, u8 data) {
     switch (addr & 0xF) {
     case REG_SOUNDCNT:
         // write to 1st byte of SOUNDCNT
-        channel[channel_index].soundcnt = (channel[channel_index].soundcnt & ~0x000000FF) | data;
+        WriteSOUNDCNT(channel_index, (channel[channel_index].soundcnt & ~0x000000FF) | data);
         break;
     case REG_SOUNDCNT + 2:
         // write to 3rd byte of SOUNDCNT
-        channel[channel_index].soundcnt = (channel[channel_index].soundcnt & ~0x00FF0000) | (data << 16);
+        WriteSOUNDCNT(channel_index, (channel[channel_index].soundcnt & ~0x00FF0000) | (data << 16));
         break;
     case REG_SOUNDCNT + 3:
         // write to 4th byte of SOUNDCNT
-        channel[channel_index].soundcnt = (channel[channel_index].soundcnt & ~0xFF000000) | (data << 24);
+        WriteSOUNDCNT(channel_index, (channel[channel_index].soundcnt & ~0xFF000000) | (data << 24));
         break;
     default:
         log_fatal("part of sound channel %02x not handled yet", addr & 0xF);
@@ -70,7 +70,7 @@ void SPU::WriteHalf(u32 addr, u16 data) {
     switch (addr & 0xF) {
     case REG_SOUNDCNT:
         // write to lower halfword of SOUNDCNT
-        channel[channel_index].soundcnt = (channel[channel_index].soundcnt & ~0xFFFF) | (data & 0xFFFF);
+        WriteSOUNDCNT(channel_index, (channel[channel_index].soundcnt & ~0xFFFF) | (data & 0xFFFF));
         break;
     case REG_SOUNDTMR:
         // write to lower halfword of SOUNDTMR
@@ -91,7 +91,7 @@ void SPU::WriteWord(u32 addr, u32 data) {
     // check which data in the channel should be changed
     switch (addr & 0xF) {
     case REG_SOUNDCNT:
-        channel[channel_index].soundcnt = data;
+        WriteSOUNDCNT(channel_index, data);
         break;
     case REG_SOUNDSAD:
         channel[channel_index].soundsad = data;
@@ -105,4 +105,17 @@ void SPU::WriteWord(u32 addr, u32 data) {
     default:
         log_fatal("part of sound channel %02x not handled yet", addr & 0xF);
     }
+}
+
+void SPU::WriteSOUNDCNT(int channel_index, u32 data) {
+    // start the channel
+    if (!(channel[channel_index].soundcnt >> 31) && (data >> 31)) {
+        RunChannel(channel_index);
+    }
+
+    channel[channel_index].soundcnt = data;
+}
+
+void SPU::RunChannel(int channel_index) {
+    log_fatal("run channel %d lol", channel_index);
 }
