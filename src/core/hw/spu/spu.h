@@ -29,6 +29,12 @@ public:
     void WriteSOUNDCNT(int channel_index, u32 data);
     void RunChannel(int channel_index);
 
+    // this function will be ran once every 512 cycles
+    // and will combine audio data from all channels
+    // into a left and right sample to send to the
+    // audio buffer
+    void RunMixer();
+
     struct SPUChannel {
         u32 soundcnt; // sound control
         u32 soundsad; // sound source address

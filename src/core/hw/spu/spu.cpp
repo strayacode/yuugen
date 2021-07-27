@@ -1,6 +1,12 @@
 #include <core/hw/spu/spu.h>
 #include <core/hw/hw.h>
 
+// sound notes:
+// for pcm audio data,
+// pcm8 data NN will have
+// the same volume as pcm16 data
+// NN00
+
 SPU::SPU(HW* hw) : hw(hw) {
 
 }
@@ -118,4 +124,14 @@ void SPU::WriteSOUNDCNT(int channel_index, u32 data) {
 
 void SPU::RunChannel(int channel_index) {
     log_fatal("run channel %d lol", channel_index);
+}
+
+void SPU::RunMixer() {
+    for (int i = 0; i < 16; i++) {
+        // don't mix audio from channels
+        // that are disabled
+        if (!(channel[i].soundcnt >> 31)) {
+            continue;
+        }
+    }
 }
