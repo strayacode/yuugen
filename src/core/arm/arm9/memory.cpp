@@ -64,7 +64,9 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
             write_page_table[index] = &hw->cp15.itcm[addr & 0x7FFF];
         } else if (hw->cp15.GetDTCMWriteEnabled() && in_range(hw->cp15.GetDTCMBase(), hw->cp15.GetDTCMSize())) {
             write_page_table[index] = &hw->cp15.dtcm[(addr - hw->cp15.GetDTCMBase()) & 0x3FFF];
+            
         } else {
+            
             switch (addr >> 24) {
             case 0x02:
                 write_page_table[index] = &hw->main_memory[addr & 0x3FFFFF];

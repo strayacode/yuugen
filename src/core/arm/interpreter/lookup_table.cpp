@@ -39,7 +39,6 @@ void Interpreter::GenerateARMTable() {
     arm_lut = StaticGenerateARMTable();
 }
 
-
 void Interpreter::GenerateThumbTable() {
     thumb_lut = StaticGenerateThumbTable();
 }

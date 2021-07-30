@@ -55,6 +55,9 @@ void HW::Reset() {
 
     LoadARM7Bios();
     LoadARM9Bios();
+
+    arm7_memory.Reset();
+    arm9_memory.Reset();
 }
 
 void HW::DirectBoot() {
@@ -82,7 +85,6 @@ void HW::DirectBoot() {
     // ARM9Write<u32>(0x27FFC04, 0x00001FC2); // Copy of chip ID 2
     // ARM9Write<u16>(0x27FFC10, 0x5835); // Copy of ARM7 BIOS CRC
     // ARM9Write<u16>(0x27FFC40, 0x0001); // Boot indicator
-    printf("hi\n");
 }
 
 // void HW::FirmwareBoot() {
