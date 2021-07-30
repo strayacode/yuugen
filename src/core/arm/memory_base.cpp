@@ -1,5 +1,8 @@
 #include <core/arm/memory_base.h>
 
+template auto MemoryBase::FastRead(u32 addr) -> u8;
+template auto MemoryBase::FastRead(u32 addr) -> u16;
+template auto MemoryBase::FastRead(u32 addr) -> u32;
 template <typename T>
 auto MemoryBase::FastRead(u32 addr) -> T {
     addr &= ~(sizeof(T) - 1);
@@ -9,8 +12,8 @@ auto MemoryBase::FastRead(u32 addr) -> T {
     int index = addr >> 12;
     int offset = addr & 0xFFF;
 
-    if (page_table[index][offset]) {
-        memcpy(&return_value, &page_table[index][offset], sizeof(T));
+    if (read_page_table[index]) {
+        memcpy(&return_value, &read_page_table[index][offset], sizeof(T));
     } else {
         if constexpr (sizeof(T) == 1) {
             return ReadByte(addr);
@@ -24,6 +27,9 @@ auto MemoryBase::FastRead(u32 addr) -> T {
     return return_value;
 }
 
+template void MemoryBase::FastWrite(u32 addr, u8 data);
+template void MemoryBase::FastWrite(u32 addr, u16 data);
+template void MemoryBase::FastWrite(u32 addr, u32 data);
 template <typename T>
 void MemoryBase::FastWrite(u32 addr, T data) {
     addr &= ~(sizeof(T) - 1);
@@ -31,8 +37,8 @@ void MemoryBase::FastWrite(u32 addr, T data) {
     int index = addr >> 12;
     int offset = addr & 0xFFF;
 
-    if (page_table[index][offset]) {
-        memcpy(&page_table[index][offset], &data, sizeof(T));
+    if (write_page_table[index]) {
+        memcpy(&write_page_table[index][offset], &data, sizeof(T));
     } else {
         if constexpr (sizeof(T) == 1) {
             WriteByte(addr, data);

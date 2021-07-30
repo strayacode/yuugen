@@ -19,20 +19,13 @@ void Cartridge::Reset() {
     ROMCTRL = 0;
     AUXSPICNT = 0;
     AUXSPIDATA = 0;
-
     transfer_count = 0;
     transfer_size = 0;
-
     command = 0;
-
     rom_size = 0;
-
     seed0 = seed1 = 0;
-
     backup_write_count = 0;
-
     backup_type = 0;
-
     backup_size = 0;
 }
 
@@ -178,8 +171,8 @@ void Cartridge::StartTransfer() {
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {
-            hw->arm7.SendInterrupt(19);
-            hw->arm9.SendInterrupt(19);
+            hw->cpu_core[0]->SendInterrupt(19);
+            hw->cpu_core[1]->SendInterrupt(19);
         }
     } else {
         // since we are starting a new transfer transfer_count must start at 0
@@ -251,8 +244,8 @@ auto Cartridge::ReadData() -> u32 {
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {
-            hw->arm7.SendInterrupt(19);
-            hw->arm9.SendInterrupt(19);
+            hw->cpu_core[0]->SendInterrupt(19);
+            hw->cpu_core[1]->SendInterrupt(19);
         }
     } else {
         // trigger another nds cartridge dma
@@ -307,17 +300,17 @@ auto Cartridge::ReadCommand(int command_index) -> u8 {
 void Cartridge::DirectBoot() {
     // first transfer the cartridge header (this is taken from rom address 0 and loaded into main memory at address 0x27FFE00)
     for (u32 i = 0; i < 0x170; i++) {
-        hw->ARM9Write<u8>(0x027FFE00 + i, rom[i]);
+        hw->arm9_memory.FastWrite<u8>(0x027FFE00 + i, rom[i]);
     }
 
     // next transfer the arm9 code
     for (u32 i = 0; i < header.arm9_size; i++) {
-        hw->ARM9Write<u8>(header.arm9_ram_address + i, rom[header.arm9_rom_offset + i]);
+        hw->arm9_memory.FastWrite<u8>(header.arm9_ram_address + i, rom[header.arm9_rom_offset + i]);
     }
 
     // finally transfer the arm7 code
     for (u32 i = 0; i < header.arm7_size; i++) {
-        hw->ARM7Write<u8>(header.arm7_ram_address + i, rom[header.arm7_rom_offset + i]);
+        hw->arm7_memory.FastWrite<u8>(header.arm7_ram_address + i, rom[header.arm7_rom_offset + i]);
     }
 
     log_debug("[Cartridge] Data transferred into memory");

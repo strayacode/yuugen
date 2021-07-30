@@ -67,11 +67,11 @@ void GPU::RenderScanlineStart() {
     DISPSTAT9 |= (1 << 1);
     
     if (DISPSTAT7 & (1 << 4)) {
-        hw->arm7.SendInterrupt(1);
+        hw->cpu_core[0]->SendInterrupt(1);
     }
 
     if (DISPSTAT9 & (1 << 4)) {
-        hw->arm9.SendInterrupt(1);
+        hw->cpu_core[1]->SendInterrupt(1);
     }
 
     // ARM9 DMA exclusive
@@ -96,11 +96,11 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT9 |= 1;
 
         if (DISPSTAT7 & (1 << 3)) {
-            hw->arm7.SendInterrupt(0);
+            hw->cpu_core[0]->SendInterrupt(0);
         }
 
         if (DISPSTAT9 & (1 << 3)) {
-            hw->arm9.SendInterrupt(0);
+            hw->cpu_core[1]->SendInterrupt(0);
         }
 
         hw->dma[0].Trigger(1);
@@ -126,7 +126,7 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT7 |= (1 << 2);
 
         if (DISPSTAT7 & (1 << 5)) {
-            hw->arm7.SendInterrupt(2);
+            hw->cpu_core[0]->SendInterrupt(2);
         }
 
     } else if (DISPSTAT7 & (1 << 2)) {
@@ -137,7 +137,7 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT9 |= (1 << 2);
 
         if (DISPSTAT9 & (1 << 5)) {
-            hw->arm9.SendInterrupt(2);
+            hw->cpu_core[1]->SendInterrupt(2);
         }
 
     } else if (DISPSTAT9 & (1 << 2)) {

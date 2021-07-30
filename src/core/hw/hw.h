@@ -1,21 +1,18 @@
 #pragma once
 
-// #include <core/arm/arm7.h>
-// #include <core/arm/arm9.h>
-// #include <core/scheduler/scheduler.h>
-// #include <core/hw/cartridge/cartridge.h>
-// #include <core/hw/spi/spi.h>
-// #include <core/hw/cp15/cp15.h>
-// #include <core/hw/gpu/gpu.h>
-// #include <core/hw/dma/dma.h>
-// #include <core/hw/input/input.h>
-// #include <core/hw/ipc/ipc.h>
-// #include <core/hw/interrupt/interrupt.h>
-// #include <core/hw/timers/timers.h>
-// #include <core/hw/spu/spu.h>
-// #include <core/hw/rtc/rtc.h>
-// #include <core/hw/maths_unit/maths_unit.h>
-// #include <core/hw/wifi/wifi.h>
+#include <core/scheduler/scheduler.h>
+#include <core/hw/cartridge/cartridge.h>
+#include <core/hw/spi/spi.h>
+#include <core/hw/cp15/cp15.h>
+#include <core/hw/gpu/gpu.h>
+#include <core/hw/dma/dma.h>
+#include <core/hw/input/input.h>
+#include <core/hw/ipc/ipc.h>
+#include <core/hw/timers/timers.h>
+#include <core/hw/spu/spu.h>
+#include <core/hw/rtc/rtc.h>
+#include <core/hw/maths_unit/maths_unit.h>
+#include <core/hw/wifi/wifi.h>
 #include <common/types.h>
 #include <string>
 #include <algorithm>
@@ -42,7 +39,7 @@ enum MemoryRegion {
     REGION_ARM9_BIOS = 0xFF,
 };
 
-enum class CPUCore {
+enum class CPUCoreType {
     Interpreter,
 };
 
@@ -51,37 +48,11 @@ class HW {
 public:
     HW();
     ~HW();
-    // void Reset();
-    // void DirectBoot();
+    void Reset();
+    void DirectBoot();
     // void FirmwareBoot();
-    // void RunFrame();
-    // void SetRomPath(std::string path);
-
-    // // regular memory read/write handlers
-    // template <typename T>
-    // auto ARM7Read(u32 addr) -> T;
-
-    // template <typename T>
-    // void ARM7Write(u32 addr, T data);
-
-    // template <typename T>
-    // auto ARM9Read(u32 addr) -> T;
-
-    // template <typename T>
-    // void ARM9Write(u32 addr, T data);
-
-    // // software fastmem read/write handlers
-    // template <typename T>
-    // auto ARM7FastRead(u32 addr) -> T;
-
-    // template <typename T>
-    // void ARM7FastWrite(u32 addr, T data);
-
-    // template <typename T>
-    // auto ARM9FastRead(u32 addr) -> T;
-
-    // template <typename T>
-    // void ARM9FastWrite(u32 addr, T data);
+    void RunFrame();
+    void SetRomPath(std::string path);
 
     // // mmio handlers
     // auto ARM7ReadByteIO(u32 addr) -> u8;
@@ -100,45 +71,34 @@ public:
     // void ARM9WriteHalfIO(u32 addr, u16 data);
     // void ARM9WriteWordIO(u32 addr, u32 data);
 
-    // void WriteHALTCNT(u8 data);
+    void WriteHALTCNT(u8 data);
 
-    // void WriteWRAMCNT(u8 data);
+    void WriteWRAMCNT(u8 data);
 
-    // auto CartridgeAccessRights() -> bool;
+    auto CartridgeAccessRights() -> bool;
 
-    // void MapSharedMemory(u8 data);
+    void LoadARM7Bios();
+    void LoadARM9Bios();
 
-    // void UpdateARM9MemoryMap(u32 low_addr, u32 high_addr);
-    // void UpdateARM7MemoryMap(u32 low_addr, u32 high_addr);
+    Cartridge cartridge;
+    Scheduler scheduler;
+    SPI spi;
+    CP15 cp15;
+    GPU gpu;
+    DMA dma[2];
+    Input input;
+    IPC ipc;
+    Timers timers[2];
+    SPU spu;
+    RTC rtc;
+    MathsUnit maths_unit;
+    Wifi wifi;
 
-    // void LoadARM7Bios();
-    // void LoadARM9Bios();
-
-    // Cartridge cartridge;
-    // ARM7 arm7;
-    // ARM9 arm9;
-    // Scheduler scheduler;
-    // SPI spi;
-    // CP15 cp15;
-    // GPU gpu;
-    // DMA dma[2];
-    // Input input;
-    // IPC ipc;
-    // Interrupt interrupt[2];
-    // Timers timers[2];
-    // SPU spu;
-    // RTC rtc;
-    // MathsUnit maths_unit;
-    // Wifi wifi;
-    void InitialiseCPUCores(CPUCore core);
-
+    void InitialiseCPUCores(CPUCoreType core);
 
     ARM7Memory arm7_memory;
     ARM9Memory arm9_memory;
-    std::unique_ptr<CPUBase> cpu_core[2];
 
-
-private:
     // todo: maybe make vectors later or std::array?
     u8 main_memory[0x400000] = {};
     u8 arm7_wram[0x10000] = {};
@@ -167,10 +127,9 @@ private:
     // the arm7 provides io ports for the link port but it doesn't seem to be used
     u16 SIOCNT;
 
-    std::array<u8*, 0x100000> arm7_read_page_table;
-    std::array<u8*, 0x100000> arm9_read_page_table;
-    std::array<u8*, 0x100000> arm7_write_page_table;
-    std::array<u8*, 0x100000> arm9_write_page_table;
-
     std::string rom_path;
+
+    std::unique_ptr<CPUBase> cpu_core[2];
+private:
+
 };

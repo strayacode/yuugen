@@ -1,16 +1,9 @@
 #pragma once
 
 #include <core/arm/cpu_base.h>
-#include <core/arm/cpu_registers.h>
-#include <core/arm/memory_base.h>
 #include <common/types.h>
 #include <common/log.h>
 #include <array>
-
-enum class CPUArch {
-    ARMv4 = 0,
-    ARMv5 = 1,
-};
 
 enum Mode {
     USR = 0x10,
@@ -57,6 +50,10 @@ enum CPUCondition {
     CONDITION_NV = 15,
 };
 
+class Interpreter;
+
+typedef void (Interpreter::*Instruction)();
+
 class Interpreter : public CPUBase {
 public:
     Interpreter(MemoryBase& memory, CPUArch arch);
@@ -64,8 +61,9 @@ public:
 
     void Reset() override;
     void Run(int cycles) override;
+    void DirectBoot(u32 entrypoint) override;
 
-    typedef void (Interpreter::*Instruction)();
+    #include "instructions/branch.inl"
 private:
     void Execute();
 
@@ -76,9 +74,17 @@ private:
     bool HasSPSR();
     bool PrivilegedMode();
 
-    auto Halted() -> bool;
-
     bool IsARM();
+
+    void GenerateARMTable();
+    void GenerateThumbTable();
+
+    void UnimplementedInstruction();
+
+    void GenerateConditionTable();
+    bool ConditionEvaluate(u8 condition);
+
+    void SwitchMode(u8 new_mode);
 
     auto ReadByte(u32 addr) -> u8;
     auto ReadHalf(u32 addr) -> u16;
@@ -88,17 +94,15 @@ private:
     void WriteHalf(u32 addr, u16 data);
     void WriteWord(u32 addr, u32 data);
 
-    CPURegisters regs;
-
     u32 pipeline[2];
     u32 instruction;
 
-    bool halted;
+    std::array<Instruction, 1024> thumb_lut;
+    std::array<Instruction, 4096> arm_lut;
 
-    static std::array<Instruction, 1024> thumb_lut;
-    static std::array<Instruction, 4096> arm_lut;
+    // condition table for every possible condition of the bits 28..31 in an opcode
+    // so for each type of condition code we have 2^4 possibilities
+    std::array<std::array<bool, 16>, 16> condition_table;
 
-    MemoryBase& memory;
-
-    CPUArch arch;
+    // TODO: handle differences in sending interrupt for arm7 and arm9
 };

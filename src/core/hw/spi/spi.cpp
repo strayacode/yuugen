@@ -39,7 +39,7 @@ void SPI::WriteSPIDATA(u8 data) {
 void SPI::DirectBoot() {
     // write user settings 1 (0x70 in length) to address 0x027FFC80 in main memory
     for (u32 i = 0; i < 0x70; i++) {
-        hw->ARM9Write<u8>(0x027FFC80 + i, firmware[0x3FF00 + i]);
+        hw->arm9_memory.FastWrite<u8>(0x027FFC80 + i, firmware[0x3FF00 + i]);
     }
 }
 
@@ -133,7 +133,7 @@ void SPI::Transfer(u8 data) {
 
     // if enabled trigger a transfer finished irq
     if (SPICNT & (1 << 14)) {
-        hw->arm7.SendInterrupt(23);
+        hw->cpu_core[0]->SendInterrupt(23);
     }
 }
 
