@@ -9,12 +9,14 @@
 // and arm9 memory classes
 
 class MemoryBase {
+public:
     template <typename T>
     auto FastRead(u32 addr) -> T;
 
     template <typename T>
     void FastWrite(u32 addr, T data);
 
+private:
     virtual auto ReadByte(u32 addr) -> u8 = 0;
     virtual auto ReadHalf(u32 addr) -> u16 = 0;
     virtual auto ReadWord(u32 addr) -> u32 = 0;

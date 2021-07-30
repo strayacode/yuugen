@@ -65,6 +65,14 @@ public:
 
     typedef void (Interpreter::*Instruction)();
 private:
+    auto ReadByte(u32 addr) -> u8;
+    auto ReadHalf(u32 addr) -> u16;
+    auto ReadWord(u32 addr) -> u32;
+
+    void WriteByte(u32 addr, u8 data);
+    void WriteHalf(u32 addr, u16 data);
+    void WriteWord(u32 addr, u32 data);
+
     CPURegisters regs;
 
     u32 pipeline[2];
