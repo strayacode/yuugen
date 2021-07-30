@@ -7,5 +7,5 @@ Core::Core() {
 }
 
 void Core::RunFrame() {
-    hw.RunFrame();
+    // hw.RunFrame();
 }

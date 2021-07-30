@@ -5,8 +5,9 @@
 // for cores such as an interpreter,
 // cached interpreter and jit
 class CPUBase {
-    virtual CPUBase() = 0;
-    virtual ~CPUBase() = 0;
-    virtual void Reset() = 0;
-    virtual void Run(int cycles) = 0;
+public:
+    CPUBase() {};
+    virtual ~CPUBase() {};
+    // virtual void Reset() = 0;
+    // virtual void Run(int cycles) = 0;
 };

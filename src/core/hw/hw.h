@@ -1,25 +1,32 @@
 #pragma once
 
-#include <core/arm/arm7.h>
-#include <core/arm/arm9.h>
-#include <core/scheduler/scheduler.h>
-#include <core/hw/cartridge/cartridge.h>
-#include <core/hw/spi/spi.h>
-#include <core/hw/cp15/cp15.h>
-#include <core/hw/gpu/gpu.h>
-#include <core/hw/dma/dma.h>
-#include <core/hw/input/input.h>
-#include <core/hw/ipc/ipc.h>
-#include <core/hw/interrupt/interrupt.h>
-#include <core/hw/timers/timers.h>
-#include <core/hw/spu/spu.h>
-#include <core/hw/rtc/rtc.h>
-#include <core/hw/maths_unit/maths_unit.h>
-#include <core/hw/wifi/wifi.h>
+// #include <core/arm/arm7.h>
+// #include <core/arm/arm9.h>
+// #include <core/scheduler/scheduler.h>
+// #include <core/hw/cartridge/cartridge.h>
+// #include <core/hw/spi/spi.h>
+// #include <core/hw/cp15/cp15.h>
+// #include <core/hw/gpu/gpu.h>
+// #include <core/hw/dma/dma.h>
+// #include <core/hw/input/input.h>
+// #include <core/hw/ipc/ipc.h>
+// #include <core/hw/interrupt/interrupt.h>
+// #include <core/hw/timers/timers.h>
+// #include <core/hw/spu/spu.h>
+// #include <core/hw/rtc/rtc.h>
+// #include <core/hw/maths_unit/maths_unit.h>
+// #include <core/hw/wifi/wifi.h>
 #include <common/types.h>
 #include <string>
 #include <algorithm>
 #include <array>
+#include <memory>
+
+#include <core/arm/cpu_base.h>
+#include <core/arm/interpreter/interpreter.h>
+#include <core/arm/memory_base.h>
+#include <core/arm/arm7/memory.h>
+#include <core/arm/arm9/memory.h>
 
 enum MemoryRegion {
     REGION_ARM7_BIOS = 0x00,
@@ -35,90 +42,102 @@ enum MemoryRegion {
     REGION_ARM9_BIOS = 0xFF,
 };
 
+enum class CPUCore {
+    Interpreter,
+};
+
 // this class contains all the hardware of the ds
 class HW {
 public:
     HW();
     ~HW();
-    void Reset();
-    void DirectBoot();
-    void FirmwareBoot();
-    void RunFrame();
-    void SetRomPath(std::string path);
+    // void Reset();
+    // void DirectBoot();
+    // void FirmwareBoot();
+    // void RunFrame();
+    // void SetRomPath(std::string path);
 
-    // regular memory read/write handlers
-    template <typename T>
-    auto ARM7Read(u32 addr) -> T;
+    // // regular memory read/write handlers
+    // template <typename T>
+    // auto ARM7Read(u32 addr) -> T;
 
-    template <typename T>
-    void ARM7Write(u32 addr, T data);
+    // template <typename T>
+    // void ARM7Write(u32 addr, T data);
 
-    template <typename T>
-    auto ARM9Read(u32 addr) -> T;
+    // template <typename T>
+    // auto ARM9Read(u32 addr) -> T;
 
-    template <typename T>
-    void ARM9Write(u32 addr, T data);
+    // template <typename T>
+    // void ARM9Write(u32 addr, T data);
 
-    // software fastmem read/write handlers
-    template <typename T>
-    auto ARM7FastRead(u32 addr) -> T;
+    // // software fastmem read/write handlers
+    // template <typename T>
+    // auto ARM7FastRead(u32 addr) -> T;
 
-    template <typename T>
-    void ARM7FastWrite(u32 addr, T data);
+    // template <typename T>
+    // void ARM7FastWrite(u32 addr, T data);
 
-    template <typename T>
-    auto ARM9FastRead(u32 addr) -> T;
+    // template <typename T>
+    // auto ARM9FastRead(u32 addr) -> T;
 
-    template <typename T>
-    void ARM9FastWrite(u32 addr, T data);
+    // template <typename T>
+    // void ARM9FastWrite(u32 addr, T data);
 
-    // mmio handlers
-    auto ARM7ReadByteIO(u32 addr) -> u8;
-    auto ARM7ReadHalfIO(u32 addr) -> u16;
-    auto ARM7ReadWordIO(u32 addr) -> u32;
+    // // mmio handlers
+    // auto ARM7ReadByteIO(u32 addr) -> u8;
+    // auto ARM7ReadHalfIO(u32 addr) -> u16;
+    // auto ARM7ReadWordIO(u32 addr) -> u32;
 
-    void ARM7WriteByteIO(u32 addr, u8 data);
-    void ARM7WriteHalfIO(u32 addr, u16 data);
-    void ARM7WriteWordIO(u32 addr, u32 data);
+    // void ARM7WriteByteIO(u32 addr, u8 data);
+    // void ARM7WriteHalfIO(u32 addr, u16 data);
+    // void ARM7WriteWordIO(u32 addr, u32 data);
 
-    auto ARM9ReadByteIO(u32 addr) -> u8;
-    auto ARM9ReadHalfIO(u32 addr) -> u16;
-    auto ARM9ReadWordIO(u32 addr) -> u32;
+    // auto ARM9ReadByteIO(u32 addr) -> u8;
+    // auto ARM9ReadHalfIO(u32 addr) -> u16;
+    // auto ARM9ReadWordIO(u32 addr) -> u32;
 
-    void ARM9WriteByteIO(u32 addr, u8 data);
-    void ARM9WriteHalfIO(u32 addr, u16 data);
-    void ARM9WriteWordIO(u32 addr, u32 data);
+    // void ARM9WriteByteIO(u32 addr, u8 data);
+    // void ARM9WriteHalfIO(u32 addr, u16 data);
+    // void ARM9WriteWordIO(u32 addr, u32 data);
 
-    void WriteHALTCNT(u8 data);
+    // void WriteHALTCNT(u8 data);
 
-    void WriteWRAMCNT(u8 data);
+    // void WriteWRAMCNT(u8 data);
 
-    auto CartridgeAccessRights() -> bool;
+    // auto CartridgeAccessRights() -> bool;
 
-    void MapSharedMemory(u8 data);
+    // void MapSharedMemory(u8 data);
 
-    void UpdateARM9MemoryMap(u32 low_addr, u32 high_addr);
-    void UpdateARM7MemoryMap(u32 low_addr, u32 high_addr);
+    // void UpdateARM9MemoryMap(u32 low_addr, u32 high_addr);
+    // void UpdateARM7MemoryMap(u32 low_addr, u32 high_addr);
 
-    void LoadARM7Bios();
-    void LoadARM9Bios();
+    // void LoadARM7Bios();
+    // void LoadARM9Bios();
 
-    Cartridge cartridge;
-    ARM7 arm7;
-    ARM9 arm9;
-    Scheduler scheduler;
-    SPI spi;
-    CP15 cp15;
-    GPU gpu;
-    DMA dma[2];
-    Input input;
-    IPC ipc;
-    Interrupt interrupt[2];
-    Timers timers[2];
-    SPU spu;
-    RTC rtc;
-    MathsUnit maths_unit;
-    Wifi wifi;
+    // Cartridge cartridge;
+    // ARM7 arm7;
+    // ARM9 arm9;
+    // Scheduler scheduler;
+    // SPI spi;
+    // CP15 cp15;
+    // GPU gpu;
+    // DMA dma[2];
+    // Input input;
+    // IPC ipc;
+    // Interrupt interrupt[2];
+    // Timers timers[2];
+    // SPU spu;
+    // RTC rtc;
+    // MathsUnit maths_unit;
+    // Wifi wifi;
+    void InitialiseCPUCores(CPUCore core);
+
+
+    ARM7Memory arm7_memory;
+    ARM9Memory arm9_memory;
+    std::unique_ptr<CPUBase> cpu_core[2];
+
+
 private:
     // todo: maybe make vectors later or std::array?
     u8 main_memory[0x400000] = {};

@@ -4,7 +4,7 @@
 #include <common/types.h>
 #include <common/log.h>
 
-class ARM7Memory : public MemoryBase {
+class ARM9Memory : public MemoryBase {
     void UpdateMemoryMap();
 
     auto ReadByte(u32 addr) -> u8 override;
