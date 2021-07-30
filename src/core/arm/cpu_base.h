@@ -8,6 +8,6 @@ class CPUBase {
 public:
     CPUBase() {};
     virtual ~CPUBase() {};
-    // virtual void Reset() = 0;
-    // virtual void Run(int cycles) = 0;
+    virtual void Reset() = 0;
+    virtual void Run(int cycles) = 0;
 };

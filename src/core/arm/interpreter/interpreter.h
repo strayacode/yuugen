@@ -23,12 +23,11 @@ enum Mode {
 };
 
 enum Bank {
-    BANK_USR = 0,
-    BANK_FIQ = 1,
-    BANK_IRQ = 2,
-    BANK_SVC = 3,
-    BANK_ABT = 4,
-    BANK_UND = 5,
+    BANK_FIQ = 0,
+    BANK_IRQ = 1,
+    BANK_SVC = 2,
+    BANK_ABT = 3,
+    BANK_UND = 4,
 };
 
 enum ConditionFlag {
@@ -63,8 +62,24 @@ public:
     Interpreter(MemoryBase& memory, CPUArch arch);
     ~Interpreter() override;
 
+    void Reset() override;
+    void Run(int cycles) override;
+
     typedef void (Interpreter::*Instruction)();
 private:
+    void Execute();
+
+    void ARMFlushPipeline();
+    void ThumbFlushPipeline();
+
+    auto GetCurrentSPSR() -> u32;
+    bool HasSPSR();
+    bool PrivilegedMode();
+
+    auto Halted() -> bool;
+
+    bool IsARM();
+
     auto ReadByte(u32 addr) -> u8;
     auto ReadHalf(u32 addr) -> u16;
     auto ReadWord(u32 addr) -> u32;
