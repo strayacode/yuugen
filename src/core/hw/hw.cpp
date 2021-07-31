@@ -69,6 +69,7 @@ void HW::DirectBoot() {
 
     RCNT = 0x8000;
 
+    // TODO: sort this out
     // ARM9Write<u8>(0x4000247, 0x03); // WRAMCNT
     // ARM9Write<u8>(0x4000300, 0x01); // POSTFLG (ARM9)
     // ARM7Write<u8>(0x4000300, 0x01); // POSTFLG (ARM7)
@@ -128,12 +129,12 @@ void HW::RunFrame() {
         // // do any events
         // scheduler.RunEvents();
 
-        u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
-        cpu_core[1]->Run(cycles * 2);
-        cpu_core[0]->Run(cycles);
+        // u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
+        cpu_core[1]->Run(2);
+        cpu_core[0]->Run(1);
 
         // make sure to tick the scheduler by cycles
-        scheduler.Tick(cycles);
+        scheduler.Tick(1);
 
         // do any events
         scheduler.RunEvents();

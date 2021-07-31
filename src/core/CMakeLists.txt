@@ -7,7 +7,6 @@ add_library(core
     arm/cpu_registers.h
     arm/interpreter/interpreter.h
     arm/interpreter/interpreter.cpp
-    arm/interpreter/instruction_decoder.cpp
     arm/interpreter/lookup_table.cpp
     arm/arm7/memory.h arm/arm7/memory.cpp
     arm/arm9/memory.h arm/arm9/memory.cpp

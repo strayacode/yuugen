@@ -4,6 +4,73 @@
 template <u32 instruction>
 static constexpr Instruction GetARMInstruction() {
     switch ((instruction >> 25) & 0x7) {
+    case 0x0: {
+        const bool set_flags = instruction & (1 << 20);
+        const u8 opcode = (instruction >> 21) & 0xF;
+
+        if ((instruction & 0x90) == 0x90) {
+            // multiplies, extra load/stores
+            if ((instruction & 0x60) == 0) {
+                switch ((instruction >> 23) & 0x3) {
+                case 0x0:
+                    return &Interpreter::ARMMultiply;
+                case 0x1:
+                    return &Interpreter::ARMMultiplyLong;
+                case 0x2:
+                    return &Interpreter::ARMSingleDataSwap;
+                }
+            } else {
+                return &Interpreter::ARMHalfwordDataTransfer;
+            }
+        } else if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
+            // miscellaneous instructions
+            if ((instruction & 0xF) == 0) {
+                return &Interpreter::ARMPSRTransfer;
+            } else if ((instruction & 0xFF000F0) == 0x1200010) {
+                return &Interpreter::ARMBranchExchange;
+            } else if ((instruction & 0xFF000F0) == 0x1600010) {
+                return &Interpreter::ARMCountLeadingZeroes;
+            } else if ((instruction & 0xFF000F0) == 0x1200030) {
+                return &Interpreter::ARMBranchLinkExchangeRegister;
+            } else if ((instruction & 0xF0) == 0x50) {
+                return &Interpreter::ARMSaturatingAddSubtract;
+            } else if ((instruction & 0x70) == 0x70) {
+                return &Interpreter::ARMBreakpoint;
+            } else if ((instruction & 0x90) == 0x80) {
+                return &Interpreter::ARMSignedHalfwordMultiply;
+            }
+        } else {
+            return &Interpreter::ARMDataProcessing;
+        }
+    }
+    case 0x1: {
+        const bool set_flags = instruction & (1 << 20);
+        const u8 opcode = (instruction >> 21) & 0xF;
+
+        if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
+            if (instruction & (1 << 21)) {
+                return &Interpreter::ARMPSRTransfer;
+            } else {
+                return &Interpreter::ARMUndefined;
+            }
+        } else {
+            return &Interpreter::ARMDataProcessing;
+        }
+    }
+    case 0x2:
+        return &Interpreter::ARMSingleDataTransfer;
+    case 0x3:
+        if (instruction & (1 << 4)) {
+            return &Interpreter::ARMUndefined;
+        } else {
+            return &Interpreter::ARMSingleDataTransfer;
+        }
+    case 0x4:
+        if ((instruction >> 28) == 0xF) {
+            return &Interpreter::ARMUndefined;
+        } else {
+            return &Interpreter::ARMBlockDataTransfer;
+        }
     case 0x5: {
         // b/bl/blx
         const bool link = instruction & (1 << 24);
@@ -14,6 +81,16 @@ static constexpr Instruction GetARMInstruction() {
             return &Interpreter::ARMBranchLinkExchange;
         }
     }
+    case 0x6:
+        return &Interpreter::UnimplementedInstruction;
+    case 0x7:
+        if ((instruction & 0x1000010) == 0x10) {
+            return &Interpreter::ARMCoprocessorRegisterTransfer;
+        } else if ((instruction & 0x1000010) == 0) {
+            return &Interpreter::UnimplementedInstruction;
+        } else {
+            return &Interpreter::ARMSoftwareInterrupt;
+        }
     default:
         return &Interpreter::UnimplementedInstruction;
     }

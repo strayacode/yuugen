@@ -22,6 +22,8 @@ void Interpreter::Run(int cycles) {
 
         // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
         instruction = pipeline[0]; // store the current executing instruction 
+
+        printf("instruction is %08x at %08x\n", instruction, regs.r[15]);
         // shift the pipeline
         pipeline[0] = pipeline[1];
         // fill the 2nd item with the new instruction to be read
@@ -239,6 +241,18 @@ void Interpreter::SwitchMode(u8 new_mode) {
 
     // finally update cpsr to have the new mode
     regs.cpsr = (regs.cpsr & ~0x1F) | new_mode;
+}
+
+bool Interpreter::GetConditionFlag(int condition_flag) {
+    return (regs.cpsr & (1 << condition_flag));
+}
+
+void Interpreter::SetConditionFlag(int condition_flag, int value) {
+    if (value) {
+        regs.cpsr |= (1 << condition_flag);
+    } else {
+        regs.cpsr &= ~(1 << condition_flag);
+    }
 }
 
 auto Interpreter::ReadByte(u32 addr) -> u8 {

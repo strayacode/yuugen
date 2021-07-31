@@ -3,7 +3,15 @@
 #include <core/arm/cpu_base.h>
 #include <common/types.h>
 #include <common/log.h>
+#include <common/arithmetic.h>
 #include <array>
+
+// probably change these...
+#define ADD_CARRY(a, b)  ((0xFFFFFFFF-a) < b)
+#define SUB_CARRY(a, b)  (a >= b)
+
+#define ADD_OVERFLOW(a, b, res)  ((!(((a) ^ (b)) & 0x80000000)) && (((a) ^ (res)) & 0x80000000))
+#define SUB_OVERFLOW(a, b, res)  ((((a) ^ (b)) & 0x80000000) && (((a) ^ (res)) & 0x80000000))
 
 enum Mode {
     USR = 0x10,
@@ -63,7 +71,9 @@ public:
     void Run(int cycles) override;
     void DirectBoot(u32 entrypoint) override;
 
+    #include "instructions/alu.inl"
     #include "instructions/branch.inl"
+    #include "instructions/load_store.inl"
 private:
     void Execute();
 
@@ -85,6 +95,9 @@ private:
     bool ConditionEvaluate(u8 condition);
 
     void SwitchMode(u8 new_mode);
+
+    bool GetConditionFlag(int condition_flag);
+    void SetConditionFlag(int condition_flag, int value);
 
     auto ReadByte(u32 addr) -> u8;
     auto ReadHalf(u32 addr) -> u16;
