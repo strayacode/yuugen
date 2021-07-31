@@ -422,20 +422,29 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
 }
 
 void ARM9Memory::WriteWord(u32 addr, u32 data) {
-    switch (addr) {
-    case 0x04000000:
-        hw->gpu.engine_a.DISPCNT = data;
-        break;
-    case 0x04000240:
-        hw->gpu.VRAMCNT_A = data & 0xFF;
-        hw->gpu.VRAMCNT_B = (data >> 8) & 0xFF;
-        hw->gpu.VRAMCNT_C = (data >> 16) & 0xFF;
-        hw->gpu.VRAMCNT_D = (data >> 24) & 0xFF;
+    switch (addr >> 24) {
+    case REGION_IO:
+        switch (addr) {
+        case 0x04000000:
+            hw->gpu.engine_a.DISPCNT = data;
+            break;
+        case 0x04000240:
+            hw->gpu.VRAMCNT_A = data & 0xFF;
+            hw->gpu.VRAMCNT_B = (data >> 8) & 0xFF;
+            hw->gpu.VRAMCNT_C = (data >> 16) & 0xFF;
+            hw->gpu.VRAMCNT_D = (data >> 24) & 0xFF;
 
-        hw->gpu.MapVRAM();
+            hw->gpu.MapVRAM();
+            break;
+        case 0x04000304:
+            hw->gpu.POWCNT1 = data;
+            break;
+        default:
+            log_fatal("handle word write to %08x", addr);
+        }
         break;
-    case 0x04000304:
-        hw->gpu.POWCNT1 = data;
+    case REGION_VRAM:
+        hw->gpu.WriteVRAM<u16>(addr, data);
         break;
     default:
         log_fatal("handle word write to %08x", addr);

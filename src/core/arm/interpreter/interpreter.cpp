@@ -27,10 +27,6 @@ void Interpreter::Run(int cycles) {
         // shift the pipeline
         pipeline[0] = pipeline[1];
 
-        if (arch == CPUArch::ARMv5) {
-            LogRegisters();
-        }
-
         // TODO: align r15
         if (IsARM()) {
             pipeline[1] = ReadWord(regs.r[15]);

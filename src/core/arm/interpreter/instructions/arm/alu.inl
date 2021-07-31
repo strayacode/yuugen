@@ -30,6 +30,15 @@ void ARMDataProcessing() {
     switch (opcode) {
     case 0x0:
         regs.r[rd] = AND(op1, op2, set_flags);
+        if (set_flags) {
+            SetConditionFlag(C_FLAG, carry_flag);
+        }
+        break;
+    case 0x1:
+        regs.r[rd] = EOR(op1, op2, set_flags);
+        if (set_flags) {
+            SetConditionFlag(C_FLAG, carry_flag);
+        }
         break;
     case 0x2:
         regs.r[rd] = SUB(op1, op2, set_flags);
@@ -37,14 +46,28 @@ void ARMDataProcessing() {
     case 0x4:
         regs.r[rd] = ADD(op1, op2, set_flags);
         break;
+    case 0x5:
+        regs.r[rd] = ADC(op1, op2, set_flags);
+        break;
+    case 0x6:
+        regs.r[rd] = SBC(op1, op2, set_flags);
+        break;
+    case 0x7:
+        regs.r[rd] = RSC(op1, op2, set_flags);
+        break;
+    case 0x8:
+        TST(op1, op2);
+        SetConditionFlag(C_FLAG, carry_flag);
+        break;
     case 0x9:
         TEQ(op1, op2);
-        if (set_flags) {
-            SetConditionFlag(C_FLAG, carry_flag);
-        }
+        SetConditionFlag(C_FLAG, carry_flag);
         break;
     case 0xA:
         CMP(op1, op2);
+        break;
+    case 0xB:
+        CMN(op1, op2);
         break;
     case 0xC:
         regs.r[rd] = ORR(op1, op2, set_flags);
@@ -60,6 +83,12 @@ void ARMDataProcessing() {
         break;
     case 0xE:
         regs.r[rd] = BIC(op1, op2, set_flags);
+        if (set_flags) {
+            SetConditionFlag(C_FLAG, carry_flag);
+        }
+        break;
+    case 0xF:
+        regs.r[rd] = MVN(op2, set_flags);
         if (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
@@ -103,6 +132,15 @@ auto MOV(u32 op2, u8 set_flags) -> u32 {
     return op2;
 }
 
+auto MVN(u32 op2, u8 set_flags) -> u32 {
+    if (set_flags) {
+        SetConditionFlag(N_FLAG, op2 >> 31);
+        SetConditionFlag(Z_FLAG, op2 == 0);
+    }
+
+    return ~op2;
+}
+
 void TEQ(u32 op1, u32 op2) {
     u32 result = op1 ^ op2;
 
@@ -120,6 +158,22 @@ void CMP(u32 op1, u32 op2) {
     SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result));
 }
 
+void CMN(u32 op1, u32 op2) {
+    u32 result = op1 + op2;
+
+    SetConditionFlag(Z_FLAG, result == 0);
+    SetConditionFlag(N_FLAG, result >> 31);
+    SetConditionFlag(C_FLAG, ADD_CARRY(op1, op2));
+    SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, result));
+}
+
+void TST(u32 op1, u32 op2) {
+    u32 result = op1 & op2;
+
+    SetConditionFlag(Z_FLAG, result == 0);
+    SetConditionFlag(N_FLAG, result >> 31);
+}
+
 auto ADD(u32 op1, u32 op2, u8 set_flags) -> u32 {
     u64 result64 = (u64)op1 + (u64)op2;
     u32 result = op1 + op2;
@@ -129,6 +183,57 @@ auto ADD(u32 op1, u32 op2, u8 set_flags) -> u32 {
         SetConditionFlag(Z_FLAG, result == 0);
         SetConditionFlag(C_FLAG, result64 >> 32);
         SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, result));
+    }
+
+    return result;
+}
+
+auto ADC(u32 op1, u32 op2, u8 set_flags) -> u32 {
+    u64 result64 = (u64)op1 + (u64)op2 + (u64)GetConditionFlag(C_FLAG);
+    u32 result = (u32)result64;
+
+    if (set_flags) {
+        SetConditionFlag(C_FLAG, result64 >> 32);
+        SetConditionFlag(Z_FLAG, result == 0);
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(V_FLAG, (~(op1 ^ op2) & (op2 ^ result)) >> 31);
+    }
+
+    return result;
+}
+
+auto SBC(u32 op1, u32 op2, u8 set_flags) -> u32 {
+    u32 result = op1 - op2 - !GetConditionFlag(C_FLAG);
+
+    if (set_flags) {
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(Z_FLAG, result == 0);
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result));
+        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2) & SUB_CARRY(op1 - op2, !GetConditionFlag(C_FLAG)));
+    }
+
+    return result;
+}
+
+auto RSC(u32 op1, u32 op2, u8 set_flags) -> u32 {
+    u32 result = op2 - op1 - !GetConditionFlag(C_FLAG);
+    
+    if (set_flags) {
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(Z_FLAG, result == 0);
+        SetConditionFlag(C_FLAG, SUB_CARRY(op2, op1));
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, op1, result));
+    }
+
+    return result;
+}
+
+auto EOR(u32 op1, u32 op2, u8 set_flags) -> u32 {
+    u32 result = op1 ^ op2;
+    
+    if (set_flags) {
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(Z_FLAG, result == 0);
     }
 
     return result;
@@ -177,8 +282,6 @@ auto AND(u32 op1, u32 op2, u8 set_flags) -> u32 {
     }
 
     return result;
-
-    regs.r[15] += 4;
 }
 
 auto ARMGetShiftedRegisterDataProcessing(u32 instruction, u8& carry_flag) -> u32 {
@@ -202,10 +305,9 @@ auto ARMGetShiftedRegisterDataProcessing(u32 instruction, u8& carry_flag) -> u32
     case 0x1:
         op2 = LSR(regs.r[rm], shift_amount, carry_flag);
         break;
-    case 0x2: {
+    case 0x2:
         op2 = ASR(regs.r[rm], shift_amount, carry_flag);
         break;
-    }
     case 0x3:
         op2 = ROR(regs.r[rm], shift_amount, carry_flag);
         break;
@@ -291,12 +393,57 @@ auto ROR(u32 op1, u8 shift_amount, u8& carry_flag) -> u32 {
     return result;
 }
 
+template <bool accumulate, bool set_flags>
 void ARMMultiply() {
-    log_fatal("handle multiply");
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rn = (instruction >> 12) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    regs.r[rd] = regs.r[rm] * regs.r[rs];
+
+    if constexpr (accumulate) {
+        regs.r[rd] += regs.r[rn];
+    }
+
+    if (set_flags) {
+        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+    }
+
+    regs.r[15] += 4;
 }
 
+template <bool accumulate, bool set_flags, bool sign>
 void ARMMultiplyLong() {
-    log_fatal("handle multiply long");
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+
+    s64 result = 0;
+
+    if constexpr (sign) {
+        result = (s64)(s32)(regs.r[rm]) * (s64)(s32)(regs.r[rs]);
+    } else {
+        u64 temp_result = (u64)regs.r[rm] * (u64)regs.r[rs];
+        result = (s64)temp_result;
+    }
+
+    if constexpr (accumulate) {
+        s64 temp_result = ((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]);
+        result += temp_result;
+    }
+
+    if constexpr (set_flags) {
+        SetConditionFlag(N_FLAG, result >> 63);
+        SetConditionFlag(Z_FLAG, result == 0);
+    }
+
+    regs.r[rdhi] = result >> 32;
+    regs.r[rdlo] = result & 0xFFFFFFFF;
+
+    regs.r[15] += 4;
 }
 
 void ARMSingleDataSwap() {
