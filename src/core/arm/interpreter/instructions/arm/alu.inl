@@ -32,7 +32,8 @@ void ARMDataProcessing() {
         regs.r[rd] = AND(op1, op2, set_flags);
         break;
     case 0x2:
-        
+        regs.r[rd] = SUB(op1, op2, set_flags);
+        break;
     case 0x4:
         regs.r[rd] = ADD(op1, op2, set_flags);
         break;
@@ -41,6 +42,9 @@ void ARMDataProcessing() {
         if (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
+        break;
+    case 0xA:
+        CMP(op1, op2);
         break;
     case 0xC:
         regs.r[rd] = ORR(op1, op2, set_flags);
@@ -106,6 +110,16 @@ void TEQ(u32 op1, u32 op2) {
     SetConditionFlag(Z_FLAG, result == 0);
 }
 
+void CMP(u32 op1, u32 op2) {
+    u32 result = op1 - op2;
+
+    // set flags
+    SetConditionFlag(N_FLAG, result >> 31);
+    SetConditionFlag(Z_FLAG, result == 0);
+    SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
+    SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result));
+}
+
 auto ADD(u32 op1, u32 op2, u8 set_flags) -> u32 {
     u64 result64 = (u64)op1 + (u64)op2;
     u32 result = op1 + op2;
@@ -115,6 +129,19 @@ auto ADD(u32 op1, u32 op2, u8 set_flags) -> u32 {
         SetConditionFlag(Z_FLAG, result == 0);
         SetConditionFlag(C_FLAG, result64 >> 32);
         SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, result));
+    }
+
+    return result;
+}
+
+auto SUB(u32 op1, u32 op2, u8 set_flags) -> u32 {
+    u32 result = op1 - op2;
+    
+    if (set_flags) {
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(Z_FLAG, result == 0);
+        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result)); 
     }
 
     return result;

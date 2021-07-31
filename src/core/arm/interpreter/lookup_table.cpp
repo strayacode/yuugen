@@ -24,7 +24,7 @@ static constexpr Instruction GetARMInstruction() {
             }
         } else if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             // miscellaneous instructions
-            if ((instruction & 0xF) == 0) {
+            if ((instruction & 0xF0) == 0) {
                 return &Interpreter::ARMPSRTransfer;
             } else if ((instruction & 0xFF000F0) == 0x1200010) {
                 return &Interpreter::ARMBranchExchange;
@@ -96,6 +96,40 @@ static constexpr Instruction GetARMInstruction() {
     }
 }
 
+template <u16 instruction>
+static constexpr Instruction GetThumbInstruction() {
+    switch ((instruction >> 13) & 0x7) {
+    case 0x0:
+        if (((instruction >> 11) & 0x3) == 0x3) {
+            return &Interpreter::ThumbAddSubtract;
+        } else {
+            return &Interpreter::ThumbShiftImmediate;
+        }
+    case 0x1:
+        return &Interpreter::ThumbALUImmediate;
+    case 0x2:
+        if (((instruction >> 10) & 0x7) == 0x0) {
+            return &Interpreter::ThumbDataProcessingRegister;
+        } else if (((instruction >> 10) & 0x7) == 0x1) {
+            if ((instruction & 0xFF00) == 0x4700) {
+                return &Interpreter::ThumbBranchExchange;
+            } else {
+                return &Interpreter::ThumbSpecialDataProcesing;
+            }
+        } else {
+            if (((instruction >> 12) & 0x1) == 0x1) {
+                return &Interpreter::ThumbLoadStore;
+            } else {
+                return &Interpreter::ThumbLoadPC;
+            }
+        }
+    case 0x3:
+        return &Interpreter::ThumbLoadStoreImmediate;
+    default:
+        return &Interpreter::UnimplementedInstruction;
+    }
+}
+
 static constexpr auto StaticGenerateARMTable() -> std::array<Instruction, 4096> {
     std::array<Instruction, 4096> arm_lut = {};
 
@@ -108,6 +142,10 @@ static constexpr auto StaticGenerateARMTable() -> std::array<Instruction, 4096> 
 
 static constexpr auto StaticGenerateThumbTable() -> std::array<Instruction, 1024> {
     std::array<Instruction, 1024> thumb_lut = {};
+
+    static_for<std::size_t, 0, 1024>([&](auto i) {
+        thumb_lut[i] = GetThumbInstruction<(i >> 8) & 0xFF>();
+    }); 
 
     return thumb_lut;
 }

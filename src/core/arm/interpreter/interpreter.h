@@ -4,7 +4,9 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <common/arithmetic.h>
+#include <common/log_file.h>
 #include <array>
+#include <memory>
 
 // probably change these...
 #define ADD_CARRY(a, b)  ((0xFFFFFFFF-a) < b)
@@ -71,9 +73,13 @@ public:
     void Run(int cycles) override;
     void DirectBoot(u32 entrypoint) override;
 
-    #include "instructions/alu.inl"
-    #include "instructions/branch.inl"
-    #include "instructions/load_store.inl"
+    #include "instructions/arm/alu.inl"
+    #include "instructions/arm/branch.inl"
+    #include "instructions/arm/load_store.inl"
+
+    #include "instructions/thumb/alu.inl"
+    #include "instructions/thumb/branch.inl"
+    #include "instructions/thumb/load_store.inl"
 private:
     void Execute();
 
@@ -81,6 +87,7 @@ private:
     void ThumbFlushPipeline();
 
     auto GetCurrentSPSR() -> u32;
+    void SetCurrentSPSR(u32 data);
     bool HasSPSR();
     bool PrivilegedMode();
 
@@ -98,6 +105,8 @@ private:
 
     bool GetConditionFlag(int condition_flag);
     void SetConditionFlag(int condition_flag, int value);
+
+    void LogRegisters();
 
     auto ReadByte(u32 addr) -> u8;
     auto ReadHalf(u32 addr) -> u16;
@@ -118,4 +127,6 @@ private:
     std::array<std::array<bool, 16>, 16> condition_table;
 
     // TODO: handle differences in sending interrupt for arm7 and arm9
+
+    std::unique_ptr<LogFile> log_file;
 };

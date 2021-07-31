@@ -325,7 +325,7 @@ INSTRUCTION(ARM_LDM_DECREMENT_BEFORE_USER_WRITEBACK) {
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
     if (arch == ARMv5) {
-        if (((instruction & 0xFFFF) == (unsigned int)(1 << rn) )|| !(((instruction & 0xFFFF) >> rn) == 1)) {
+        if (((instruction & 0xFFFF) == (unsigned int)(1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
             regs.r[rn] = writeback;
         }
     } else {

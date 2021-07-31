@@ -4,6 +4,7 @@ Interpreter::Interpreter(MemoryBase& memory, CPUArch arch) : CPUBase(memory, arc
     GenerateARMTable();
     GenerateThumbTable();
     GenerateConditionTable();
+    log_file = std::make_unique<LogFile>("../../log-stuff/yuugen.log");
 }
 
 Interpreter::~Interpreter() {
@@ -19,20 +20,22 @@ void Interpreter::Run(int cycles) {
         if (halted) {
             return;
         }
-
+        
         // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
         instruction = pipeline[0]; // store the current executing instruction 
-
-        printf("instruction is %08x at %08x\n", instruction, regs.r[15]);
+        
         // shift the pipeline
         pipeline[0] = pipeline[1];
-        // fill the 2nd item with the new instruction to be read
+
+        if (arch == CPUArch::ARMv5) {
+            LogRegisters();
+        }
+
         // TODO: align r15
         if (IsARM()) {
             pipeline[1] = ReadWord(regs.r[15]);
-            
-            u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
 
+            u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
             if (ConditionEvaluate(instruction >> 28)) {
                 (this->*arm_lut[index])();
             } else {
@@ -109,6 +112,29 @@ auto Interpreter::GetCurrentSPSR() -> u32 {
     default:
         log_warn("[Interpreter] Mode %02x doesn't have an spsr", regs.cpsr & 0x1F);
         return 0;
+    }
+}
+
+void Interpreter::SetCurrentSPSR(u32 data) {
+    switch (regs.cpsr & 0x1F) {
+    case FIQ:
+        regs.spsr_banked[BANK_FIQ] = data;
+        break;
+    case IRQ:
+        regs.spsr_banked[BANK_IRQ] = data;
+        break;
+    case SVC:
+        regs.spsr_banked[BANK_SVC] = data;
+        break;
+    case ABT:
+        regs.spsr_banked[BANK_ABT] = data;
+        break;
+    case UND:
+        regs.spsr_banked[BANK_UND] = data;
+        break;
+    default:
+        log_warn("[Interpreter] Mode %02x doesn't have an spsr", regs.cpsr & 0x1F);
+        return;
     }
 }
 
@@ -253,6 +279,12 @@ void Interpreter::SetConditionFlag(int condition_flag, int value) {
     } else {
         regs.cpsr &= ~(1 << condition_flag);
     }
+}
+
+void Interpreter::LogRegisters() {
+    log_file->Log("r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x r5: %08x r6: %08x r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x cpsr: %08x\n",
+        regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], 
+        regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction, regs.cpsr);
 }
 
 auto Interpreter::ReadByte(u32 addr) -> u8 {
