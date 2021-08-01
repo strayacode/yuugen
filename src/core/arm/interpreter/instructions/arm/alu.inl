@@ -326,6 +326,7 @@ auto LSL(u32 op1, u8 shift_amount, u8& carry_flag) -> u32 {
 
     if (shift_amount < 32) {
         result = op1 << shift_amount;
+        carry_flag = (op1 & (1 << (32 - shift_amount)))) >> (32 - shift_amount);
     } else if (shift_amount >= 32) {
         if (shift_amount > 32) {
             carry_flag = 0;
