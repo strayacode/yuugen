@@ -9,7 +9,6 @@ add_library(core
     arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
     
     hw/hw.h hw/hw.cpp
-    hw/bus.cpp hw/mmio.cpp
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
     hw/cartridge/backup/flash/flash.h hw/cartridge/backup/flash/flash.cpp
     hw/cartridge/backup/eeprom/eeprom.h hw/cartridge/backup/eeprom/eeprom.cpp
