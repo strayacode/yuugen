@@ -150,7 +150,7 @@ auto ARM7Memory::ReadHalf(u32 addr) -> u16 {
         case 0x04000204:
             return hw->EXMEMCNT;
         case 0x04000208:
-            return hw->interrupt[0].IME & 0x1;
+            return hw->cpu_core[0]->ime & 0x1;
         case 0x04000300:
             return hw->POSTFLG7;
         case 0x04000304:
@@ -232,11 +232,11 @@ auto ARM7Memory::ReadWord(u32 addr) -> u32 {
         case 0x040001C0:
             return (hw->spi.ReadSPIDATA() << 16) | hw->spi.SPICNT;
         case 0x04000208:
-            return hw->interrupt[0].IME & 0x1;
+            return hw->cpu_core[0]->ime & 0x1;
         case 0x04000210:
-            return hw->interrupt[0].IE;
+            return hw->cpu_core[0]->ie;
         case 0x04000214:
-            return hw->interrupt[0].IF;
+            return hw->cpu_core[0]->irf;
         case 0x04004008:
             return 0;
         case 0x04100000:
@@ -289,7 +289,7 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
             hw->spi.WriteSPIDATA(data);
             break;
         case 0x04000208:
-            hw->interrupt[0].IME = data & 0x1;
+            hw->cpu_core[0]->ime = data & 0x1;
             break;
         case 0x04000300:
             hw->POSTFLG7 = data;
@@ -412,7 +412,7 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
             // TODO: implement WIFIWAITCNT
             break;
         case 0x04000208:
-            hw->interrupt[0].IME = data & 0x1;
+            hw->cpu_core[0]->ime = data & 0x1;
             break;
         case 0x04000304:
             hw->POWCNT2 = data & 0x3;
@@ -563,13 +563,13 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
             // TODO: handle key2 encryption later
             break;
         case 0x04000208:
-            hw->interrupt[0].IME = data & 0x1;
+            hw->cpu_core[0]->ime = data & 0x1;
             break;
         case 0x04000210:
-            hw->interrupt[0].IE = data;
+            hw->cpu_core[0]->ie = data;
             break;
         case 0x04000214:
-            hw->interrupt[0].IF &= ~data;
+            hw->cpu_core[0]->irf &= ~data;
             break;
         case 0x04000308:
             hw->BIOSPROT = data;

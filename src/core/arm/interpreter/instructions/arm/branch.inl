@@ -34,7 +34,7 @@ INSTRUCTION(ARM_BX) {
 
 INSTRUCTION(ARM_BLX_REG) {
     // ARMv5 exclusive instruction
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -56,7 +56,7 @@ INSTRUCTION(ARM_BLX_REG) {
 
 INSTRUCTION(ARM_BLX) {
     // arm9 specific instruction
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 

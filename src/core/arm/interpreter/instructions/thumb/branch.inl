@@ -153,7 +153,7 @@ INSTRUCTION(THUMB_BX_REG) {
 
 INSTRUCTION(THUMB_BLX_REG) {
     // arm9 specific instruction
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -191,7 +191,7 @@ INSTRUCTION(THUMB_BL_OFFSET) {
 
 INSTRUCTION(THUMB_BLX_OFFSET) {
     // arm9 specific instruction
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 

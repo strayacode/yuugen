@@ -62,7 +62,7 @@ INSTRUCTION(THUMB_LDMIA_REG) {
     // if rn is in rlist:
     // if arm9 writeback if rn is the only register or not the last register in rlist
     // if arm7 then no writeback if rn in rlist
-    if (arch == ARMv5) {
+    if (arch == CPUArch::ARMv5) {
         if (((instruction & 0xFF) == (unsigned int)(1 << rn)) || !(((instruction & 0xFF) >> rn) == 1)) {
             regs.r[rn] = address;
         }
@@ -112,7 +112,7 @@ INSTRUCTION(THUMB_POP_PC) {
 
     // now to handle mode switch and stuff
     // if cpu is armv4 or bit 0 of r15 is 1 stay in thumb state
-    if ((arch == ARMv4) || (regs.r[15] & 0x1)) {
+    if ((arch == CPUArch::ARMv4) || (regs.r[15] & 0x1)) {
         // halfword align r15 and flush pipeline
         regs.r[15] &= ~1;
         ThumbFlushPipeline();

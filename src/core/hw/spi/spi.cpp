@@ -133,7 +133,7 @@ void SPI::Transfer(u8 data) {
 
     // if enabled trigger a transfer finished irq
     if (SPICNT & (1 << 14)) {
-        hw->arm7.SendInterrupt(23);
+        hw->cpu_core[0]->SendInterrupt(23);
     }
 }
 

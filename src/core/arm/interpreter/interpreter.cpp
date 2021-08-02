@@ -1,36 +1,13 @@
 #include <core/arm/interpreter/interpreter.h>
-#include <core/hw/hw.h>
-#include <stdio.h>
+#include <core/hw/cp15/cp15.h>
 
-Interpreter::Interpreter(MemoryBase& memory, HW* hw, int arch) : memory(memory), hw(hw), arch(arch) {
-    log_buffer = fopen("../../log-stuff/yuugen1.log", "w");
+Interpreter::Interpreter(MemoryBase& memory, CPUArch arch, CP15* cp15) : CPUBase(memory, arch), cp15(cp15) {
     GenerateConditionTable();
+    log_file = std::make_unique<LogFile>("../../log-stuff/yuugen.log");
 }
 
-auto Interpreter::ReadByte(u32 addr) -> u8 {
-    return memory.FastRead<u8>(addr); 
-}
+Interpreter::~Interpreter() {
 
-auto Interpreter::ReadHalf(u32 addr) -> u16 {
-    return memory.FastRead<u16>(addr);
-}
-
-auto Interpreter::ReadWord(u32 addr) -> u32 {
-    return memory.FastRead<u32>(addr);
-}
-
-void Interpreter::WriteByte(u32 addr, u8 data) {
-    memory.FastWrite<u8>(addr, data);
-}
-
-
-void Interpreter::WriteHalf(u32 addr, u16 data) {
-    memory.FastWrite<u16>(addr, data);
-}
-
-
-void Interpreter::WriteWord(u32 addr, u32 data) {
-    memory.FastWrite<u32>(addr, data);
 }
 
 void Interpreter::Reset() {
@@ -43,14 +20,11 @@ void Interpreter::Reset() {
         for (int j = 0; j < 7; j++) {
             regs.r_banked[i][j] = 0;
         }
+
+        regs.spsr_banked[i] = 0;
     }
 
     regs.spsr = 0;
-    regs.spsr_fiq = 0;
-    regs.spsr_svc = 0;
-    regs.spsr_abt = 0;
-    regs.spsr_irq = 0;
-    regs.spsr_und = 0;
 
     halted = false;
 
@@ -61,35 +35,53 @@ void Interpreter::Reset() {
     pipeline[0] = pipeline[1] = 0;
 }
 
-bool Interpreter::IsARM() {
-    return (!(regs.cpsr & (1 << 5)));
+void Interpreter::Run(int cycles) {
+    while (cycles--) {
+        if (halted) {
+            return;
+        }
+        
+        // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
+        instruction = pipeline[0]; // store the current executing instruction 
+        
+        // shift the pipeline
+        pipeline[0] = pipeline[1];
+
+        // TODO: align r15
+        if (IsARM()) {
+            pipeline[1] = ReadWord(regs.r[15]);
+        } else {
+            pipeline[1] = ReadHalf(regs.r[15]);
+        }
+
+        Execute();
+    }
 }
 
-void Interpreter::DirectBoot() {
+void Interpreter::DirectBoot(u32 entrypoint) {
     // set general purpose registers r0-r11 to 0 regardless of the cpu arch
     for (int i = 0; i < 12; i++) {
         regs.r[i] = 0;
     }
 
     regs.r_banked[BANK_IRQ][6] = 0;
-    regs.spsr_irq = 0;
+    regs.spsr_banked[BANK_IRQ] = 0;
 
     regs.r_banked[BANK_SVC][6] = 0;
-    regs.spsr_svc = 0;
+    regs.spsr_banked[BANK_SVC] = 0;
 
+    regs.r[12] = regs.r[14] = regs.r[15] = entrypoint;
+
+    // TODO: move out of interpreter class
     // armv4/armv5 specific
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         regs.r[13] = 0x0380FD80;
         regs.r_banked[BANK_IRQ][5] = 0x0380FF80;
         regs.r_banked[BANK_SVC][5] = 0x0380FFC0;
-        regs.r[12] = regs.r[14] = regs.r[15] = hw->cartridge.header.arm7_entrypoint;
-
-    } else if (arch == ARMv5) {
+    } else if (arch == CPUArch::ARMv5) {
         regs.r[13] = 0x03002F7C;
         regs.r_banked[BANK_IRQ][5] = 0x03003F80;
         regs.r_banked[BANK_SVC][5] = 0x03003FC0;
-        regs.r[12] = regs.r[14] = regs.r[15] = hw->cartridge.header.arm9_entrypoint;
-
     }
 
     // enter system mode
@@ -100,7 +92,7 @@ void Interpreter::DirectBoot() {
 }
 
 void Interpreter::FirmwareBoot() {
-    if (arch == ARMv5) {
+    if (arch == CPUArch::ARMv5) {
         // make arm9 start at arm9 bios
         regs.r[15] = 0xFFFF0000;
     } else {
@@ -113,6 +105,80 @@ void Interpreter::FirmwareBoot() {
 
     ARMFlushPipeline();
 }
+
+void Interpreter::ARMFlushPipeline() {
+    regs.r[15] &= ~3;
+    pipeline[0] = ReadWord(regs.r[15]);
+    pipeline[1] = ReadWord(regs.r[15] + 4);
+    regs.r[15] += 8;
+}
+
+void Interpreter::ThumbFlushPipeline() {
+    regs.r[15] &= ~1;
+    pipeline[0] = ReadHalf(regs.r[15]);
+    pipeline[1] = ReadHalf(regs.r[15] + 2);
+    regs.r[15] += 4;
+}
+
+auto Interpreter::GetCurrentSPSR() -> u32 {
+    switch (regs.cpsr & 0x1F) {
+    case FIQ:
+        return regs.spsr_banked[BANK_FIQ];
+    case IRQ:
+        return regs.spsr_banked[BANK_IRQ];
+    case SVC:
+        return regs.spsr_banked[BANK_SVC];
+    case ABT:
+        return regs.spsr_banked[BANK_ABT];
+    case UND:
+        return regs.spsr_banked[BANK_UND];
+    default:
+        log_warn("[Interpreter] Mode %02x doesn't have an spsr", regs.cpsr & 0x1F);
+        return 0;
+    }
+}
+
+void Interpreter::SetCurrentSPSR(u32 data) {
+    switch (regs.cpsr & 0x1F) {
+    case FIQ:
+        regs.spsr_banked[BANK_FIQ] = data;
+        break;
+    case IRQ:
+        regs.spsr_banked[BANK_IRQ] = data;
+        break;
+    case SVC:
+        regs.spsr_banked[BANK_SVC] = data;
+        break;
+    case ABT:
+        regs.spsr_banked[BANK_ABT] = data;
+        break;
+    case UND:
+        regs.spsr_banked[BANK_UND] = data;
+        break;
+    default:
+        log_warn("[Interpreter] Mode %02x doesn't have an spsr", regs.cpsr & 0x1F);
+        return;
+    }
+}
+
+bool Interpreter::HasSPSR() {
+    u8 current_mode = regs.cpsr & 0x1F;
+
+    return (current_mode != USR && current_mode != SYS);
+}
+
+bool Interpreter::PrivilegedMode() {
+    u8 current_mode = regs.cpsr & 0x1F;
+    return (current_mode != USR);
+}
+
+bool Interpreter::IsARM() {
+    return (!(regs.cpsr & (1 << 5)));
+}
+
+// void Interpreter::UnimplementedInstruction() {
+//     log_fatal("[Interpreter] Instruction %08x is unimplemented at r15 = %08x", instruction, regs.r[15]);
+// }
 
 void Interpreter::GenerateConditionTable() {
     // iterate through each combination of bits 28..31
@@ -144,7 +210,7 @@ void Interpreter::GenerateConditionTable() {
 
 bool Interpreter::ConditionEvaluate(u8 condition) {
     if (condition == CONDITION_NV) {
-        if (arch == ARMv5) {
+        if (arch == CPUArch::ARMv5) {
             // using arm decoding table this can only occur for branch and branch with link and change to thumb
             // so where bits 25..27 is 0b101
             if ((instruction & 0x0E000000) == 0xA000000) {
@@ -158,19 +224,6 @@ bool Interpreter::ConditionEvaluate(u8 condition) {
     return condition_table[condition][regs.cpsr >> 28];
 }
 
-bool Interpreter::GetConditionFlag(int condition_flag) {
-    return (regs.cpsr & (1 << condition_flag));
-}
-
-void Interpreter::SetConditionFlag(int condition_flag, int value) {
-    if (value) {
-        regs.cpsr |= (1 << condition_flag);
-    } else {
-        regs.cpsr &= ~(1 << condition_flag);
-    }
-}
-
-// TODO: make cleaner later
 void Interpreter::SwitchMode(u8 new_mode) {
     if ((regs.cpsr & 0x1F) == new_mode) {
         return;
@@ -239,85 +292,52 @@ void Interpreter::SwitchMode(u8 new_mode) {
     regs.cpsr = (regs.cpsr & ~0x1F) | new_mode;
 }
 
-bool Interpreter::HasSPSR() {
-    u8 current_mode = regs.cpsr & 0x1F;
-
-    return (current_mode != USR && current_mode != SYS);
+bool Interpreter::GetConditionFlag(int condition_flag) {
+    return (regs.cpsr & (1 << condition_flag));
 }
 
-bool Interpreter::PrivilegedMode() {
-    u8 current_mode = regs.cpsr & 0x1F;
-    return (current_mode != USR);
-}
-
-void Interpreter::ARMFlushPipeline() {
-    regs.r[15] &= ~3;
-    pipeline[0] = ReadWord(regs.r[15]);
-    pipeline[1] = ReadWord(regs.r[15] + 4);
-    regs.r[15] += 8;
-}
-
-void Interpreter::ThumbFlushPipeline() {
-    regs.r[15] &= ~1;
-    pipeline[0] = ReadHalf(regs.r[15]);
-    pipeline[1] = ReadHalf(regs.r[15] + 2);
-    regs.r[15] += 4;
-}
-
-void Interpreter::SendInterrupt(int interrupt) {
-    // set the appropriate bit in IF
-    hw->interrupt[arch].IF |= (1 << interrupt);
-    // check if the interrupt is enabled too
-    if (hw->interrupt[arch].IE & (1 << interrupt)) {
-        halted = false;
+void Interpreter::SetConditionFlag(int condition_flag, int value) {
+    if (value) {
+        regs.cpsr |= (1 << condition_flag);
+    } else {
+        regs.cpsr &= ~(1 << condition_flag);
     }
 }
 
-auto Interpreter::GetCurrentSPSR() -> u32 {
-    switch (regs.cpsr & 0x1F) {
-    case FIQ:
-        return regs.spsr_fiq;
-    case IRQ:
-        return regs.spsr_irq;
-    case SVC:
-        return regs.spsr_svc;
-    case ABT:
-        return regs.spsr_abt;
-    case UND:
-        return regs.spsr_und;
-    default:
-        // log_warn("[ARM%d] Mode %02x doesn't have an spsr", arch ? 9 : 7, regs.cpsr & 0x1F);
-        return 0;
-    }
+void Interpreter::LogRegisters() {
+    log_file->Log("r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x r5: %08x r6: %08x r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x cpsr: %08x\n",
+        regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], 
+        regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction, regs.cpsr);
 }
 
-void Interpreter::SetCurrentSPSR(u32 data) {
-    switch (regs.cpsr & 0x1F) {
-    case FIQ:
-        regs.spsr_fiq = data;
-        break;
-    case IRQ:
-        regs.spsr_irq = data;
-        break;
-    case SVC:
-        regs.spsr_svc = data;
-        break;
-    case ABT:
-        regs.spsr_abt = data;
-        break;
-    case UND:
-        regs.spsr_und = data;
-        break;
-    default:
-        // log_warn("[ARM%d] Mode %02x doesn't have an spsr", arch ? 9 : 7, regs.cpsr & 0x1F);
-        return;
-    }
+auto Interpreter::ReadByte(u32 addr) -> u8 {
+    return memory.FastRead<u8>(addr);
+}
+
+auto Interpreter::ReadHalf(u32 addr) -> u16 {
+    return memory.FastRead<u16>(addr);
+}
+
+auto Interpreter::ReadWord(u32 addr) -> u32 {
+    return memory.FastRead<u32>(addr);
+}
+
+void Interpreter::WriteByte(u32 addr, u8 data) {
+    memory.FastWrite<u8>(addr, data);
+}
+
+void Interpreter::WriteHalf(u32 addr, u16 data) {
+    memory.FastWrite<u16>(addr, data);
+}
+
+void Interpreter::WriteWord(u32 addr, u32 data) {
+    memory.FastWrite<u32>(addr, data);
 }
 
 void Interpreter::HandleInterrupt() {
     halted = false;
     
-    regs.spsr_irq = regs.cpsr;
+    regs.spsr_banked[BANK_IRQ] = regs.cpsr;
 
     SwitchMode(IRQ);
 
@@ -332,7 +352,7 @@ void Interpreter::HandleInterrupt() {
 
     // check the exception base and jump to the correct address in the bios
     // also only use cp15 exception base from control register if arm9
-    regs.r[15] = ((arch) ? hw->cp15.GetExceptionBase() : 0x00000000) + 0x18;
+    regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x18;
     
     ARMFlushPipeline();
 
@@ -340,27 +360,12 @@ void Interpreter::HandleInterrupt() {
     instruction = pipeline[0];
 }
 
-void Interpreter::Step() {
-    // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
-    instruction = pipeline[0]; // store the current executing instruction 
-    // shift the pipeline
-    pipeline[0] = pipeline[1];
-    // fill the 2nd item with the new instruction to be read
-    if (IsARM()) {
-        pipeline[1] = ReadWord(regs.r[15]);
-    } else {
-        pipeline[1] = ReadHalf(regs.r[15]);
-    }
-
-    Execute();
-}
-
 void Interpreter::Execute() {
     if (halted) {
         return;
     }
 
-    if (hw->interrupt[arch].IME && ((hw->interrupt[arch].IE & hw->interrupt[arch].IF)) && !(regs.cpsr & (1 << 7))) {
+    if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
         HandleInterrupt();
     }
 
@@ -1392,7 +1397,7 @@ void Interpreter::Execute() {
             case 0xFFC: case 0xFFD: case 0xFFE: case 0xFFF:
                 return ARM_SWI();
             default:
-                log_fatal("[ARM%d] Undefined ARM instruction %08x with index %03x", arch ? 9 : 7, instruction, index);
+                log_fatal("[[Interpreter]] Undefined ARM instruction %08x with index %03x", instruction, index);
             }
         } else {
             regs.r[15] += 4;
@@ -1441,7 +1446,7 @@ void Interpreter::Execute() {
             case 3:
                 return THUMB_LSR_DATA_PROCESSING();
             default:
-                log_fatal("arm%d instruction 0x%04x with index 0x%02x is unimplemented!", arch ? 9 : 7, instruction, index);
+                log_fatal("[Interpreter] instruction 0x%04x with index 0x%02x is unimplemented!", instruction, index);
             }
             break;
         case 0x41:
@@ -1456,7 +1461,7 @@ void Interpreter::Execute() {
             case 3:
                 return THUMB_ROR_DATA_PROCESSING();
             default:
-                log_fatal("arm%d instruction 0x%04x with index 0x%02x is unimplemented!", arch ? 9 : 7, instruction, index);
+                log_fatal("[Interpreter] instruction 0x%04x with index 0x%02x is unimplemented!", instruction, index);
             }
             break;
         case 0x42:
@@ -1471,7 +1476,7 @@ void Interpreter::Execute() {
             case 3:
                 log_fatal("42-3");
             default:
-                log_fatal("arm%d instruction 0x%04x with index 0x%02x is unimplemented!", arch ? 9 : 7, instruction, index);
+                log_fatal("[Interpreter] instruction 0x%04x with index 0x%02x is unimplemented!", instruction, index);
             }
             break;
         case 0x43:
@@ -1486,7 +1491,7 @@ void Interpreter::Execute() {
             case 3:
                 return THUMB_MVN_DATA_PROCESSING();
             default:
-                log_fatal("arm%d instruction 0x%04x with index 0x%02x is unimplemented!", arch ? 9 : 7, instruction, index);
+                log_fatal("[Interpreter] instruction 0x%04x with index 0x%02x is unimplemented!", instruction, index);
             }
             break;
         case 0x44:
@@ -1606,7 +1611,7 @@ void Interpreter::Execute() {
         case 0xFC: case 0xFD: case 0xFE: case 0xFF:
             return THUMB_BL_OFFSET();
         default:
-            log_fatal("arm%d instruction 0x%04x with index 0x%02x is unimplemented!", arch ? 9 : 7, instruction, index);
+            log_fatal("[Interpreter] instruction 0x%04x with index 0x%02x is unimplemented!", instruction, index);
         }
     }
 }
@@ -1619,7 +1624,7 @@ void Interpreter::ARM_MRC() {
     u8 opcode2 = (instruction >> 5) & 0x7;
     u8 rd = (instruction >> 12) & 0xF;
 
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         if (cp == 15) {
             // generate an undefined exception
             return ARM_UND();
@@ -1629,7 +1634,7 @@ void Interpreter::ARM_MRC() {
         }
     }
 
-    u32 data = hw->cp15.Read(crn, crm, opcode2);
+    u32 data = cp15->Read(crn, crm, opcode2);
 
     if (rd == 15) {
         // set flags instead
@@ -1644,7 +1649,7 @@ void Interpreter::ARM_MRC() {
 
 void Interpreter::ARM_MCR() {
     // armv5 exclusive as it involves coprocessor transfers
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -1652,14 +1657,14 @@ void Interpreter::ARM_MCR() {
     u8 crn = (instruction >> 16) & 0xF;
     u8 opcode2 = (instruction >> 5) & 0x7;
     u8 rd = (instruction >> 12) & 0xF;
-    hw->cp15.Write(crn, crm, opcode2, regs.r[rd]);
+    cp15->Write(crn, crm, opcode2, regs.r[rd]);
 
     regs.r[15] += 4;
 }
 
 void Interpreter::ARM_SWI() {
     // store the cpsr in spsr_svc
-    regs.spsr_svc = regs.cpsr;
+    regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
     // enter supervisor mode
     SwitchMode(SVC);
@@ -1670,14 +1675,14 @@ void Interpreter::ARM_SWI() {
     regs.r[14] = regs.r[15] - 4;
     // check the exception base and jump to the correct address in the bios
     // also only use cp15 exception base from control register if arm9
-    regs.r[15] = ((arch) ? hw->cp15.GetExceptionBase() : 0x00000000) + 0x08;
+    regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x08;
     
     ARMFlushPipeline();
 }
 
 void Interpreter::THUMB_SWI() {
     // store the cpsr in spsr_svc
-    regs.spsr_svc = regs.cpsr;
+    regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
     // enter supervisor mode
     SwitchMode(SVC);
@@ -1690,14 +1695,14 @@ void Interpreter::THUMB_SWI() {
     
     regs.r[14] = regs.r[15] - 2;
     // check the exception base and jump to the correct address in the bios
-    regs.r[15] = ((arch) ? hw->cp15.GetExceptionBase() : 0x00000000) + 0x08;
+    regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x08;
     
     ARMFlushPipeline();
 }
 
 void Interpreter::ARM_UND() {
     // store the cpsr in spsr_und
-    regs.spsr_und = regs.cpsr;
+    regs.spsr_banked[BANK_UND] = regs.cpsr;
 
     // enter undefined mode
     SwitchMode(UND);
@@ -1708,27 +1713,7 @@ void Interpreter::ARM_UND() {
     regs.r[14] = regs.r[15] - 4;
     // check the exception base and jump to the correct address in the bios
     // also only use cp15 exception base from control register if arm9
-    regs.r[15] = ((arch) ? hw->cp15.GetExceptionBase() : 0x00000000) + 0x04;
+    regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x04;
     
     ARMFlushPipeline();
-}
-
-void Interpreter::Halt() {
-    halted = true;
-}
-
-auto Interpreter::Halted() -> bool {
-    return halted;
-}
-
-void Interpreter::LogRegisters() {
-    fprintf(log_buffer, "r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x r5: %08x r6: %08x r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x cpsr: %08x\n",
-        regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], 
-        regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction, regs.cpsr);
-}
-
-void Interpreter::DebugRegisters() {
-    printf("r0: %08x r1: %08x r2: %08x r3: %08x r4: %08x r5: %08x r6: %08x r7: %08x r8: %08x r9: %08x r10: %08x r11: %08x r12: %08x r13: %08x r14: %08x r15: %08x opcode: %08x cpsr: %08x\n",
-        regs.r[0], regs.r[1], regs.r[2], regs.r[3], regs.r[4], regs.r[5], regs.r[6], regs.r[7], 
-        regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction, regs.cpsr);
 }

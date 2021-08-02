@@ -24,7 +24,7 @@ INSTRUCTION(ARM_MOVS, u32 op2) {
             SwitchMode(current_spsr & 0x1F);
             regs.cpsr = current_spsr;
         } else {
-            log_fatal("[ARM%d] Loading spsr into cpsr in non-privileged mode is undefined behaviour", arch ? 9 : 7);
+            log_fatal("[Interpreter] Loading spsr into cpsr in non-privileged mode is undefined behaviour");
         }
 
         if (IsARM()) {
@@ -290,7 +290,7 @@ INSTRUCTION(ARM_SUBS, u32 op2) {
             SwitchMode(current_spsr & 0x1F);
             regs.cpsr = current_spsr;
         } else {
-            log_fatal("[ARM%d] Loading spsr into cpsr in non-privileged mode is undefined behaviour", arch ? 9 : 7);
+            log_fatal("[Interpreter] Loading spsr into cpsr in non-privileged mode is undefined behaviour");
         }
         
         if (IsARM()) {
@@ -472,7 +472,7 @@ INSTRUCTION(ARM_SBCS, u32 op2) {
 
 INSTRUCTION(ARM_CLZ) {
     // armv5 specific
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -494,7 +494,7 @@ INSTRUCTION(ARM_CLZ) {
 
 INSTRUCTION(ARM_QADD) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -520,7 +520,7 @@ INSTRUCTION(ARM_QADD) {
 
 INSTRUCTION(ARM_QDADD) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -563,7 +563,7 @@ INSTRUCTION(ARM_QDADD) {
 
 INSTRUCTION(ARM_QSUB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -592,7 +592,7 @@ INSTRUCTION(ARM_QSUB) {
 
 INSTRUCTION(ARM_QDSUB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 

@@ -357,13 +357,13 @@ void GeometryEngine::CheckGXFIFOInterrupt() {
     case 1:
         // trigger interrupt if fifo is less than half full
         if (fifo.size() < 128) {
-            gpu->hw->arm9.SendInterrupt(21);
+            gpu->hw->cpu_core[1]->SendInterrupt(21);
         }
         break;
     case 2:
         // trigger interrupt if fifo is empty
         if (fifo.size() == 0) {
-            gpu->hw->arm9.SendInterrupt(21);
+            gpu->hw->cpu_core[1]->SendInterrupt(21);
         }
         break;
     }

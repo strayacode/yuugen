@@ -101,6 +101,27 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
 
 auto ARM9Memory::ReadByte(u32 addr) -> u8 {
     switch (addr >> 24) {
+    case REGION_IO:
+        switch (addr) {
+        case 0x040001A8:
+        case 0x040001A9:
+        case 0x040001AA:
+        case 0x040001AB:
+        case 0x040001AC:
+        case 0x040001AD:
+        case 0x040001AE:
+        case 0x040001AF:
+            // recieve a cartridge command and store in the buffer
+            return hw->cartridge.ReadCommand(addr - 0x040001A8);
+        case 0x04000208:
+            return hw->cpu_core[1]->ime & 0x1;
+        case 0x04000300:
+            return hw->POSTFLG9;
+        case 0x04004000:
+            return 0;
+        default:
+            log_fatal("[ARM9] Undefined 8-bit io read %08x", addr);
+        }
     case REGION_VRAM:
         return hw->gpu.ReadVRAM<u8>(addr);
     default:
@@ -167,7 +188,7 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
         case 0x04000204:
             return hw->EXMEMCNT;
         case 0x04000208:
-            return hw->interrupt[1].IME & 0x1;
+            return hw->cpu_core[1]->ime & 0x1;
         case 0x04000280:
             return hw->maths_unit.DIVCNT;
         case 0x040002B0:
@@ -307,11 +328,11 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         case 0x040001A4:
             return hw->cartridge.ROMCTRL;
         case 0x04000208:
-            return hw->interrupt[1].IME & 0x1;
+            return hw->cpu_core[1]->ime & 0x1;
         case 0x04000210:
-            return hw->interrupt[1].IE;
+            return hw->cpu_core[1]->ie;
         case 0x04000214:
-            return hw->interrupt[1].IF;
+            return hw->cpu_core[1]->irf;
         case 0x04000240:
             return ((hw->gpu.VRAMCNT_D << 24) | (hw->gpu.VRAMCNT_C << 16) | (hw->gpu.VRAMCNT_B << 8) | (hw->gpu.VRAMCNT_A));
         case 0x04000280:
@@ -404,7 +425,7 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
             hw->cartridge.ReceiveCommand(data, addr - 0x040001A8);
             break;
         case 0x04000208:
-            hw->interrupt[1].IME = data & 0x1;
+            hw->cpu_core[1]->ime = data & 0x1;
             break;
         case 0x04000240:
             hw->gpu.VRAMCNT_A = data;
@@ -668,7 +689,7 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             hw->EXMEMCNT = data;
             break;
         case 0x04000208:
-            hw->interrupt[1].IME = data & 0x1;
+            hw->cpu_core[1]->ime = data & 0x1;
             break;
         case 0x04000248:
             hw->gpu.VRAMCNT_H = data & 0xFF;
@@ -997,13 +1018,13 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             hw->ipc.WriteFIFOSEND9(data);
             break;
         case 0x04000208:
-            hw->interrupt[1].IME = data & 0x1;
+            hw->cpu_core[1]->ime = data & 0x1;
             break;
         case 0x04000210:
-            hw->interrupt[1].IE = data;
+            hw->cpu_core[1]->ie = data;
             break;
         case 0x04000214:
-            hw->interrupt[1].IF &= ~data;
+            hw->cpu_core[1]->irf &= ~data;
             break;
         case 0x04000240:
             hw->gpu.VRAMCNT_A = data & 0xFF;

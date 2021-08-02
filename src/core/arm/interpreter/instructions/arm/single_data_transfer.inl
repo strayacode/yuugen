@@ -63,7 +63,7 @@ INSTRUCTION(ARM_LDR_PRE, u32 op2) {
     if (rd == 15) {
         // for armv5, bit 5 of cpsr is changed to bit 0 of data and pipeline is flushed accordingly
         // for armv4, just flush the pipeline
-        if ((arch == ARMv5) && (data & 1)) {
+        if ((arch == CPUArch::ARMv5) && (data & 1)) {
             // switch to thumb mode
             regs.cpsr |= 1 << 5;
             regs.r[15] &= ~1;
@@ -100,7 +100,7 @@ INSTRUCTION(ARM_LDR_PRE_WRITEBACK, u32 op2) {
     if (rd == 15) {
         // for armv5, bit 5 of cpsr is changed to bit 0 of data and pipeline is flushed accordingly
         // for armv4, just flush the pipeline
-        if ((arch == ARMv5) && (data & 1)) {
+        if ((arch == CPUArch::ARMv5) && (data & 1)) {
             // switch to thumb mode
             regs.cpsr |= 1 << 5;
             regs.r[15] &= ~1;
@@ -129,7 +129,7 @@ INSTRUCTION(ARM_LDR_POST, u32 op2) {
     if (rd == 15) {
         // for armv5, bit 5 of cpsr is changed to bit 0 of data and pipeline is flushed accordingly
         // for armv4, just flush the pipeline
-        if ((arch == ARMv5) && (data & 1)) {
+        if ((arch == CPUArch::ARMv5) && (data & 1)) {
             // switch to thumb mode
             regs.cpsr |= 1 << 5;
             regs.r[15] &= ~1;
@@ -241,7 +241,7 @@ INSTRUCTION(ARM_LDRD_POST, u32 op2) {
     regs.r[rn] += op2;
 
     // armv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
     u8 rd = (instruction >> 12) & 0xF;

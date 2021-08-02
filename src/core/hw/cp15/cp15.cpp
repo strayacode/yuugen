@@ -80,7 +80,7 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         // dont do anything lol this is just protection unit region stuff which we dont need to emulate
         break;
     case 0x070004:
-        hw->arm9.Halt();
+        hw->cpu_core[1]->Halt();
     case 0x070500:
         // invalidate entire instruction cache
         break;

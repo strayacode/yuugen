@@ -21,6 +21,7 @@
 #include <string>
 #include <algorithm>
 #include <array>
+#include <memory>
 
 enum MemoryRegion {
     REGION_ARM7_BIOS = 0x00,
@@ -36,6 +37,10 @@ enum MemoryRegion {
     REGION_ARM9_BIOS = 0xFF,
 };
 
+enum class CPUCoreType {
+    Interpreter,
+};
+
 // this class contains all the hardware of the ds
 class HW {
 public:
@@ -47,65 +52,16 @@ public:
     void RunFrame();
     void SetRomPath(std::string path);
 
-    // // regular memory read/write handlers
-    // template <typename T>
-    // auto ARM7Read(u32 addr) -> T;
-
-    // template <typename T>
-    // void ARM7Write(u32 addr, T data);
-
-    // template <typename T>
-    // auto ARM9Read(u32 addr) -> T;
-
-    // template <typename T>
-    // void ARM9Write(u32 addr, T data);
-
-    // // software fastmem read/write handlers
-    // template <typename T>
-    // auto ARM7FastRead(u32 addr) -> T;
-
-    // template <typename T>
-    // void ARM7FastWrite(u32 addr, T data);
-
-    // template <typename T>
-    // auto ARM9FastRead(u32 addr) -> T;
-
-    // template <typename T>
-    // void ARM9FastWrite(u32 addr, T data);
-
-    // // mmio handlers
-    // auto ARM7ReadByteIO(u32 addr) -> u8;
-    // auto ARM7ReadHalfIO(u32 addr) -> u16;
-    // auto ARM7ReadWordIO(u32 addr) -> u32;
-
-    // void ARM7WriteByteIO(u32 addr, u8 data);
-    // void ARM7WriteHalfIO(u32 addr, u16 data);
-    // void ARM7WriteWordIO(u32 addr, u32 data);
-
-    // auto ARM9ReadByteIO(u32 addr) -> u8;
-    // auto ARM9ReadHalfIO(u32 addr) -> u16;
-    // auto ARM9ReadWordIO(u32 addr) -> u32;
-
-    // void ARM9WriteByteIO(u32 addr, u8 data);
-    // void ARM9WriteHalfIO(u32 addr, u16 data);
-    // void ARM9WriteWordIO(u32 addr, u32 data);
-
     void WriteHALTCNT(u8 data);
-
     void WriteWRAMCNT(u8 data);
-
     auto CartridgeAccessRights() -> bool;
-
-    void MapSharedMemory(u8 data);
 
     void LoadARM7Bios();
     void LoadARM9Bios();
 
-    ARM7Memory arm7_memory;
-    ARM9Memory arm9_memory;
+    void InitialiseCPUCores(CPUCoreType core);
+
     Cartridge cartridge;
-    Interpreter arm7;
-    Interpreter arm9;
     Scheduler scheduler;
     SPI spi;
     CP15 cp15;
@@ -113,12 +69,15 @@ public:
     DMA dma[2];
     Input input;
     IPC ipc;
-    Interrupt interrupt[2];
     Timers timers[2];
     SPU spu;
     RTC rtc;
     MathsUnit maths_unit;
     Wifi wifi;
+    ARM7Memory arm7_memory;
+    ARM9Memory arm9_memory;
+
+    std::unique_ptr<CPUBase> cpu_core[2];
 
     // todo: maybe make vectors later or std::array?
     u8 main_memory[0x400000] = {};

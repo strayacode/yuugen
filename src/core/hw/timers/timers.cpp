@@ -51,9 +51,9 @@ void Timers::Overflow(int timer_index) {
 
     if (timer[timer_index].control & (1 << 6)) {
         if (arch == 1) {
-            hw->arm9.SendInterrupt(3 + timer_index);
+            hw->cpu_core[1]->SendInterrupt(3 + timer_index);
         } else {
-            hw->arm7.SendInterrupt(3 + timer_index);
+            hw->cpu_core[0]->SendInterrupt(3 + timer_index);
         }
     }
 

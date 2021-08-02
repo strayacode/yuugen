@@ -29,7 +29,7 @@ void DMA::Transfer(int channel_index) {
         // word transfer
         // loop through all the data units specified by internal length
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
-            if (arch == ARMv5) {
+            if (arch == 1) {
                 hw->arm9_memory.FastWrite<u32>(channel[channel_index].internal_destination, hw->arm9_memory.FastRead<u32>(channel[channel_index].internal_source));
             } else {
                 hw->arm7_memory.FastWrite<u32>(channel[channel_index].internal_destination, hw->arm7_memory.FastRead<u32>(channel[channel_index].internal_source));
@@ -68,7 +68,7 @@ void DMA::Transfer(int channel_index) {
     } else {
         // halfword transfer
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
-            if (arch == ARMv5) {
+            if (arch == 1) {
                 hw->arm9_memory.FastWrite<u16>(channel[channel_index].internal_destination, hw->arm9_memory.FastRead<u16>(channel[channel_index].internal_source));
             } else {
                 hw->arm7_memory.FastWrite<u16>(channel[channel_index].internal_destination, hw->arm7_memory.FastRead<u16>(channel[channel_index].internal_source));
@@ -108,12 +108,12 @@ void DMA::Transfer(int channel_index) {
 
     // request dma irq upon end of word count if enabled 
     if (channel[channel_index].DMACNT & (1 << 30)) {
-        if (arch == ARMv5) {
+        if (arch == 1) {
             // arm9
-            hw->arm9.SendInterrupt(8 + channel_index);
+            hw->cpu_core[1]->SendInterrupt(8 + channel_index);
         } else {
             // arm7
-            hw->arm7.SendInterrupt(8 + channel_index);
+            hw->cpu_core[0]->SendInterrupt(8 + channel_index);
         }
     }
 
@@ -136,7 +136,7 @@ void DMA::Trigger(u8 mode) {
     // check each channels start_timing to see if any are equal to mode
     for (int channel_index = 0; channel_index < 4; channel_index++) {
         u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
-        if (arch == ARMv4) {
+        if (arch == 1) {
             // we only need bits 28..29
             start_timing >>= 1;
         }
@@ -168,7 +168,7 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     channel[channel_index].internal_source = channel[channel_index].source;
     channel[channel_index].internal_destination = channel[channel_index].destination;
 
-    if (arch == ARMv5) {
+    if (arch == 1) {
         if ((channel[channel_index].DMACNT & 0x1FFFFF) == 0) {
             channel[channel_index].internal_length = 0x200000;
         } else {
@@ -208,7 +208,7 @@ auto DMA::ReadDMACNT_H(int channel_index) -> u16 {
 }
 
 void DMA::WriteLength(int channel_index, u32 data) {
-    if (arch == ARMv5) {
+    if (arch == 1) {
         // arm9 dma
         if (data == 0) {
             // 0 = 0x200000

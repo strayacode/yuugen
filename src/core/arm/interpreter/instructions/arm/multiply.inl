@@ -74,7 +74,7 @@ INSTRUCTION(ARM_UMULLS) {
 
 INSTRUCTION(ARM_SMLABB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -99,7 +99,7 @@ INSTRUCTION(ARM_SMLABB) {
 
 INSTRUCTION(ARM_SMULBB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -114,7 +114,7 @@ INSTRUCTION(ARM_SMULBB) {
 
 INSTRUCTION(ARM_SMULTB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -129,7 +129,7 @@ INSTRUCTION(ARM_SMULTB) {
 
 INSTRUCTION(ARM_SMULBT) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -144,7 +144,7 @@ INSTRUCTION(ARM_SMULBT) {
 
 INSTRUCTION(ARM_SMULTT) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -159,7 +159,7 @@ INSTRUCTION(ARM_SMULTT) {
 
 INSTRUCTION(ARM_SMLABT) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -183,7 +183,7 @@ INSTRUCTION(ARM_SMLABT) {
 
 INSTRUCTION(ARM_SMLATB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -207,7 +207,7 @@ INSTRUCTION(ARM_SMLATB) {
 
 INSTRUCTION(ARM_SMLATT) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -230,7 +230,7 @@ INSTRUCTION(ARM_SMLATT) {
 
 INSTRUCTION(ARM_SMULWB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -245,7 +245,7 @@ INSTRUCTION(ARM_SMULWB) {
 
 INSTRUCTION(ARM_SMULWT) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -260,7 +260,7 @@ INSTRUCTION(ARM_SMULWT) {
 
 INSTRUCTION(ARM_SMLAWB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -281,7 +281,7 @@ INSTRUCTION(ARM_SMLAWB) {
 
 INSTRUCTION(ARM_SMLAWT) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -302,7 +302,7 @@ INSTRUCTION(ARM_SMLAWT) {
 
 INSTRUCTION(ARM_SMLALBB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
 
@@ -321,7 +321,7 @@ INSTRUCTION(ARM_SMLALBB) {
 
 INSTRUCTION(ARM_SMLALTB) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
     
@@ -340,7 +340,7 @@ INSTRUCTION(ARM_SMLALTB) {
 
 INSTRUCTION(ARM_SMLALBT) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
     
@@ -359,7 +359,7 @@ INSTRUCTION(ARM_SMLALBT) {
 
 INSTRUCTION(ARM_SMLALTT) {
     // ARMv5 exclusive
-    if (arch == ARMv4) {
+    if (arch == CPUArch::ARMv4) {
         return;
     }
     

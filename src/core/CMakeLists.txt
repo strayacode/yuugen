@@ -4,6 +4,8 @@ add_library(core
     core.h core.cpp
 
     arm/memory_base.h arm/memory_base.cpp
+    arm/cpu_base.h arm/cpu_base.cpp
+    arm/cpu_registers.h
     arm/arm7/memory.h arm/arm7/memory.cpp
     arm/arm9/memory.h arm/arm9/memory.cpp
     arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
