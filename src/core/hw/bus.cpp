@@ -1,5 +1,57 @@
 // #include <core/hw/hw.h>
 
+// void HW::UpdateARM7MemoryMap(u32 low_addr, u32 high_addr) {
+//     // TODO: fix shared memory mapping problem
+//     for (u64 addr = low_addr; addr < high_addr; addr += 0x1000) {
+//         // get the pagetable index
+//         int index = addr >> 12;
+//         switch (addr >> 24) {
+//         case 0x00:
+//             arm7_read_page_table[index] = &arm7_bios[addr & 0x3FFF];
+//             arm7_write_page_table[index] = nullptr;
+//             break;
+//         case 0x02:
+//             arm7_read_page_table[index] = &main_memory[addr & 0x3FFFFF];
+//             arm7_write_page_table[index] = &main_memory[addr & 0x3FFFFF];
+//             break;
+//         // case 0x03:
+//         //     if (addr < 0x03800000) {
+//         //         switch (WRAMCNT) {
+//         //         case 0:
+//         //             arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
+//         //             arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
+//         //             break;
+//         //         case 1:
+//         //             arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
+//         //             arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
+//         //             break;
+//         //         case 2:
+//         //             arm7_read_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+//         //             arm7_write_page_table[index] = &shared_wram[(addr & 0x3FFF) + 0x4000];
+//         //             break;
+//         //         case 3:
+//         //             arm7_read_page_table[index] = &shared_wram[addr & 0x7FFF];
+//         //             arm7_write_page_table[index] = &shared_wram[addr & 0x7FFF];
+//         //             break;
+//         //         }
+//         //     } else {
+//         //         arm7_read_page_table[index] = &arm7_wram[addr & 0xFFFF];
+//         //         arm7_write_page_table[index] = &arm7_wram[addr & 0xFFFF];
+//         //     }
+//         //     break;
+//         // case 0x06:
+//         //     arm7_read_page_table[index] = gpu.arm7_vram[index];
+//         //     arm7_write_page_table[index] = gpu.arm7_vram[index];
+//         //     break;
+//         default:
+//             // set as a nullptr, which indicates that we should do a regular read / write
+//             arm7_read_page_table[index] = nullptr;
+//             arm7_write_page_table[index] = nullptr;
+//             break;
+//         }
+//     }
+// }
+
 // template auto HW::ARM7FastRead(u32 addr) -> u8;
 // template auto HW::ARM7FastRead(u32 addr) -> u16;
 // template auto HW::ARM7FastRead(u32 addr) -> u32;

@@ -19,6 +19,7 @@ void Cartridge::Reset() {
     ROMCTRL = 0;
     AUXSPICNT = 0;
     AUXSPIDATA = 0;
+
     transfer_count = 0;
     transfer_size = 0;
     command = 0;
@@ -171,8 +172,8 @@ void Cartridge::StartTransfer() {
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {
-            hw->cpu_core[0]->SendInterrupt(19);
-            hw->cpu_core[1]->SendInterrupt(19);
+            hw->arm7.SendInterrupt(19);
+            hw->arm9.SendInterrupt(19);
         }
     } else {
         // since we are starting a new transfer transfer_count must start at 0
@@ -244,8 +245,8 @@ auto Cartridge::ReadData() -> u32 {
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {
-            hw->cpu_core[0]->SendInterrupt(19);
-            hw->cpu_core[1]->SendInterrupt(19);
+            hw->arm7.SendInterrupt(19);
+            hw->arm9.SendInterrupt(19);
         }
     } else {
         // trigger another nds cartridge dma

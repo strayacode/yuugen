@@ -2,16 +2,14 @@ set(SOFTWARE_FASTMEM ON)
 
 add_library(core
     core.h core.cpp
-    arm/cpu_base.h arm/cpu_base.cpp
+
     arm/memory_base.h arm/memory_base.cpp
-    arm/cpu_registers.h
-    arm/interpreter/interpreter.h
-    arm/interpreter/interpreter.cpp
-    arm/interpreter/lookup_table.cpp
     arm/arm7/memory.h arm/arm7/memory.cpp
     arm/arm9/memory.h arm/arm9/memory.cpp
+    arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
     
     hw/hw.h hw/hw.cpp
+    hw/bus.cpp hw/mmio.cpp
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
     hw/cartridge/backup/flash/flash.h hw/cartridge/backup/flash/flash.cpp
     hw/cartridge/backup/eeprom/eeprom.h hw/cartridge/backup/eeprom/eeprom.cpp
@@ -31,12 +29,12 @@ add_library(core
     hw/dma/dma.h hw/dma/dma.cpp
     hw/input/input.h hw/input/input.cpp
     hw/ipc/ipc.h hw/ipc/ipc.cpp
+    hw/interrupt/interrupt.h hw/interrupt/interrupt.cpp
     hw/timers/timers.h hw/timers/timers.cpp
     hw/spu/spu.h hw/spu/spu.cpp
     hw/rtc/rtc.h hw/rtc/rtc.cpp
     hw/maths_unit/maths_unit.h hw/maths_unit/maths_unit.cpp
     hw/wifi/wifi.h hw/wifi/wifi.cpp
-    
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")

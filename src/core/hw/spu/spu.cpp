@@ -123,7 +123,7 @@ void SPU::WriteSOUNDCNT(int channel_index, u32 data) {
 }
 
 void SPU::RunChannel(int channel_index) {
-    log_fatal("run channel %d lol", channel_index);
+    // log_fatal("run channel %d lol", channel_index);
 }
 
 void SPU::RunMixer() {

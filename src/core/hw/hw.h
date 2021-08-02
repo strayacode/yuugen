@@ -1,5 +1,8 @@
 #pragma once
 
+#include <core/arm/interpreter/interpreter.h>
+#include <core/arm/arm7/memory.h>
+#include <core/arm/arm9/memory.h>
 #include <core/scheduler/scheduler.h>
 #include <core/hw/cartridge/cartridge.h>
 #include <core/hw/spi/spi.h>
@@ -8,6 +11,7 @@
 #include <core/hw/dma/dma.h>
 #include <core/hw/input/input.h>
 #include <core/hw/ipc/ipc.h>
+#include <core/hw/interrupt/interrupt.h>
 #include <core/hw/timers/timers.h>
 #include <core/hw/spu/spu.h>
 #include <core/hw/rtc/rtc.h>
@@ -17,13 +21,6 @@
 #include <string>
 #include <algorithm>
 #include <array>
-#include <memory>
-
-#include <core/arm/cpu_base.h>
-#include <core/arm/interpreter/interpreter.h>
-#include <core/arm/memory_base.h>
-#include <core/arm/arm7/memory.h>
-#include <core/arm/arm9/memory.h>
 
 enum MemoryRegion {
     REGION_ARM7_BIOS = 0x00,
@@ -39,10 +36,6 @@ enum MemoryRegion {
     REGION_ARM9_BIOS = 0xFF,
 };
 
-enum class CPUCoreType {
-    Interpreter,
-};
-
 // this class contains all the hardware of the ds
 class HW {
 public:
@@ -50,9 +43,35 @@ public:
     ~HW();
     void Reset();
     void DirectBoot();
-    // void FirmwareBoot();
+    void FirmwareBoot();
     void RunFrame();
     void SetRomPath(std::string path);
+
+    // // regular memory read/write handlers
+    // template <typename T>
+    // auto ARM7Read(u32 addr) -> T;
+
+    // template <typename T>
+    // void ARM7Write(u32 addr, T data);
+
+    // template <typename T>
+    // auto ARM9Read(u32 addr) -> T;
+
+    // template <typename T>
+    // void ARM9Write(u32 addr, T data);
+
+    // // software fastmem read/write handlers
+    // template <typename T>
+    // auto ARM7FastRead(u32 addr) -> T;
+
+    // template <typename T>
+    // void ARM7FastWrite(u32 addr, T data);
+
+    // template <typename T>
+    // auto ARM9FastRead(u32 addr) -> T;
+
+    // template <typename T>
+    // void ARM9FastWrite(u32 addr, T data);
 
     // // mmio handlers
     // auto ARM7ReadByteIO(u32 addr) -> u8;
@@ -77,10 +96,16 @@ public:
 
     auto CartridgeAccessRights() -> bool;
 
+    void MapSharedMemory(u8 data);
+
     void LoadARM7Bios();
     void LoadARM9Bios();
 
+    ARM7Memory arm7_memory;
+    ARM9Memory arm9_memory;
     Cartridge cartridge;
+    Interpreter arm7;
+    Interpreter arm9;
     Scheduler scheduler;
     SPI spi;
     CP15 cp15;
@@ -88,16 +113,12 @@ public:
     DMA dma[2];
     Input input;
     IPC ipc;
+    Interrupt interrupt[2];
     Timers timers[2];
     SPU spu;
     RTC rtc;
     MathsUnit maths_unit;
     Wifi wifi;
-
-    void InitialiseCPUCores(CPUCoreType core);
-
-    ARM7Memory arm7_memory;
-    ARM9Memory arm9_memory;
 
     // todo: maybe make vectors later or std::array?
     u8 main_memory[0x400000] = {};
@@ -127,9 +148,10 @@ public:
     // the arm7 provides io ports for the link port but it doesn't seem to be used
     u16 SIOCNT;
 
+    std::array<u8*, 0x100000> arm7_read_page_table;
+    std::array<u8*, 0x100000> arm9_read_page_table;
+    std::array<u8*, 0x100000> arm7_write_page_table;
+    std::array<u8*, 0x100000> arm9_write_page_table;
+
     std::string rom_path;
-
-    std::unique_ptr<CPUBase> cpu_core[2];
-private:
-
 };

@@ -1,12 +1,9 @@
 #pragma once
 
-#include <core/arm/cpu_base.h>
+#include <core/arm/memory_base.h>
 #include <common/types.h>
 #include <common/log.h>
-#include <common/arithmetic.h>
-#include <common/log_file.h>
-#include <array>
-#include <memory>
+#include <algorithm>
 
 // probably change these...
 #define ADD_CARRY(a, b)  ((0xFFFFFFFF-a) < b)
@@ -14,6 +11,13 @@
 
 #define ADD_OVERFLOW(a, b, res)  ((!(((a) ^ (b)) & 0x80000000)) && (((a) ^ (res)) & 0x80000000))
 #define SUB_OVERFLOW(a, b, res)  ((((a) ^ (b)) & 0x80000000) && (((a) ^ (res)) & 0x80000000))
+
+#define INSTRUCTION(NAME, ...) void NAME(__VA_ARGS__)
+
+enum CPUArch {
+    ARMv4 = 0,
+    ARMv5 = 1,
+};
 
 enum Mode {
     USR = 0x10,
@@ -26,11 +30,12 @@ enum Mode {
 };
 
 enum Bank {
-    BANK_FIQ = 0,
-    BANK_IRQ = 1,
-    BANK_SVC = 2,
-    BANK_ABT = 3,
-    BANK_UND = 4,
+    BANK_USR = 0,
+    BANK_FIQ = 1,
+    BANK_IRQ = 2,
+    BANK_SVC = 3,
+    BANK_ABT = 4,
+    BANK_UND = 5,
 };
 
 enum ConditionFlag {
@@ -60,53 +65,16 @@ enum CPUCondition {
     CONDITION_NV = 15,
 };
 
-class Interpreter;
+class HW;
 
-typedef void (Interpreter::*Instruction)();
-
-class Interpreter : public CPUBase {
+class Interpreter { 
 public:
-    Interpreter(MemoryBase& memory, CPUArch arch);
-    ~Interpreter() override;
+    Interpreter(MemoryBase& memory, HW* hw, int arch);
 
-    void Reset() override;
-    void Run(int cycles) override;
-    void DirectBoot(u32 entrypoint) override;
+    void Reset();
 
-    #include "instructions/arm/alu.inl"
-    #include "instructions/arm/branch.inl"
-    #include "instructions/arm/load_store.inl"
-
-    #include "instructions/thumb/alu.inl"
-    #include "instructions/thumb/branch.inl"
-    #include "instructions/thumb/load_store.inl"
-private:
-    void Execute();
-
-    void ARMFlushPipeline();
-    void ThumbFlushPipeline();
-
-    auto GetCurrentSPSR() -> u32;
-    void SetCurrentSPSR(u32 data);
-    bool HasSPSR();
-    bool PrivilegedMode();
-
-    bool IsARM();
-
-    void GenerateARMTable();
-    void GenerateThumbTable();
-
-    void UnimplementedInstruction();
-
-    void GenerateConditionTable();
-    bool ConditionEvaluate(u8 condition);
-
-    void SwitchMode(u8 new_mode);
-
-    bool GetConditionFlag(int condition_flag);
-    void SetConditionFlag(int condition_flag, int value);
-
-    void LogRegisters();
+    void DirectBoot();
+    void FirmwareBoot();
 
     auto ReadByte(u32 addr) -> u8;
     auto ReadHalf(u32 addr) -> u16;
@@ -116,17 +84,100 @@ private:
     void WriteHalf(u32 addr, u16 data);
     void WriteWord(u32 addr, u32 data);
 
+    bool HasSPSR();
+    bool PrivilegedMode();
+
+    void SwitchMode(u8 new_mode);
+
+    void ARMFlushPipeline();
+    void ThumbFlushPipeline();
+
+    void Step();
+    void Execute();
+
+    auto Halted() -> bool;
+
+    bool IsARM();
+
+    void GenerateConditionTable();
+    bool ConditionEvaluate(u8 condition);
+
+    bool GetConditionFlag(int condition_flag);
+    void SetConditionFlag(int condition_flag, int value);
+
+    void Halt();
+
+    void SendInterrupt(int interrupt);
+    void HandleInterrupt();
+
+    auto GetCurrentSPSR() -> u32;
+    void SetCurrentSPSR(u32 data);
+
+    // instructions that require access to core we just declare outside the .inl files
+    void ARM_MRC();
+    void ARM_MCR();
+    void ARM_SWI();
+    void ARM_UND();
+
+    void THUMB_SWI();
+
+    void LogRegisters();
+    void DebugRegisters();
+
+    #include "instructions/arm/block_data_transfer.inl"
+    #include "instructions/arm/branch.inl"
+    #include "instructions/arm/data_processing.inl"
+    #include "instructions/arm/multiply.inl"
+    #include "instructions/arm/software_interrupt.inl"
+    #include "instructions/arm/misc.inl"
+    #include "instructions/arm/single_data_transfer.inl"
+    #include "instructions/arm/halfword_signed_transfer.inl"
+    #include "instructions/arm/psr_transfer.inl"
+
+    #include "instructions/thumb/block_data_transfer.inl"
+    #include "instructions/thumb/branch.inl"
+    #include "instructions/thumb/data_processing.inl"
+    #include "instructions/thumb/halfword_signed_transfer.inl"
+    #include "instructions/thumb/single_data_transfer.inl"
+
+    struct CPURegisters {
+        // 16 general purpose registers
+        u32 r[16];
+
+        // this stores 6 banks of registers from r8-r14
+        u32 r_banked[6][7];
+
+        // the current program status register
+        u32 cpsr;
+
+        // the current spsr
+        u32 spsr;
+
+        // this is for the banked spsrs
+        u32 spsr_fiq;
+        u32 spsr_svc;
+        u32 spsr_abt;
+        u32 spsr_irq;
+        u32 spsr_und;
+
+    } regs;
+
     u32 pipeline[2];
+
     u32 instruction;
 
-    std::array<Instruction, 1024> thumb_lut;
-    std::array<Instruction, 4096> arm_lut;
+    HW* hw;
+
+    int arch;
+
+    bool halted = false;
 
     // condition table for every possible condition of the bits 28..31 in an opcode
     // so for each type of condition code we have 2^4 possibilities
-    std::array<std::array<bool, 16>, 16> condition_table;
+    bool condition_table[16][16] = {};
 
-    // TODO: handle differences in sending interrupt for arm7 and arm9
+    FILE* log_buffer;
+    int counter = 0;
 
-    std::unique_ptr<LogFile> log_file;
+    MemoryBase& memory;
 };
