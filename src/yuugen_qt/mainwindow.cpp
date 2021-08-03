@@ -101,11 +101,11 @@ void MainWindow::CreateEmulationMenu() {
             emu_thread->framelimiter = true;
         }
 
-        core->SetRomPath(path.toStdString());
-        core->Reset();
+        core->hw.SetRomPath(path.toStdString());
+        core->hw.Reset();
 
         // TODO: change this to check the Config struct first whether we should do direct or firmware boot
-        core->DirectBoot();
+        core->hw.DirectBoot();
 
         // start the emulator thread again as well as the render timer
         emu_thread->Start();
@@ -167,8 +167,8 @@ void MainWindow::paintEvent(QPaintEvent* event) {
         QPainter painter(this);
         painter.fillRect(rect(), Qt::black);
 
-        memcpy(top_image.scanLine(0), core->gpu.GetFramebuffer(TOP_SCREEN), 256 * 192 * 4);
-        memcpy(bottom_image.scanLine(0), core->gpu.GetFramebuffer(BOTTOM_SCREEN), 256 * 192 * 4);
+        memcpy(top_image.scanLine(0), core->hw.gpu.GetFramebuffer(TOP_SCREEN), 256 * 192 * 4);
+        memcpy(bottom_image.scanLine(0), core->hw.gpu.GetFramebuffer(BOTTOM_SCREEN), 256 * 192 * 4);
 
         QSize window_dimensions = size();
 
@@ -190,34 +190,34 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (emu_thread) {
         switch (event->key()) {
         case Qt::Key_D:
-            core->input.HandleInput(BUTTON_A, true);
+            core->hw.input.HandleInput(BUTTON_A, true);
             break;
         case Qt::Key_S:
-            core->input.HandleInput(BUTTON_B, true);
+            core->hw.input.HandleInput(BUTTON_B, true);
             break;
         case Qt::Key_Shift:
-            core->input.HandleInput(BUTTON_SELECT, true);
+            core->hw.input.HandleInput(BUTTON_SELECT, true);
             break;
         case Qt::Key_Return:
-            core->input.HandleInput(BUTTON_START, true);
+            core->hw.input.HandleInput(BUTTON_START, true);
             break;
         case Qt::Key_Right:
-            core->input.HandleInput(BUTTON_RIGHT, true);
+            core->hw.input.HandleInput(BUTTON_RIGHT, true);
             break;
         case Qt::Key_Left:
-            core->input.HandleInput(BUTTON_LEFT, true);
+            core->hw.input.HandleInput(BUTTON_LEFT, true);
             break;
         case Qt::Key_Up:
-            core->input.HandleInput(BUTTON_UP, true);
+            core->hw.input.HandleInput(BUTTON_UP, true);
             break;
         case Qt::Key_Down:
-            core->input.HandleInput(BUTTON_DOWN, true);
+            core->hw.input.HandleInput(BUTTON_DOWN, true);
             break;
         case Qt::Key_E:
-            core->input.HandleInput(BUTTON_R, true);
+            core->hw.input.HandleInput(BUTTON_R, true);
             break;
         case Qt::Key_W:
-            core->input.HandleInput(BUTTON_L, true);
+            core->hw.input.HandleInput(BUTTON_L, true);
             break;
         }
     }
@@ -229,34 +229,34 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
     if (emu_thread) {
         switch (event->key()) {
         case Qt::Key_D:
-            core->input.HandleInput(BUTTON_A, false);
+            core->hw.input.HandleInput(BUTTON_A, false);
             break;
         case Qt::Key_S:
-            core->input.HandleInput(BUTTON_B, false);
+            core->hw.input.HandleInput(BUTTON_B, false);
             break;
         case Qt::Key_Shift:
-            core->input.HandleInput(BUTTON_SELECT, false);
+            core->hw.input.HandleInput(BUTTON_SELECT, false);
             break;
         case Qt::Key_Return:
-            core->input.HandleInput(BUTTON_START, false);
+            core->hw.input.HandleInput(BUTTON_START, false);
             break;
         case Qt::Key_Right:
-            core->input.HandleInput(BUTTON_RIGHT, false);
+            core->hw.input.HandleInput(BUTTON_RIGHT, false);
             break;
         case Qt::Key_Left:
-            core->input.HandleInput(BUTTON_LEFT, false);
+            core->hw.input.HandleInput(BUTTON_LEFT, false);
             break;
         case Qt::Key_Up:
-            core->input.HandleInput(BUTTON_UP, false);
+            core->hw.input.HandleInput(BUTTON_UP, false);
             break;
         case Qt::Key_Down:
-            core->input.HandleInput(BUTTON_DOWN, false);
+            core->hw.input.HandleInput(BUTTON_DOWN, false);
             break;
         case Qt::Key_E:
-            core->input.HandleInput(BUTTON_R, false);
+            core->hw.input.HandleInput(BUTTON_R, false);
             break;
         case Qt::Key_W:
-            core->input.HandleInput(BUTTON_L, false);
+            core->hw.input.HandleInput(BUTTON_L, false);
             break;
         }
     }
@@ -272,8 +272,8 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
         int y = ((event->y() - 22) / scale) - 192;
         
         if ((y >= 0) && (x >= 0) && event->button() == Qt::LeftButton) {
-            core->input.SetTouch(true);
-            core->input.SetPoint(x, y);
+            core->hw.input.SetTouch(true);
+            core->hw.input.SetPoint(x, y);
         }
     }
 }
@@ -288,8 +288,8 @@ void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
         int y = ((event->y() - 22) / scale) - 192;
         
         if ((y >= 0) && (x >= 0) && event->button() == Qt::LeftButton) {
-            core->input.SetTouch(false);
-            core->input.SetPoint(x, y);
+            core->hw.input.SetTouch(false);
+            core->hw.input.SetPoint(x, y);
         }
     }
 }
@@ -304,7 +304,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event) {
         int y = ((event->y() - 22) / scale) - 192;
         
         if ((y >= 0) && (x >= 0)) {
-            core->input.SetPoint(x, y);
+            core->hw.input.SetPoint(x, y);
         }
     }
 }
@@ -339,11 +339,11 @@ void MainWindow::LoadRom() {
         // get the first selection
         path = dialog.selectedFiles().at(0);
 
-        core->SetRomPath(path.toStdString());
-        core->Reset();
+        core->hw.SetRomPath(path.toStdString());
+        core->hw.Reset();
 
         // TODO: change this to check the Config struct first whether we should do direct or firmware boot
-        core->DirectBoot();
+        core->hw.DirectBoot();
 
         // allow emulation to be controlled now
         pause_action->setEnabled(true);
@@ -382,9 +382,9 @@ void MainWindow::BootFirmware() {
 
     // give an empty path
     path = "";
-    core->SetRomPath(path.toStdString());
-    core->Reset();
-    core->FirmwareBoot();
+    core->hw.SetRomPath(path.toStdString());
+    core->hw.Reset();
+    core->hw.FirmwareBoot();
 
     // allow emulation to be controlled now
     pause_action->setEnabled(true);

@@ -316,7 +316,7 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
         }
         break;
     default:
-        log_fatal("handle");
+        log_fatal("handle %08x", addr);
     }
 }
 
@@ -585,6 +585,6 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
         }
         break;
     default:
-        log_fatal("handle");
+        log_fatal("handle %08x", addr);
     }
 }

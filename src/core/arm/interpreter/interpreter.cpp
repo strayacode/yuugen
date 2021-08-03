@@ -1396,7 +1396,7 @@ void Interpreter::Execute() {
             case 0xFFC: case 0xFFD: case 0xFFE: case 0xFFF:
                 return ARM_SWI();
             default:
-                log_fatal("[[Interpreter]] Undefined ARM instruction %08x with index %03x", instruction, index);
+                log_fatal("[Interpreter] Undefined ARM instruction %08x with index %03x", instruction, index);
             }
         } else {
             regs.r[15] += 4;

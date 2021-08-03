@@ -90,10 +90,10 @@ void HW::DirectBoot() {
     arm9_memory.FastWrite<u16>(0x27FFC40, 0x0001); // Boot indicator
 }
 
-// void HW::FirmwareBoot() {
-//     arm9.FirmwareBoot();
-//     arm7.FirmwareBoot();
-// }
+void HW::FirmwareBoot() {
+    cpu_core[1]->FirmwareBoot();
+    cpu_core[0]->FirmwareBoot();
+}
 
 void HW::SetRomPath(std::string path) {
     rom_path = path;
