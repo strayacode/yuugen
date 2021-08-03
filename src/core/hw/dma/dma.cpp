@@ -136,7 +136,7 @@ void DMA::Trigger(u8 mode) {
     // check each channels start_timing to see if any are equal to mode
     for (int channel_index = 0; channel_index < 4; channel_index++) {
         u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
-        if (arch == 1) {
+        if (arch == 0) {
             // we only need bits 28..29
             start_timing >>= 1;
         }

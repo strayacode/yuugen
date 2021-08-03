@@ -3,7 +3,7 @@
 
 Interpreter::Interpreter(MemoryBase& memory, CPUArch arch, CP15* cp15) : CPUBase(memory, arch), cp15(cp15) {
     GenerateConditionTable();
-    log_file = std::make_unique<LogFile>("../../log-stuff/yuugen.log");
+    log_file = std::make_unique<LogFile>("../../log-stuff/new-yuugen.log");
 }
 
 Interpreter::~Interpreter() {
@@ -37,10 +37,6 @@ void Interpreter::Reset() {
 
 void Interpreter::Run(int cycles) {
     while (cycles--) {
-        if (halted) {
-            return;
-        }
-        
         // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
         instruction = pipeline[0]; // store the current executing instruction 
         
