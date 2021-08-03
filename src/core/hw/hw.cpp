@@ -112,12 +112,15 @@ void HW::RunFrame() {
 
     // run frame for total of 560190 arm9 cycles
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        // u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
-        cpu_core[1]->Run(2);
-        cpu_core[0]->Run(1);
+        u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
 
+        for (int i = 0; i < cycles; i++) {
+            cpu_core[1]->Run(2);
+            cpu_core[0]->Run(1);
+        }   
+        
         // make sure to tick the scheduler by cycles
-        scheduler.Tick(1);
+        scheduler.Tick(cycles);
 
         // do any events
         scheduler.RunEvents();
