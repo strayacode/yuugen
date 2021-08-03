@@ -33,10 +33,17 @@ void Interpreter::Reset() {
     SwitchMode(SVC);
 
     pipeline[0] = pipeline[1] = 0;
+    ime = 0;
+    ie = 0;
+    irf = 0;
 }
 
 void Interpreter::Run(int cycles) {
     while (cycles--) {
+        if (halted) {
+            return;
+        }
+
         // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
         instruction = pipeline[0]; // store the current executing instruction 
         
@@ -357,10 +364,6 @@ void Interpreter::HandleInterrupt() {
 }
 
 void Interpreter::Execute() {
-    if (halted) {
-        return;
-    }
-
     if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
         HandleInterrupt();
     }
