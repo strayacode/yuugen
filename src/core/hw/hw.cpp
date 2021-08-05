@@ -64,14 +64,9 @@ void HW::Reset() {
 
 void HW::DirectBoot() {
     cp15.DirectBoot();
-    cartridge.DirectBoot();
-    cpu_core[1]->DirectBoot(cartridge.header.arm9_entrypoint);
-    cpu_core[0]->DirectBoot(cartridge.header.arm7_entrypoint);
-    spi.DirectBoot();
 
     RCNT = 0x8000;
 
-    // TODO: sort this out
     arm9_memory.FastWrite<u8>(0x4000247, 0x03); // WRAMCNT
     arm9_memory.FastWrite<u8>(0x4000300, 0x01); // POSTFLG (ARM9)
     arm7_memory.FastWrite<u8>(0x4000300, 0x01); // POSTFLG (ARM7)
@@ -88,6 +83,11 @@ void HW::DirectBoot() {
     arm9_memory.FastWrite<u32>(0x27FFC04, 0x00001FC2); // Copy of chip ID 2
     arm9_memory.FastWrite<u16>(0x27FFC10, 0x5835); // Copy of ARM7 BIOS CRC
     arm9_memory.FastWrite<u16>(0x27FFC40, 0x0001); // Boot indicator
+
+    cartridge.DirectBoot();
+    cpu_core[1]->DirectBoot(cartridge.header.arm9_entrypoint);
+    cpu_core[0]->DirectBoot(cartridge.header.arm7_entrypoint);
+    spi.DirectBoot();
 }
 
 void HW::FirmwareBoot() {

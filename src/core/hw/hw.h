@@ -23,6 +23,7 @@
 #include <array>
 #include <memory>
 
+// TODO: move this
 enum MemoryRegion {
     REGION_ARM7_BIOS = 0x00,
     REGION_MAIN_MEMORY = 0x02,

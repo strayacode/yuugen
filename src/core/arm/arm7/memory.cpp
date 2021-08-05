@@ -265,6 +265,9 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
     }
 
     switch (addr >> 24) {
+    case REGION_ARM7_BIOS:
+        // ignore all bios writes
+        break;
     case REGION_IO:
         switch (addr) {
         case 0x04000138:
