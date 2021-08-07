@@ -350,6 +350,11 @@ void MainWindow::BootFirmware() {
     // start the draw timer so we can update the screen at 60 fps
     render_timer->start(1000 / 60);
     core->SetState(State::Running);
+
+    // set boot mode back to direct so that only firmware boot is
+    // applied rn
+    // TODO: revert back to whatever is in the config
+    core->SetBootMode(BootMode::Direct);
 }
 
 void MainWindow::UpdateTitle(int fps) {
