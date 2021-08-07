@@ -1,10 +1,10 @@
 #include "host_interface.h"
 
-HostInterface::HostInterface() {
-    core = std::make_unique<Core>();
-    emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
+HostInterface::HostInterface() : 
+    core([this](int fps) {
         UpdateTitle(fps);
-    });
+    }) {
+    
 }
 
 bool HostInterface::Initialise() {
@@ -61,16 +61,13 @@ bool HostInterface::Initialise() {
 }
 
 void HostInterface::Run(std::string path) {
-    core->hw.SetRomPath(path);
-    core->hw.Reset();
-    core->hw.DirectBoot();
-
-    // emu_thread->ToggleFramelimiter();
-    emu_thread->Start();
+    core.SetRomPath(path);
+    core.SetBootMode(BootMode::Direct);
+    core.SetState(State::Running);
 
     while (true) {
-        SDL_UpdateTexture(top_texture, nullptr, core->hw.gpu.GetFramebuffer(TOP_SCREEN), sizeof(u32) * 256);
-        SDL_UpdateTexture(bottom_texture, nullptr, core->hw.gpu.GetFramebuffer(BOTTOM_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_texture, nullptr, core.hw.gpu.GetFramebuffer(TOP_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(bottom_texture, nullptr, core.hw.gpu.GetFramebuffer(BOTTOM_SCREEN), sizeof(u32) * 256);
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_area);
@@ -85,34 +82,34 @@ void HostInterface::Run(std::string path) {
                 bool key_pressed = event.type == SDL_KEYDOWN;
                 switch (event.key.keysym.sym) {
                 case SDLK_d:
-                    core->hw.input.HandleInput(BUTTON_A, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_A, key_pressed);
                     break;
                 case SDLK_s:
-                    core->hw.input.HandleInput(BUTTON_B, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_B, key_pressed);
                     break;
                 case SDLK_RSHIFT:
-                    core->hw.input.HandleInput(BUTTON_SELECT, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_SELECT, key_pressed);
                     break;
                 case SDLK_RETURN:
-                    core->hw.input.HandleInput(BUTTON_START, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_START, key_pressed);
                     break;
                 case SDLK_RIGHT:
-                    core->hw.input.HandleInput(BUTTON_RIGHT, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_RIGHT, key_pressed);
                     break;
                 case SDLK_LEFT:
-                    core->hw.input.HandleInput(BUTTON_LEFT, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_LEFT, key_pressed);
                     break;
                 case SDLK_UP:
-                    core->hw.input.HandleInput(BUTTON_UP, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_UP, key_pressed);
                     break;
                 case SDLK_DOWN:
-                    core->hw.input.HandleInput(BUTTON_DOWN, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_DOWN, key_pressed);
                     break;
                 case SDLK_e:
-                    core->hw.input.HandleInput(BUTTON_R, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_R, key_pressed);
                     break;
                 case SDLK_w:
-                    core->hw.input.HandleInput(BUTTON_L, key_pressed);
+                    core.hw.input.HandleInput(BUTTON_L, key_pressed);
                     break;
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
@@ -122,8 +119,8 @@ void HostInterface::Run(std::string path) {
                 if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
                     // only do a touchscreen event if it occurs in the bottom screen
                     bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
-                    core->hw.input.SetTouch(button_pressed);
-                    core->hw.input.SetPoint(x, y);
+                    core.hw.input.SetTouch(button_pressed);
+                    core.hw.input.SetPoint(x, y);
                 }
             }
         }

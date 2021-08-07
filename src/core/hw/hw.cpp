@@ -203,8 +203,8 @@ void HW::WriteWRAMCNT(u8 data) {
     arm9_memory.UpdateMemoryMap(0x03000000, 0x04000000);
 }
 
-void HW::InitialiseCPUCores(CPUCoreType core) {
-    if (core == CPUCoreType::Interpreter) {
+void HW::InitialiseCPUCores(CPUCoreType core_type) {
+    if (core_type == CPUCoreType::Interpreter) {
         cpu_core[0] = std::make_unique<Interpreter>(arm7_memory, CPUArch::ARMv4, nullptr);
         cpu_core[1] = std::make_unique<Interpreter>(arm9_memory, CPUArch::ARMv5, &cp15);
     } else {

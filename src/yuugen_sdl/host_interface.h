@@ -1,7 +1,6 @@
 #pragma once
 
 #include <core/core.h>
-#include <memory>
 #include <string>
 #include <chrono>
 #include <SDL2/SDL.h>
@@ -16,8 +15,7 @@ struct HostInterface {
     void Cleanup();
     void UpdateTitle(int fps);
 
-    std::unique_ptr<Core> core;
-    std::unique_ptr<EmuThread> emu_thread;
+    Core core;
 
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;

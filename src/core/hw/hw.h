@@ -60,7 +60,7 @@ public:
     void LoadARM7Bios();
     void LoadARM9Bios();
 
-    void InitialiseCPUCores(CPUCoreType core);
+    void InitialiseCPUCores(CPUCoreType core_type);
 
     Cartridge cartridge;
     Scheduler scheduler;

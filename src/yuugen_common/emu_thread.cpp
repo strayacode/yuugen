@@ -1,6 +1,6 @@
 #include <yuugen_common/emu_thread.h>
 
-EmuThread::EmuThread(Core& core, std::function<void(int fps)> update_fps) : core(core), update_fps(update_fps) {
+EmuThread::EmuThread(RunFunction run_frame, UpdateFunction update_fps) : run_frame(run_frame), update_fps(update_fps) {
 
 }
 
@@ -16,11 +16,15 @@ void EmuThread::Start() {
     }};
 }
 
+void EmuThread::Reset() {
+    frames = 0;
+}
+
 void EmuThread::Run() {
     auto frame_end = std::chrono::system_clock::now() + frame{1};
     auto fps_update = std::chrono::system_clock::now();
     while (running) {
-        core.RunFrame();
+        run_frame();
         frames++;
 
         if (std::chrono::system_clock::now() - fps_update >= std::chrono::milliseconds(1000)) {

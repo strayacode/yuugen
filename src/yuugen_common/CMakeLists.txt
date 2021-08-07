@@ -7,4 +7,4 @@ find_package(Threads REQUIRED)
 target_link_libraries(yuugen_common PRIVATE Threads::Threads)
 
 set_target_properties(yuugen_common PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(yuugen_common PUBLIC core common "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_include_directories(yuugen_common PUBLIC common "${CMAKE_CURRENT_SOURCE_DIR}/..")

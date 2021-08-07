@@ -4,29 +4,32 @@
 #include <chrono>
 #include <ratio>
 #include <stdio.h>
-#include <core/core.h>
 #include <functional>
 
-struct EmuThread {
-    EmuThread(Core& core, std::function<void(int fps)> update_fps);
+using RunFunction = std::function<void()>;
+using UpdateFunction = std::function<void(int fps)>;
+
+class EmuThread {
+public:
+    EmuThread(RunFunction run_frame, UpdateFunction update_fps);
     ~EmuThread();
     void Start();
+    void Reset();
     void Run();
     void Stop();
     auto IsActive() -> bool;
     auto GetFPS() -> int;
     void ToggleFramelimiter();
 
-    Core& core;
-
-    bool running = false;
-    bool framelimiter = false;
-
-    int frames = 0;
-
     std::thread thread;
 
     using frame = std::chrono::duration<int, std::ratio<1, 60>>;
 
-    std::function<void(int fps)> update_fps;
+    RunFunction run_frame;
+    UpdateFunction update_fps;
+
+private:
+    int frames = 0;
+    bool running = false;
+    bool framelimiter = false;
 };
