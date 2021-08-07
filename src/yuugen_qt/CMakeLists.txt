@@ -15,4 +15,4 @@ set(SOURCES
 find_package(Qt5 COMPONENTS Core Widgets)
 
 add_executable(yuugen ${SOURCES})
-target_link_libraries(yuugen PRIVATE core common yuugen_common Qt5::Widgets)
+target_link_libraries(yuugen PRIVATE core common Qt5::Widgets)

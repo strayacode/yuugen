@@ -8,9 +8,9 @@ Timers::Timers(HW* hw, int arch) : hw(hw), arch(arch) {
 }
 
 void Timers::Reset() {
-    // for (int i = 0; i < 4; i++) {
-    //     memset(&timer[i], 0, sizeof(Timer));
-    // }
+    for (int i = 0; i < 4; i++) {
+        memset(&timer[i], 0, sizeof(Timer));
+    }
 }
 
 void Timers::WriteTMCNT_L(int timer_index, u16 data) {

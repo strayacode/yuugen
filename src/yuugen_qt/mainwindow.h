@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
-#include <yuugen_common/emu_thread.h>
+#include <core/core.h>
 #include <string.h>
 #include <memory>
 #include <mutex>
@@ -35,7 +35,6 @@ private:
     QAction* configure_action;
 
     std::unique_ptr<Core> core;
-    std::unique_ptr<EmuThread> emu_thread;
 
     QTimer* render_timer;
 

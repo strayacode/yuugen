@@ -8,7 +8,7 @@
 #include <common/types.h>
 #include <yuugen_common/emu_thread.h>
 
-struct HostInterface {
+class HostInterface {
     HostInterface();
     auto Initialise() -> bool;
     void Run(std::string path);

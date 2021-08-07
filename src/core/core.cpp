@@ -1,12 +1,10 @@
 #include <core/core.h>
 
-// we don't have much use for Core rn but later it will 
-// have more functionality
 Core::Core(UpdateFunction update_fps) : 
     emu_thread([this]() {
         RunFrame();
     }, update_fps) {
-
+    printf("ok\n");
 }
 
 void Core::Initialise() {
@@ -61,4 +59,8 @@ auto Core::GetState() -> State {
 
 void Core::SetRomPath(std::string path) {
     hw.SetRomPath(path);
+}
+
+void Core::ToggleFramelimiter() {
+    emu_thread.ToggleFramelimiter();
 }

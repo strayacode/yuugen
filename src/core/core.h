@@ -32,11 +32,13 @@ public:
     void SetState(State new_state);
     auto GetState() -> State;
     void SetRomPath(std::string path);
+    void ToggleFramelimiter();
 
     HW hw;
     
 private:
-    BootMode boot_mode;
+    // if not configured yet just direct boot
+    BootMode boot_mode = BootMode::Direct;
 
     // initally the core should be idle
     State state = State::Idle;

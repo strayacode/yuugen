@@ -36,7 +36,7 @@ public:
         u16 reload_value;
 
         u64 activation_time;
-        bool active = false;
+        bool active;
 
         int shift;
     } timer[4];

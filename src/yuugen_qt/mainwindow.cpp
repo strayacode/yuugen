@@ -2,6 +2,10 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow() {
+    core = std::make_unique<Core>([this](int fps) {
+        UpdateTitle(fps);
+    });
+
     CreateMenubar();
 
     top_image = QImage(256, 192, QImage::Format_RGB32);
@@ -14,6 +18,7 @@ MainWindow::MainWindow() {
     setMinimumSize(256, 384 + 22);
 
     screen_width = screen_height = 0;
+    
 }
 
 void MainWindow::CreateMenubar() {
@@ -59,19 +64,17 @@ void MainWindow::CreateEmulationMenu() {
     connect(boot_firmware_action, &QAction::triggered, this, &MainWindow::BootFirmware);
 
     connect(pause_action, &QAction::triggered, this, [this]() {
-        if (emu_thread->IsActive()) {
-            // first allow the emulator thread to finish a frame and then stop it and the render timer
-            emu_thread->Stop();
+        if (core->GetState() == State::Running) {
+            core->SetState(State::Paused);
             render_timer->stop();
         } else {
-            emu_thread->Start();
+            core->SetState(State::Running);
             render_timer->start(1000 / 60);
         }
     });
 
     connect(stop_action, &QAction::triggered, this, [this]() {
-        // stop the emulator thread
-        emu_thread->Stop();
+        core->SetState(State::Idle);
 
         pause_action->setEnabled(false);
         stop_action->setEnabled(false);
@@ -84,44 +87,24 @@ void MainWindow::CreateEmulationMenu() {
     });
 
     connect(restart_action, &QAction::triggered, this, [this]() {
-        // stop the emulator thread
-        emu_thread->Stop();
+        core->SetState(State::Idle);
 
         // stop the render timer, as there isn't anything to render
         render_timer->stop();
 
-        // do a reset of the core
-        core = std::make_unique<Core>();
-        emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
-            UpdateTitle(fps);
-        });
+        core->SetState(State::Running);
 
-        // make sure to set frame limited or not if frame limiter is checked
-        if (frame_limit_action->isChecked()) {
-            emu_thread->framelimiter = true;
-        }
-
-        core->hw.SetRomPath(path.toStdString());
-        core->hw.Reset();
-
-        // TODO: change this to check the Config struct first whether we should do direct or firmware boot
-        core->hw.DirectBoot();
-
-        // start the emulator thread again as well as the render timer
-        emu_thread->Start();
         render_timer->start(1000 / 60);
     });
 
     connect(frame_limit_action, &QAction::triggered, this, [this]() {
-        if (emu_thread) {
-            emu_thread->Stop();
-            render_timer->stop();
+        core->SetState(State::Paused);
+        render_timer->stop();
 
-            emu_thread->framelimiter = !emu_thread->framelimiter;
+        core->ToggleFramelimiter();
 
-            emu_thread->Start();
-            render_timer->start(1000 / 60);
-        }
+        core->SetState(State::Running);
+        render_timer->start(1000 / 60);
     });
 
     connect(configure_action, &QAction::triggered, this, [this]() {
@@ -161,9 +144,8 @@ void MainWindow::RenderScreen() {
 }
 
 void MainWindow::paintEvent(QPaintEvent* event) {
-    // only render if the emulator thread is running (slow)
-    if (emu_thread) {
-        // TODO: split the renderwindow into its own separate struct and use setCentralWidget
+    // TODO: split the renderwindow into its own separate struct and use setCentralWidget
+    if (core->GetState() == State::Running) {
         QPainter painter(this);
         painter.fillRect(rect(), Qt::black);
 
@@ -187,7 +169,7 @@ void MainWindow::paintEvent(QPaintEvent* event) {
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     event->accept();
 
-    if (emu_thread) {
+    if (core->GetState() == State::Running) {
         switch (event->key()) {
         case Qt::Key_D:
             core->hw.input.HandleInput(BUTTON_A, true);
@@ -226,7 +208,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 void MainWindow::keyReleaseEvent(QKeyEvent *event) {
     event->accept();
 
-    if (emu_thread) {
+    if (core->GetState() == State::Running) {
         switch (event->key()) {
         case Qt::Key_D:
             core->hw.input.HandleInput(BUTTON_A, false);
@@ -265,7 +247,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 void MainWindow::mousePressEvent(QMouseEvent* event) {
     event->accept();
 
-    if (emu_thread) {
+    if (core->GetState() == State::Running) {
         int window_width = size().width();
         float scale = screen_height / 384.0;
         int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
@@ -281,7 +263,7 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
 void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
     event->accept();
 
-    if (emu_thread) {
+    if (core->GetState() == State::Running) {
         int window_width = size().width();
         float scale = screen_height / 384.0;
         int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
@@ -297,7 +279,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
 void MainWindow::mouseMoveEvent(QMouseEvent* event) {
     event->accept();
 
-    if (emu_thread) {
+    if (core->GetState() == State::Running) {
         int window_width = size().width();
         float scale = screen_height / 384.0;
         int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
@@ -315,35 +297,17 @@ void MainWindow::LoadRom() {
     dialog.setDirectory("../roms");
     dialog.setNameFilter(tr("NDS ROMs (*.nds)"));
 
-    // pause the emulator thread if one was currently running
-    if (emu_thread) {
-        emu_thread->Stop();
-    }
+    core->SetState(State::Idle);
 
     // stop the render timer
     render_timer->stop();
 
     // check if a file was selected
     if (dialog.exec()) {
-        // make unique core and emu_thread ptrs
-        core = std::make_unique<Core>();
-        emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
-            UpdateTitle(fps);
-        });
-
-        // make sure to set frame limited or not if frame limiter is checked
-        if (frame_limit_action->isChecked()) {
-            emu_thread->framelimiter = true;
-        }
-
         // get the first selection
         path = dialog.selectedFiles().at(0);
 
-        core->hw.SetRomPath(path.toStdString());
-        core->hw.Reset();
-
-        // TODO: change this to check the Config struct first whether we should do direct or firmware boot
-        core->hw.DirectBoot();
+        core->SetRomPath(path.toStdString());
 
         // allow emulation to be controlled now
         pause_action->setEnabled(true);
@@ -356,35 +320,23 @@ void MainWindow::LoadRom() {
 
         // start the draw timer so we can update the screen at 60 fps
         render_timer->start(1000 / 60);
-        emu_thread->Start();
+
+        core->SetState(State::Running);
     } 
 }
 
 void MainWindow::BootFirmware() {
-    // pause the emulator thread if one was currently running
-    if (emu_thread) {
-        emu_thread->Stop();
-    }
+    core->SetState(State::Idle);
 
     // stop the render timer
     render_timer->stop();
 
-    // make unique core and emu_thread ptrs
-    core = std::make_unique<Core>();
-    emu_thread = std::make_unique<EmuThread>(*core.get(), [this](int fps) {
-        UpdateTitle(fps);
-    });
-
-    // make sure to set frame limited or not if frame limiter is checked
-    if (frame_limit_action->isChecked()) {
-        emu_thread->framelimiter = true;
-    }
-
     // give an empty path
     path = "";
-    core->hw.SetRomPath(path.toStdString());
-    core->hw.Reset();
-    core->hw.FirmwareBoot();
+    core->SetRomPath(path.toStdString());
+
+    // TODO: only apply this just for booting the firmware
+    core->SetBootMode(BootMode::Firmware);
 
     // allow emulation to be controlled now
     pause_action->setEnabled(true);
@@ -397,7 +349,7 @@ void MainWindow::BootFirmware() {
 
     // start the draw timer so we can update the screen at 60 fps
     render_timer->start(1000 / 60);
-    emu_thread->Start();
+    core->SetState(State::Running);
 }
 
 void MainWindow::UpdateTitle(int fps) {
