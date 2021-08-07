@@ -4,7 +4,7 @@ Core::Core(UpdateFunction update_fps) :
     emu_thread([this]() {
         RunFrame();
     }, update_fps) {
-    printf("ok\n");
+        
 }
 
 void Core::Initialise() {
