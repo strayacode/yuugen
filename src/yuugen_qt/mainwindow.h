@@ -26,7 +26,7 @@ private:
     void CreateFileMenu();
     void CreateEmulationMenu();
     void CreateViewMenu();
-    void UpdateTitle(int fps);
+    void UpdateTitle(float fps);
 
     QAction* pause_action;
     QAction* stop_action;

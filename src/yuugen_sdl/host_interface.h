@@ -9,12 +9,14 @@
 #include <yuugen_common/emu_thread.h>
 
 class HostInterface {
+public:
     HostInterface();
     auto Initialise() -> bool;
     void Run(std::string path);
     void Cleanup();
-    void UpdateTitle(int fps);
+    void UpdateTitle(float fps);
 
+private:
     Core core;
 
     SDL_Window* window = nullptr;

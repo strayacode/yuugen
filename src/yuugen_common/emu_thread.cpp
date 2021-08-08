@@ -27,8 +27,8 @@ void EmuThread::Run() {
         run_frame();
         frames++;
 
-        if (std::chrono::system_clock::now() - fps_update >= std::chrono::milliseconds(1000)) {
-            update_fps(frames);
+        if (std::chrono::system_clock::now() - fps_update >= std::chrono::milliseconds(update_interval)) {
+            update_fps(frames * (1000.0f / update_interval));
             frames = 0;
             fps_update = std::chrono::system_clock::now();
         }

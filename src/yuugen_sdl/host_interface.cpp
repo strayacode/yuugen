@@ -1,7 +1,7 @@
 #include "host_interface.h"
 
 HostInterface::HostInterface() : 
-    core([this](int fps) {
+    core([this](float fps) {
         UpdateTitle(fps);
     }) {
     
@@ -129,9 +129,9 @@ void HostInterface::Run(std::string path) {
     }
 }
 
-void HostInterface::UpdateTitle(int fps) {
+void HostInterface::UpdateTitle(float fps) {
     char window_title[40];
-    snprintf(window_title, 40, "yuugen [%d FPS | %0.2f ms]", fps, 1000.0 / fps);
+    snprintf(window_title, 40, "yuugen [%0.2f FPS | %0.2f ms]", fps, 1000.0 / fps);
     SDL_SetWindowTitle(window, window_title);
 }
 

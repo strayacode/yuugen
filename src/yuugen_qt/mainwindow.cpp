@@ -2,7 +2,7 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow() {
-    core = std::make_unique<Core>([this](int fps) {
+    core = std::make_unique<Core>([this](float fps) {
         UpdateTitle(fps);
     });
 
@@ -357,7 +357,7 @@ void MainWindow::BootFirmware() {
     core->SetBootMode(BootMode::Direct);
 }
 
-void MainWindow::UpdateTitle(int fps) {
-    QString title = "yuugen [" + QString::number(fps) + " FPS | " + QString::number(1000.0 / fps, 'f', 2) + " ms]";
+void MainWindow::UpdateTitle(float fps) {
+    QString title = "yuugen [" + QString::number(fps, 'f', 2) + " FPS | " + QString::number(1000.0 / fps, 'f', 2) + " ms]";
     this->setWindowTitle(title);
 }

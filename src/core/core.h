@@ -16,7 +16,7 @@ enum class State {
     Idle,
 };
 
-using UpdateFunction = std::function<void(int fps)>;
+using UpdateFunction = std::function<void(float fps)>;
 
 class Core {
 public:

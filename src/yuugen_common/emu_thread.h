@@ -7,7 +7,7 @@
 #include <functional>
 
 using RunFunction = std::function<void()>;
-using UpdateFunction = std::function<void(int fps)>;
+using UpdateFunction = std::function<void(float fps)>;
 
 class EmuThread {
 public:
@@ -32,4 +32,6 @@ private:
     int frames = 0;
     bool running = false;
     bool framelimiter = false;
+
+    static constexpr int update_interval = 500;
 };
