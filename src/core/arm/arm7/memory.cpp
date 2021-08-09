@@ -216,6 +216,8 @@ auto ARM7Memory::ReadWord(u32 addr) -> u32 {
         return 0;
     }
 
+    u32 return_value = 0;
+
     switch (addr >> 24) {
     case REGION_IO:
         switch (addr) {
@@ -246,10 +248,14 @@ auto ARM7Memory::ReadWord(u32 addr) -> u32 {
         default:
             log_fatal("[ARM7] Undefined 32-bit io read %08x", addr);
         }
-
+    case REGION_VRAM:
+        memcpy(&return_value, &hw->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], 4);
+        break;
     default:
         log_fatal("handle %08x", addr);
     }
+
+    return return_value;
 }
 
 void ARM7Memory::WriteByte(u32 addr, u8 data) {
@@ -586,6 +592,9 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
         default:
             log_fatal("[ARM7] Undefined 32-bit io write %08x = %08x", addr, data);
         }
+        break;
+    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+        // for now do nothing lol
         break;
     default:
         log_fatal("handle %08x", addr);
