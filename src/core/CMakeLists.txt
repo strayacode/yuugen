@@ -9,6 +9,7 @@ add_library(core
     arm/arm7/memory.h arm/arm7/memory.cpp
     arm/arm9/memory.h arm/arm9/memory.cpp
     arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
+    arm/interpreter/lookup_table.cpp
     
     hw/hw.h hw/hw.cpp
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp

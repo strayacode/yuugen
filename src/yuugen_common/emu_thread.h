@@ -33,5 +33,5 @@ private:
     bool running = false;
     bool framelimiter = false;
 
-    static constexpr int update_interval = 500;
+    static constexpr int update_interval = 1000;
 };

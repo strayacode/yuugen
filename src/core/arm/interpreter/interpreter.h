@@ -3,7 +3,7 @@
 #include <core/arm/cpu_base.h>
 #include <common/types.h>
 #include <common/log.h>
-// #include <common/arithmetic.h>
+#include <common/arithmetic.h>
 #include <common/log_file.h>
 #include <array>
 #include <memory>
@@ -14,8 +14,6 @@
 
 #define ADD_OVERFLOW(a, b, res)  ((!(((a) ^ (b)) & 0x80000000)) && (((a) ^ (res)) & 0x80000000))
 #define SUB_OVERFLOW(a, b, res)  ((((a) ^ (b)) & 0x80000000) && (((a) ^ (res)) & 0x80000000))
-
-#define INSTRUCTION(NAME, ...) void NAME(__VA_ARGS__)
 
 enum Mode {
     USR = 0x10,
@@ -63,6 +61,10 @@ enum CPUCondition {
     CONDITION_NV = 15,
 };
 
+class Interpreter;
+
+typedef void (Interpreter::*Instruction)();
+
 class CP15;
 
 class Interpreter : public CPUBase {
@@ -75,24 +77,16 @@ public:
     void DirectBoot(u32 entrypoint) override;
     void FirmwareBoot() override;
 
-    #include "instructions/arm/block_data_transfer.inl"
+    
+
+    #include "instructions/arm/alu.inl"
     #include "instructions/arm/branch.inl"
-    #include "instructions/arm/data_processing.inl"
-    #include "instructions/arm/multiply.inl"
-    #include "instructions/arm/software_interrupt.inl"
-    #include "instructions/arm/misc.inl"
-    #include "instructions/arm/single_data_transfer.inl"
-    #include "instructions/arm/halfword_signed_transfer.inl"
-    #include "instructions/arm/psr_transfer.inl"
+    #include "instructions/arm/load_store.inl"
 
-    #include "instructions/thumb/block_data_transfer.inl"
+    #include "instructions/thumb/alu.inl"
     #include "instructions/thumb/branch.inl"
-    #include "instructions/thumb/data_processing.inl"
-    #include "instructions/thumb/halfword_signed_transfer.inl"
-    #include "instructions/thumb/single_data_transfer.inl"
+    #include "instructions/thumb/load_store.inl"
 private:
-    void Execute();
-
     void ARMFlushPipeline();
     void ThumbFlushPipeline();
 
@@ -102,6 +96,11 @@ private:
     bool PrivilegedMode();
 
     bool IsARM();
+
+    void GenerateARMTable();
+    void GenerateThumbTable();
+
+    void UnimplementedInstruction();
 
     void GenerateConditionTable();
     bool ConditionEvaluate(u8 condition);
@@ -142,4 +141,7 @@ private:
     std::unique_ptr<LogFile> log_file;
 
     CP15* cp15;
+
+    std::array<Instruction, 1024> thumb_lut;
+    std::array<Instruction, 4096> arm_lut;
 };

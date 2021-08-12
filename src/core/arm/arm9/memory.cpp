@@ -266,7 +266,24 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
 }
 
 auto ARM9Memory::ReadWord(u32 addr) -> u32 {
+    u32 return_value = 0;
+
     switch (addr >> 24) {
+    case REGION_SHARED_WRAM:
+        switch (hw->WRAMCNT) {
+        case 0:
+            memcpy(&return_value, &hw->shared_wram[addr & 0x7FFF], 4);
+            break;
+        case 1:
+            memcpy(&return_value, &hw->shared_wram[(addr & 0x3FFF) + 0x4000], 4);
+            break;
+        case 2:
+            memcpy(&return_value, &hw->shared_wram[addr & 0x3FFF], 4);
+            break;
+        case 3:
+            return 0;
+        }
+        break;
     case REGION_IO:
         switch (addr) {
         case 0x04000000:
@@ -387,6 +404,8 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
     default:
         log_fatal("handle word read from %08x", addr);
     }
+
+    return return_value;
 }
 
 void ARM9Memory::WriteByte(u32 addr, u8 data) {
