@@ -1,6 +1,7 @@
 #pragma once
 
 void ThumbAddSubtract() {
+    log_fatal("handle");
     u8 opcode = (instruction >> 9) & 0x3;
     u8 operand = (instruction >> 6) & 0x7;
     u8 rs = (instruction >> 3) & 0x7;
@@ -29,6 +30,7 @@ void ThumbAddSubtract() {
 }
 
 void ThumbShiftImmediate() {
+    log_fatal("handle %08x", instruction);
     u8 rd = instruction & 0x7;
     u8 rs = (instruction >> 3) & 0x7;
 
@@ -82,20 +84,18 @@ void ThumbALUImmediate() {
         SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rd], immediate));
         SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rd], immediate, result));
         break;
-    case 0x2: {
+    case 0x2:
         result = regs.r[rd] + immediate;
         SetConditionFlag(C_FLAG, ADD_CARRY(regs.r[rd], immediate));
         SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rd], immediate, result));
         regs.r[rd] += immediate;
         break;
-    }
-    case 0x3: {
+    case 0x3:
         result = regs.r[rd] - immediate;
         SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rd], immediate));
         SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rd], immediate, result));
         regs.r[rd] -= immediate;
         break;
-    }
     default:
         log_fatal("handle opcode %d", opcode);
     }

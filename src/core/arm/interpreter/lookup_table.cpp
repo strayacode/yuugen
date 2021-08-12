@@ -149,7 +149,7 @@ static constexpr auto StaticGenerateThumbTable() -> std::array<Instruction, 1024
     std::array<Instruction, 1024> thumb_lut = {};
 
     static_for<std::size_t, 0, 1024>([&](auto i) {
-        thumb_lut[i] = GetThumbInstruction<(i >> 8) & 0xFF>();
+        thumb_lut[i] = GetThumbInstruction<i << 6>();
     }); 
 
     return thumb_lut;
