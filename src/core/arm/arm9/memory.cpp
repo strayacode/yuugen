@@ -141,6 +141,21 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
     u16 return_value = 0;
 
     switch (addr >> 24) {
+    case REGION_SHARED_WRAM:
+        switch (hw->WRAMCNT) {
+        case 0:
+            memcpy(&return_value, &hw->shared_wram[addr & 0x7FFF], 2);
+            break;
+        case 1:
+            memcpy(&return_value, &hw->shared_wram[(addr & 0x3FFF) + 0x4000], 2);
+            break;
+        case 2:
+            memcpy(&return_value, &hw->shared_wram[addr & 0x3FFF], 2);
+            break;
+        case 3:
+            return 0;
+        }
+        break;
     case REGION_IO:
         switch (addr) {
         case 0x04000000:

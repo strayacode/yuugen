@@ -76,10 +76,10 @@ void ARMSingleDataTransfer() {
     u8 shifted_register = (instruction >> 25) & 0x1;
 
     u32 op2 = 0;
-    u32 address = 0;
+    u32 address = regs.r[rn];
 
     if (shifted_register) {
-        op2 = ARMGetShiftedRegisterSingleDataTransfer(instruction);
+        op2 = ARMGetShiftedRegisterSingleDataTransfer();
     } else {
         op2 = instruction & 0xFFF;
     }
@@ -89,9 +89,7 @@ void ARMSingleDataTransfer() {
     }
 
     if (pre) {
-        address = regs.r[rn] + op2;
-    } else {
-        address = regs.r[rn];
+        address += op2;
     }
 
     if (load) {
@@ -99,6 +97,11 @@ void ARMSingleDataTransfer() {
             regs.r[rd] = ReadByte(address);
         } else {
             regs.r[rd] = ReadWord(address);
+
+            if (address & 0x3) {
+                u8 shift_amount = (address & 0x3) * 8;
+                regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
+            }
         }
     } else {
         if (byte) {
@@ -108,8 +111,11 @@ void ARMSingleDataTransfer() {
         }
     }
 
-    if (writeback || !pre) {
-        regs.r[rn] += op2;
+    // for ldr instructons writeback can't happen when rd != rn
+    if (!load || rd != rn) {
+        if (writeback || !pre) {
+            regs.r[rn] += op2;
+        }
     }
 
     if (rd == 15) {
@@ -119,7 +125,7 @@ void ARMSingleDataTransfer() {
     regs.r[15] += 4;
 }
 
-auto ARMGetShiftedRegisterSingleDataTransfer(u32 instruction) -> u32 {
+auto ARMGetShiftedRegisterSingleDataTransfer() -> u32 {
     u8 shift_type = (instruction >> 5) & 0x3;
     u8 shift_amount = (instruction >> 7) & 0x1F;
 
@@ -200,12 +206,22 @@ void ARMHalfwordDataTransfer() {
             WriteHalf(address, regs.r[rd]);
         }
         break;
+    case 0x2:
+        if (load) {
+            regs.r[rd] = (s32)(s8)ReadByte(address);
+        } else {
+            log_fatal("handle ldrd");
+        }
+        break;
     default:
         log_fatal("handle opcode %d", opcode);
     }
 
-    if (writeback || !pre) {
-        regs.r[rn] += op2;
+    // for ldrh instructons writeback can't happen when rd != rn
+    if (!load || rd != rn) {
+        if (writeback || !pre) {
+            regs.r[rn] += op2;
+        }
     }
 
     if (rd == 15) {
@@ -305,11 +321,7 @@ void ARMBlockDataTransfer() {
             }
         } else {
             if (arch == CPUArch::ARMv5) {
-                if (instruction & (1 << rn)) {
-                    regs.r[rn] = old_base;
-                } else {
-                    regs.r[rn] = address;
-                }
+                regs.r[rn] = address;
             } else {
                 if (instruction & (1 << rn)) {
                     bool rn_first = true;
