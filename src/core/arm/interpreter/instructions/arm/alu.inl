@@ -24,7 +24,31 @@ void ARMDataProcessing() {
             carry_flag = op2 >> 31;
         }
     } else {
-        op2 = ARMGetShiftedRegisterDataProcessing(carry_flag);
+        u8 rm = instruction & 0xF;
+        op2 = regs.r[rm];
+        u8 shift_type = (instruction >> 5) & 0x3;
+        u8 shift_amount = 0;
+
+        bool immediate = !(instruction & (1 << 4));
+
+        if (immediate) {
+            shift_amount = (instruction >> 7) & 0x1F;
+        } else {
+            u8 rs = (instruction >> 8) & 0xF;
+            shift_amount = regs.r[rs] & 0xFF;
+
+            // if either rn or rm is r15 then
+            // use as r15 + 12
+            if (rn == 15) {
+                op1 += 4;
+            }
+
+            if (rm == 15) {
+                op2 += 4;
+            }
+        }
+
+        op2 = ARMGetShiftedRegisterDataProcessing(op2, shift_type, shift_amount, carry_flag, immediate);
     }
 
     switch (opcode) {
@@ -285,34 +309,19 @@ auto AND(u32 op1, u32 op2, u8 set_flags) -> u32 {
     return result;
 }
 
-auto ARMGetShiftedRegisterDataProcessing(u8& carry_flag) -> u32 {
-    u8 rm = instruction & 0xF;
-    u8 shift_type = (instruction >> 5) & 0x3;
-    u8 shift_amount = 0;
-
-    bool immediate = !(instruction & (1 << 4));
-
-    if (immediate) {
-        shift_amount = (instruction >> 7) & 0x1F;
-    } else {
-        u8 rs = (instruction >> 8) & 0xF;
-        shift_amount = regs.r[rs] & 0xFF;
-    }
-
-    u32 op2 = 0;
-
+auto ARMGetShiftedRegisterDataProcessing(u32 op2, u8 shift_type, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
     switch (shift_type) {
     case 0x0:
-        op2 = LSL(regs.r[rm], shift_amount, carry_flag);
+        op2 = LSL(op2, shift_amount, carry_flag);
         break;
     case 0x1:
-        op2 = LSR(regs.r[rm], shift_amount, carry_flag, immediate);
+        op2 = LSR(op2, shift_amount, carry_flag, immediate);
         break;
     case 0x2:
-        op2 = ASR(regs.r[rm], shift_amount, carry_flag, immediate);
+        op2 = ASR(op2, shift_amount, carry_flag, immediate);
         break;
     case 0x3:
-        op2 = ROR(regs.r[rm], shift_amount, carry_flag, immediate);
+        op2 = ROR(op2, shift_amount, carry_flag, immediate);
         break;
     }
 
@@ -481,7 +490,35 @@ void ARMMultiplyLong() {
 }
 
 void ARMSingleDataSwap() {
-    log_fatal("handle single data swap");
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+
+    u8 byte = (instruction >> 22) & 0x1;
+    
+    u32 address = regs.r[rn];
+
+    u32 data = 0;
+
+    if (byte) {
+        data = ReadByte(address);
+    } else {
+        data = ReadWord(address);
+    }
+
+    if (address & 0x3) {
+        int shift_amount = (address & 0x3) * 8;
+        data = rotate_right(data, shift_amount);
+    }
+
+    if (byte) {
+        WriteByte(address, regs.r[rm]);
+    } else {
+        WriteWord(address, regs.r[rm]);
+    }
+
+    regs.r[rd] = data;
+    regs.r[15] += 4;
 }
 
 void ARMCountLeadingZeroes() {
