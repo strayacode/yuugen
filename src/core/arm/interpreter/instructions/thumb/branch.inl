@@ -56,6 +56,16 @@ void ThumbBranch() {
     ThumbFlushPipeline();
 }
 
+void ThumbBranchConditional() {
+    if (ConditionEvaluate(instruction >> 28)) {
+        u32 offset = ((instruction & (1 << 7)) ? 0xFFFFFE00 : 0) | ((instruction & 0xFF) << 1);
+        regs.r[15] += offset;
+        ThumbFlushPipeline();
+    } else {
+        regs.r[15] += 2;
+    }
+}
+
 void ThumbSoftwareInterrupt() {
     log_fatal("handle")
 }

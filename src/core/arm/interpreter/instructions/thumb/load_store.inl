@@ -3,7 +3,7 @@
 void ThumbLoadPC() {
     u32 immediate = (instruction & 0xFF) << 2;
     u8 rd = (instruction >> 8) & 0x7;
-    
+
     // bit 1 of pc is always set to 0
     u32 address = (regs.r[15] & ~0x2) + immediate;
     regs.r[rd] = ReadWord(address);
@@ -12,11 +12,34 @@ void ThumbLoadPC() {
 }
 
 void ThumbLoadStore() {
-    log_fatal("handle");
+    log_fatal("handle %08x", instruction);
 }
 
 void ThumbLoadStoreImmediate() {
-    log_fatal("handle");
+    u8 rd = instruction & 0x7;
+    u8 rn = (instruction >> 3) & 0x7;
+    u32 immediate = (instruction >> 6) & 0x1F;
+
+    u32 address = regs.r[rn] + immediate;
+
+    u8 opcode = (instruction >> 11) & 0x3;
+
+    switch (opcode) {
+    case 0x0:
+        WriteWord(address, regs.r[rd]);
+        break;
+    case 0x1:
+        regs.r[rd] = ReadWord(address);
+        break;
+    case 0x2:
+        WriteByte(address, regs.r[rd]);
+        break;
+    case 0x3:
+        regs.r[rd] = ReadByte(address);
+        break;
+    }
+    
+    regs.r[15] += 2;
 }
 
 void ThumbPushPop() {
@@ -78,4 +101,29 @@ void ThumbPushPop() {
 
         regs.r[15] += 2;
     }
+}
+
+void ThumbLoadStoreSPRelative() {
+    log_fatal("handle");
+}
+
+void ThumbLoadStoreHalfword() {
+    u8 rd = instruction & 0x7;
+    u8 rn = (instruction >> 3) & 0x7;
+    u32 immediate = (instruction >> 6) & 0x1F;
+    u32 address = regs.r[rn] + (immediate << 1);
+
+    bool load = instruction & (1 << 11);
+
+    if (load) {
+        regs.r[rd] = ReadHalf(address);
+    } else {
+        WriteHalf(address, regs.r[rd]);
+    }
+
+    regs.r[15] += 2;
+}
+
+void ThumbLoadStoreMultiple() {
+    log_fatal("handle");
 }

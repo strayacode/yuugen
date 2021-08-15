@@ -130,6 +130,12 @@ static constexpr Instruction GetThumbInstruction() {
         }
     case 0x3:
         return &Interpreter::ThumbLoadStoreImmediate;
+    case 0x4:
+        if (instruction & (1 << 12)) {
+            return &Interpreter::ThumbLoadStoreSPRelative;
+        } else {
+            return &Interpreter::ThumbLoadStoreHalfword;
+        }
     case 0x5:
         if (instruction & (1 << 12)) {
             // miscellaneous
@@ -142,6 +148,16 @@ static constexpr Instruction GetThumbInstruction() {
             }
         } else {
             return &Interpreter::ThumbAddSPPC;
+        }
+    case 0x6:
+        if (!(instruction & (1 << 12))) {
+            return &Interpreter::ThumbLoadStoreMultiple;
+        } else {
+            if ((instruction & 0xFF00) == 0xDF00) {
+                return &Interpreter::ThumbSoftwareInterrupt;
+            } else {
+                return &Interpreter::ThumbBranchConditional;
+            }
         }
     case 0x7:
         if (instruction & (1 << 12)) {
