@@ -73,7 +73,7 @@ void Interpreter::Run(int cycles) {
                 HandleInterrupt();
             }
 
-            u8 index = instruction >> 6;
+            u32 index = instruction >> 6;
             (this->*thumb_lut[index])();
         }
     }

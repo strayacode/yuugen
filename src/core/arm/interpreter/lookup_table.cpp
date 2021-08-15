@@ -130,6 +130,33 @@ static constexpr Instruction GetThumbInstruction() {
         }
     case 0x3:
         return &Interpreter::ThumbLoadStoreImmediate;
+    case 0x5:
+        if (instruction & (1 << 12)) {
+            // miscellaneous
+            if (((instruction >> 8) & 0x1F) == 0x10) {
+                return &Interpreter::ThumbAdjustStackPointer;
+            } else if (((instruction >> 8) & 0x1F) == 0x1E) {
+                return &Interpreter::ThumbSoftwareInterrupt;
+            } else {
+                return &Interpreter::ThumbPushPop;
+            }
+        } else {
+            return &Interpreter::ThumbAddSPPC;
+        }
+    case 0x7:
+        if (instruction & (1 << 12)) {
+            if (instruction & (1 << 11)) {
+                return &Interpreter::ThumbBranchLinkOffset;
+            } else {
+                return &Interpreter::ThumbBranchLinkSetup;
+            }
+        } else {
+            if (instruction & (1 << 11)) {
+                return &Interpreter::ThumbBranchLinkExchangeOffset;
+            } else {
+                return &Interpreter::ThumbBranch;
+            }
+        }
     default:
         return &Interpreter::UnimplementedInstruction;
     }

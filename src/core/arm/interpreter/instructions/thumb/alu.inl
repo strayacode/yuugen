@@ -113,3 +113,11 @@ void ThumbDataProcessingRegister() {
 void ThumbSpecialDataProcesing() {
     log_fatal("handle");
 }
+
+void ThumbAdjustStackPointer() {
+    log_fatal("handle")
+}
+
+void ThumbAddSPPC() {
+    log_fatal("handle");
+}
