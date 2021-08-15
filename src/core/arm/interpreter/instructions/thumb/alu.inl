@@ -1,32 +1,27 @@
 #pragma once
 
 void ThumbAddSubtract() {
-    u8 opcode = (instruction >> 9) & 0x3;
     u8 rn = (instruction >> 6) & 0x7;
     u8 rs = (instruction >> 3) & 0x7;
     u8 rd = instruction & 0x7;
 
     bool immediate = instruction & (1 << 10);
+    bool sub = instruction & (1 << 9);
 
     u32 operand = immediate ? rn : regs.r[rn];
 
-    switch (opcode) {
-    case 0x0:
-        regs.r[rd] = regs.r[rs] + operand;
-        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
-        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-        SetConditionFlag(C_FLAG, ADD_CARRY(regs.r[rs], operand));
-        SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rs], operand, regs.r[rd]));
-        break;
-    case 0x1:
+    if (sub) {
         regs.r[rd] = regs.r[rs] - operand;
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
         SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rs], operand));
         SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rs], operand, regs.r[rd]));
-        break;
-    default:
-        log_fatal("handle opcode %d", opcode);
+    } else {
+        regs.r[rd] = regs.r[rs] + operand;
+        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+        SetConditionFlag(C_FLAG, ADD_CARRY(regs.r[rs], operand));
+        SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rs], operand, regs.r[rd]));
     }
 
     regs.r[15] += 2;
@@ -70,7 +65,7 @@ void ThumbShiftImmediate() {
         break;
     }
     case 0x3:
-        log_fatal("[Interpreter] incorrect opcode");
+        log_fatal("[Interpreter] incorrect opcode %08x", instruction);
     }
 
     SetConditionFlag(C_FLAG, carry);
@@ -125,16 +120,61 @@ void ThumbDataProcessingRegister() {
 
     u8 opcode = (instruction >> 6) & 0xF;
 
+    u8 carry = GetConditionFlag(C_FLAG);
+
     switch (opcode) {
+    case 0x0:
+        regs.r[rd] = AND(regs.r[rd], regs.r[rs], true);
+        break;
+    case 0x1:
+        regs.r[rd] = EOR(regs.r[rd], regs.r[rs], true);
+        break;
+    case 0x2:
+        regs.r[rd] = LSL(regs.r[rd], regs.r[rs] & 0xFF, carry);
+        SetConditionFlag(C_FLAG, carry);
+        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+        break;
+    case 0x3:
+        regs.r[rd] = LSR(regs.r[rd], regs.r[rs] & 0xFF, carry, false);
+        SetConditionFlag(C_FLAG, carry);
+        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+        break;
+    case 0x7:
+        regs.r[rd] = ROR(regs.r[rd], regs.r[rs] & 0xFF, carry, false);
+        SetConditionFlag(C_FLAG, carry);
+        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+        break;
+    case 0x8:
+        TST(regs.r[rd], regs.r[rs]);
+        break;
+    case 0x9:
+        regs.r[rd] = SUB(0, regs.r[rs], true);
+        break;
+    case 0xA:
+        CMP(regs.r[rd], regs.r[rs]);
+        break;
     case 0xC:
-        regs.r[rd] |= regs.r[rs];
+        regs.r[rd] = ORR(regs.r[rd], regs.r[rs], true);
+        break;
+    case 0xD:
+        regs.r[rd] *= regs.r[rs];
+
+        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+
+        if (arch == CPUArch::ARMv4) {
+            SetConditionFlag(C_FLAG, false);
+        }
+        break;
+    case 0xF:
+        regs.r[rd] = MVN(regs.r[rd], regs.r[rs]);
         break;
     default:
-        log_fatal("handle opcode %02x", opcode);
+        log_fatal("handle opcode %02x %08x", opcode, instruction);
     }
-
-    SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
-    SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
 
     regs.r[15] += 2;
 }
@@ -146,6 +186,9 @@ void ThumbSpecialDataProcesing() {
     u8 opcode = (instruction >> 8) & 0x3;
 
     switch (opcode) {
+    case 0x0:
+        regs.r[rs] += regs.r[rs];
+        break;
     case 0x2:
         regs.r[rd] = regs.r[rs];
         regs.r[15] += 2;
@@ -160,9 +203,19 @@ void ThumbSpecialDataProcesing() {
 }
 
 void ThumbAdjustStackPointer() {
-    log_fatal("handle")
+    log_fatal("handle %08x", instruction);
 }
 
 void ThumbAddSPPC() {
-    log_fatal("handle");
+    u32 immediate = (instruction & 0xFF) << 2;
+    u8 rd = (instruction >> 8) & 0x7;
+    bool sp = instruction & (1 << 11);
+
+    if (sp) {
+        regs.r[rd] = regs.r[13] + immediate;
+    } else {
+        regs.r[rd] = (regs.r[15] & ~0x2) + immediate;
+    }
+
+    regs.r[15] += 2;
 }

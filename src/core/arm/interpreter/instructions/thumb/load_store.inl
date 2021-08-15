@@ -12,7 +12,47 @@ void ThumbLoadPC() {
 }
 
 void ThumbLoadStore() {
-    log_fatal("handle %08x", instruction);
+    u8 rd = instruction & 0x7;
+    u8 rn = (instruction >> 3) & 0x7;
+    u8 rm = (instruction >> 6) & 0x7;
+
+    u8 opcode = (instruction >> 10) & 0x3;
+    bool sign = instruction & (1 << 9);
+    u32 address = regs.r[rn] + regs.r[rm];
+
+    if (sign) {
+        switch (opcode) {
+        case 0x0:
+            WriteHalf(address, regs.r[rd]);
+            break;
+        case 0x1:
+            regs.r[rd] = (s32)(s8)ReadByte(address);
+            break;
+        case 0x2:
+            regs.r[rd] = ReadHalf(address);
+            break;
+        case 0x3:
+            regs.r[rd] = (s32)(s16)ReadHalf(address);
+            break;
+        }    
+    } else {
+        switch (opcode) {
+        case 0x0:
+            WriteWord(address, regs.r[rd]);
+            break;
+        case 0x1:
+            WriteByte(address, regs.r[rd]);
+            break;
+        case 0x2:
+            regs.r[rd] = ReadWord(address);
+            break;
+        case 0x3:
+            regs.r[rd] = ReadByte(address);
+            break;
+        }
+    }
+    
+    regs.r[15] += 2;
 }
 
 void ThumbLoadStoreImmediate() {
