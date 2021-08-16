@@ -187,7 +187,8 @@ void ThumbSpecialDataProcesing() {
 
     switch (opcode) {
     case 0x0:
-        regs.r[rs] += regs.r[rs];
+        regs.r[rd] += regs.r[rs];
+        regs.r[15] += 2;
         break;
     case 0x2:
         regs.r[rd] = regs.r[rs];
