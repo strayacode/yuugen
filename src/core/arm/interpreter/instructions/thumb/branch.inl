@@ -57,7 +57,9 @@ void ThumbBranch() {
 }
 
 void ThumbBranchConditional() {
-    if (ConditionEvaluate(instruction >> 28)) {
+    u8 condition = (instruction >> 8) & 0xF;
+
+    if (ConditionEvaluate(condition)) {
         u32 offset = ((instruction & (1 << 7)) ? 0xFFFFFE00 : 0) | ((instruction & 0xFF) << 1);
         regs.r[15] += offset;
         ThumbFlushPipeline();

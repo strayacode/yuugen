@@ -73,6 +73,10 @@ void Interpreter::Run(int cycles) {
                 HandleInterrupt();
             }
 
+            if (arch == CPUArch::ARMv5) {
+                LogRegisters();
+            }
+
             u32 index = instruction >> 6;
             (this->*thumb_lut[index])();
         }
