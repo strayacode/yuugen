@@ -45,7 +45,7 @@ void ThumbShiftImmediate() {
         break;
     case 0x1:
         if (shift_amount == 0) {
-            carry = regs.r[rd] >> 31;
+            carry = regs.r[rs] >> 31;
             regs.r[rd] = 0;
         } else {
             carry = (regs.r[rs] >> (shift_amount - 1)) & 0x1;

@@ -43,9 +43,16 @@ void ThumbLoadStore() {
         case 0x1:
             WriteByte(address, regs.r[rd]);
             break;
-        case 0x2:
+        case 0x2: {
             regs.r[rd] = ReadWord(address);
+
+            if (address & 0x3) {
+                int shift_amount = (address & 0x3) * 8;
+                regs.r[rd] = (regs.r[rd] << (32 - shift_amount)) | (regs.r[rd] >> shift_amount);
+            }
+
             break;
+        }
         case 0x3:
             regs.r[rd] = ReadByte(address);
             break;
@@ -60,22 +67,27 @@ void ThumbLoadStoreImmediate() {
     u8 rn = (instruction >> 3) & 0x7;
     u32 immediate = (instruction >> 6) & 0x1F;
 
-    u32 address = regs.r[rn] + immediate;
-
     u8 opcode = (instruction >> 11) & 0x3;
 
     switch (opcode) {
     case 0x0:
-        WriteWord(address, regs.r[rd]);
+        WriteWord(regs.r[rn] + (immediate << 2), regs.r[rd]);
         break;
-    case 0x1:
-        regs.r[rd] = ReadWord(address);
+    case 0x1: {
+        regs.r[rd] = ReadWord(regs.r[rn] + (immediate << 2));
+
+        if ((regs.r[rn] + (immediate << 2)) & 0x3) {
+            int shift_amount = ((regs.r[rn] + (immediate << 2)) & 0x3) * 8;
+            regs.r[rd] = (regs.r[rd] << (32 - shift_amount)) | (regs.r[rd] >> shift_amount);
+        }
+
         break;
+    }
     case 0x2:
-        WriteByte(address, regs.r[rd]);
+        WriteByte(regs.r[rn], regs.r[rd]);
         break;
     case 0x3:
-        regs.r[rd] = ReadByte(address);
+        regs.r[rd] = ReadByte(regs.r[rn]);
         break;
     }
     
