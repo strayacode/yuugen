@@ -114,7 +114,7 @@ private:
     void ARMSoftwareInterrupt();
     void ARM_UND();
 
-    void THUMB_SWI();
+    void ThumbSoftwareInterrupt();
 
     void ARMCoprocessorRegisterTransfer();
 

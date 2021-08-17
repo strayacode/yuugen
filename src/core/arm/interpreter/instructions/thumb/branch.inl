@@ -86,7 +86,3 @@ void ThumbBranchConditional() {
         regs.r[15] += 2;
     }
 }
-
-void ThumbSoftwareInterrupt() {
-    log_fatal("handle")
-}

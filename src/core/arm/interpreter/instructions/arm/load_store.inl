@@ -214,6 +214,13 @@ void ARMHalfwordDataTransfer() {
             log_fatal("handle ldrd");
         }
         break;
+    case 0x3:
+        if constexpr (load) {
+            regs.r[rd] = (s32)(s16)ReadHalf(address);
+        } else {
+            log_fatal("handle ldrd");
+        }
+        break;
     default:
         log_fatal("handle opcode %d", opcode);
     }

@@ -55,15 +55,15 @@ void Interpreter::Run(int cycles) {
         // TODO: align r15
         if (IsARM()) {
             pipeline[1] = ReadWord(regs.r[15]);
+        } else {
+            pipeline[1] = ReadHalf(regs.r[15]);
+        }
 
-            if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
-                HandleInterrupt();
-            }
+        if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
+            HandleInterrupt();
+        }
 
-            // if (arch == CPUArch::ARMv5) {
-            //     LogRegisters();
-            // }
-
+        if (IsARM()) {
             u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
             if (ConditionEvaluate(instruction >> 28)) {
                 (this->*arm_lut[index])();
@@ -71,16 +71,6 @@ void Interpreter::Run(int cycles) {
                 regs.r[15] += 4;
             }
         } else {
-            pipeline[1] = ReadHalf(regs.r[15]);
-
-            if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
-                HandleInterrupt();
-            }
-
-            // if (arch == CPUArch::ARMv5) {
-            //     LogRegisters();
-            // }
-
             u32 index = instruction >> 6;
             (this->*thumb_lut[index])();
         }
@@ -431,7 +421,7 @@ void Interpreter::ARMSoftwareInterrupt() {
     ARMFlushPipeline();
 }
 
-void Interpreter::THUMB_SWI() {
+void Interpreter::ThumbSoftwareInterrupt() {
     // store the cpsr in spsr_svc
     regs.spsr_banked[BANK_SVC] = regs.cpsr;
 

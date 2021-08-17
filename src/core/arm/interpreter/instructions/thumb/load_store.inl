@@ -196,5 +196,42 @@ void ThumbLoadStoreHalfword() {
 }
 
 void ThumbLoadStoreMultiple() {
-    log_fatal("handle");
+    u8 rn = (instruction >> 8) & 0x7;
+    u32 address = regs.r[rn];
+
+    bool load = instruction & (1 << 11);
+    
+    // TODO: handle edgecases
+    if (load) {
+        for (int i = 0; i < 8; i++) {
+            if (instruction & (1 << i)) {
+                regs.r[i] = ReadWord(address);
+                address += 4;
+            }
+        }
+
+        // if rn is in rlist:
+        // if arm9 writeback if rn is the only register or not the last register in rlist
+        // if arm7 then no writeback if rn in rlist
+        if (arch == CPUArch::ARMv5) {
+            if (((instruction & 0xFF) == (unsigned int)(1 << rn)) || !(((instruction & 0xFF) >> rn) == 1)) {
+                regs.r[rn] = address;
+            }
+        } else {
+            if (!(instruction & (unsigned int)(1 << rn))) {
+                regs.r[rn] = address;
+            }
+        }
+    } else {
+        for (int i = 0; i < 8; i++) {
+            if (instruction & (1 << i)) {
+                WriteWord(address, regs.r[i]);
+                address += 4;
+            }
+        }
+
+        regs.r[rn] = address;
+    }
+
+    regs.r[15] += 2;
 }

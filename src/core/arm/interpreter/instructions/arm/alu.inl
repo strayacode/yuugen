@@ -458,11 +458,10 @@ void ARMMultiply() {
     u8 rs = (instruction >> 8) & 0xF;
     u8 rn = (instruction >> 12) & 0xF;
     u8 rd = (instruction >> 16) & 0xF;
-
-    regs.r[rd] = regs.r[rm] * regs.r[rs];
+    u32 result = regs.r[rm] * regs.r[rs];
 
     if constexpr (accumulate) {
-        regs.r[rd] += regs.r[rn];
+        result += regs.r[rn];
     }
 
     if (set_flags) {
@@ -470,6 +469,7 @@ void ARMMultiply() {
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
     }
 
+    regs.r[rd] = result;
     regs.r[15] += 4;
 }
 
@@ -538,13 +538,70 @@ void ARMSingleDataSwap() {
 }
 
 void ARMCountLeadingZeroes() {
-    log_fatal("handle clz");
+    if (arch == CPUArch::ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+
+    u32 data = regs.r[rm];
+
+    u32 count = 0;
+    while (data != 0) {
+        data >>= 1;
+        count++;
+    }
+
+    regs.r[rd] = 32 - count;
+
+    regs.r[15] += 4;
 }
 
 void ARMSaturatingAddSubtract() {
     log_fatal("handle qadd qsub stuff");
 }
 
+template <bool accumulate>
 void ARMSignedHalfwordMultiply() {
-    log_fatal("handle stuff");
+    if (arch == CPUArch::ARMv4) {
+        return;
+    }
+
+    if (((instruction >> 21) & 0xF) == 0xA) {
+        log_fatal("handle");
+    }
+
+    u8 op1 = instruction & 0xF;
+    u8 op2 = (instruction >> 8) & 0xF;
+    // u8 op3 = (instruction >> 12) & 0xF;
+    u8 op4 = (instruction >> 16) & 0xF;
+
+    bool x = instruction & (1 << 5);
+    bool y = instruction & (1 << 6);
+
+    s16 result1;
+    s16 result2;
+
+    if (x) {
+        result1 = (s16)(regs.r[op1] >> 16);
+    } else {
+        result1 = (s16)regs.r[op1];
+    }
+
+    if (y) {
+        result2 = (s16)(regs.r[op2] >> 16);
+    } else {
+        result2 = (s16)regs.r[op2];
+    }
+
+    u32 result = result1 * result2;
+
+    if constexpr (accumulate) {
+        log_fatal("handle");
+    } else {
+        regs.r[op4] = result;
+    }
+
+    regs.r[15] += 4;
 }

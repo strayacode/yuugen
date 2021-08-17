@@ -12,8 +12,8 @@ static constexpr Instruction GetARMInstruction() {
         if ((instruction & 0x90) == 0x90) {
             // multiplies, extra load/stores
             if ((instruction & 0x60) == 0) {
-                const bool set_flags = instruction & (1 << 20);
-                const bool accumulate = instruction & (1 << 21);
+                const bool set_flags = (instruction >> 20) & 0x1;
+                const bool accumulate = (instruction >> 21) & 0x1;
                 switch ((instruction >> 23) & 0x3) {
                 case 0x0: {
                     return &Interpreter::ARMMultiply<accumulate, set_flags>;
@@ -48,7 +48,18 @@ static constexpr Instruction GetARMInstruction() {
             } else if ((instruction & 0x70) == 0x70) {
                 return &Interpreter::ARMBreakpoint;
             } else if ((instruction & 0x90) == 0x80) {
-                return &Interpreter::ARMSignedHalfwordMultiply;
+                switch ((instruction >> 21) & 0xF) {
+                case 0x8: case 0xA: 
+                    return &Interpreter::ARMSignedHalfwordMultiply<true>;
+                case 0x9:
+                    if (instruction & (1 << 5)) {
+                        return &Interpreter::ARMSignedHalfwordMultiply<false>;
+                    } else {
+                        return &Interpreter::ARMSignedHalfwordMultiply<true>;
+                    }
+                default:
+                    return &Interpreter::ARMSignedHalfwordMultiply<false>;
+                }
             }
         } else {
             return &Interpreter::ARMDataProcessing<shift_imm>;
