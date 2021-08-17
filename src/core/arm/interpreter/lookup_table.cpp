@@ -7,6 +7,7 @@ static constexpr Instruction GetARMInstruction() {
     case 0x0: {
         const bool set_flags = instruction & (1 << 20);
         const u8 opcode = (instruction >> 21) & 0xF;
+        const u8 shift_imm = (instruction >> 25) & 0x1;
 
         if ((instruction & 0x90) == 0x90) {
             // multiplies, extra load/stores
@@ -25,7 +26,12 @@ static constexpr Instruction GetARMInstruction() {
                     return &Interpreter::ARMSingleDataSwap;
                 }
             } else {
-                return &Interpreter::ARMHalfwordDataTransfer;
+                const bool load = (instruction >> 20) & 0x1;
+                const bool writeback = (instruction >> 21) & 0x1;
+                const bool immediate = (instruction >> 22) & 0x1;
+                const bool up = (instruction >> 23) & 0x1;
+                const bool pre = (instruction >> 24) & 0x1;
+                return &Interpreter::ARMHalfwordDataTransfer<load, writeback, immediate, up, pre>;
             }
         } else if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             // miscellaneous instructions
@@ -45,12 +51,13 @@ static constexpr Instruction GetARMInstruction() {
                 return &Interpreter::ARMSignedHalfwordMultiply;
             }
         } else {
-            return &Interpreter::ARMDataProcessing;
+            return &Interpreter::ARMDataProcessing<shift_imm>;
         }
     }
     case 0x1: {
         const bool set_flags = instruction & (1 << 20);
         const u8 opcode = (instruction >> 21) & 0xF;
+        const u8 shift_imm = (instruction >> 25) & 0x1;
 
         if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             if (instruction & (1 << 21)) {
@@ -59,7 +66,7 @@ static constexpr Instruction GetARMInstruction() {
                 return &Interpreter::ARMUndefined;
             }
         } else {
-            return &Interpreter::ARMDataProcessing;
+            return &Interpreter::ARMDataProcessing<shift_imm>;
         }
     }
     case 0x2:

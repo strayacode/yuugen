@@ -1,19 +1,19 @@
 #pragma once
 
+template <bool shift_imm>
 void ARMDataProcessing() {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
 
     u8 set_flags = (instruction >> 20) & 0x1;
     u8 opcode = (instruction >> 21) & 0xF;
-    u8 immediate = (instruction >> 25) & 0x1;
-
+    
     u32 op1 = regs.r[rn];
     u32 op2 = 0;
 
     u8 carry_flag = GetConditionFlag(C_FLAG);
 
-    if (immediate) {
+    if constexpr (shift_imm) {
         u32 immediate = instruction & 0xFF;
         u8 shift_amount = ((instruction >> 8) & 0xF) << 1;
 

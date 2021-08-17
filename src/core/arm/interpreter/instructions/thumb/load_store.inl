@@ -156,7 +156,26 @@ void ThumbPushPop() {
 }
 
 void ThumbLoadStoreSPRelative() {
-    log_fatal("handle");
+    u32 immediate = instruction & 0xFF;
+    u8 rd = (instruction >> 8) & 0x7;
+
+    bool load = instruction & (1 << 11);
+
+    u32 address = regs.r[13] + (immediate << 2);
+
+    if (load) {
+        regs.r[rd] = ReadWord(address);
+
+        if (address & 0x3) {
+            log_fatal("handle");
+            int shift_amount = (address & 0x3) * 8;
+            regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
+        } 
+    } else {
+        WriteWord(address, regs.r[rd]);
+    }
+    
+    regs.r[15] += 2;
 }
 
 void ThumbLoadStoreHalfword() {

@@ -175,44 +175,40 @@ auto ARMGetShiftedRegisterSingleDataTransfer() -> u32 {
     return op2;
 }
 
+template <bool load, bool writeback, bool immediate, bool up, bool pre>
 void ARMHalfwordDataTransfer() {
     u8 rm = instruction & 0xF;
     u8 opcode = (instruction >> 5) & 0x3;
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
-    u8 load = (instruction >> 20) & 0x1;
-    u8 writeback = (instruction >> 21) & 0x1;
-    u8 immediate = (instruction >> 22) & 0x1;
-    u8 up = (instruction >> 23) & 0x1;
-    u8 pre = (instruction >> 24) & 0x1;
 
     u32 op2 = 0;
     u32 address = regs.r[rn];
 
-    if (immediate) {
+    if constexpr (immediate) {
         op2 = ((instruction >> 4) & 0xF0) | (instruction & 0xF);
     } else {
         op2 = regs.r[rm];
     }
 
-    if (!up) {
+    if constexpr (!up) {
         op2 *= -1;
     }
 
-    if (pre) {
+    if constexpr (pre) {
         address += op2;
     }
 
     switch (opcode) {
     case 0x1:
-        if (load) {
+        if constexpr (load) {
             regs.r[rd] = ReadHalf(address);
         } else {
             WriteHalf(address, regs.r[rd]);
         }
         break;
     case 0x2:
-        if (load) {
+        if constexpr (load) {
             regs.r[rd] = (s32)(s8)ReadByte(address);
         } else {
             log_fatal("handle ldrd");
@@ -224,7 +220,7 @@ void ARMHalfwordDataTransfer() {
 
     // for ldrh instructons writeback can't happen when rd != rn
     if (!load || rd != rn) {
-        if (writeback || !pre) {
+        if constexpr (writeback || !pre) {
             regs.r[rn] += op2;
         }
     }
@@ -354,8 +350,8 @@ void ARMBlockDataTransfer() {
         SwitchMode(old_mode);
     }
 
-    if (r15_in_rlist) {
-        if (load_psr && load) {
+    if (r15_in_rlist && load) {
+        if (load_psr) {
             // cpsr = spsr_<current_mode>
             SwitchMode(GetCurrentSPSR());
         }

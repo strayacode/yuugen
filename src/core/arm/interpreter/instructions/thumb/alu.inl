@@ -39,9 +39,10 @@ void ThumbShiftImmediate() {
     switch (shift_type) {
     case 0x0:
         if (shift_amount != 0) {
-            regs.r[rd] = regs.r[rs] << shift_amount;
             carry = (regs.r[rs] >> (32 - shift_amount)) & 0x1;
         }
+
+        regs.r[rd] = regs.r[rs] << shift_amount;
         break;
     case 0x1:
         if (shift_amount == 0) {
@@ -141,6 +142,9 @@ void ThumbDataProcessingRegister() {
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
         break;
+    case 0x5:
+        regs.r[rd] = ADC(regs.r[rd], regs.r[rs], true);
+        break;
     case 0x7:
         regs.r[rd] = ROR(regs.r[rd], regs.r[rs] & 0xFF, carry, false);
         SetConditionFlag(C_FLAG, carry);
@@ -168,6 +172,9 @@ void ThumbDataProcessingRegister() {
         if (arch == CPUArch::ARMv4) {
             SetConditionFlag(C_FLAG, false);
         }
+        break;
+    case 0xE:
+        regs.r[rd] = BIC(regs.r[rd], regs.r[rs], true);
         break;
     case 0xF:
         regs.r[rd] = MVN(regs.r[rd], regs.r[rs]);
@@ -204,7 +211,12 @@ void ThumbSpecialDataProcesing() {
 }
 
 void ThumbAdjustStackPointer() {
-    log_fatal("handle %08x", instruction);
+    u32 immediate = (instruction & 0x7F) << 2;
+
+    // need to check bit 7 to check if we subtract or add from sp
+    regs.r[13] = regs.r[13] + ((instruction & (1 << 7)) ? - immediate : immediate);
+
+    regs.r[15] += 2;
 }
 
 void ThumbAddSPPC() {
