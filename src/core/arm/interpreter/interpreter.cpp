@@ -60,6 +60,10 @@ void Interpreter::Run(int cycles) {
                 HandleInterrupt();
             }
 
+            // if (arch == CPUArch::ARMv5) {
+            //     LogRegisters();
+            // }
+
             u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
             if (ConditionEvaluate(instruction >> 28)) {
                 (this->*arm_lut[index])();
@@ -72,6 +76,10 @@ void Interpreter::Run(int cycles) {
             if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
                 HandleInterrupt();
             }
+
+            // if (arch == CPUArch::ARMv5) {
+            //     LogRegisters();
+            // }
 
             u32 index = instruction >> 6;
             (this->*thumb_lut[index])();

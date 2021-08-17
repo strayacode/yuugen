@@ -255,7 +255,7 @@ void ARMBlockDataTransfer() {
         SwitchMode(USR);
     }
 
-    u32 old_base = regs.r[rn];
+    // u32 old_base = regs.r[rn];
 
     if (up) {
         if (pre) {
@@ -309,6 +309,7 @@ void ARMBlockDataTransfer() {
         }
     }
 
+    // TODO: handle writeback edgecases correctly
     if (writeback) {
         if (load) {
             if (arch == CPUArch::ARMv5) {
@@ -324,23 +325,7 @@ void ARMBlockDataTransfer() {
             if (arch == CPUArch::ARMv5) {
                 regs.r[rn] = address;
             } else {
-                if (instruction & (1 << rn)) {
-                    bool rn_first = true;
-
-                    for (int i = 0; i < rn; i++) {
-                        if (instruction & (1 << i)) {
-                            rn_first = false;
-                        }
-                    }
-
-                    if (rn_first) {
-                        regs.r[rn] = old_base;
-                    } else {
-                        regs.r[rn] = address;
-                    }
-                } else {
-                    regs.r[rn] = address;
-                }
+                regs.r[rn] = address;
             }
         }
     } 
