@@ -1,6 +1,15 @@
 #pragma once
 
 template <bool link>
+void ARMBranchLinkMaybeExchange() {
+    if ((instruction & 0xF0000000) != 0xF0000000) {
+        ARMBranchLink<link>();
+    } else {
+        ARMBranchLinkExchange();
+    }
+}
+
+template <bool link>
 void ARMBranchLink() {
     u32 offset = ((instruction & (1 << 23)) ? 0xFC000000 : 0) | ((instruction & 0xFFFFFF) << 2);
     
@@ -30,15 +39,34 @@ void ARMBranchExchange() {
 }
 
 void ARMBranchLinkExchange() {
-    log_fatal("handle blx");
+    if (arch == CPUArch::ARMv4) {
+        return;
+    }
+
+    regs.r[14] = regs.r[15] - 4;
+    regs.cpsr |= (1 << 5);
+
+    u32 offset = (((instruction & (1 << 23)) ? 0xFC000000: 0) | ((instruction & 0xFFFFFF) << 2)) + ((instruction & (1 << 24)) >> 23);
+    regs.r[15] += offset;
+    ThumbFlushPipeline();
 }
 
 void ARMBranchLinkExchangeRegister() {
-    log_fatal("handle blx reg");
-}
+    if (arch == CPUArch::ARMv4) {
+        return;
+    }
 
-void ARMSoftwareInterrupt() {
-    log_fatal("handle swi");
+    regs.r[14] = regs.r[15] - 4;
+
+    u8 rm = instruction & 0xF;
+    if (regs.r[rm] & 0x1) {
+        regs.cpsr |= (1 << 5);
+        regs.r[15] = regs.r[rm] & ~1;
+        ThumbFlushPipeline();
+    } else {
+        regs.r[15] = regs.r[rm] & ~3;
+        ARMFlushPipeline();
+    }
 }
 
 void ARMBreakpoint() {

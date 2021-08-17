@@ -1,9 +1,5 @@
 #pragma once
 
-void ARMCoprocessorRegisterTransfer() {
-    log_fatal("handle");
-}
-
 void ARMPSRTransfer() {
     u8 opcode = (instruction >> 21) & 0x1;
     u8 spsr = (instruction >> 22) & 0x1;
@@ -92,6 +88,10 @@ void ARMSingleDataTransfer() {
         address += op2;
     }
 
+    // increment r15 by 4 since if we are writing r15 it must be r15 + 12.
+    // however if we are loading into r15 this increment won't matter as well
+    regs.r[15] += 4;
+
     if (load) {
         if (byte) {
             regs.r[rd] = ReadByte(address);
@@ -118,11 +118,16 @@ void ARMSingleDataTransfer() {
         }
     }
 
-    if (rd == 15) {
-        log_fatal("handle");
+    if (load && rd == 15) {
+        if ((arch == CPUArch::ARMv5) && (regs.r[15] & 1)) {
+            regs.cpsr |= 1 << 5;
+            regs.r[15] &= ~1;
+            ThumbFlushPipeline();
+        } else {
+            regs.r[15] &= ~3;
+            ARMFlushPipeline();
+        }
     }
-
-    regs.r[15] += 4;
 }
 
 auto ARMGetShiftedRegisterSingleDataTransfer() -> u32 {

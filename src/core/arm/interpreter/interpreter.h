@@ -77,8 +77,6 @@ public:
     void DirectBoot(u32 entrypoint) override;
     void FirmwareBoot() override;
 
-    
-
     #include "instructions/arm/alu.inl"
     #include "instructions/arm/branch.inl"
     #include "instructions/arm/load_store.inl"
@@ -113,13 +111,12 @@ private:
     void LogRegisters();
 
     void HandleInterrupt();
-    // instructions that require access to core we just declare outside the .inl files
-    void ARM_MRC();
-    void ARM_MCR();
-    void ARM_SWI();
+    void ARMSoftwareInterrupt();
     void ARM_UND();
 
     void THUMB_SWI();
+
+    void ARMCoprocessorRegisterTransfer();
 
     auto ReadByte(u32 addr) -> u8;
     auto ReadHalf(u32 addr) -> u16;

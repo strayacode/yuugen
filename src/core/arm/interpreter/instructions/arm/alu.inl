@@ -67,6 +67,9 @@ void ARMDataProcessing() {
     case 0x2:
         regs.r[rd] = SUB(op1, op2, set_flags);
         break;
+    case 0x3:
+        regs.r[rd] = RSB(op1, op2, set_flags);
+        break;
     case 0x4:
         regs.r[rd] = ADD(op1, op2, set_flags);
         break;
@@ -242,6 +245,19 @@ auto SBC(u32 op1, u32 op2, u8 set_flags) -> u32 {
 
 auto RSC(u32 op1, u32 op2, u8 set_flags) -> u32 {
     u32 result = op2 - op1 - !GetConditionFlag(C_FLAG);
+    
+    if (set_flags) {
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(Z_FLAG, result == 0);
+        SetConditionFlag(C_FLAG, SUB_CARRY(op2, op1));
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, op1, result));
+    }
+
+    return result;
+}
+
+auto RSB(u32 op1, u32 op2, u8 set_flags) -> u32 {
+    u32 result = op2 - op1;
     
     if (set_flags) {
         SetConditionFlag(N_FLAG, result >> 31);

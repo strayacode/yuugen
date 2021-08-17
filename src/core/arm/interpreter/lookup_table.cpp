@@ -80,11 +80,7 @@ static constexpr Instruction GetARMInstruction() {
         // b/bl/blx
         const bool link = instruction & (1 << 24);
 
-        if ((instruction & 0xF0000000) != 0xF0000000) {
-            return &Interpreter::ARMBranchLink<link>;
-        } else {
-            return &Interpreter::ARMBranchLinkExchange;
-        }
+        return &Interpreter::ARMBranchLinkMaybeExchange<link>;
     }
     case 0x6:
         return &Interpreter::UnimplementedInstruction;
@@ -117,7 +113,11 @@ static constexpr Instruction GetThumbInstruction() {
             return &Interpreter::ThumbDataProcessingRegister;
         } else if (((instruction >> 10) & 0x7) == 0x1) {
             if ((instruction & 0xFF00) == 0x4700) {
-                return &Interpreter::ThumbBranchExchange;
+                if (instruction & (1 << 7)) {
+                    return &Interpreter::ThumbBranchLinkExchange;
+                } else {
+                    return &Interpreter::ThumbBranchExchange;
+                }
             } else {
                 return &Interpreter::ThumbSpecialDataProcesing;
             }

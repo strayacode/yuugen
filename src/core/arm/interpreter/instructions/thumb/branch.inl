@@ -15,6 +15,25 @@ void ThumbBranchExchange() {
     }
 }
 
+void ThumbBranchLinkExchange() {
+    if (arch == CPUArch::ARMv4) {
+        return;
+    }
+
+    u8 rm = (instruction >> 3) & 0xF;
+    u32 next_instruction_address = regs.r[15] - 2;
+    regs.r[14] = next_instruction_address | 1;
+    
+    if (regs.r[rm] & 0x1) {
+        regs.r[15] = regs.r[rm] & ~1;
+        ThumbFlushPipeline();
+    } else {
+        regs.cpsr &= ~(1 << 5);
+        regs.r[15] = regs.r[rm] & ~3;
+        ARMFlushPipeline();
+    }
+}
+
 void ThumbBranchLinkSetup() {
     u32 immediate = ((instruction & (1 << 10)) ? 0xFFFFF000 : 0) | ((instruction & 0x7FF) << 1);
 

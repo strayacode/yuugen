@@ -385,39 +385,8 @@ void Interpreter::HandleInterrupt() {
     instruction = pipeline[0];
 }
 
-void Interpreter::ARM_MRC() {
-    // armv5 exclusive as it involves coprocessor transfers
-    u8 cp = (instruction >> 8) & 0xF;
-    u8 crm = instruction & 0xF;
-    u8 crn = (instruction >> 16) & 0xF;
-    u8 opcode2 = (instruction >> 5) & 0x7;
-    u8 rd = (instruction >> 12) & 0xF;
 
-    if (arch == CPUArch::ARMv4) {
-        if (cp == 15) {
-            // generate an undefined exception
-            return ARM_UND();
-        } else {
-            log_warn("arm7 cp%d, c%d, c%d, c%d", cp, crn, crm, opcode2);
-            return;
-        }
-    }
-
-    u32 data = cp15->Read(crn, crm, opcode2);
-
-    if (rd == 15) {
-        // set flags instead
-        regs.cpsr = (data & 0xF0000000) | (regs.cpsr & 0x0FFFFFFF);
-    } else {
-        // set rd normally
-        regs.r[rd] = data;
-    }
-
-    regs.r[15] += 4;
-}
-
-void Interpreter::ARM_MCR() {
-    // armv5 exclusive as it involves coprocessor transfers
+void Interpreter::ARMCoprocessorRegisterTransfer() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -426,12 +395,21 @@ void Interpreter::ARM_MCR() {
     u8 crn = (instruction >> 16) & 0xF;
     u8 opcode2 = (instruction >> 5) & 0x7;
     u8 rd = (instruction >> 12) & 0xF;
-    cp15->Write(crn, crm, opcode2, regs.r[rd]);
+
+    if (instruction & (1 << 20)) {
+        regs.r[rd] = cp15->Read(crn, crm, opcode2);
+
+        if (rd == 15) {
+            log_fatal("handle");
+        }
+    } else {
+        cp15->Write(crn, crm, opcode2, regs.r[rd]);
+    }
 
     regs.r[15] += 4;
 }
 
-void Interpreter::ARM_SWI() {
+void Interpreter::ARMSoftwareInterrupt() {
     // store the cpsr in spsr_svc
     regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
