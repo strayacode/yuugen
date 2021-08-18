@@ -4,7 +4,6 @@ void Scheduler::Reset() {
     events.clear();
 
     current_time = 0;
-    SchedulerDebug();
 }
 
 void Scheduler::Tick(int cycles) {
