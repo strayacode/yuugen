@@ -340,20 +340,30 @@ void ARMBlockDataTransfer() {
     if (user_switch_mode) {
         // switch back to old mode at the end if user bank transfer
         SwitchMode(old_mode);
+
+        if (r15_in_rlist) {
+            log_fatal("handle");
+            // if (load_psr) {
+            //     // cpsr = spsr_<current_mode>
+            //     SwitchMode(GetCurrentSPSR());
+            // }
+
+            // // since loading spsr_<current_mode> can change the T bit,
+            // // we check whether in arm mode or not
+            // if (IsARM()) {
+            //     ARMFlushPipeline();
+            // } else {
+            //     ThumbFlushPipeline();
+            // }
+        }
     }
 
     if (r15_in_rlist && load) {
-        if (load_psr) {
-            // cpsr = spsr_<current_mode>
-            SwitchMode(GetCurrentSPSR());
-        }
-
-        // since loading spsr_<current_mode> can change the T bit,
-        // we check whether in arm mode or not
-        if (IsARM()) {
-            ARMFlushPipeline();
-        } else {
+        if ((arch == CPUArch::ARMv5) && (regs.r[15] & 0x1)) {
+            regs.cpsr |= (1 << 5);
             ThumbFlushPipeline();
+        } else {
+            ARMFlushPipeline();
         }
     } else {
         regs.r[15] += 4;

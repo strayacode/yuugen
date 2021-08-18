@@ -198,7 +198,12 @@ void ThumbSpecialDataProcesing() {
     switch (opcode) {
     case 0x0:
         regs.r[rd] += regs.r[rs];
-        regs.r[15] += 2;
+        if (rd == 15) {
+            ThumbFlushPipeline();
+        } else {
+            regs.r[15] += 2;    
+        }
+
         break;
     case 0x1:
         CMP(regs.r[rd], regs.r[rs]);
@@ -206,14 +211,15 @@ void ThumbSpecialDataProcesing() {
         break;
     case 0x2:
         regs.r[rd] = regs.r[rs];
-        regs.r[15] += 2;
+        if (rd == 15) {
+            ThumbFlushPipeline();
+        } else {
+            regs.r[15] += 2;
+        }
+
         break;
     default:
         log_fatal("handle opcode %d", opcode);
-    }
-
-    if (rd == 15) {
-        log_fatal("handle");
     }
 }
 

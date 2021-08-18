@@ -49,14 +49,14 @@ static constexpr Instruction GetARMInstruction() {
                 return &Interpreter::ARMBreakpoint;
             } else if ((instruction & 0x90) == 0x80) {
                 switch ((instruction >> 21) & 0xF) {
-                case 0x8: case 0xA: 
+                case 0x8:
                     return &Interpreter::ARMSignedHalfwordMultiply<true>;
                 case 0x9:
-                    if (instruction & (1 << 5)) {
-                        return &Interpreter::ARMSignedHalfwordMultiply<false>;
-                    } else {
-                        return &Interpreter::ARMSignedHalfwordMultiply<true>;
-                    }
+                    return &Interpreter::ARMSignedHalfwordWordMultiply;
+                case 0xA:
+                    return &Interpreter::ARMSignedHalfwordAccumulateLong;
+                case 0xB:
+                    return &Interpreter::ARMSignedHalfwordMultiply<false>;
                 default:
                     return &Interpreter::ARMSignedHalfwordMultiply<false>;
                 }

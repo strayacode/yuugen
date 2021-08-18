@@ -575,7 +575,7 @@ void ARMSignedHalfwordMultiply() {
 
     u8 op1 = instruction & 0xF;
     u8 op2 = (instruction >> 8) & 0xF;
-    // u8 op3 = (instruction >> 12) & 0xF;
+    u8 op3 = (instruction >> 12) & 0xF;
     u8 op4 = (instruction >> 16) & 0xF;
 
     bool x = instruction & (1 << 5);
@@ -599,10 +599,90 @@ void ARMSignedHalfwordMultiply() {
     u32 result = result1 * result2;
 
     if constexpr (accumulate) {
-        log_fatal("handle");
+        u32 operand = regs.r[op3];
+
+        regs.r[op4] = result + operand;
+
+        if (ADD_OVERFLOW(result, operand, regs.r[op4])) {
+            SetConditionFlag(Q_FLAG, true);
+        }
     } else {
         regs.r[op4] = result;
     }
+
+    regs.r[15] += 4;
+}
+
+void ARMSignedHalfwordWordMultiply() {
+    if (arch == CPUArch::ARMv4) {
+        return;
+    }
+
+    u8 op1 = instruction & 0xF;
+    u8 op2 = (instruction >> 8) & 0xF;
+    u8 op3 = (instruction >> 12) & 0xF;
+    u8 op4 = (instruction >> 16) & 0xF;
+
+    bool x = instruction & (1 << 5);
+    bool y = instruction & (1 << 6);
+
+    u32 result;
+
+    if (y) {
+        result = ((s32)regs.r[op1] * (s16)(regs.r[op2] >> 16)) >> 16;
+    } else {
+        result = ((s32)regs.r[op1] * (s16)regs.r[op2]) >> 16;
+    }
+
+    if (!x) {
+        u32 operand = regs.r[op3];
+
+        regs.r[op4] = result + operand;
+
+        if (ADD_OVERFLOW(result, operand, regs.r[op4])) {
+            SetConditionFlag(Q_FLAG, true);
+        }
+    } else {
+        regs.r[op4] = result;
+    }
+
+    regs.r[15] += 4;
+}
+
+void ARMSignedHalfwordAccumulateLong() {
+    if (arch == CPUArch::ARMv4) {
+        return;
+    }
+
+    u8 op1 = instruction & 0xF;
+    u8 op2 = (instruction >> 8) & 0xF;
+    u8 op3 = (instruction >> 12) & 0xF;
+    u8 op4 = (instruction >> 16) & 0xF;
+
+    bool x = instruction & (1 << 5);
+    bool y = instruction & (1 << 6);
+
+    s64 rdhilo = (s64)(((u64)regs.r[op4] << 32) | ((u64)regs.r[op3]));
+
+    s64 result1;
+    s64 result2;
+
+    if (x) {
+        result1 = (s64)(s16)(regs.r[op1] >> 16);
+    } else {
+        result1 = (s64)(s16)regs.r[op1];
+    }
+
+    if (y) {
+        result2 = (s64)(s16)(regs.r[op2] >> 16);
+    } else {
+        result2 = (s64)(s16)regs.r[op2];
+    }
+
+    s64 result = result1 * result2;
+    result += rdhilo;
+    regs.r[op3] = result;
+    regs.r[op4] = result >> 32;
 
     regs.r[15] += 4;
 }
