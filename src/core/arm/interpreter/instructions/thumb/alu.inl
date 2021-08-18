@@ -145,6 +145,9 @@ void ThumbDataProcessingRegister() {
     case 0x5:
         regs.r[rd] = ADC(regs.r[rd], regs.r[rs], true);
         break;
+    case 0x6:
+        regs.r[rd] = SBC(regs.r[rd], regs.r[rs], true);
+        break;
     case 0x7:
         regs.r[rd] = ROR(regs.r[rd], regs.r[rs] & 0xFF, carry, false);
         SetConditionFlag(C_FLAG, carry);

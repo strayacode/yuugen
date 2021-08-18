@@ -464,12 +464,13 @@ void ARMMultiply() {
         result += regs.r[rn];
     }
 
+    regs.r[rd] = result;
+
     if (set_flags) {
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
     }
 
-    regs.r[rd] = result;
     regs.r[15] += 4;
 }
 
