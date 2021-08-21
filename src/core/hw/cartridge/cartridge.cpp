@@ -69,7 +69,13 @@ void Cartridge::LoadRom(std::string rom_path) {
     DetectBackupType();
 
     // now we want to do backup stuff
-    std::string save_path = rom_path.replace(rom_path.find("nds"), 3, "sav");
+    std::string save_path = rom_path.replace(rom_path.begin(), rom_path.begin() + 7, "../saves");
+
+    log_debug("save path %s", save_path.c_str());
+
+    save_path.replace(save_path.find(".nds"), 4, ".sav");
+
+    log_debug("save path %s", save_path.c_str());
 
     switch (backup_type) {
     case FLASH:

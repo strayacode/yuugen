@@ -133,10 +133,6 @@ private:
     // so for each type of condition code we have 2^4 possibilities
     std::array<std::array<bool, 16>, 16> condition_table;
 
-    // TODO: handle differences in sending interrupt for arm7 and arm9
-
-    std::unique_ptr<LogFile> log_file;
-
     CP15* cp15;
 
     std::array<Instruction, 1024> thumb_lut;

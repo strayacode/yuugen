@@ -2,10 +2,15 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include "log.h"
 
 struct LogFile {
     LogFile(const char *path) {
         fp = fopen(path, "w");
+
+        if (fp == NULL) {
+            log_fatal("[LogFile] Path %s doesn't exist yet", path);
+        }
     }
 
     ~LogFile() {

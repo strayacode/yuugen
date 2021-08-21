@@ -8,11 +8,12 @@ void CPUBase::SendInterrupt(int interrupt) {
     // set the appropriate bit in IF
     irf |= (1 << interrupt);
     
-    // TODO: handle differences between arm7 and arm9
-
     // check if the interrupt is enabled too
     if (ie & (1 << interrupt)) {
-        halted = false;
+        // to unhalt on the arm9 ime needs to be set
+        if (ime || arch == CPUArch::ARMv4) {
+            halted = false;
+        }
     }
 }
 
