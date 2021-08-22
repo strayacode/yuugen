@@ -10,6 +10,7 @@ void SDLAudioInterface::Open(void* userdata, int sample_rate, int buffer_size, C
     spec.channels = 2;
     spec.samples = buffer_size;
     spec.callback = (SDL_AudioCallback)callback;
+    spec.userdata = userdata;
 
     // TODO: look at other options for SDL_OpenAudioDevice
     device = SDL_OpenAudioDevice(NULL, 0, &spec, NULL, 0);

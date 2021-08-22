@@ -22,6 +22,10 @@ void AudioCallback(SPU* spu, s16* stream, int len);
 
 class HW;
 
+// TODO: use synchronous audio (filling a buffer relative to a channels timer)
+// (when timer of channel overflows generate a sample) instead of getting all the
+// samples when the audio interface needs them
+
 class SPU {
 public:
     SPU(HW* hw);
@@ -41,8 +45,8 @@ public:
     // this function will be ran once every 512 cycles
     // and will combine audio data from all channels
     // into a left and right sample to send to the
-    // audio buffer
-    void RunMixer();
+    // audio stream
+    auto GenerateSamples() -> u32;
 
     void SetAudioInterface(AudioInterface& interface);
 
@@ -52,6 +56,9 @@ public:
         u16 soundtmr; // timer register
         u16 soundpnt; // loop start register
         u32 soundlen; // sound length register
+
+        u32 internal_address;
+        u16 internal_timer;
     } channel[16];
 
     HW* hw;

@@ -25,6 +25,8 @@ void SPU::Reset() {
     SNDCAPCNT[0] = SNDCAPCNT[1] = 0;
     SNDCAPDAD[0] = SNDCAPDAD[1] = 0;
     SNDCAPLEN[0] = SNDCAPLEN[1] = 0;
+
+    sample_left = sample_right = 0;
 }
 
 auto SPU::ReadByte(u32 addr) -> u8 {
@@ -120,7 +122,9 @@ void SPU::WriteWord(u32 addr, u32 data) {
 void SPU::WriteSOUNDCNT(int channel_index, u32 data) {
     // start the channel
     if (!(channel[channel_index].soundcnt >> 31) && (data >> 31)) {
-        RunChannel(channel_index);
+        // reload internal registers
+        channel[channel_index].internal_address = channel[channel_index].soundsad;
+        channel[channel_index].internal_timer = channel[channel_index].soundtmr;
     }
 
     channel[channel_index].soundcnt = data;
@@ -130,14 +134,63 @@ void SPU::RunChannel(int channel_index) {
     // log_fatal("run channel %d lol", channel_index);
 }
 
-void SPU::RunMixer() {
+auto SPU::GenerateSamples() -> u32 {
+    s64 sample_left = 0;
+    s64 sample_right = 0;
+
     for (int i = 0; i < 16; i++) {
+        // TODO: use channel reference instead of channel[i] for
+        // cleaner code
+
         // don't mix audio from channels
         // that are disabled
         if (!(channel[i].soundcnt >> 31)) {
             continue;
         }
+
+        s16 data = 0;
+
+        u8 data_size = 0;
+
+        u8 format = (channel[i].soundcnt >> 29) & 0x3;
+
+        switch (format) {
+        case 0x1:
+            data = (s16)hw->arm7_memory.FastRead<u16>(channel[i].internal_address);
+            data_size = 2;
+            break;
+        default:
+            log_fatal("[SPU] Handle format %d", format);
+        }
+
+        // 512 cycles are used up before a sample can be generated
+        // TODO: make this correctly timed against the system clock
+        channel[i].internal_timer += 512;
+
+        if (channel[i].internal_timer < 512) {
+            // overflow occured
+            channel[i].internal_timer = channel[i].soundtmr;
+            channel[i].internal_address += data_size;
+
+            // check if we are at the end of a loop
+            if (channel[i].internal_address == (channel[i].soundsad + (channel[i].soundpnt + channel[i].soundlen) * 4)) {
+                u8 repeat_mode = (channel[i].soundcnt >> 27) & 0x3;
+
+                switch (repeat_mode) {
+                case 0x1:
+                    // go to address in memory using soundpnt
+                    channel[i].internal_address = channel[i].soundsad + (channel[i].soundpnt * 4);
+                    break;
+                default:
+                    log_fatal("[SPU] Handle repeat mode %d", repeat_mode);
+                }
+            }
+        }
+
+        // volume divider
     }
+
+    return ((s16)(sample_right << 16) | (s16)(sample_left & 0xFFFF));
 }
 
 void SPU::SetAudioInterface(AudioInterface& interface) {
@@ -151,6 +204,9 @@ void AudioCallback(SPU* spu, s16* stream, int len) {
     int no_samples = len / sizeof(s16) / 2;
 
     for (int i = 0; i < no_samples; i++) {
+        u32 samples = spu->GenerateSamples();
 
+        *stream++ = samples & 0xFFFF;
+        *stream++ = samples >> 16;
     }
 }
