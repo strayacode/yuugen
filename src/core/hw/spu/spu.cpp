@@ -120,16 +120,30 @@ void SPU::WriteWord(u32 addr, u32 data) {
 void SPU::WriteSOUNDCNT(int channel_index, u32 data) {
     // start the channel
     if (!(channel[channel_index].soundcnt >> 31) && (data >> 31)) {
-        // reload internal registers
-        channel[channel_index].internal_address = channel[channel_index].soundsad;
-        channel[channel_index].internal_timer = channel[channel_index].soundtmr;
+        RunChannel(channel_index);
     }
 
     channel[channel_index].soundcnt = data;
 }
 
 void SPU::RunChannel(int channel_index) {
-    // log_fatal("run channel %d lol", channel_index);
+    // reload internal registers
+    channel[channel_index].internal_address = channel[channel_index].soundsad;
+    channel[channel_index].internal_timer = channel[channel_index].soundtmr;
+
+    u8 format = (channel[channel_index].soundcnt >> 29) & 0x3;
+
+    switch (format) {
+    case 0x2:
+        // read in the adpcm header
+        channel[channel_index].adpcm_header = hw->arm7_memory.FastRead<u32>(channel[channel_index].internal_address);
+        channel[channel_index].adpcm_value = (s16)channel[channel_index].adpcm_header;
+        channel[channel_index].adpcm_index = std::min((channel[channel_index].adpcm_header >> 16) & 0x7F, 88U);
+        channel[channel_index].internal_address += 4;
+        break;
+    case 0x3:
+        log_fatal("handle");
+    }
 }
 
 auto SPU::GenerateSamples() -> u32 {
