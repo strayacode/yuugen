@@ -205,16 +205,16 @@ auto SPU::GenerateSamples() -> u32 {
                     diff += adpcm_table[channel[i].adpcm_index] / 4;
                 }
 
-                if (adpcm_data & 0x2) {
+                if (adpcm_data & (1 << 1)) {
                     diff += adpcm_table[channel[i].adpcm_index] / 2;
                 }
 
-                if (adpcm_data & 0x4) {
+                if (adpcm_data & (1 << 2)) {
                     diff += adpcm_table[channel[i].adpcm_index];
                 }
 
                 if (adpcm_data & (1 << 3)) {
-                    channel[i].adpcm_value = std::min(channel[i].adpcm_value - diff, -0x7FFF);
+                    channel[i].adpcm_value = std::max(channel[i].adpcm_value - diff, -0x7FFF);
                 } else {
                     channel[i].adpcm_value = std::min(channel[i].adpcm_value + diff, 0x7FFF);
                 }
@@ -250,6 +250,7 @@ auto SPU::GenerateSamples() -> u32 {
                         // reload adpcm index and value to ones at loopstart address
                         channel[i].adpcm_value = channel[i].adpcm_loopstart_value;
                         channel[i].adpcm_index = channel[i].adpcm_loopstart_index;
+                        channel[i].adpcm_second_sample = false;
                     }
                     break;
                 case 0x2:
