@@ -61,6 +61,10 @@ public:
         u32 adpcm_header;
         s16 adpcm_value;
         int adpcm_index;
+
+        s16 adpcm_loopstart_value;
+        int adpcm_loopstart_index;
+        bool adpcm_second_sample;
     } channel[16];
 
     HW* hw;
