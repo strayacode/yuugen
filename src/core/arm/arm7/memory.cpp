@@ -81,7 +81,7 @@ auto ARM7Memory::ReadByte(u32 addr) -> u8 {
             return hw->POSTFLG7;
         case 0x04000501:
             // read upper byte of SOUNDCNT
-            return hw->spu.SOUNDCNT >> 8;
+            return hw->spu.soundcnt >> 8;
         case 0x04000508:
             return hw->spu.SNDCAPCNT[0];
         case 0x04000509:
@@ -156,9 +156,9 @@ auto ARM7Memory::ReadHalf(u32 addr) -> u16 {
         case 0x04000304:
             return hw->POWCNT2;
         case 0x04000500:
-            return hw->spu.SOUNDCNT;
+            return hw->spu.soundcnt;
         case 0x04000504:
-            return hw->spu.SOUNDBIAS;
+            return hw->spu.soundbias;
         case 0x04000508:
             return (hw->spu.SNDCAPCNT[0]) | (hw->spu.SNDCAPCNT[1] << 8);
         case 0x04004700:
@@ -308,11 +308,11 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
             break;
         case 0x04000500:
             // write to lower byte of SOUNDCNT
-            hw->spu.SOUNDCNT = (hw->spu.SOUNDCNT & ~0xFF) | (data & 0xFF);
+            hw->spu.soundcnt = (hw->spu.soundcnt & ~0xFF) | (data & 0xFF);
             break;
         case 0x04000501:
             // write to upper byte of SOUNDCNT
-            hw->spu.SOUNDCNT = (hw->spu.SOUNDCNT & 0xFF) | (data << 8);
+            hw->spu.soundcnt = (hw->spu.soundcnt & 0xFF) | (data << 8);
             break;
         case 0x04000508:
             hw->spu.SNDCAPCNT[0] = data;
@@ -427,10 +427,10 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
             hw->POWCNT2 = data & 0x3;
             break;
         case 0x04000500:
-            hw->spu.SOUNDCNT = data;
+            hw->spu.soundcnt = data;
             break;
         case 0x04000504:
-            hw->spu.SOUNDBIAS = data;
+            hw->spu.soundbias = data;
             break;
         case 0x04000508:
             hw->spu.SNDCAPCNT[0] = data & 0xFF;

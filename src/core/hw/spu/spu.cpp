@@ -16,8 +16,8 @@ SPU::~SPU() {
 }
 
 void SPU::Reset() {
-    SOUNDCNT = 0;
-    SOUNDBIAS = 0;
+    soundcnt = 0;
+    soundbias = 0;
     for (int i = 0; i < 16; i++) {
         memset(&channel[i], 0, sizeof(SPUChannel));
     }
@@ -25,8 +25,6 @@ void SPU::Reset() {
     SNDCAPCNT[0] = SNDCAPCNT[1] = 0;
     SNDCAPDAD[0] = SNDCAPDAD[1] = 0;
     SNDCAPLEN[0] = SNDCAPLEN[1] = 0;
-
-    sample_left = sample_right = 0;
 }
 
 auto SPU::ReadByte(u32 addr) -> u8 {
@@ -148,7 +146,7 @@ auto SPU::GenerateSamples() -> u32 {
             continue;
         }
 
-        s16 data = 0;
+        s64 data = 0;
 
         u8 data_size = 0;
 
@@ -161,6 +159,7 @@ auto SPU::GenerateSamples() -> u32 {
             break;
         default:
             log_fatal("[SPU] Handle format %d", format);
+            break;
         }
 
         // 512 cycles are used up before a sample can be generated
@@ -187,10 +186,53 @@ auto SPU::GenerateSamples() -> u32 {
             }
         }
 
+        // using https://problemkaputt.de/gbatek.htm#dssound 
+        // Channel/Mixer Bit-Widths section
+
         // volume divider
+        u8 volume_div = (channel[i].soundcnt >> 8) & 0x3;
+
+        // value of 3 divides by 16 not 8
+        if (volume_div == 3) {
+            volume_div++;
+        }
+
+        data <<= (4 - volume_div);
+
+        // volume factor
+        u8 volume_factor = channel[i].soundcnt & 0x7F;
+
+        data = (data << 7) * volume_factor / 128;
+
+        // panning / rounding down / mixer
+        u8 panning = (channel[i].soundcnt >> 16) & 0x7F;
+
+        sample_left += ((data << 7) * (128 - panning) / 128) >> 10;
+        sample_right += ((data << 7) * panning / 128) >> 10;
     }
 
-    return ((s16)(sample_right << 16) | (s16)(sample_left & 0xFFFF));
+    // master volume
+    u8 master_volume = soundcnt & 0x7F;
+
+    sample_left = (sample_left << 13) * master_volume / 128 / 64;
+    sample_right = (sample_right << 13) * master_volume / 128 / 64;
+
+    // strip fraction
+    sample_left >>= 21;
+    sample_right >>= 21;
+
+    // add bias
+    sample_left += soundbias;
+    sample_right += soundbias;
+
+    // clipping
+    sample_left = std::clamp<s64>(sample_left, 0, 0x3FF);
+    sample_right = std::clamp<s64>(sample_right, 0, 0x3FF);
+
+    sample_left = (sample_left - 0x200) << 6;
+    sample_right = (sample_right - 0x200) << 6;
+
+    return (sample_right << 16) | (sample_left & 0xFFFF);
 }
 
 void SPU::SetAudioInterface(AudioInterface& interface) {

@@ -66,6 +66,7 @@ bool HostInterface::Initialise() {
 void HostInterface::Run(std::string path) {
     core.SetRomPath(path);
     core.SetBootMode(BootMode::Direct);
+    core.ToggleFramelimiter();
     core.SetState(State::Running);
 
     while (true) {

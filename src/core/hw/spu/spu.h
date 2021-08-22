@@ -4,9 +4,7 @@
 #include <common/log.h>
 #include <string.h>
 #include <yuugen_common/audio_interface.h>
-
-// remove soon
-#include <math.h>
+#include <algorithm>
 
 enum ChannelRegisters {
     REG_SOUNDCNT = 0x0,
@@ -64,8 +62,8 @@ public:
     HW* hw;
 
     // used by the arm7
-    u16 SOUNDCNT;
-    u16 SOUNDBIAS;
+    u16 soundcnt;
+    u16 soundbias;
 
     u8 SNDCAPCNT[2];
     u32 SNDCAPDAD[2];
