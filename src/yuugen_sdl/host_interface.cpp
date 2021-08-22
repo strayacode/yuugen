@@ -56,6 +56,9 @@ bool HostInterface::Initialise() {
     bottom_texture_area.w = 256 * window_size;
     bottom_texture_area.h = 192 * window_size;
 
+    // initialise audio
+    core.SetAudioInterface(audio_interface);
+
     // if the function has reached this far it has successfully initialised
     return true;
 }

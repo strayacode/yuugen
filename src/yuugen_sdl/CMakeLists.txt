@@ -1,4 +1,4 @@
-add_executable(yuugen main.cpp host_interface.cpp host_interface.h)
+add_executable(yuugen main.cpp host_interface.cpp host_interface.h audio_interface.h audio_interface.cpp)
 
 find_package(SDL2 REQUIRED)
 

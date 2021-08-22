@@ -7,6 +7,7 @@
 #include <common/log.h>
 #include <common/types.h>
 #include <yuugen_common/emu_thread.h>
+#include "audio_interface.h"
 
 class HostInterface {
 public:
@@ -30,4 +31,6 @@ private:
     SDL_Event event;
 
     int window_size = 1;
+
+    SDLAudioInterface audio_interface;
 };

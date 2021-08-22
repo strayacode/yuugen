@@ -3,6 +3,10 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <string.h>
+#include <yuugen_common/audio_interface.h>
+
+// remove soon
+#include <math.h>
 
 enum ChannelRegisters {
     REG_SOUNDCNT = 0x0,
@@ -12,11 +16,16 @@ enum ChannelRegisters {
     REG_SOUNDLEN = 0xC,
 };
 
+class SPU;
+
+void AudioCallback(SPU* spu, s16* stream, int len);
+
 class HW;
 
 class SPU {
 public:
     SPU(HW* hw);
+    ~SPU();
     void Reset();
 
     auto ReadByte(u32 addr) -> u8;
@@ -35,6 +44,8 @@ public:
     // audio buffer
     void RunMixer();
 
+    void SetAudioInterface(AudioInterface& interface);
+
     struct SPUChannel {
         u32 soundcnt; // sound control
         u32 soundsad; // sound source address
@@ -52,4 +63,6 @@ public:
     u8 SNDCAPCNT[2];
     u32 SNDCAPDAD[2];
     u32 SNDCAPLEN[2];
+
+    AudioInterface* audio_interface;
 };

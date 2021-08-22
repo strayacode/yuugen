@@ -64,3 +64,7 @@ void Core::SetRomPath(std::string path) {
 void Core::ToggleFramelimiter() {
     emu_thread.ToggleFramelimiter();
 }
+
+void Core::SetAudioInterface(AudioInterface& interface) {
+    hw.spu.SetAudioInterface(interface);
+}

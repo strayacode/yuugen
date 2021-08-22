@@ -11,6 +11,10 @@ SPU::SPU(HW* hw) : hw(hw) {
 
 }
 
+SPU::~SPU() {
+    audio_interface->Close();
+}
+
 void SPU::Reset() {
     SOUNDCNT = 0;
     SOUNDBIAS = 0;
@@ -133,5 +137,20 @@ void SPU::RunMixer() {
         if (!(channel[i].soundcnt >> 31)) {
             continue;
         }
+    }
+}
+
+void SPU::SetAudioInterface(AudioInterface& interface) {
+    audio_interface = &interface;
+
+    audio_interface->Open(this, 32768, 1024, (Callback)AudioCallback);
+}
+
+void AudioCallback(SPU* spu, s16* stream, int len) {
+    // divide by 2 since we are using 2 channels
+    int no_samples = len / sizeof(s16) / 2;
+
+    for (int i = 0; i < no_samples; i++) {
+
     }
 }

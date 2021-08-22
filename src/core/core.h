@@ -2,6 +2,7 @@
 
 #include <core/hw/hw.h>
 #include <yuugen_common/emu_thread.h>
+#include <yuugen_common/audio_interface.h>
 #include <functional>
 #include <string>
 
@@ -33,6 +34,7 @@ public:
     auto GetState() -> State;
     void SetRomPath(std::string path);
     void ToggleFramelimiter();
+    void SetAudioInterface(AudioInterface& interface);
 
     HW hw;
     
