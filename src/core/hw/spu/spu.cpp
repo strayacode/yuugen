@@ -8,7 +8,7 @@
 // NN00
 
 SPU::SPU(HW* hw) : hw(hw) {
-
+    
 }
 
 SPU::~SPU() {
@@ -59,11 +59,11 @@ void SPU::WriteByte(u32 addr, u8 data) {
     switch (addr & 0xF) {
     case REG_SOUNDCNT:
         // write to 1st byte of SOUNDCNT
-        WriteSOUNDCNT(channel_index, (channel[channel_index].soundcnt & ~0x000000FF) | data);
+        channel[channel_index].soundcnt = (channel[channel_index].soundcnt & ~0x000000FF) | data;
         break;
     case REG_SOUNDCNT + 2:
         // write to 3rd byte of SOUNDCNT
-        WriteSOUNDCNT(channel_index, (channel[channel_index].soundcnt & ~0x00FF0000) | (data << 16));
+        channel[channel_index].soundcnt = (channel[channel_index].soundcnt & ~0x00FF0000) | (data << 16);
         break;
     case REG_SOUNDCNT + 3:
         // write to 4th byte of SOUNDCNT
@@ -80,7 +80,7 @@ void SPU::WriteHalf(u32 addr, u16 data) {
     switch (addr & 0xF) {
     case REG_SOUNDCNT:
         // write to lower halfword of SOUNDCNT
-        WriteSOUNDCNT(channel_index, (channel[channel_index].soundcnt & ~0xFFFF) | (data & 0xFFFF));
+        channel[channel_index].soundcnt = (channel[channel_index].soundcnt & ~0xFFFF) | (data & 0xFFFF);
         break;
     case REG_SOUNDTMR:
         // write to lower halfword of SOUNDTMR
@@ -104,13 +104,13 @@ void SPU::WriteWord(u32 addr, u32 data) {
         WriteSOUNDCNT(channel_index, data);
         break;
     case REG_SOUNDSAD:
-        channel[channel_index].soundsad = data;
+        channel[channel_index].soundsad = data & 0x07FFFFFC;
         break;
     case REG_SOUNDTMR:
         channel[channel_index].soundtmr = data;
         break;
     case REG_SOUNDLEN:
-        channel[channel_index].soundlen = data;
+        channel[channel_index].soundlen = data & 0x3FFFFF;
         break;
     default:
         log_fatal("part of sound channel %02x not handled yet", addr & 0xF);
@@ -181,84 +181,86 @@ auto SPU::GenerateSamples() -> u32 {
 
         // 512 cycles are used up before a sample can be generated
         // TODO: make this correctly timed against the system clock
-        channel[i].internal_timer += 512;
+        for (int j = 0; j < 512; j++) {
+            channel[i].internal_timer++;
+        
+            if (channel[i].internal_timer == 0) {
+                // overflow occured
+                channel[i].internal_timer = channel[i].soundtmr;
+                channel[i].internal_address += data_size;
 
-        if (channel[i].internal_timer < 512) {
-            // overflow occured
-            channel[i].internal_timer = channel[i].soundtmr;
-            channel[i].internal_address += data_size;
+                if (format == 2) {
+                    // decode adpcm data
+                    u8 adpcm_data = hw->arm7_memory.FastRead<u8>(channel[i].internal_address);
 
-            if (format == 2) {
-                // decode adpcm data
-                u8 adpcm_data = hw->arm7_memory.FastRead<u8>(channel[i].internal_address);
-
-                // each sample is 4-bit
-                if (channel[i].adpcm_second_sample) {
-                    adpcm_data >>= 4;
-                } else {
-                    adpcm_data &= 0xF;
-                }
-
-                int diff = adpcm_table[channel[i].adpcm_index] / 8;
-
-                if (adpcm_data & 0x1) {
-                    diff += adpcm_table[channel[i].adpcm_index] / 4;
-                }
-
-                if (adpcm_data & (1 << 1)) {
-                    diff += adpcm_table[channel[i].adpcm_index] / 2;
-                }
-
-                if (adpcm_data & (1 << 2)) {
-                    diff += adpcm_table[channel[i].adpcm_index];
-                }
-
-                if (adpcm_data & (1 << 3)) {
-                    channel[i].adpcm_value = std::max(channel[i].adpcm_value - diff, -0x7FFF);
-                } else {
-                    channel[i].adpcm_value = std::min(channel[i].adpcm_value + diff, 0x7FFF);
-                }
-
-                channel[i].adpcm_index = std::clamp(channel[i].adpcm_index + index_table[adpcm_data & 0x7], 0, 88);
-
-                // toggle between the first and second byte
-                channel[i].adpcm_second_sample = !channel[i].adpcm_second_sample;
-
-                // go to next byte once a second sample has been generated
-                if (!channel[i].adpcm_second_sample) {
-                    channel[i].internal_address++;
-                }
-
-                // save the value and index if we are at the loopstart location
-                // and are on the first byte
-                if ((channel[i].internal_address == channel[i].soundsad + (channel[i].soundpnt * 4)) && !channel[i].adpcm_second_sample) {
-                    channel[i].adpcm_loopstart_value = channel[i].adpcm_value;
-                    channel[i].adpcm_loopstart_index = channel[i].adpcm_index;
-                }
-            }
-
-            // check if we are at the end of a loop
-            if (channel[i].internal_address == (channel[i].soundsad + (channel[i].soundpnt + channel[i].soundlen) * 4)) {
-                u8 repeat_mode = (channel[i].soundcnt >> 27) & 0x3;
-
-                switch (repeat_mode) {
-                case 0x1:
-                    // go to address in memory using soundpnt
-                    channel[i].internal_address = channel[i].soundsad + (channel[i].soundpnt * 4);
-
-                    if (format == 2) {
-                        // reload adpcm index and value to ones at loopstart address
-                        channel[i].adpcm_value = channel[i].adpcm_loopstart_value;
-                        channel[i].adpcm_index = channel[i].adpcm_loopstart_index;
-                        channel[i].adpcm_second_sample = false;
+                    // each sample is 4-bit
+                    if (channel[i].adpcm_second_sample) {
+                        adpcm_data = (adpcm_data >> 4) & 0xF;
+                    } else {
+                        adpcm_data &= 0xF;
                     }
-                    break;
-                case 0x2:
-                    // disable the channel
-                    channel[i].soundcnt &= ~(1 << 31);
-                    break;
-                default:
-                    log_fatal("[SPU] Handle repeat mode %d", repeat_mode);
+
+                    int diff = adpcm_table[channel[i].adpcm_index] / 8;
+
+                    if (adpcm_data & 0x1) {
+                        diff += adpcm_table[channel[i].adpcm_index] / 4;
+                    }
+
+                    if (adpcm_data & (1 << 1)) {
+                        diff += adpcm_table[channel[i].adpcm_index] / 2;
+                    }
+
+                    if (adpcm_data & (1 << 2)) {
+                        diff += adpcm_table[channel[i].adpcm_index];
+                    }
+
+                    if (adpcm_data & (1 << 3)) {
+                        channel[i].adpcm_value = std::max(channel[i].adpcm_value - diff, -0x7FFF);
+                    } else {
+                        channel[i].adpcm_value = std::min(channel[i].adpcm_value + diff, 0x7FFF);
+                    }
+
+                    channel[i].adpcm_index = std::clamp(channel[i].adpcm_index + index_table[adpcm_data & 0x7], 0, 88);
+
+                    // toggle between the first and second byte
+                    channel[i].adpcm_second_sample = !channel[i].adpcm_second_sample;
+
+                    // go to next byte once a second sample has been generated
+                    if (!channel[i].adpcm_second_sample) {
+                        channel[i].internal_address++;
+                    }
+
+                    // save the value and index if we are at the loopstart location
+                    // and are on the first byte
+                    if ((channel[i].internal_address == channel[i].soundsad + (channel[i].soundpnt * 4)) && !channel[i].adpcm_second_sample) {
+                        channel[i].adpcm_loopstart_value = channel[i].adpcm_value;
+                        channel[i].adpcm_loopstart_index = channel[i].adpcm_index;
+                    }
+                }
+
+                // check if we are at the end of a loop
+                if (channel[i].internal_address == (channel[i].soundsad + (channel[i].soundpnt + channel[i].soundlen) * 4)) {
+                    u8 repeat_mode = (channel[i].soundcnt >> 27) & 0x3;
+
+                    switch (repeat_mode) {
+                    case 0x1:
+                        // go to address in memory using soundpnt
+                        channel[i].internal_address = channel[i].soundsad + (channel[i].soundpnt * 4);
+
+                        if (format == 2) {
+                            // reload adpcm index and value to ones at loopstart address
+                            channel[i].adpcm_value = channel[i].adpcm_loopstart_value;
+                            channel[i].adpcm_index = channel[i].adpcm_loopstart_index;
+                            channel[i].adpcm_second_sample = false;
+                        }
+                        break;
+                    case 0x2:
+                        // disable the channel
+                        channel[i].soundcnt &= ~(1 << 31);
+                        break;
+                    default:
+                        log_fatal("[SPU] Handle repeat mode %d", repeat_mode);
+                    }
                 }
             }
         }

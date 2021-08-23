@@ -279,6 +279,10 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
         case 0x04000138:
             hw->rtc.WriteRTC(data);
             break;
+        case 0x040001A0:
+            // write to the low byte of AUXSPICNT
+            hw->cartridge.AUXSPICNT = (hw->cartridge.AUXSPICNT & ~0xFF) | (data & 0xFF);
+            break;
         case 0x040001A1:
             // write to the high byte of AUXSPICNT
             hw->cartridge.AUXSPICNT = (hw->cartridge.AUXSPICNT & 0xFF) | (data << 8);
@@ -430,7 +434,7 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
             hw->spu.soundcnt = data;
             break;
         case 0x04000504:
-            hw->spu.soundbias = data;
+            hw->spu.soundbias = data & 0x3FF;
             break;
         case 0x04000508:
             hw->spu.SNDCAPCNT[0] = data & 0xFF;
