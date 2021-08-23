@@ -12,7 +12,9 @@ SPU::SPU(HW* hw) : hw(hw) {
 }
 
 SPU::~SPU() {
-    audio_interface->Close();
+    if (audio_interface != nullptr) {
+        audio_interface->Close();
+    }
 }
 
 void SPU::Reset() {
