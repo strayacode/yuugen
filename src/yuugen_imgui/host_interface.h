@@ -15,8 +15,6 @@
 #include <string.h>
 #include <string>
 #include <common/types.h>
-
-
 #include <core/core.h>
 #include "addons/imfilebrowser.h"
 #include <memory>
@@ -50,6 +48,8 @@ public:
     void SetToContentSize();
 
     void UpdateTitle(float fps);
+
+    ImFont* roboto_font;
 
     sf::Texture texture;  
 };

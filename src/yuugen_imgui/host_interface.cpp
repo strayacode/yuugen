@@ -18,8 +18,16 @@ void HostInterface::Loop() {
     file_dialog.SetWindowSize(480, 400);
 
     window.setFramerateLimit(60);
-    ImGui::SFML::Init(window);
+    ImGui::SFML::Init(window, false);
     SetupStyle();
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.Fonts->Clear();
+
+    roboto_font = io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 15.0f);
+
+    ImGui::SFML::UpdateFontTexture();
 
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_NoTitleBar |
@@ -47,6 +55,9 @@ void HostInterface::Loop() {
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
         
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("File")) {
                 if (ImGui::MenuItem("Load ROM")) {
@@ -56,6 +67,16 @@ void HostInterface::Loop() {
                 if (ImGui::MenuItem("Quit")) {
                     window.close();
                 }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Emulator")) {
+                if (ImGui::MenuItem("Toggle Framelimiter")) {
+                    core->SetState(State::Paused);
+                    core->ToggleFramelimiter();
+                    core->SetState(State::Running);
+                }
+
                 ImGui::EndMenu();
             }
 
@@ -79,9 +100,11 @@ void HostInterface::Loop() {
             }
 
             // TODO: add settings, debug and help
-                
             ImGui::EndMainMenuBar();
         }
+
+        ImGui::PopStyleVar();
+        ImGui::PopStyleVar();
 
         sf::Vector2f window_dimensions(window.getSize());
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -93,7 +116,7 @@ void HostInterface::Loop() {
 
         file_dialog.Display();
         if (file_dialog.HasSelected()) {
-            // TODO: add member variable for the rom path
+            core->SetState(State::Idle);
             core->SetRomPath(file_dialog.GetSelected().string());
             core->SetBootMode(BootMode::Direct);
             core->SetState(State::Running);
@@ -228,14 +251,6 @@ void HostInterface::Loop() {
             ImGui::End();
         }
 
-        ImGui::Begin("Hello, world!");
-        
-        ImGui::Button("Look at this pretty button");
-        ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-        ImGui::Text("Welcome to this Dear ImGui & SFML boilerplate.");
-
-        ImGui::End();
-
         window.clear();
         ImGui::SFML::Render(window);
         window.display();
@@ -276,7 +291,7 @@ void HostInterface::HandleInput() {
         case sf::Event::Closed:
             window.close();
             break;
-        case sf::Event::KeyPressed: case sf::Event::KeyReleased:
+        case sf::Event::KeyPressed: case sf::Event::KeyReleased: {
             bool key_pressed = event.type == sf::Event::KeyPressed;
             switch (event.key.code) {
             case sf::Keyboard::D:
@@ -320,7 +335,12 @@ void HostInterface::HandleInput() {
                 // Button L
                 core->hw.input.HandleInput(BUTTON_L, key_pressed);
                 break;
+            default:
+                break;
             }
+            break;
+        }
+        default:
             break;
         }
     }
@@ -335,5 +355,5 @@ void HostInterface::SetToContentSize() {
 }
 
 void HostInterface::UpdateTitle(float fps) {
-    window.setTitle("hi");
+    window.setTitle("yuugen");
 }
