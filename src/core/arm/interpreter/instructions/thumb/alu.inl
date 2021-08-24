@@ -143,6 +143,12 @@ void ThumbDataProcessingRegister() {
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
         break;
+    case 0x4:
+        regs.r[rd] = ASR(regs.r[rd], regs.r[rs] & 0xFF, carry, false);
+        SetConditionFlag(C_FLAG, carry);
+        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
+        break;
     case 0x5:
         regs.r[rd] = ADC(regs.r[rd], regs.r[rs], true);
         break;

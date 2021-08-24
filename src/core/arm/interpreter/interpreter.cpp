@@ -63,10 +63,6 @@ void Interpreter::Run(int cycles) {
             HandleInterrupt();
         }
 
-        if (arch == CPUArch::ARMv5) {
-            LogRegisters();
-        }
-
         if (IsARM()) {
             u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
             if (ConditionEvaluate(instruction >> 28)) {

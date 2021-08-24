@@ -144,7 +144,8 @@ void SPU::RunChannel(int channel_index) {
         channel[channel_index].internal_address += 4;
         break;
     case 0x3:
-        log_fatal("handle");
+        log_warn("handle psg/noise");
+        break;
     }
 }
 
@@ -177,7 +178,7 @@ auto SPU::GenerateSamples() -> u32 {
             data = channel[i].adpcm_value;
             break;
         default:
-            log_fatal("[SPU] Handle format %d", format);
+            log_warn("[SPU] Handle format %d", format);
             break;
         }
 
@@ -256,12 +257,10 @@ auto SPU::GenerateSamples() -> u32 {
                             channel[i].adpcm_second_sample = false;
                         }
                         break;
-                    case 0x2:
+                    default:
                         // disable the channel
                         channel[i].soundcnt &= ~(1 << 31);
                         break;
-                    default:
-                        log_fatal("[SPU] Handle repeat mode %d", repeat_mode);
                     }
                 }
             }
