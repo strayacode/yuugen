@@ -63,10 +63,6 @@ void Interpreter::Run(int cycles) {
             HandleInterrupt();
         }
 
-        if (arch == CPUArch::ARMv5) {
-            LogRegisters();
-        }
-
         if (IsARM()) {
             u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
             if (ConditionEvaluate(instruction >> 28)) {
@@ -343,6 +339,17 @@ auto Interpreter::ReadHalf(u32 addr) -> u16 {
 
 auto Interpreter::ReadWord(u32 addr) -> u32 {
     return memory.FastRead<u32>(addr);
+}
+
+auto Interpreter::ReadWordRotate(u32 addr) -> u32 {
+    u32 return_value = memory.FastRead<u32>(addr);
+
+    if (addr & 0x3) {
+        int shift_amount = (addr & 0x3) * 8;
+        return_value = rotate_right(return_value, shift_amount);
+    }
+
+    return return_value;
 }
 
 void Interpreter::WriteByte(u32 addr, u8 data) {

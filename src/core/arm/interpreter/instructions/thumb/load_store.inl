@@ -73,16 +73,9 @@ void ThumbLoadStoreImmediate() {
     case 0x0:
         WriteWord(regs.r[rn] + (immediate << 2), regs.r[rd]);
         break;
-    case 0x1: {
-        regs.r[rd] = ReadWord(regs.r[rn] + (immediate << 2));
-
-        if ((regs.r[rn] + (immediate << 2)) & 0x3) {
-            int shift_amount = ((regs.r[rn] + (immediate << 2)) & 0x3) * 8;
-            regs.r[rd] = (regs.r[rd] << (32 - shift_amount)) | (regs.r[rd] >> shift_amount);
-        }
-
+    case 0x1:
+        regs.r[rd] = ReadWordRotate(regs.r[rn] + (immediate << 2));
         break;
-    }
     case 0x2:
         WriteByte(regs.r[rn] + immediate, regs.r[rd]);
         break;
