@@ -416,6 +416,14 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         }
     case REGION_VRAM:
         return hw->gpu.ReadVRAM<u32>(addr);
+    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+        // check if the arm9 has access rights to the gba slot
+        // if not return 0
+        if (hw->EXMEMCNT & (1 << 7)) {
+            return 0;
+        }
+        // otherwise return openbus (0xFFFFFFFF)
+        return 0xFFFFFFFF;
     default:
         log_fatal("handle word read from %08x", addr);
     }

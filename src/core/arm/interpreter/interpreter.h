@@ -137,4 +137,6 @@ private:
 
     std::array<Instruction, 1024> thumb_lut;
     std::array<Instruction, 4096> arm_lut;
+
+    std::unique_ptr<LogFile> log_file;
 };

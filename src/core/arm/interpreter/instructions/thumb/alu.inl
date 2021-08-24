@@ -8,20 +8,21 @@ void ThumbAddSubtract() {
     bool immediate = instruction & (1 << 10);
     bool sub = instruction & (1 << 9);
 
-    u32 operand = immediate ? rn : regs.r[rn];
+    u32 op1 = regs.r[rs];
+    u32 op2 = immediate ? rn : regs.r[rn];
 
     if (sub) {
-        regs.r[rd] = regs.r[rs] - operand;
+        regs.r[rd] = op1 - op2;
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-        SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rs], operand));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rs], operand, regs.r[rd]));
+        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
+        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, regs.r[rd]));
     } else {
-        regs.r[rd] = regs.r[rs] + operand;
+        regs.r[rd] = op1 + op2;
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-        SetConditionFlag(C_FLAG, ADD_CARRY(regs.r[rs], operand));
-        SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rs], operand, regs.r[rd]));
+        SetConditionFlag(C_FLAG, ADD_CARRY(op1, op2));
+        SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, regs.r[rd]));
     }
 
     regs.r[15] += 2;

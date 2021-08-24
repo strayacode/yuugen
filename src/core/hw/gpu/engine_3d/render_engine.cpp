@@ -27,6 +27,5 @@ void RenderEngine::Render() {
                 framebuffer[offset] = 0xFFFFFF;
             }
         }
-        
     }
 }

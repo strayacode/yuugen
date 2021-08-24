@@ -84,10 +84,10 @@ void ThumbLoadStoreImmediate() {
         break;
     }
     case 0x2:
-        WriteByte(regs.r[rn], regs.r[rd]);
+        WriteByte(regs.r[rn] + immediate, regs.r[rd]);
         break;
     case 0x3:
-        regs.r[rd] = ReadByte(regs.r[rn]);
+        regs.r[rd] = ReadByte(regs.r[rn] + immediate);
         break;
     }
     
