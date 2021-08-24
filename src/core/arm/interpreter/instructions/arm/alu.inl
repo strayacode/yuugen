@@ -150,7 +150,6 @@ void ARMDataProcessing() {
     }
 }
 
-// very useless lol, just for consistency
 auto MOV(u32 op2, u8 set_flags) -> u32 {
     if (set_flags) {
         SetConditionFlag(N_FLAG, op2 >> 31);
@@ -161,12 +160,14 @@ auto MOV(u32 op2, u8 set_flags) -> u32 {
 }
 
 auto MVN(u32 op2, u8 set_flags) -> u32 {
+    u32 result = ~op2;
+
     if (set_flags) {
-        SetConditionFlag(N_FLAG, op2 >> 31);
-        SetConditionFlag(Z_FLAG, op2 == 0);
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(Z_FLAG, result == 0);
     }
 
-    return ~op2;
+    return result;
 }
 
 void TEQ(u32 op1, u32 op2) {

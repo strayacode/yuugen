@@ -181,7 +181,7 @@ void ThumbDataProcessingRegister() {
         regs.r[rd] = BIC(regs.r[rd], regs.r[rs], true);
         break;
     case 0xF:
-        regs.r[rd] = MVN(regs.r[rd], regs.r[rs]);
+        regs.r[rd] = MVN(regs.r[rs], true);
         break;
     default:
         log_fatal("handle opcode %02x %08x", opcode, instruction);

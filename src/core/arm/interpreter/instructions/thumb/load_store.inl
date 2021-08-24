@@ -157,13 +157,7 @@ void ThumbLoadStoreSPRelative() {
     u32 address = regs.r[13] + (immediate << 2);
 
     if (load) {
-        regs.r[rd] = ReadWord(address);
-
-        if (address & 0x3) {
-            log_fatal("handle");
-            int shift_amount = (address & 0x3) * 8;
-            regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
-        } 
+        regs.r[rd] = ReadWordRotate(address);
     } else {
         WriteWord(address, regs.r[rd]);
     }
