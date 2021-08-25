@@ -7,7 +7,7 @@ class SDLAudioInterface : public AudioInterface {
 public:
     void Open(void* userdata, int sample_rate, int buffer_size, Callback callback) override;
     void Close() override;
-    void SetPlayback(AudioState state) override;
+    void SetState(AudioState state) override;
 
     SDL_AudioDeviceID device;
     SDL_AudioSpec spec;

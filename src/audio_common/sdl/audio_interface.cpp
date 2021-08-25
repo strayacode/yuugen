@@ -14,10 +14,14 @@ void SDLAudioInterface::Open(void* userdata, int sample_rate, int buffer_size, C
 
     // TODO: look at other options for SDL_OpenAudioDevice
     device = SDL_OpenAudioDevice(NULL, 0, &spec, NULL, 0);
-
-    SDL_PauseAudioDevice(device, 0);
 }
 
 void SDLAudioInterface::Close() {
     SDL_CloseAudioDevice(device);
+}
+
+void SDLAudioInterface::SetState(AudioState state) {
+    audio_state = state;
+
+    SDL_PauseAudioDevice(device, state == AudioState::Paused);
 }

@@ -305,37 +305,29 @@ void MainWindow::LoadRom() {
     dialog.setNameFilter(tr("NDS ROMs (*.nds)"));
 
     core->SetState(State::Idle);
-
-    // stop the render timer
     render_timer->stop();
 
-    // check if a file was selected
     if (dialog.exec()) {
-        // get the first selection
         path = dialog.selectedFiles().at(0);
 
         core->SetRomPath(path.toStdString());
 
-        // allow emulation to be controlled now
         pause_action->setEnabled(true);
         stop_action->setEnabled(true);
         restart_action->setEnabled(true);
         frame_limit_action->setEnabled(true);
 
-        // start the draw timer so we can update the screen at 60 fps
         render_timer->start(1000 / 60);
-
         core->SetState(State::Running);
+        audio_interface.SetState(AudioState::Playing);
     } 
 }
 
 void MainWindow::BootFirmware() {
     core->SetState(State::Idle);
 
-    // stop the render timer
     render_timer->stop();
 
-    // give an empty path
     path = "";
     core->SetRomPath(path.toStdString());
 
@@ -351,6 +343,7 @@ void MainWindow::BootFirmware() {
     // start the draw timer so we can update the screen at 60 fps
     render_timer->start(1000 / 60);
     core->SetState(State::Running);
+    audio_interface.SetState(AudioState::Playing);
 
     // set boot mode back to direct so that only firmware boot is
     // applied rn
