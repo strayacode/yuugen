@@ -26,6 +26,7 @@ private:
     void CreateMenubar();
     void CreateFileMenu();
     void CreateEmulationMenu();
+    void CreateSettingsMenu();
     void CreateViewMenu();
     void UpdateTitle(float fps);
 

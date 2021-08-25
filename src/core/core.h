@@ -3,6 +3,7 @@
 #include <core/hw/hw.h>
 #include <yuugen_common/emu_thread.h>
 #include <audio_common/audio_interface.h>
+#include <core/config.h>
 #include <functional>
 #include <string>
 
@@ -37,6 +38,8 @@ public:
     void SetAudioInterface(AudioInterface& interface);
 
     HW hw;
+
+    Config config;
     
 private:
     // if not configured yet just direct boot

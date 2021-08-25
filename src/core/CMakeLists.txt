@@ -2,6 +2,7 @@ set(SOFTWARE_FASTMEM ON)
 
 add_library(core
     core.h core.cpp
+    config.h config.cpp
 
     arm/memory_base.h arm/memory_base.cpp
     arm/cpu_base.h arm/cpu_base.cpp
