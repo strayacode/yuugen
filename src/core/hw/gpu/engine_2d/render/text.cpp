@@ -1,6 +1,7 @@
 #include <core/hw/gpu/engine_2d/gpu_2d.h>
 #include <core/hw/gpu/gpu.h>
 
+// TODO: make text rendering cleaner
 void GPU2D::RenderText(int bg_index, u16 line) {
     u32 character_base = vram_addr + (((BGCNT[bg_index] >> 2) & 0xF) * 0x4000) + (((DISPCNT >> 24) & 0x7) * 0x10000);
     u32 screen_base = vram_addr + (((BGCNT[bg_index] >> 8) & 0x1F) * 0x800) + (((DISPCNT >> 27) & 0x7) * 0x10000);
@@ -26,7 +27,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
     if (BGCNT[bg_index] & (1 << 7)) {
         // 256 colours / 1 palette
-        for (int tile = 0; tile < 256; tile += 8) {
+        for (int tile = 0; tile <= 256; tile += 8) {
             // get the addr of the tile in the bg map
             // mod 512 since we can have up to a max screen size of 512x512
             u32 x = (tile + BGHOFS[bg_index]) % 512;
@@ -36,6 +37,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             if (x >= 256 && screen_size & 0x1) {
                 screen_addr += 0x800;
             }
+
             u16 tile_info = gpu->ReadVRAM<u16>(screen_addr);
 
             // now we need to decode what the tile info means
@@ -66,7 +68,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                     colour = palette_index == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>(palette_index * 2);
                 }
 
-                u16 offset = tile + (horizontal_flip ? (7 - j) : j);
+                u16 offset = tile - (x % 8) + (horizontal_flip ? (7 - j) : j);
 
                 if (offset >= 0 && offset <= 0xFF) {
                     bg_layers[bg_index][(256 * line) + offset] = colour;
@@ -75,7 +77,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
         }
     } else {
         // 16 colours / 16 palettes
-        for (int tile = 0; tile < 256; tile += 8) {
+        for (int tile = 0; tile <= 256; tile += 8) {
             // mod 512 since we can have up to a max screen size of 512x512
             u32 x = (tile + BGHOFS[bg_index]) % 512;
 
@@ -101,9 +103,12 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
             for (int j = 0; j < 8; j++) {
                 u16 colour = (palette_indices & 0xF) == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>((palette_number * 32) + (palette_indices & 0xF) * 2);
-                u16 offset = (256 * line) + tile + (horizontal_flip ? (7 - j) : j);
+                u16 offset = tile - (x % 8) + (horizontal_flip ? (7 - j) : j);
 
-                bg_layers[bg_index][offset] = colour;
+                if (offset >= 0 && offset <= 0xFF) {
+                    bg_layers[bg_index][(256 * line) + offset] = colour;
+                }
+
                 palette_indices >>= 4;
             }
         }
