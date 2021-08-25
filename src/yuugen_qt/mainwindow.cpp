@@ -310,6 +310,7 @@ void MainWindow::LoadRom() {
     dialog.setNameFilter(tr("NDS ROMs (*.nds)"));
 
     core->SetState(State::Idle);
+    audio_interface.SetState(AudioState::Paused);
     render_timer->stop();
 
     if (dialog.exec()) {
