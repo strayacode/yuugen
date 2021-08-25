@@ -65,15 +65,18 @@ void MainWindow::CreateEmulationMenu() {
     connect(pause_action, &QAction::triggered, this, [this]() {
         if (core->GetState() == State::Running) {
             core->SetState(State::Paused);
+            audio_interface.SetState(AudioState::Paused);
             render_timer->stop();
         } else {
             core->SetState(State::Running);
+            audio_interface.SetState(AudioState::Playing);
             render_timer->start(1000 / 60);
         }
     });
 
     connect(stop_action, &QAction::triggered, this, [this]() {
         core->SetState(State::Idle);
+        audio_interface.SetState(AudioState::Paused);
 
         pause_action->setEnabled(false);
         stop_action->setEnabled(false);
@@ -86,11 +89,13 @@ void MainWindow::CreateEmulationMenu() {
 
     connect(restart_action, &QAction::triggered, this, [this]() {
         core->SetState(State::Idle);
+        audio_interface.SetState(AudioState::Paused);
 
         // stop the render timer, as there isn't anything to render
         render_timer->stop();
 
         core->SetState(State::Running);
+        audio_interface.SetState(AudioState::Playing);
 
         render_timer->start(1000 / 60);
     });
