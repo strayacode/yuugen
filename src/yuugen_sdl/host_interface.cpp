@@ -67,6 +67,7 @@ void HostInterface::Run(std::string path) {
     core.SetRomPath(path);
     core.SetBootMode(BootMode::Direct);
     core.SetState(State::Running);
+    audio_interface.SetState(AudioState::Playing);
 
     while (true) {
         SDL_UpdateTexture(top_texture, nullptr, core.hw.gpu.GetFramebuffer(TOP_SCREEN), sizeof(u32) * 256);

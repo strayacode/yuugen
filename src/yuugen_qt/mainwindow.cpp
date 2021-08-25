@@ -336,7 +336,6 @@ void MainWindow::BootFirmware() {
     path = "";
     core->SetRomPath(path.toStdString());
 
-    // TODO: only apply this just for booting the firmware
     core->SetBootMode(BootMode::Firmware);
 
     // allow emulation to be controlled now
