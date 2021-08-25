@@ -2,7 +2,7 @@
 
 #include <core/hw/hw.h>
 #include <yuugen_common/emu_thread.h>
-#include <yuugen_common/audio_interface.h>
+#include <audio_common/audio_interface.h>
 #include <functional>
 #include <string>
 

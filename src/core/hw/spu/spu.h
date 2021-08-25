@@ -3,7 +3,7 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <string.h>
-#include <yuugen_common/audio_interface.h>
+#include <audio_common/audio_interface.h>
 #include <algorithm>
 
 enum ChannelRegisters {

@@ -40,4 +40,4 @@ add_library(core
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC common yuugen_common)
+target_link_libraries(core PUBLIC common yuugen_common audio_common)

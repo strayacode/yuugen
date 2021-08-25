@@ -1,11 +1,9 @@
 #pragma once
 
-template <bool shift_imm>
+template <bool shift_imm, bool set_flags>
 void ARMDataProcessing() {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
-
-    u8 set_flags = (instruction >> 20) & 0x1;
     u8 opcode = (instruction >> 21) & 0xF;
     
     u32 op1 = regs.r[rn];
@@ -54,13 +52,13 @@ void ARMDataProcessing() {
     switch (opcode) {
     case 0x0:
         regs.r[rd] = AND(op1, op2, set_flags);
-        if (set_flags) {
+        if constexpr (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
     case 0x1:
         regs.r[rd] = EOR(op1, op2, set_flags);
-        if (set_flags) {
+        if constexpr (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
@@ -98,26 +96,26 @@ void ARMDataProcessing() {
         break;
     case 0xC:
         regs.r[rd] = ORR(op1, op2, set_flags);
-        if (set_flags) {
+        if constexpr (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
     case 0xD:
         regs.r[rd] = MOV(op2, set_flags);
-        if (set_flags) {
+        if constexpr (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         
         break;
     case 0xE:
         regs.r[rd] = BIC(op1, op2, set_flags);
-        if (set_flags) {
+        if constexpr (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
     case 0xF:
         regs.r[rd] = MVN(op2, set_flags);
-        if (set_flags) {
+        if constexpr (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
@@ -126,7 +124,7 @@ void ARMDataProcessing() {
     }
 
     if (rd == 15) {
-        if (set_flags) {
+        if constexpr (set_flags) {
             // store the current spsr in cpsr only if in privileged mode
             if (PrivilegedMode()) {
                 u32 current_spsr = GetCurrentSPSR();
@@ -401,7 +399,6 @@ auto LSR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
 
 auto ASR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
     u32 result = 0;
-
     u8 msb = op1 >> 31;
 
     if (immediate) {

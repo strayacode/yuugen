@@ -62,7 +62,7 @@ static constexpr Instruction GetARMInstruction() {
                 }
             }
         } else {
-            return &Interpreter::ARMDataProcessing<shift_imm>;
+            return &Interpreter::ARMDataProcessing<shift_imm, set_flags>;
         }
     }
     case 0x1: {
@@ -77,7 +77,7 @@ static constexpr Instruction GetARMInstruction() {
                 return &Interpreter::ARMUndefined;
             }
         } else {
-            return &Interpreter::ARMDataProcessing<shift_imm>;
+            return &Interpreter::ARMDataProcessing<shift_imm, set_flags>;
         }
     }
     case 0x2:

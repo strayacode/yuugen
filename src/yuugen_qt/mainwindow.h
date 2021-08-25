@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <core/core.h>
+#include <audio_common/sdl/audio_interface.h>
 #include <string.h>
 #include <memory>
 #include <mutex>
@@ -44,6 +45,8 @@ private:
     int screen_height;
 
     QString path;
+
+    SDLAudioInterface audio_interface;
 signals:
 
 public slots:

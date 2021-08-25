@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include <yuugen_common/audio_interface.h>
+#include <audio_common/audio_interface.h>
 
 class SDLAudioInterface : public AudioInterface {
 public:

@@ -144,7 +144,7 @@ void SPU::RunChannel(int channel_index) {
         channel[channel_index].internal_address += 4;
         break;
     case 0x3:
-        log_warn("handle psg/noise");
+        // log_warn("handle psg/noise");
         break;
     }
 }
@@ -178,7 +178,7 @@ auto SPU::GenerateSamples() -> u32 {
             data = channel[i].adpcm_value;
             break;
         default:
-            log_warn("[SPU] Handle format %d", format);
+            // log_warn("[SPU] Handle format %d", format);
             break;
         }
 

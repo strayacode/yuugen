@@ -7,7 +7,7 @@
 #include <common/log.h>
 #include <common/types.h>
 #include <yuugen_common/emu_thread.h>
-#include "audio_interface.h"
+#include <audio_common/sdl/audio_interface.h>
 
 class HostInterface {
 public:
