@@ -40,14 +40,12 @@ Right now there is no Windows support but again that should come in the future
 
 ## Roadmap of future endeavours:
 - 3D Engine
-- SPU (Sound Processing Unit)
 - Encryption
 - Proper CPU timings
 - ARM to x86 recompiler
 - Resolution upscaling
 - HLE of arm7/9 bios and firmware
 - Cached interpreter
-- Software fastmem
 - Road to perfect 3D graphics
 - Support for different platforms (e.g. Android)
 - Wifi support
