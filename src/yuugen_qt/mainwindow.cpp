@@ -26,6 +26,7 @@ MainWindow::MainWindow() {
 void MainWindow::CreateMenubar() {
     CreateFileMenu();
     CreateEmulationMenu();
+    CreateSettingsMenu();
     CreateViewMenu();
 }
 
@@ -57,10 +58,6 @@ void MainWindow::CreateEmulationMenu() {
 
     emulation_menu->addSeparator();
 
-    configure_action = emulation_menu->addAction(tr("Configure..."));
-
-    configure_action->setEnabled(true);
-
     QAction* boot_firmware_action = emulation_menu->addAction(tr("Boot Firmware"));
 
     connect(boot_firmware_action, &QAction::triggered, this, &MainWindow::BootFirmware);
@@ -82,7 +79,6 @@ void MainWindow::CreateEmulationMenu() {
         stop_action->setEnabled(false);
         restart_action->setEnabled(false);
         frame_limit_action->setEnabled(false);
-        configure_action->setEnabled(true);
 
         // stop the render timer, as there isn't anything to render
         render_timer->stop();
@@ -108,9 +104,18 @@ void MainWindow::CreateEmulationMenu() {
         core->SetState(State::Running);
         render_timer->start(1000 / 60);
     });
+}
 
-    connect(configure_action, &QAction::triggered, this, [this]() {
-        
+void MainWindow::CreateSettingsMenu() {
+    QMenu* settings_menu = menuBar()->addMenu(tr("Settings"));
+    QAction* audio_settings_action = settings_menu->addAction(tr("Audio Settings"));
+
+    connect(audio_settings_action, &QAction::triggered, this, [this]() {
+        audio_settings_window = new AudioSettingsWindow(this, core->config);
+
+        audio_settings_window->show();
+        audio_settings_window->raise();
+        audio_settings_window->activateWindow();
     });
 }
 
@@ -317,9 +322,6 @@ void MainWindow::LoadRom() {
         restart_action->setEnabled(true);
         frame_limit_action->setEnabled(true);
 
-        // once the core starts we can't change settings
-        configure_action->setEnabled(false);
-
         // start the draw timer so we can update the screen at 60 fps
         render_timer->start(1000 / 60);
 
@@ -345,9 +347,6 @@ void MainWindow::BootFirmware() {
     stop_action->setEnabled(true);
     restart_action->setEnabled(true);
     frame_limit_action->setEnabled(true);
-
-    // once the core starts we can't change settings
-    configure_action->setEnabled(false);
 
     // start the draw timer so we can update the screen at 60 fps
     render_timer->start(1000 / 60);

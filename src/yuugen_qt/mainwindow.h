@@ -8,6 +8,8 @@
 #include <mutex>
 #include <functional>
 
+#include "audio_settings_window.h"
+
 struct MainWindow : public QMainWindow {
     Q_OBJECT
 public:
@@ -34,7 +36,6 @@ private:
     QAction* stop_action;
     QAction* restart_action;
     QAction* frame_limit_action;
-    QAction* configure_action;
 
     std::unique_ptr<Core> core;
 
@@ -48,6 +49,8 @@ private:
     QString path;
 
     SDLAudioInterface audio_interface;
+
+    AudioSettingsWindow* audio_settings_window = nullptr;
 signals:
 
 public slots:
