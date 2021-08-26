@@ -20,7 +20,7 @@ MainWindow::MainWindow() {
     screen_width = screen_height = 0;
     
     // initialise audio
-    core->SetAudioInterface(audio_interface);
+    // core->SetAudioInterface(audio_interface);
 }
 
 void MainWindow::CreateMenubar() {
@@ -325,6 +325,7 @@ void MainWindow::LoadRom() {
 
         render_timer->start(1000 / 60);
         core->SetState(State::Running);
+        core->SetAudioInterface(audio_interface);
         audio_interface.SetState(AudioState::Playing);
     } 
 }

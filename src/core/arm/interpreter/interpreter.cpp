@@ -41,7 +41,7 @@ void Interpreter::Reset() {
 }
 
 void Interpreter::Run(int cycles) {
-    while (cycles--) {
+    while (cycles-- > 0) {
         if (halted) {
             return;
         }

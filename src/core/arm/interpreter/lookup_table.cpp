@@ -36,7 +36,7 @@ static constexpr Instruction GetARMInstruction() {
         } else if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             // miscellaneous instructions
             if ((instruction & 0xF0) == 0) {
-                return &Interpreter::ARMPSRTransfer;
+                return &Interpreter::ARMPSRTransfer<(instruction >> 21) & 0x1, (instruction >> 22) & 0x1>;
             } else if ((instruction & 0xFF000F0) == 0x1200010) {
                 return &Interpreter::ARMBranchExchange;
             } else if ((instruction & 0xFF000F0) == 0x1600010) {
@@ -68,11 +68,11 @@ static constexpr Instruction GetARMInstruction() {
     case 0x1: {
         const bool set_flags = instruction & (1 << 20);
         const u8 opcode = (instruction >> 21) & 0xF;
-        const u8 shift_imm = (instruction >> 25) & 0x1;
+        const bool shift_imm = (instruction >> 25) & 0x1;
 
         if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             if (instruction & (1 << 21)) {
-                return &Interpreter::ARMPSRTransfer;
+                return &Interpreter::ARMPSRTransfer<(instruction >> 21) & 0x1, (instruction >> 22) & 0x1>;
             } else {
                 return &Interpreter::ARMUndefined;
             }
@@ -80,20 +80,43 @@ static constexpr Instruction GetARMInstruction() {
             return &Interpreter::ARMDataProcessing<shift_imm, set_flags>;
         }
     }
-    case 0x2:
-        return &Interpreter::ARMSingleDataTransfer;
-    case 0x3:
+    case 0x2: {
+        const bool load = (instruction >> 20) & 0x1;
+        const bool writeback = (instruction >> 21) & 0x1;
+        const bool byte = (instruction >> 22) & 0x1;
+        const bool up = (instruction >> 23) & 0x1;
+        const bool pre = (instruction >> 24) & 0x1;
+        const bool shifted_register = (instruction >> 25) & 0x1;
+
+        return &Interpreter::ARMSingleDataTransfer<load, writeback, byte, up, pre, shifted_register>;
+    }
+    case 0x3: {
+        const bool load = (instruction >> 20) & 0x1;
+        const bool writeback = (instruction >> 21) & 0x1;
+        const bool byte = (instruction >> 22) & 0x1;
+        const bool up = (instruction >> 23) & 0x1;
+        const bool pre = (instruction >> 24) & 0x1;
+        const bool shifted_register = (instruction >> 25) & 0x1;
+
         if (instruction & (1 << 4)) {
             return &Interpreter::ARMUndefined;
         } else {
-            return &Interpreter::ARMSingleDataTransfer;
+            return &Interpreter::ARMSingleDataTransfer<load, writeback, byte, up, pre, shifted_register>;
         }
-    case 0x4:
+    }
+    case 0x4: {
+        const bool load = (instruction >> 20) & 0x1;
+        const bool writeback = (instruction >> 21) & 0x1;
+        const bool load_psr = (instruction >> 22) & 0x1;
+        const bool up = (instruction >> 23) & 0x1;
+        const bool pre = (instruction >> 24) & 0x1;
+
         if ((instruction >> 28) == 0xF) {
             return &Interpreter::ARMUndefined;
         } else {
-            return &Interpreter::ARMBlockDataTransfer;
+            return &Interpreter::ARMBlockDataTransfer<load, writeback, load_psr, up, pre>;
         }
+    }
     case 0x5: {
         // b/bl/blx
         const bool link = instruction & (1 << 24);

@@ -1,11 +1,10 @@
 #pragma once
 
+template <bool opcode, bool spsr>
 void ARMPSRTransfer() {
-    u8 opcode = (instruction >> 21) & 0x1;
-    u8 spsr = (instruction >> 22) & 0x1;
     u8 rm = instruction & 0xF;
 
-    if (opcode) {
+    if constexpr (opcode) {
         // msr
         u8 immediate = (instruction >> 25) & 0x1;
         u32 value = 0;
@@ -35,7 +34,7 @@ void ARMPSRTransfer() {
 
         value &= mask;
 
-        if (spsr) {
+        if constexpr (spsr) {
             if (HasSPSR()) {
                 SetCurrentSPSR((GetCurrentSPSR() & ~mask) | value);
             }
@@ -50,7 +49,7 @@ void ARMPSRTransfer() {
         // mrs
         u8 rd = (instruction >> 12) & 0xF;
 
-        if (spsr) {
+        if constexpr (spsr) {
             regs.r[rd] = GetCurrentSPSR();
         } else {
             regs.r[rd] = regs.cpsr;
@@ -60,31 +59,25 @@ void ARMPSRTransfer() {
     regs.r[15] += 4;
 }
 
+template <bool load, bool writeback, bool byte, bool up, bool pre, bool shifted_register>
 void ARMSingleDataTransfer() {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
 
-    u8 load = (instruction >> 20) & 0x1;
-    u8 writeback = (instruction >> 21) & 0x1;
-    u8 byte = (instruction >> 22) & 0x1;
-    u8 up = (instruction >> 23) & 0x1;
-    u8 pre = (instruction >> 24) & 0x1;
-    u8 shifted_register = (instruction >> 25) & 0x1;
-
     u32 op2 = 0;
     u32 address = regs.r[rn];
 
-    if (shifted_register) {
+    if constexpr (shifted_register) {
         op2 = ARMGetShiftedRegisterSingleDataTransfer();
     } else {
         op2 = instruction & 0xFFF;
     }
 
-    if (!up) {
+    if constexpr (!up) {
         op2 *= -1;
     }
 
-    if (pre) {
+    if constexpr (pre) {
         address += op2;
     }
 
@@ -92,19 +85,14 @@ void ARMSingleDataTransfer() {
     // however if we are loading into r15 this increment won't matter as well
     regs.r[15] += 4;
 
-    if (load) {
-        if (byte) {
+    if constexpr (load) {
+        if constexpr (byte) {
             regs.r[rd] = ReadByte(address);
         } else {
-            regs.r[rd] = ReadWord(address);
-
-            if (address & 0x3) {
-                u8 shift_amount = (address & 0x3) * 8;
-                regs.r[rd] = rotate_right(regs.r[rd], shift_amount);
-            }
+            regs.r[rd] = ReadWordRotate(address);
         }
     } else {
-        if (byte) {
+        if constexpr (byte) {
             WriteByte(address, regs.r[rd]);
         } else {
             WriteWord(address, regs.r[rd]);
@@ -113,7 +101,7 @@ void ARMSingleDataTransfer() {
 
     // for ldr instructons writeback can't happen when rd != rn
     if (!load || rd != rn) {
-        if (writeback || !pre) {
+        if constexpr (writeback || !pre) {
             regs.r[rn] += op2;
         }
     }
@@ -239,19 +227,11 @@ void ARMHalfwordDataTransfer() {
     regs.r[15] += 4;
 }
 
-// TODO: optimise this
+template <bool load, bool writeback, bool load_psr, bool up, bool pre>
 void ARMBlockDataTransfer() {
     u8 rn = (instruction >> 16) & 0xF;
-    u8 load = (instruction >> 20) & 0x1;
-    u8 writeback = (instruction >> 21) & 0x1;
-    u8 load_psr = (instruction >> 22) & 0x1;
-    u8 up = (instruction >> 23) & 0x1;
-    u8 pre = (instruction >> 24) & 0x1;
-
     u8 r15_in_rlist = (instruction >> 15) & 0x1;
-    
     u32 address = regs.r[rn];
-
     u8 old_mode = regs.cpsr & 0x1F;
 
     // make sure to only do user bank transfer if r15 is not in rlist or instruction is not ldm
@@ -264,12 +244,12 @@ void ARMBlockDataTransfer() {
 
     // u32 old_base = regs.r[rn];
 
-    if (up) {
-        if (pre) {
+    if constexpr (up) {
+        if constexpr (pre) {
             for (int i = 0; i < 16; i++) {
                 if (instruction & (1 << i)) {
                     address += 4;
-                    if (load) {
+                    if constexpr (load) {
                         regs.r[i] = ReadWord(address);
                     } else {
                         WriteWord(address, regs.r[i]);
@@ -279,7 +259,7 @@ void ARMBlockDataTransfer() {
         } else {
             for (int i = 0; i < 16; i++) {
                 if (instruction & (1 << i)) {
-                    if (load) {
+                    if constexpr (load) {
                         regs.r[i] = ReadWord(address);
 
                     } else {
@@ -291,11 +271,11 @@ void ARMBlockDataTransfer() {
         }
         
     } else {
-        if (pre) {
+        if constexpr (pre) {
             for (int i = 15; i >= 0; i--) {
                 if (instruction & (1 << i)) {
                     address -= 4;
-                    if (load) {
+                    if constexpr (load) {
                         regs.r[i] = ReadWord(address);
                     } else {
                         WriteWord(address, regs.r[i]);
@@ -305,7 +285,7 @@ void ARMBlockDataTransfer() {
         } else {
             for (int i = 15; i >= 0; i--) {
                 if (instruction & (1 << i)) {
-                    if (load) {
+                    if constexpr (load) {
                         regs.r[i] = ReadWord(address);
                     } else {
                         WriteWord(address, regs.r[i]);
@@ -317,8 +297,8 @@ void ARMBlockDataTransfer() {
     }
 
     // TODO: handle writeback edgecases correctly
-    if (writeback) {
-        if (load) {
+    if constexpr (writeback) {
+        if constexpr (load) {
             if (arch == CPUArch::ARMv5) {
                 if (((instruction & 0xFFFF) == (unsigned int)(1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
                     regs.r[rn] = address;

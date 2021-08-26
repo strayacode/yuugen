@@ -316,6 +316,10 @@ auto SPU::GenerateSamples() -> u32 {
 }
 
 void SPU::SetAudioInterface(AudioInterface& interface) {
+    if (audio_interface != nullptr) {
+        audio_interface->Close();
+    }
+
     audio_interface = &interface;
 
     audio_interface->Open(this, 32768, 1024, (Callback)AudioCallback);
