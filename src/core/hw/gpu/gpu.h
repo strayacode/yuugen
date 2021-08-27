@@ -55,6 +55,12 @@ public:
     template <typename T>
     void WriteVRAM(u32 addr, T data);
 
+    template <typename T>
+    auto ReadARM7(u32 addr) -> T;
+
+    template <typename T>
+    void WriteARM7(u32 addr, T data);
+
     void RenderScanlineStart();
     void RenderScanlineFinish();
 

@@ -10,6 +10,9 @@ void RenderEngine::Reset() {
     clear_colour = 0;
     clear_depth = 0;
     vertex_ram_size = 0;
+    clrimage_offset = 0;
+    fog_colour = 0;
+    fog_offset = 0;
     memset(framebuffer, 0, 256 * 192 * sizeof(u32));
 }
 

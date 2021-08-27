@@ -40,6 +40,7 @@ public:
     void Reset();
     auto ReadGXSTAT() -> u32;
     void WriteGXSTAT(u32 data);
+    void WriteGXFIFO(u32 data);
     void QueueCommand(u32 addr, u32 data);
     void QueueEntry(Entry entry);
     auto DequeueEntry() -> Entry;
@@ -52,6 +53,7 @@ public:
     void PrintVertex(const Vertex& a);
     void DoSwapBuffers();
     void AddVertex();
+    auto ReadClipMatrix(u32 addr) -> u32;
 
     // geometry commands
     // matrix operations
@@ -76,8 +78,9 @@ public:
     // other
     void SetViewport();
 
-
     u32 gxstat;
+    u32 gxfifo;
+    int gxfifo_write_count;
     u8 matrix_mode;
     bool busy;
     std::queue<Entry> fifo;

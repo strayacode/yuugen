@@ -26,6 +26,8 @@ GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {
 
 void GeometryEngine::Reset() {
     gxstat = 0;
+    gxfifo = 0;
+    gxfifo_write_count = 0;
     busy = false;
     matrix_mode = 0;
     modelview_pointer = 0;
@@ -69,6 +71,22 @@ auto GeometryEngine::ReadGXSTAT() -> u32 {
 void GeometryEngine::WriteGXSTAT(u32 data) {
     // TODO: handle side effects later
     gxstat = data;
+}
+
+void GeometryEngine::WriteGXFIFO(u32 data) {
+    if (gxfifo == 0) {
+        gxfifo = data;
+    } else {
+        u8 command = gxfifo & 0xFF;
+        QueueEntry({command, data});
+
+        gxfifo_write_count++;
+
+        if (gxfifo_write_count >= param_table[command]) {
+            gxfifo >>= 8;
+            gxfifo_write_count = 0;
+        }
+    }
 }
 
 void GeometryEngine::QueueCommand(u32 addr, u32 data) {
@@ -185,7 +203,14 @@ void GeometryEngine::InterpretCommand() {
             SetViewport();
             break;
         default:
-            log_fatal("[GeometryEngine] Handle geometry command %02x", command);
+            // log_fatal("[GeometryEngine] Handle geometry command %02x", command);
+            if (param_table[command] == 0) {
+                DequeueEntry();
+            } else {
+                for (int i = 0; i < param_table[command]; i++) {
+                    DequeueEntry();
+                }
+            }
             break;
         }
 
@@ -298,4 +323,11 @@ void GeometryEngine::AddVertex() {
     vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(vertex_ram[vertex_ram_size], clip_current);
 
     vertex_ram_size++;
+}
+
+auto GeometryEngine::ReadClipMatrix(u32 addr) -> u32 {
+    int x = (addr - 0x04000640) % 4;
+    int y = (addr - 0x04000640) / 4;
+
+    return clip_current.field[y][x];
 }

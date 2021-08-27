@@ -89,8 +89,16 @@ auto ARM7Memory::ReadByte(u32 addr) -> u8 {
         default:
             log_fatal("[ARM7] Undefined 8-bit io read %08x", addr);
         }
+    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+        // check if the arm9 has access rights to the gba slot
+        // if not return 0
+        if (!(hw->EXMEMCNT & (1 << 7))) {
+            return 0;
+        }
+        // otherwise return openbus (0xFFFFFFFF)
+        return 0xFF;
     default:
-        log_fatal("handle");
+        log_fatal("[ARM7] Undefined 8-bit read %08x", addr);
     }
 }
 
@@ -200,7 +208,7 @@ auto ARM7Memory::ReadHalf(u32 addr) -> u16 {
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFFFF;
     default:
-        log_fatal("handle %08x", addr);
+        log_fatal("[ARM7] Undefined 16-bit io read %08x", addr);
     }
 
     return return_value;
@@ -248,6 +256,7 @@ auto ARM7Memory::ReadWord(u32 addr) -> u32 {
         default:
             log_fatal("[ARM7] Undefined 32-bit io read %08x", addr);
         }
+        break;
     case REGION_VRAM:
         memcpy(&return_value, &hw->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], 4);
         break;
@@ -328,8 +337,11 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
             log_fatal("[ARM7] Undefined 8-bit io write %08x = %08x", addr, data);
         }
         break;
+    case REGION_VRAM:
+        hw->gpu.WriteARM7<u8>(addr, data);
+        break;
     default:
-        log_fatal("handle %08x", addr);
+        log_fatal("[ARM7] Undefined 8-bit write %08x = %08x", addr, data);
     }
 }
 
@@ -346,6 +358,9 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
     }
 
     switch (addr >> 24) {
+    case REGION_ARM7_BIOS:
+        // ignore all bios writes
+        break;
     case REGION_IO:
         switch (addr) {
         case 0x04000004:
@@ -490,7 +505,7 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
         }
         break;
     default:
-        log_fatal("handle");
+        log_fatal("[ARM7] Undefined 16-bit write %08x = %08x", addr, data);
     }
 }
 
@@ -598,12 +613,12 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
         }
         break;
     case REGION_VRAM:
-        memcpy(&hw->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], &data, 4);
+        hw->gpu.WriteARM7<u32>(addr, data);
         break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // for now do nothing lol
         break;
     default:
-        log_fatal("handle %08x", addr);
+        log_fatal("[ARM7] Undefined 32-bit write %08x = %08x", addr, data);
     }
 }
