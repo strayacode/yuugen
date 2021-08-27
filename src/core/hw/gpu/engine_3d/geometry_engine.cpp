@@ -269,8 +269,6 @@ void GeometryEngine::DoSwapBuffers() {
             render_x &= 0x1FF;
             render_y &= 0xFF;
 
-            printf("%ld %ld\n", render_x, render_y);
-
             render_vertex.x = render_x;
             render_vertex.y = render_y;
         } else {

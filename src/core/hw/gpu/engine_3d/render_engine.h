@@ -2,6 +2,7 @@
 
 #include <common/types.h>
 #include <common/vertex.h>
+#include <string.h>
 
 class GPU;
 
@@ -17,6 +18,8 @@ public:
 
     Vertex vertex_ram[6144];
     int vertex_ram_size;
+
+    u32 framebuffer[256 * 192];
 
     GPU* gpu;
 };

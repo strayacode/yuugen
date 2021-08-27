@@ -10,10 +10,15 @@ void RenderEngine::Reset() {
     clear_colour = 0;
     clear_depth = 0;
     vertex_ram_size = 0;
+    memset(framebuffer, 0, 256 * 192 * sizeof(u32));
 }
 
 void RenderEngine::Render() {
-    for (int i = 0; i < vertex_ram_size; i++) {
+    memset(framebuffer, 0, 256 * 192 * sizeof(u32));
 
+    for (int i = 0; i < vertex_ram_size; i++) {
+        Vertex vertex = vertex_ram[i];
+
+        framebuffer[(vertex.y * 256) + vertex.x] = 0xFFFFFF;
     }
 }

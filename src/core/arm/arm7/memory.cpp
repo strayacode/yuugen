@@ -597,6 +597,9 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
             log_fatal("[ARM7] Undefined 32-bit io write %08x = %08x", addr, data);
         }
         break;
+    case REGION_VRAM:
+        memcpy(&hw->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], &data, 4);
+        break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // for now do nothing lol
         break;

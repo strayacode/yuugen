@@ -68,6 +68,10 @@ void GPU::RenderScanlineStart() {
         hw->cpu_core[1]->SendInterrupt(1);
     }
 
+    if (VCOUNT == 215) {
+        render_engine.Render();
+    }
+
     // ARM9 DMA exclusive
     // check if scanline is between 2 and 193 inclusive
     // if so trigger a start of display dma transfer
