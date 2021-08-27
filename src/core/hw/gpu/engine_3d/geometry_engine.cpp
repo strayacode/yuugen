@@ -28,12 +28,16 @@ void GeometryEngine::Reset() {
     gxstat = 0;
     busy = false;
     matrix_mode = 0;
+    modelview_pointer = 0;
+    vertex_ram_size = 0;
 
     std::queue<Entry> empty_fifo_queue;
     fifo.swap(empty_fifo_queue);
 
     std::queue<Entry> empty_pipe_queue;
     pipe.swap(empty_pipe_queue);
+
+    state = GeometryEngineState::Running;
 }
 
 auto GeometryEngine::ReadGXSTAT() -> u32 {
@@ -68,7 +72,6 @@ void GeometryEngine::WriteGXSTAT(u32 data) {
 
 void GeometryEngine::QueueCommand(u32 addr, u32 data) {
     u8 command = (addr >> 2) & 0x7F;
-
     QueueEntry({command, data});
 }
 
@@ -79,7 +82,7 @@ void GeometryEngine::QueueEntry(Entry entry) {
         fifo.push(entry);
 
         if (fifo.size() == 256) {
-            log_fatal("[GPU3D] Handle full fifo");
+            log_fatal("[Geometry Engine] Handle full fifo");
         }
     }
 
@@ -121,6 +124,12 @@ void GeometryEngine::InterpretCommand() {
         return;
     }
 
+    // don't interpret commands while the geometry engine
+    // is halted
+    if (state == GeometryEngineState::Halted) {
+        return;
+    }
+
     u8 command = pipe.front().command;
     u8 param_count = param_table[command];
 
@@ -129,8 +138,41 @@ void GeometryEngine::InterpretCommand() {
         case 0x10:
             SetMatrixMode();
             break;
+        case 0x11:
+            PushCurrentMatrix();
+            break;
+        case 0x12:
+            PopCurrentMatrix();
+            break;
+        case 0x15:
+            LoadUnitMatrix();
+            break;
+        case 0x18:
+            Multiply4x4();
+            break;
+        case 0x19:
+            Multiply4x3();
+            break;
+        case 0x1A:
+            Multiply3x3();
+            break;
+        case 0x1C:
+            MultiplyTranslation();
+            break;
+        case 0x29:
+            SetPolygonAttributes();
+            break;
+        case 0x2A:
+            SetTextureParameters();
+            break;
+        case 0x50:
+            SwapBuffers();
+            break;
+        case 0x60:
+            SetViewport();
+            break;
         default:
-            log_fatal("[GPU3D] Handle geometry command %02x", command);
+            log_fatal("[Geometry Engine] Handle geometry command %02x", command);
             break;
         }
 
@@ -157,4 +199,33 @@ void GeometryEngine::CheckGXFIFOInterrupt() {
         }
         break;
     }
+}
+
+void GeometryEngine::UpdateClipMatrix() {
+    clip_current = MultiplyMatrixMatrix(projection_current, modelview_current);
+}
+
+auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix {
+    Matrix new_matrix;
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            s64 value = 0;
+            for (int i = 0; i < 4; i++) {
+                value += (s64)a.field[y][i] * (s64)b.field[i][x];
+                new_matrix.field[y][x] = (s32)(value >> 12);
+            } 
+        }
+    }
+    return new_matrix;
+}
+
+void GeometryEngine::DoSwapBuffers() {
+    for (int i = 0; i < vertex_ram_size; i++) {
+        gpu->render_engine.vertex_ram[i] = vertex_ram[i];
+    }
+
+    vertex_ram_size = 0;
+
+    // unhalt the geometry engine
+    state = GeometryEngineState::Running;
 }

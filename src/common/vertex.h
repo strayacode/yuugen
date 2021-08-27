@@ -3,6 +3,7 @@
 #include <common/types.h>
 
 class Vertex {
+public:
     Vertex() {
         x = 0;
         y = 0;

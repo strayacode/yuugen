@@ -4,6 +4,7 @@
 #include <string.h>
 
 class Matrix {
+public:
     Matrix() {
         // reset the matrix
         // initialise it as a 4x4 identity matrix

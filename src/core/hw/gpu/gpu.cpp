@@ -99,6 +99,8 @@ void GPU::RenderScanlineFinish() {
 
         hw->dma[0].Trigger(1);
         hw->dma[1].Trigger(1);
+
+        geometry_engine.DoSwapBuffers();
         break;
     case 262:
         // end of vblank

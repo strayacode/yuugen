@@ -178,6 +178,8 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
             return hw->gpu.engine_a.WINOUT;
         case 0x04000050:
             return hw->gpu.engine_a.BLDCNT;
+        case 0x04000060:
+            return hw->gpu.render_engine.disp3dcnt;
         case 0x0400006C:
             return hw->gpu.engine_a.MASTER_BRIGHT;
         case 0x040000BA:
@@ -660,6 +662,9 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
         case 0x04000054:
             hw->gpu.engine_a.BLDY = data;
             break;
+        case 0x04000060:
+            hw->gpu.render_engine.disp3dcnt = data;
+            break;
         case 0x04000068:
             // DISP_MMEM_FIFO
             // handle later
@@ -753,6 +758,9 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             break;
         case 0x04000304:
             hw->gpu.POWCNT1 = data;
+            break;
+        case 0x04000354:
+            hw->gpu.render_engine.clear_depth = data;
             break;
         case 0x04001000:
             hw->gpu.engine_b.DISPCNT = (hw->gpu.engine_b.DISPCNT & ~0xFFFF) | data;
@@ -1114,6 +1122,9 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             break;
         case 0x04000304:
             hw->gpu.POWCNT1 = data;
+            break;
+        case 0x04000350:
+            hw->gpu.render_engine.clear_colour = data;
             break;
         case 0x04000600:
             hw->gpu.geometry_engine.WriteGXSTAT(data);

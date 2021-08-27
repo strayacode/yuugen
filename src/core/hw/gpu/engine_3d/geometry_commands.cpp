@@ -1,8 +1,32 @@
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
+#include <core/hw/gpu/gpu.h>
 
 void GeometryEngine::SetMatrixMode() {
     u32 parameter = DequeueEntry().parameter;
     matrix_mode = parameter & 0x3;
+}
+
+void GeometryEngine::PushCurrentMatrix() {
+    DequeueEntry();
+
+    switch (matrix_mode) {
+    case 0:
+        projection_stack = projection_current;
+        break;
+    case 1: case 2:
+        if ((modelview_pointer < 0) || (modelview_pointer >= 31)) {
+            gxstat |= (1 << 15);
+        } else {
+            modelview_stack[modelview_pointer] = modelview_current;
+            direction_stack[modelview_pointer] = direction_current;
+            modelview_pointer++;
+            UpdateClipMatrix();
+        }
+        break;
+    case 3:
+        texture_stack = texture_current;
+        break;
+    }
 }
 
 void GeometryEngine::PopCurrentMatrix() {
@@ -10,6 +34,191 @@ void GeometryEngine::PopCurrentMatrix() {
     u8 stack_offset = (s8)((parameter & 0x3F) << 2) >> 2;
 
     switch (matrix_mode) {
-        
+    case 0:
+        projection_current = projection_stack;
+        UpdateClipMatrix();
+        break;
+    case 1: case 2:
+        modelview_pointer -= stack_offset;
+
+        if ((modelview_pointer < 0) || (modelview_pointer >= 31)) {
+            gxstat |= (1 << 15);
+        } else {
+            modelview_current = modelview_stack[modelview_pointer];
+            direction_current = direction_stack[modelview_pointer];
+            UpdateClipMatrix();
+        }
+        break;
+    case 3:
+        texture_current = texture_stack;
+        break;
+    }
+}
+
+void GeometryEngine::LoadUnitMatrix() {
+    DequeueEntry();
+
+    Matrix unit_matrix;
+
+    switch (matrix_mode) {
+    case 0:
+        projection_current = unit_matrix;
+        UpdateClipMatrix();
+        break;
+    case 1:
+        modelview_current = unit_matrix;
+        UpdateClipMatrix();
+        break;
+    case 2:
+        modelview_current = unit_matrix;
+        direction_current = unit_matrix;
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture_current = unit_matrix;
+        break;
+    }
+}
+
+void GeometryEngine::SwapBuffers() {
+    state = GeometryEngineState::Halted;
+
+    // TODO: handle bit 0 and 1 of parameter later
+    DequeueEntry();
+}
+
+void GeometryEngine::SetTextureParameters() {
+    DequeueEntry();
+}
+
+void GeometryEngine::SetPolygonAttributes() {
+    DequeueEntry();
+}
+
+void GeometryEngine::SetViewport() {
+    u32 parameter = DequeueEntry().parameter;
+
+    gpu->render_engine.screen_x1 = parameter & 0xFF;
+    gpu->render_engine.screen_y1 = (parameter >> 8) & 0xFF;
+    gpu->render_engine.screen_x2 = (parameter >> 16) & 0xFF;
+    gpu->render_engine.screen_y2 = (parameter >> 24) & 0xFF;
+}
+
+void GeometryEngine::Multiply4x4() {
+    // create a new 4x4 matrix, and fill each cell with an s32 number
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 1: 
+        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 2:
+        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        direction_current = MultiplyMatrixMatrix(direction_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        break;
+    }
+}
+
+void GeometryEngine::Multiply4x3() {
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 3; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 1: 
+        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 2:
+        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        direction_current = MultiplyMatrixMatrix(direction_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        break;
+    }
+}
+
+void GeometryEngine::MultiplyTranslation() {
+    Matrix matrix;
+
+    for (int i = 0; i < 3; i++) {
+        u32 parameter = DequeueEntry().parameter;
+        matrix.field[3][i] = (s32)parameter;
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 1:
+        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 2:
+        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        direction_current = MultiplyMatrixMatrix(direction_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        break;
+    }
+}
+
+void GeometryEngine::Multiply3x3() {
+    Matrix matrix;
+
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 1:
+        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 2:
+        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        direction_current = MultiplyMatrixMatrix(direction_current, matrix);
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        break;
     }
 }
