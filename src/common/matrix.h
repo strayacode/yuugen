@@ -3,10 +3,10 @@
 #include <common/types.h>
 #include <string.h>
 
-struct Matrix {
+class Matrix {
     Matrix() {
         // reset the matrix
-        // initialise it as a 4x4 unit matrix
+        // initialise it as a 4x4 identity matrix
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (i == j) {

@@ -2,12 +2,12 @@
 
 #include <common/types.h>
 
-struct Vertex {
+class Vertex {
     Vertex() {
         x = 0;
         y = 0;
         z = 0;
-        w = 1 << 12;
+        w = 0;
     }
 
     s32 x;

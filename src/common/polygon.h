@@ -5,5 +5,5 @@
 
 struct Polygon {
     Vertex* vertex_list = nullptr;
-    u8 size = 0;
+    int size = 0;
 };
