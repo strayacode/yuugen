@@ -47,7 +47,11 @@ public:
     void CheckGXFIFOInterrupt();
     void UpdateClipMatrix();
     auto MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix;
+    auto MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex;
+    void PrintMatrix(const Matrix& a);
+    void PrintVertex(const Vertex& a);
     void DoSwapBuffers();
+    void AddVertex();
 
     // geometry commands
     // matrix operations
@@ -64,6 +68,10 @@ public:
     // vertex / polygon / texture operations
     void SetTextureParameters();
     void SetPolygonAttributes();
+    void BeginVertexList();
+    void EndVertexList();
+    void SetVertexColour();
+    void AddVertex16();
 
     // other
     void SetViewport();
@@ -89,8 +97,15 @@ public:
 
     GeometryEngineState state;
 
-    Vertex vertex_ram[6188];
+    Vertex vertex_ram[6144];
     int vertex_ram_size;
+
+    Vertex current_vertex;
+
+    u8 screen_x1;
+    u8 screen_x2;
+    u8 screen_y1;
+    u8 screen_y2;
 
     GPU* gpu;
 

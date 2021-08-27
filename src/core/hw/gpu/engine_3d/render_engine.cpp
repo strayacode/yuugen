@@ -9,5 +9,11 @@ void RenderEngine::Reset() {
     disp3dcnt = 0;
     clear_colour = 0;
     clear_depth = 0;
-    screen_x1 = screen_x2 = screen_y1 = screen_y2 = 0;
+    vertex_ram_size = 0;
+}
+
+void RenderEngine::Render() {
+    for (int i = 0; i < vertex_ram_size; i++) {
+
+    }
 }

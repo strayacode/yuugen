@@ -30,6 +30,7 @@ void GeometryEngine::Reset() {
     matrix_mode = 0;
     modelview_pointer = 0;
     vertex_ram_size = 0;
+    screen_x1 = screen_x2 = screen_y1 = screen_y2 = 0;
 
     std::queue<Entry> empty_fifo_queue;
     fifo.swap(empty_fifo_queue);
@@ -82,7 +83,7 @@ void GeometryEngine::QueueEntry(Entry entry) {
         fifo.push(entry);
 
         if (fifo.size() == 256) {
-            log_fatal("[Geometry Engine] Handle full fifo");
+            log_fatal("[GeometryEngine] Handle full fifo");
         }
     }
 
@@ -159,11 +160,23 @@ void GeometryEngine::InterpretCommand() {
         case 0x1C:
             MultiplyTranslation();
             break;
+        case 0x20:
+            SetVertexColour();
+            break;
+        case 0x23:
+            AddVertex16();
+            break;
         case 0x29:
             SetPolygonAttributes();
             break;
         case 0x2A:
             SetTextureParameters();
+            break;
+        case 0x40:
+            BeginVertexList();
+            break;
+        case 0x41:
+            EndVertexList();
             break;
         case 0x50:
             SwapBuffers();
@@ -172,7 +185,7 @@ void GeometryEngine::InterpretCommand() {
             SetViewport();
             break;
         default:
-            log_fatal("[Geometry Engine] Handle geometry command %02x", command);
+            log_fatal("[GeometryEngine] Handle geometry command %02x", command);
             break;
         }
 
@@ -202,7 +215,7 @@ void GeometryEngine::CheckGXFIFOInterrupt() {
 }
 
 void GeometryEngine::UpdateClipMatrix() {
-    clip_current = MultiplyMatrixMatrix(projection_current, modelview_current);
+    clip_current = MultiplyMatrixMatrix(modelview_current, projection_current);
 }
 
 auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix {
@@ -219,13 +232,72 @@ auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> M
     return new_matrix;
 }
 
+auto GeometryEngine::MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex {
+    Vertex new_vertex;
+    new_vertex.x = (s32)((s64)a.x * b.field[0][0] + (s64)a.y * b.field[1][0] + (s64)a.z * b.field[2][0] + (s64)a.w * b.field[3][0]) >> 12;
+    new_vertex.y = (s32)((s64)a.x * b.field[0][1] + (s64)a.y * b.field[1][1] + (s64)a.z * b.field[2][1] + (s64)a.w * b.field[3][1]) >> 12;
+    new_vertex.z = (s32)((s64)a.x * b.field[0][2] + (s64)a.y * b.field[1][2] + (s64)a.z * b.field[2][2] + (s64)a.w * b.field[3][2]) >> 12;
+    new_vertex.w = (s32)((s64)a.x * b.field[0][3] + (s64)a.y * b.field[1][3] + (s64)a.z * b.field[2][3] + (s64)a.w * b.field[3][3]) >> 12;
+
+    return new_vertex;
+}
+
+void GeometryEngine::PrintMatrix(const Matrix& a) {
+    printf("| %d %d %d %d |\n", a.field[0][0], a.field[0][1], a.field[0][2], a.field[0][3]);
+    printf("| %d %d %d %d |\n", a.field[1][0], a.field[1][1], a.field[1][2], a.field[1][3]);
+    printf("| %d %d %d %d |\n", a.field[2][0], a.field[2][1], a.field[2][2], a.field[2][3]);
+    printf("| %d %d %d %d |\n", a.field[3][0], a.field[3][1], a.field[3][2], a.field[3][3]);
+}
+
+void GeometryEngine::PrintVertex(const Vertex& a) {
+    printf("| %d |\n", a.x);
+    printf("| %d |\n", a.y);
+    printf("| %d |\n", a.z);
+    printf("| %d |\n", a.w);
+}
+
 void GeometryEngine::DoSwapBuffers() {
     for (int i = 0; i < vertex_ram_size; i++) {
-        gpu->render_engine.vertex_ram[i] = vertex_ram[i];
+        Vertex render_vertex;
+
+        if (vertex_ram[i].w != 0) {
+            u16 screen_width = (screen_x2 - screen_x1 + 1) & 0x1FF;
+            u16 screen_height = (screen_y2 - screen_y1 + 1) & 0xFF;
+            s64 render_x = ((s64)vertex_ram[i].x + vertex_ram[i].w) * screen_width / (2 * vertex_ram[i].w) + screen_x1;
+            s64 render_y = (-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height / (2 * vertex_ram[i].w) + screen_y1;
+            // TODO: update z coord here
+            render_x &= 0x1FF;
+            render_y &= 0xFF;
+
+            printf("%ld %ld\n", render_x, render_y);
+
+            render_vertex.x = render_x;
+            render_vertex.y = render_y;
+        } else {
+            render_vertex.x = 0;
+            render_vertex.y = 0;
+            render_vertex.z = 0;
+        }
+
+        gpu->render_engine.vertex_ram[i] = render_vertex;
     }
+
+    gpu->render_engine.vertex_ram_size = vertex_ram_size;
 
     vertex_ram_size = 0;
 
     // unhalt the geometry engine
     state = GeometryEngineState::Running;
+}
+
+void GeometryEngine::AddVertex() {
+    if (vertex_ram_size >= 6144) {
+        return;
+    }
+
+    current_vertex.w = 1 << 12;
+    vertex_ram[vertex_ram_size] = current_vertex;
+    vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(vertex_ram[vertex_ram_size], clip_current);
+
+    vertex_ram_size++;
 }

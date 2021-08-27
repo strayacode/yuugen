@@ -9,10 +9,12 @@ public:
         y = 0;
         z = 0;
         w = 0;
+        colour = 0;
     }
 
     s32 x;
     s32 y;
     s32 z;
     s32 w;
+    u32 colour;
 };

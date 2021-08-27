@@ -12,6 +12,7 @@ void GeometryEngine::PushCurrentMatrix() {
     switch (matrix_mode) {
     case 0:
         projection_stack = projection_current;
+        UpdateClipMatrix();
         break;
     case 1: case 2:
         if ((modelview_pointer < 0) || (modelview_pointer >= 31)) {
@@ -98,10 +99,10 @@ void GeometryEngine::SetPolygonAttributes() {
 void GeometryEngine::SetViewport() {
     u32 parameter = DequeueEntry().parameter;
 
-    gpu->render_engine.screen_x1 = parameter & 0xFF;
-    gpu->render_engine.screen_y1 = (parameter >> 8) & 0xFF;
-    gpu->render_engine.screen_x2 = (parameter >> 16) & 0xFF;
-    gpu->render_engine.screen_y2 = (parameter >> 24) & 0xFF;
+    screen_x1 = parameter & 0xFF;
+    screen_y1 = (parameter >> 8) & 0xFF;
+    screen_x2 = (parameter >> 16) & 0xFF;
+    screen_y2 = (parameter >> 24) & 0xFF;
 }
 
 void GeometryEngine::Multiply4x4() {
@@ -221,4 +222,30 @@ void GeometryEngine::Multiply3x3() {
         texture_current = MultiplyMatrixMatrix(texture_current, matrix);
         break;
     }
+}
+
+void GeometryEngine::BeginVertexList() {
+    // TODO: handle polygon rendering later
+    DequeueEntry();
+}
+
+void GeometryEngine::EndVertexList() {
+    DequeueEntry();
+}
+
+void GeometryEngine::SetVertexColour() {
+    u32 parameter = DequeueEntry().parameter;
+
+    current_vertex.colour = parameter & 0x7FFF;
+}
+
+void GeometryEngine::AddVertex16() {
+    u32 parameter1 = DequeueEntry().parameter;
+    u32 parameter2 = DequeueEntry().parameter;
+
+    current_vertex.x = (s16)(parameter1 & 0xFFFF);
+    current_vertex.y = (s16)(parameter1 >> 16);
+    current_vertex.z = (s16)(parameter2 & 0xFFFF);
+
+    AddVertex();
 }
