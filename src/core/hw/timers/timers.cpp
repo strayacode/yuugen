@@ -50,11 +50,7 @@ void Timers::Overflow(int timer_index) {
     timer[timer_index].counter = timer[timer_index].reload_value;
 
     if (timer[timer_index].control & (1 << 6)) {
-        if (arch == 1) {
-            hw->cpu_core[1]->SendInterrupt(3 + timer_index);
-        } else {
-            hw->cpu_core[0]->SendInterrupt(3 + timer_index);
-        }
+        hw->cpu_core[arch]->SendInterrupt(3 + timer_index);
     }
 
     // reactivate the timer if it's not in count up mode
@@ -117,7 +113,10 @@ int Timers::GetEventId(int timer_index) {
 auto Timers::ReadTMCNT_L(int timer_index) -> u16 {
     // we need to now update counter to be relative to the time that has passed since
     // the timer was placed on the scheduler
-    timer[timer_index].counter = (hw->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
+    if (timer[timer_index].active) {
+        timer[timer_index].counter = (hw->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
+    }
+    
     return timer[timer_index].counter;
 }
 

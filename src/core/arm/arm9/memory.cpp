@@ -450,6 +450,8 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFFFFFFFF;
+    case REGION_GBA_RAM:
+        return 0;
     default:
         log_fatal("handle word read from %08x", addr);
     }
@@ -1193,6 +1195,12 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             // write to upper 32 bits of DIV_DENOM, starting a division
             hw->maths_unit.DIV_DENOM = (hw->maths_unit.DIV_DENOM & 0xFFFFFFFF) | ((u64)data << 32);
             hw->maths_unit.StartDivision();
+            break;
+        case 0x040002A0: case 0x040002A4: case 0x040002A8:
+            break;
+        case 0x040002B0:
+            hw->maths_unit.SQRTCNT = (hw->maths_unit.SQRTCNT & ~0xFFFF) | data;
+            hw->maths_unit.StartSquareRoot();
             break;
         case 0x040002B8:
             // write to lower 32 bits of SQRT_PARAM

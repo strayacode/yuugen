@@ -82,10 +82,16 @@ void GeometryEngine::WriteGXFIFO(u32 data) {
 
         gxfifo_write_count++;
 
-        if (gxfifo_write_count >= param_table[command]) {
+        if (gxfifo_write_count == param_table[command]) {
             gxfifo >>= 8;
             gxfifo_write_count = 0;
         }
+    }
+
+    while ((gxfifo != 0) && (param_table[gxfifo & 0xFF] == 0)) {
+        u8 command = gxfifo & 0xFF;
+        QueueEntry({command, 0});
+        gxfifo >>= 8;
     }
 }
 
