@@ -124,6 +124,14 @@ auto ARM9Memory::ReadByte(u32 addr) -> u8 {
         }
     case REGION_VRAM:
         return hw->gpu.ReadVRAM<u8>(addr);
+    case REGION_OAM:
+        if ((addr & 0x7FF) < 0x400) {
+            return hw->gpu.engine_a.ReadOAM<u8>(addr);
+        } else {
+            return hw->gpu.engine_b.ReadOAM<u8>(addr);
+        }
+
+        break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -426,6 +434,14 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         break;
     case REGION_VRAM:
         return hw->gpu.ReadVRAM<u32>(addr);
+    case REGION_OAM:
+        if ((addr & 0x7FF) < 0x400) {
+            return_value = hw->gpu.engine_a.ReadOAM<u32>(addr);
+        } else {
+            return_value = hw->gpu.engine_b.ReadOAM<u32>(addr);
+        }
+
+        break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -565,6 +581,14 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
             log_fatal("[ARM9] Undefined 8-bit io write %08x = %02x", addr, data);
             break;
         }
+        break;
+    case REGION_PALETTE_RAM:
+        if ((addr & 0x7FF) < 0x400) {
+            hw->gpu.engine_a.WritePaletteRAM<u8>(addr, data);
+        } else {
+            hw->gpu.engine_b.WritePaletteRAM<u8>(addr, data);
+        }
+
         break;
     case REGION_VRAM:
         hw->gpu.WriteVRAM<u8>(addr, data);
@@ -777,6 +801,9 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
         case 0x0400033C: case 0x0400033D: case 0x0400033E: case 0x0400033F:
             // hw->gpu.render_engine.edge_colour[addr - 0x04000330] = data;
             break;
+        case 0x04000340:
+            hw->gpu.render_engine.alpha_test_ref = data & 0xFF;
+            break;
         case 0x04000354:
             hw->gpu.render_engine.clear_depth = data;
             break;
@@ -785,6 +812,34 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             break;
         case 0x0400035C:
             hw->gpu.render_engine.fog_offset = data;
+            break;
+        case 0x04000360: case 0x04000361: case 0x04000362: case 0x04000363:
+        case 0x04000364: case 0x04000365: case 0x04000366: case 0x04000367:
+        case 0x04000368: case 0x04000369: case 0x0400036A: case 0x0400036B:
+        case 0x0400036C: case 0x0400036D: case 0x0400036E: case 0x0400036F:
+        case 0x04000370: case 0x04000371: case 0x04000372: case 0x04000373:
+        case 0x04000374: case 0x04000375: case 0x04000376: case 0x04000377:
+        case 0x04000378: case 0x04000379: case 0x0400037A: case 0x0400037B:
+        case 0x0400037C: case 0x0400037D: case 0x0400037E: case 0x0400037F:
+            // hw->gpu.render_engine.FOG_TABLE[addr - 0x04000360] = data;
+            break;
+        case 0x04000380: case 0x04000381: case 0x04000382: case 0x04000383:
+        case 0x04000384: case 0x04000385: case 0x04000386: case 0x04000387:
+        case 0x04000388: case 0x04000389: case 0x0400038A: case 0x0400038B:
+        case 0x0400038C: case 0x0400038D: case 0x0400038E: case 0x0400038F:
+        case 0x04000390: case 0x04000391: case 0x04000392: case 0x04000393:
+        case 0x04000394: case 0x04000395: case 0x04000396: case 0x04000397:
+        case 0x04000398: case 0x04000399: case 0x0400039A: case 0x0400039B:
+        case 0x0400039C: case 0x0400039D: case 0x0400039E: case 0x0400039F:
+        case 0x040003A0: case 0x040003A1: case 0x040003A2: case 0x040003A3:
+        case 0x040003A4: case 0x040003A5: case 0x040003A6: case 0x040003A7:
+        case 0x040003A8: case 0x040003A9: case 0x040003AA: case 0x040003AB:
+        case 0x040003AC: case 0x040003AD: case 0x040003AE: case 0x040003AF:
+        case 0x040003B0: case 0x040003B1: case 0x040003B2: case 0x040003B3:
+        case 0x040003B4: case 0x040003B5: case 0x040003B6: case 0x040003B7:
+        case 0x040003B8: case 0x040003B9: case 0x040003BA: case 0x040003BB:
+        case 0x040003BC: case 0x040003BD: case 0x040003BE: case 0x040003BF:
+            // hw->gpu.render_engine.TOON_TABLE[addr - 0x04000380] = data;
             break;
         case 0x04001000:
             hw->gpu.engine_b.DISPCNT = (hw->gpu.engine_b.DISPCNT & ~0xFFFF) | data;

@@ -18,6 +18,7 @@ public:
     u16 clrimage_offset;
     u32 fog_colour;
     u16 fog_offset;
+    u8 alpha_test_ref;
 
     u8 edge_colour[0x10];
     u8 fog_table[0x20];

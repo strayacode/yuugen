@@ -288,8 +288,8 @@ void GeometryEngine::DoSwapBuffers() {
         if (vertex_ram[i].w != 0) {
             u16 screen_width = (screen_x2 - screen_x1 + 1) & 0x1FF;
             u16 screen_height = (screen_y2 - screen_y1 + 1) & 0xFF;
-            s64 render_x = ((s64)vertex_ram[i].x + vertex_ram[i].w) * screen_width / (2 * vertex_ram[i].w) + screen_x1;
-            s64 render_y = (-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height / (2 * vertex_ram[i].w) + screen_y1;
+            s64 render_x = (((s64)(vertex_ram[i].x + vertex_ram[i].w) * screen_width) / (2 * vertex_ram[i].w)) + screen_x1;
+            s64 render_y = (((-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height) / (2 * vertex_ram[i].w)) + screen_y1;
             // TODO: update z coord here
             render_x &= 0x1FF;
             render_y &= 0xFF;

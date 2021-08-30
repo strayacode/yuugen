@@ -13,6 +13,7 @@ void RenderEngine::Reset() {
     clrimage_offset = 0;
     fog_colour = 0;
     fog_offset = 0;
+    alpha_test_ref = 0;
     memset(framebuffer, 0, 256 * 192 * sizeof(u32));
 }
 

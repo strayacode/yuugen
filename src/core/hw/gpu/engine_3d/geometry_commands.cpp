@@ -118,20 +118,20 @@ void GeometryEngine::Multiply4x4() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
         UpdateClipMatrix();
         break;
     case 1: 
-        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
-        direction_current = MultiplyMatrixMatrix(direction_current, matrix);
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        direction_current = MultiplyMatrixMatrix(matrix, projection_current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
         break;
     }
 }
@@ -148,20 +148,20 @@ void GeometryEngine::Multiply4x3() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
         UpdateClipMatrix();
         break;
     case 1: 
-        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
-        direction_current = MultiplyMatrixMatrix(direction_current, matrix);
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        direction_current = MultiplyMatrixMatrix(matrix, projection_current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
         break;
     }
 }
@@ -176,20 +176,20 @@ void GeometryEngine::MultiplyTranslation() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
         UpdateClipMatrix();
         break;
-    case 1:
-        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+    case 1: 
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
-        direction_current = MultiplyMatrixMatrix(direction_current, matrix);
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        direction_current = MultiplyMatrixMatrix(matrix, projection_current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
         break;
     }
 }
@@ -206,20 +206,20 @@ void GeometryEngine::Multiply3x3() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(projection_current, matrix);
+        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
         UpdateClipMatrix();
         break;
-    case 1:
-        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
+    case 1: 
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = MultiplyMatrixMatrix(modelview_current, matrix);
-        direction_current = MultiplyMatrixMatrix(direction_current, matrix);
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        direction_current = MultiplyMatrixMatrix(matrix, projection_current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(texture_current, matrix);
+        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
         break;
     }
 }
