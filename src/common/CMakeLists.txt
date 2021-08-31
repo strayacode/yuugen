@@ -4,6 +4,7 @@ add_library(common
     polygon.h vertex.h
     log_file.h lut_helpers.h
     arithmetic.h
+    circular_buffer.h
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

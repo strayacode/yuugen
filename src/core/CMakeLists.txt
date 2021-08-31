@@ -22,6 +22,7 @@ add_library(core
     scheduler/scheduler.h scheduler/scheduler.cpp
     hw/cp15/cp15.h hw/cp15/cp15.cpp
     hw/gpu/gpu.h hw/gpu/gpu.cpp
+    hw/gpu/vram_page.h
     hw/gpu/engine_2d/gpu_2d.h hw/gpu/engine_2d/gpu_2d.cpp
     hw/gpu/engine_2d/render/text.cpp hw/gpu/engine_2d/render/extended.cpp
     hw/gpu/compose.cpp hw/gpu/engine_2d/render/object.cpp

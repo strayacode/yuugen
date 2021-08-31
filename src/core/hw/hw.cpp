@@ -85,8 +85,8 @@ void HW::DirectBoot() {
     arm9_memory.FastWrite<u16>(0x27FFC40, 0x0001); // Boot indicator
 
     cartridge.DirectBoot();
-    cpu_core[1]->DirectBoot(cartridge.header.arm9_entrypoint);
     cpu_core[0]->DirectBoot(cartridge.header.arm7_entrypoint);
+    cpu_core[1]->DirectBoot(cartridge.header.arm9_entrypoint);    
     spi.DirectBoot();
 }
 
@@ -100,17 +100,8 @@ void HW::SetRomPath(std::string path) {
 }
 
 void HW::RunFrame() {
-    // quick sidenote
-    // in 1 frame of the nds executing
-    // there are 263 scanlines with 192 visible and 71 for vblank
-    // in each scanline there are 355 dots in total with 256 visible and 99 for hblank
-    // 3 cycles of the arm7 occurs per dot and 6 cycles of the arm9 occurs per dot
-    // so thus each frame consists of 263 * 355 * 6 cycles based on arm9 clock speed
-    // which is = 560190
-
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
 
-    // run frame for total of 560190 arm9 cycles
     while (scheduler.GetCurrentTime() < frame_end_time) {
         u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
 
@@ -119,10 +110,7 @@ void HW::RunFrame() {
             cpu_core[0]->Run(1);
         }   
         
-        // make sure to tick the scheduler by cycles
         scheduler.Tick(cycles);
-
-        // do any events
         scheduler.RunEvents();
     }
 }

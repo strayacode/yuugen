@@ -5,6 +5,7 @@
 #include <core/hw/gpu/engine_2d/gpu_2d.h>
 #include <core/hw/gpu/engine_3d/render_engine.h>
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
+#include <core/hw/gpu/vram_page.h>
 #include <string.h>
 #include <functional>
 #include <array>
@@ -16,12 +17,6 @@ enum Screen {
     TOP_SCREEN,
 };
 
-// notes on the new vram mapping approach:
-// split each vram region into 4kb pages
-// on vramcnt writes remap certain regions
-// to avoid overhead hopefully just remap a specific block
-// for a specific vramcnt
-
 class GPU {
 public:
     GPU(HW* hw);
@@ -32,7 +27,6 @@ public:
     auto GetVRAMCNTMST(u8 vramcnt) -> int;
     auto GetVRAMCNTOffset(u8 vramcnt) -> int;
     auto GetVRAMCNTEnabled(u8 vramcnt) -> bool; 
-
 
     void WriteDISPSTAT7(u16 data);
     void WriteDISPSTAT9(u16 data);
@@ -66,6 +60,8 @@ public:
 
     void MapVRAM();
 
+    void VRAMMappingReset();
+
     u16 POWCNT1;
     
     u8 VRAMCNT_A;
@@ -84,23 +80,22 @@ public:
 
     HW* hw;
 
-    // understanding: these blocks of vram make up 656kb and are able to be dynamically mapped to the vram region
-    u8 VRAM_A[0x20000];
-    u8 VRAM_B[0x20000];
-    u8 VRAM_C[0x20000];
-    u8 VRAM_D[0x20000];
-    u8 VRAM_E[0x10000];
-    u8 VRAM_F[0x4000];
-    u8 VRAM_G[0x4000];
-    u8 VRAM_H[0x8000];
-    u8 VRAM_I[0x4000];
+    u8 bank_a[0x20000];
+    u8 bank_b[0x20000];
+    u8 bank_c[0x20000];
+    u8 bank_d[0x20000];
+    u8 bank_e[0x10000];
+    u8 bank_f[0x4000];
+    u8 bank_g[0x4000];
+    u8 bank_h[0x8000];
+    u8 bank_i[0x4000];
 
-    std::array<u8*, 0xA4> lcdc;
-    std::array<u8*, 0x80> bga;
-    std::array<u8*, 0x20> obja;
-    std::array<u8*, 0x40> bgb;
-    std::array<u8*, 0x20> objb;
-    std::array<u8*, 0x40> arm7_vram;    
+    std::array<VRAMPage, 0xA4> lcdc;
+    std::array<VRAMPage, 0x80> bga;
+    std::array<VRAMPage, 0x40> obja;
+    std::array<VRAMPage, 0x20> bgb;
+    std::array<VRAMPage, 0x20> objb;
+    std::array<VRAMPage, 0x20> arm7_vram;    
 
     GPU2D engine_a, engine_b;
 

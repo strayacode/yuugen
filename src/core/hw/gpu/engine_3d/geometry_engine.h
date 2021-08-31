@@ -5,6 +5,7 @@
 #include <common/vertex.h>
 #include <common/polygon.h>
 #include <common/log.h>
+#include <common/circular_buffer.h>
 #include <functional>
 #include <queue>
 #include <array>

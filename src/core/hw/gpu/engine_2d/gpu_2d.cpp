@@ -149,16 +149,16 @@ void GPU2D::RenderVRAMDisplay(u16 line) {
         
         switch ((DISPCNT >> 18) & 0x3) {
         case 0:
-            data = (gpu->VRAM_A[addr + 1] << 8 | gpu->VRAM_A[addr]);
+            data = (gpu->bank_a[addr + 1] << 8 | gpu->bank_a[addr]);
             break;
         case 1:
-            data = (gpu->VRAM_B[addr + 1] << 8 | gpu->VRAM_B[addr]);
+            data = (gpu->bank_b[addr + 1] << 8 | gpu->bank_b[addr]);
             break;
         case 2:
-            data = (gpu->VRAM_C[addr + 1] << 8 | gpu->VRAM_C[addr]);
+            data = (gpu->bank_c[addr + 1] << 8 | gpu->bank_c[addr]);
             break;
         case 3:
-            data = (gpu->VRAM_D[addr + 1] << 8 | gpu->VRAM_D[addr]);
+            data = (gpu->bank_d[addr + 1] << 8 | gpu->bank_d[addr]);
             break;
         }
         framebuffer[(256 * line) + i] = Convert15To24(data);

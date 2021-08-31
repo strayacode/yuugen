@@ -140,4 +140,6 @@ private:
     std::array<Instruction, 4096> arm_lut;
 
     std::unique_ptr<LogFile> log_file;
+
+    int counter = 0;
 };

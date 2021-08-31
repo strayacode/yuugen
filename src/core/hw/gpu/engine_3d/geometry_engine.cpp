@@ -118,6 +118,7 @@ auto GeometryEngine::DequeueEntry() -> Entry {
     Entry entry = pipe.front();
 
     pipe.pop();
+    
 
     // if the pipe is running half empty
     // move 2 entries from the fifo to the pipe
@@ -141,6 +142,7 @@ auto GeometryEngine::DequeueEntry() -> Entry {
 }
 
 void GeometryEngine::InterpretCommand() {
+    // printf("current time %ld\n", gpu->hw->scheduler.GetCurrentTime());
     int total_size = fifo.size() + pipe.size();
 
     // don't interpret a command if the fifo and pipe are both empty
@@ -223,8 +225,11 @@ void GeometryEngine::InterpretCommand() {
         // keep on interpreting commands
         // now that we interpreted a command bit 27 is 0 
         // and no commands are being interpreted
-        busy = false;
-        gpu->hw->scheduler.Add(1, InterpretCommandEvent);
+        busy = true;
+        gpu->hw->scheduler.Add(1, [this]() {
+            busy = false;
+            InterpretCommand();
+        });
     }
 }
 

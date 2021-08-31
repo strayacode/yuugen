@@ -197,7 +197,7 @@ auto ARM7Memory::ReadHalf(u32 addr) -> u16 {
             log_fatal("[ARM7] Undefined 16-bit io read %08x", addr);
         }
     case REGION_VRAM:
-        memcpy(&return_value, &hw->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], 2);
+        return_value = hw->gpu.ReadARM7<u16>(addr);
         break;
     case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
         // check if the arm9 has access rights to the gba slot
@@ -258,7 +258,7 @@ auto ARM7Memory::ReadWord(u32 addr) -> u32 {
         }
         break;
     case REGION_VRAM:
-        memcpy(&return_value, &hw->gpu.arm7_vram[(addr - 0x06000000) >> 12][(addr - 0x06000000) & 0xFFF], 4);
+        return_value = hw->gpu.ReadARM7<u32>(addr);
         break;
     default:
         log_fatal("handle %08x", addr);
