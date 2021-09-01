@@ -99,10 +99,11 @@ void ARMSingleDataTransfer() {
         }
     }
 
-    // for ldr instructons writeback can't happen when rd != rn
     if (!load || rd != rn) {
-        if constexpr (writeback || !pre) {
+        if constexpr (!pre) {
             regs.r[rn] += op2;
+        } else if constexpr (writeback) {
+            regs.r[rn] = address;
         }
     }
 
@@ -211,9 +212,6 @@ void ARMHalfwordDataTransfer() {
             regs.r[rd] = ReadWord(address);
             regs.r[rd + 1] = ReadWord(address + 4);
 
-            printf("r%d is %08x\n", rd, regs.r[rd]);
-            printf("r%d is %08x\n", rd + 1, regs.r[rd + 1]);
-
             // when rn == rd + 1 writeback is not performed
             do_writeback = rn != (rd + 1);
 
@@ -241,10 +239,11 @@ void ARMHalfwordDataTransfer() {
         log_fatal("handle opcode %d", opcode);
     }
 
-    // for ldrh instructons writeback can't happen when rd != rn
     if (do_writeback) {
-        if constexpr (writeback || !pre) {
+        if constexpr (!pre) {
             regs.r[rn] += op2;
+        } else if constexpr (writeback) {
+            regs.r[rn] = address;
         }
     }
 
