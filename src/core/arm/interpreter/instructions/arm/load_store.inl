@@ -211,6 +211,9 @@ void ARMHalfwordDataTransfer() {
             regs.r[rd] = ReadWord(address);
             regs.r[rd + 1] = ReadWord(address + 4);
 
+            printf("r%d is %08x\n", rd, regs.r[rd]);
+            printf("r%d is %08x\n", rd + 1, regs.r[rd + 1]);
+
             // when rn == rd + 1 writeback is not performed
             do_writeback = rn != (rd + 1);
 

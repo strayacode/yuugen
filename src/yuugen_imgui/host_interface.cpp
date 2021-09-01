@@ -260,18 +260,19 @@ void HostInterface::Loop() {
 }
 
 void HostInterface::UpdateTextures() {
-    // copy framebuffer data from core into the 2 textures
-    // TODO: don't use 2 extra textures
+    const u32* top_framebuffer = core->hw.gpu.GetFramebuffer(TOP_SCREEN);
+    const u32* bottom_framebuffer = core->hw.gpu.GetFramebuffer(BOTTOM_SCREEN);
+
     for (int i = 0; i < 192; i++) {
         for (int j = 0; j < 256; j++) {
             u32 pixel = (256 * i) + j;
-            u32 data_a = core->hw.gpu.engine_a.framebuffer[pixel];
+            u32 data_a = top_framebuffer[pixel];
             framebuffer[pixel * 4] = (data_a >> 16) & 0xFF;
             framebuffer[pixel * 4 + 1] = (data_a >> 8) & 0xFF;
             framebuffer[pixel * 4 + 2] = data_a & 0xFF;
             framebuffer[pixel * 4 + 3] = 0xFF;
 
-            u32 data_b = core->hw.gpu.engine_b.framebuffer[pixel];
+            u32 data_b = bottom_framebuffer[pixel];
             framebuffer[(256 * 192 + pixel) * 4] = (data_b >> 16) & 0xFF;
             framebuffer[(256 * 192 + pixel) * 4 + 1] = (data_b >> 8) & 0xFF;
             framebuffer[(256 * 192 + pixel) * 4 + 2] = data_b & 0xFF;
