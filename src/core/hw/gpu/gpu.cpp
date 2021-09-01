@@ -155,7 +155,7 @@ void GPU::WriteDISPSTAT9(u16 data) {
 
 auto GPU::GetFramebuffer(Screen screen) -> const u32* {
     switch (screen) {
-    case TOP_SCREEN:
+    case Screen::Top:
         return ((POWCNT1 & (1 << 15)) ? engine_a.GetFramebuffer() : engine_b.GetFramebuffer());
     default:
         // default is bottom screen but we just have this to avoid a warning of no return value

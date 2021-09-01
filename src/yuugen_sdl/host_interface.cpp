@@ -70,8 +70,8 @@ void HostInterface::Run(std::string path) {
     audio_interface.SetState(AudioState::Playing);
 
     while (true) {
-        SDL_UpdateTexture(top_texture, nullptr, core.hw.gpu.GetFramebuffer(TOP_SCREEN), sizeof(u32) * 256);
-        SDL_UpdateTexture(bottom_texture, nullptr, core.hw.gpu.GetFramebuffer(BOTTOM_SCREEN), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_texture, nullptr, core.hw.gpu.GetFramebuffer(Screen::Top), sizeof(u32) * 256);
+        SDL_UpdateTexture(bottom_texture, nullptr, core.hw.gpu.GetFramebuffer(Screen::Bottom), sizeof(u32) * 256);
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_area);

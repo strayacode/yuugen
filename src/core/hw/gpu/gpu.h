@@ -12,9 +12,9 @@
 
 class HW;
 
-enum Screen {
-    BOTTOM_SCREEN,
-    TOP_SCREEN,
+enum class Screen {
+    Top,
+    Bottom,
 };
 
 class GPU {

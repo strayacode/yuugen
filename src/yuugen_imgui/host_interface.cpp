@@ -260,8 +260,8 @@ void HostInterface::Loop() {
 }
 
 void HostInterface::UpdateTextures() {
-    const u32* top_framebuffer = core->hw.gpu.GetFramebuffer(TOP_SCREEN);
-    const u32* bottom_framebuffer = core->hw.gpu.GetFramebuffer(BOTTOM_SCREEN);
+    const u32* top_framebuffer = core->hw.gpu.GetFramebuffer(Screen::Top);
+    const u32* bottom_framebuffer = core->hw.gpu.GetFramebuffer(Screen::Bottom);
 
     for (int i = 0; i < 192; i++) {
         for (int j = 0; j < 256; j++) {
@@ -296,44 +296,33 @@ void HostInterface::HandleInput() {
             bool key_pressed = event.type == sf::Event::KeyPressed;
             switch (event.key.code) {
             case sf::Keyboard::D:
-                // A
                 core->hw.input.HandleInput(BUTTON_A, key_pressed);
                 break;
             case sf::Keyboard::S:
-                // B
                 core->hw.input.HandleInput(BUTTON_B, key_pressed);
                 break;
-            // should handle X and Y later (not in keyinput)
             case sf::Keyboard::RShift:
-                // select
                 core->hw.input.HandleInput(BUTTON_SELECT, key_pressed);
                 break;
             case sf::Keyboard::Enter:
-                // start
                 core->hw.input.HandleInput(BUTTON_START, key_pressed);
                 break;
             case sf::Keyboard::Right:
-                // right
                 core->hw.input.HandleInput(BUTTON_RIGHT, key_pressed);
                 break;
             case sf::Keyboard::Left:
-                // left 
                 core->hw.input.HandleInput(BUTTON_LEFT, key_pressed);
                 break;
             case sf::Keyboard::Up:
-                // up
                 core->hw.input.HandleInput(BUTTON_UP, key_pressed);
                 break;
             case sf::Keyboard::Down:
-                // down
                 core->hw.input.HandleInput(BUTTON_DOWN, key_pressed);
                 break;
             case sf::Keyboard::E:
-                // Button R
                 core->hw.input.HandleInput(BUTTON_R, key_pressed);
                 break;
             case sf::Keyboard::W:
-                // Button L
                 core->hw.input.HandleInput(BUTTON_L, key_pressed);
                 break;
             default:

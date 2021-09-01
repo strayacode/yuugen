@@ -161,8 +161,8 @@ void MainWindow::paintEvent(QPaintEvent* event) {
         QPainter painter(this);
         painter.fillRect(rect(), Qt::black);
 
-        memcpy(top_image.scanLine(0), core->hw.gpu.GetFramebuffer(TOP_SCREEN), 256 * 192 * 4);
-        memcpy(bottom_image.scanLine(0), core->hw.gpu.GetFramebuffer(BOTTOM_SCREEN), 256 * 192 * 4);
+        memcpy(top_image.scanLine(0), core->hw.gpu.GetFramebuffer(Screen::Top), 256 * 192 * 4);
+        memcpy(bottom_image.scanLine(0), core->hw.gpu.GetFramebuffer(Screen::Bottom), 256 * 192 * 4);
 
         QSize window_dimensions = size();
 
