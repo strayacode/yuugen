@@ -283,6 +283,7 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
         return 0xFFFF;
     default:
         log_fatal("handle half read from %08x", addr);
+        break;
     }
 
     return return_value;

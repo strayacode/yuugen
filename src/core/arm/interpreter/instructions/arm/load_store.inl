@@ -173,6 +173,8 @@ void ARMHalfwordDataTransfer() {
     u32 op2 = 0;
     u32 address = regs.r[rn];
 
+    bool do_writeback = !load || rd != rn;
+
     if constexpr (immediate) {
         op2 = ((instruction >> 4) & 0xF0) | (instruction & 0xF);
     } else {
@@ -187,6 +189,8 @@ void ARMHalfwordDataTransfer() {
         address += op2;
     }
 
+    regs.r[15] += 4;
+
     switch (opcode) {
     case 0x1:
         if constexpr (load) {
@@ -199,14 +203,35 @@ void ARMHalfwordDataTransfer() {
         if constexpr (load) {
             regs.r[rd] = (s32)(s8)ReadByte(address);
         } else {
-            log_fatal("handle ldrd");
+            // cpu locks up when rd is odd
+            if (rd & 0x1) {
+                log_fatal("undefined ldrd exception");
+            }
+
+            regs.r[rd] = ReadWord(address);
+            regs.r[rd + 1] = ReadWord(address + 4);
+
+            // when rn == rd + 1 writeback is not performed
+            do_writeback = rn != (rd + 1);
+
+            // when rd == 14 the pipeline is flushed
+            // due to writing to r15
+            if (rd == 14) {
+                ARMFlushPipeline();
+            }
         }
         break;
     case 0x3:
         if constexpr (load) {
             regs.r[rd] = (s32)(s16)ReadHalf(address);
         } else {
-            log_fatal("handle ldrd");
+            // cpu locks up when rd is odd
+            if (rd & 0x1) {
+                log_fatal("undefined strd exception");
+            }
+
+            WriteWord(address, regs.r[rd]);
+            WriteWord(address + 4, regs.r[rd + 1]);
         }
         break;
     default:
@@ -214,7 +239,7 @@ void ARMHalfwordDataTransfer() {
     }
 
     // for ldrh instructons writeback can't happen when rd != rn
-    if (!load || rd != rn) {
+    if (do_writeback) {
         if constexpr (writeback || !pre) {
             regs.r[rn] += op2;
         }
@@ -223,8 +248,6 @@ void ARMHalfwordDataTransfer() {
     if (rd == 15) {
         log_fatal("handle");
     }
-
-    regs.r[15] += 4;
 }
 
 template <bool load, bool writeback, bool load_psr, bool up, bool pre>

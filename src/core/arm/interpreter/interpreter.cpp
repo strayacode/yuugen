@@ -91,7 +91,6 @@ void Interpreter::DirectBoot(u32 entrypoint) {
 
     regs.r[12] = regs.r[14] = regs.r[15] = entrypoint;
 
-    // TODO: move out of interpreter class
     // armv4/armv5 specific
     if (arch == CPUArch::ARMv4) {
         regs.r[13] = 0x0380FD80;
