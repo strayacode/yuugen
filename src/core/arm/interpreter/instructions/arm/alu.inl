@@ -558,7 +558,115 @@ void ARMCountLeadingZeroes() {
 }
 
 void ARMSaturatingAddSubtract() {
-    log_fatal("handle qadd qsub stuff");
+    if (arch == CPUArch::ARMv4) {
+        return;
+    }
+
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+    u8 opcode = (instruction >> 20) & 0xF;
+
+    u32 result = 0;
+
+    switch (opcode) {
+    case 0x0:
+        result = regs.r[rm] + regs.r[rn];
+        if (ADD_OVERFLOW(regs.r[rm], regs.r[rn], result)) {
+            // set q flag
+            SetConditionFlag(Q_FLAG, true);
+
+            // saturate the result
+            // this approach avoids an if else statement
+            result = 0x80000000 - (result >> 31);
+        }
+        break;
+    case 0x2:
+        result = regs.r[rm] - regs.r[rn];
+        if (SUB_OVERFLOW(regs.r[rm], regs.r[rn], result)) {
+            // set q flag
+            SetConditionFlag(Q_FLAG, true);
+
+            // since a signed overflow occured with saturated arithmetic, we set the result to the max value
+            // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
+            // if greater than the largest positive value (2^31 - 1)
+            // saturate the result
+            // this approach avoids an if else statement
+            result = 0x80000000 - (result >> 31);
+        }
+
+        break;
+    case 0x4: {
+        result = regs.r[rn] * 2;
+
+        if ((regs.r[rn] ^ result) >> 31) {
+            // if the last bit has changed then we know a signed overflow occured
+            SetConditionFlag(Q_FLAG, true);
+
+            // saturate the result
+            // this approach avoids an if else statement
+            result = 0x80000000 - (result >> 31);
+        }
+
+        u32 old_result = result;
+        result += regs.r[rm];
+
+        if (ADD_OVERFLOW(old_result, regs.r[rm], result)) {
+            // set q flag
+            SetConditionFlag(Q_FLAG, true);
+
+            // since a signed overflow occured with saturated arithmetic, we set the result to the max value
+            // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
+            // if greater than the largest positive value (2^31 - 1)
+            // saturate the result
+            // this approach avoids an if else statement
+            result = 0x80000000 - (result >> 31);
+        }
+
+        break;
+    }
+    case 0x6: {
+        result = regs.r[rn] * 2;
+
+        if ((regs.r[rn] ^ result) >> 31) {
+            // set q flag
+            SetConditionFlag(Q_FLAG, true);
+
+            // since a signed overflow occured with saturated arithmetic, we set the result to the max value
+            // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
+            // if greater than the largest positive value (2^31 - 1)
+            // saturate the result
+            // this approach avoids an if else statement
+            result = 0x80000000 - (result >> 31);
+        }
+
+        u32 old_result = result;
+        // now subtract rm
+        result = regs.r[rm] - result;
+        if (SUB_OVERFLOW(regs.r[rm], old_result, result)) {
+            // set q flag
+            SetConditionFlag(Q_FLAG, true);
+
+            // since a signed overflow occured with saturated arithmetic, we set the result to the max value
+            // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
+            // if greater than the largest positive value (2^31 - 1)
+            // saturate the result
+            // this approach avoids an if else statement
+            result = 0x80000000 - (result >> 31);
+        }
+
+        break;
+    }
+    default:
+        log_fatal("handle opcode %d", opcode);
+    }
+    
+    if (rd == 15) {
+        log_fatal("handle");
+    }
+
+    regs.r[rd] = result;
+    regs.r[15] += 4;
 }
 
 template <bool accumulate>
