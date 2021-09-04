@@ -39,6 +39,8 @@ auto HostInterface::Initialise() -> bool {
 
     clear_color = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 
+    core.SetAudioInterface(audio_interface);
+
     return true;
 }
 
@@ -49,6 +51,8 @@ void HostInterface::Run() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
+
+        DrawMenubar();
 
         ImGui::Begin("Hello, world!");
         ImGui::End();
@@ -88,3 +92,66 @@ void HostInterface::UpdateTitle(float fps) {
     snprintf(window_title, 40, "yuugen [%0.2f FPS | %0.2f ms]", fps, 1000.0 / fps);
     SDL_SetWindowTitle(window, window_title);
 }
+
+ void HostInterface::DrawMenubar() {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Load ROM")) {
+                file_dialog.Open();
+            }
+
+            if (ImGui::MenuItem("Quit")) {
+                running = false;
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Emulator")) {
+            if (ImGui::MenuItem("Toggle Framelimiter")) {
+                core.SetState(State::Paused);
+                core.ToggleFramelimiter();
+                core.SetState(State::Running);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("View")) {
+            if (ImGui::MenuItem("Fit to DS Screen Size")) {
+                // SetToContentSize();
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Debug")) {
+            // if (ImGui::MenuItem("Cartridge", nullptr, show_cartridge_window)) { 
+            //     show_cartridge_window = !show_cartridge_window; 
+            // }
+            // if (ImGui::MenuItem("Interrupts", nullptr, show_interrupts_window)) { 
+            //     show_interrupts_window = !show_interrupts_window; 
+            // }
+
+            ImGui::EndMenu();
+        }
+
+        // TODO: add settings, debug and help
+        ImGui::EndMainMenuBar();
+    }
+
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
+
+    file_dialog.Display();
+    if (file_dialog.HasSelected()) {
+        audio_interface.SetState(AudioState::Paused);
+        core.SetState(State::Idle);
+        core.SetRomPath(file_dialog.GetSelected().string());
+        core.SetBootMode(BootMode::Direct);
+        core.SetState(State::Running);
+        audio_interface.SetState(AudioState::Playing);
+        file_dialog.ClearSelected();
+    }
+ }

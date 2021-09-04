@@ -1,6 +1,6 @@
 #pragma once
 
-// #include <audio_common/sdl/audio_interface.h>
+#include <audio_common/sdl/audio_interface.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
@@ -15,6 +15,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imfilebrowser.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -27,6 +28,7 @@ public:
     void Shutdown();
     void HandleInput();
     void UpdateTitle(float fps);
+    void DrawMenubar();
 
     bool running = true;
 
@@ -36,4 +38,8 @@ public:
     SDL_Window* window;
     SDL_GLContext gl_context;
     const char* glsl_version = "#version 330";
+
+    ImGui::FileBrowser file_dialog;
+
+    SDLAudioInterface audio_interface;
 };
