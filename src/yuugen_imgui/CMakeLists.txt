@@ -1,19 +1,28 @@
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/addons" "${CMAKE_CURRENT_SOURCE_DIR}/imgui" "${CMAKE_CURRENT_SOURCE_DIR}/imgui-sfml")
-
 set(IMGUI_SOURCES
+    imgui/imconfig.h
     imgui/imgui.cpp
-    imgui/imgui_draw.cpp
-    imgui/imgui_widgets.cpp
+    imgui/imgui.h
     imgui/imgui_demo.cpp
+    imgui/imgui_draw.cpp
+    imgui/imgui_internal.h
+    imgui/imgui_widgets.cpp
     imgui/imgui_tables.cpp
-    imgui-sfml/imgui-SFML.cpp
+    imgui/imstb_rectpack.h
+    imgui/imstb_textedit.h
+    imgui/imstb_truetype.h
+    imgui/imgui_impl_opengl3.cpp
+    imgui/imgui_impl_opengl3.h
+    imgui/imgui_impl_sdl.cpp
+    imgui/imgui_impl_sdl.h
 )
 
 add_executable(yuugen main.cpp host_interface.cpp ${IMGUI_SOURCES})
 
-set(OpenGL_GL_PREFERENCE GLVND)
+find_package(SDL2 REQUIRED)
 
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
+
 include_directories(${OpenGL_INCLUDE_DIRS})
 link_directories(${OpenGL_LIBRARY_DIRS})
 add_definitions(${OpenGL_DEFINITIONS})
@@ -22,8 +31,10 @@ if(NOT OPENGL_FOUND)
 endif(NOT OPENGL_FOUND)
 target_link_libraries(yuugen ${OPENGL_LIBRARIES})
 
-find_package(SFML 2.5 COMPONENTS system window graphics audio REQUIRED)
-if(SFML_FOUND)
-    include_directories(${SFML_INCLUDE_DIR})
-    target_link_libraries(yuugen core util ${SFML_LIBRARIES} ${SFML_DEPENDENCIES} sfml-graphics sfml-audio)
-endif()
+include_directories(imgui ${SDL2_INCLUDE_DIRS})
+target_link_libraries(yuugen core common ${SDL2_LIBRARIES})
+
+find_package(Threads REQUIRED)
+find_package(X11 REQUIRED)
+
+target_link_libraries(yuugen ${CMAKE_THREAD_LIBS_INIT} ${X11_LIBRARIES} ${CMAKE_DL_LIBS})

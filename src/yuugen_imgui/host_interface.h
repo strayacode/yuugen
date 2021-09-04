@@ -1,55 +1,39 @@
 #pragma once
 
-#include "imgui.h"
-#include "imgui-SFML.h"
-
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics.hpp>
-#include <SFML/System/Clock.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/Window/Keyboard.hpp>
+// #include <audio_common/sdl/audio_interface.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
 #include <common/types.h>
+#include <common/log.h>
 #include <core/core.h>
-#include "addons/imfilebrowser.h"
+// #include "addons/imfilebrowser.h"
 #include <memory>
 #include <vector>
 #include <array>
+
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_sdl.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include <SDL.h>
+#include <SDL_opengl.h>
 
 class HostInterface {
 public:
     HostInterface();
 
-    std::unique_ptr<Core> core;
-
-    ImGui::FileBrowser file_dialog;
-    sf::RenderWindow window;
-
-    bool core_running = false;
-
-    bool show_cartridge_window = false;
-    bool show_interrupts_window = false;
-
-    sf::Uint8* framebuffer;
-
-    sf::View view;
-
-    void Loop();
-    void UpdateTextures();
+    auto Initialise() -> bool;
+    void Run();
+    void Shutdown();
     void HandleInput();
-
-    void SetupStyle();
-
-    void SetToContentSize();
-
     void UpdateTitle(float fps);
 
-    ImFont* roboto_font;
+    bool running = true;
 
-    sf::Texture texture;  
+    Core core;
+
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    SDL_Window* window;
+    SDL_GLContext gl_context;
+    const char* glsl_version = "#version 330";
 };

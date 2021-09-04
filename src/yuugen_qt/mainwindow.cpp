@@ -20,7 +20,7 @@ MainWindow::MainWindow() {
     screen_width = screen_height = 0;
     
     // initialise audio
-    // core->SetAudioInterface(audio_interface);
+    core->SetAudioInterface(audio_interface);
 }
 
 void MainWindow::CreateMenubar() {
