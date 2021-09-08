@@ -7,11 +7,9 @@
 #include <common/types.h>
 #include <common/log.h>
 #include <core/core.h>
-// #include "addons/imfilebrowser.h"
 #include <memory>
 #include <vector>
 #include <array>
-
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -29,12 +27,12 @@ public:
     void HandleInput();
     void UpdateTitle(float fps);
     void DrawMenubar();
+    void DrawScreen();
 
     bool running = true;
 
     Core core;
 
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     SDL_Window* window;
     SDL_GLContext gl_context;
     const char* glsl_version = "#version 330";
@@ -42,4 +40,7 @@ public:
     ImGui::FileBrowser file_dialog;
 
     SDLAudioInterface audio_interface;
+
+    // TODO: separate framebuffer display into its own class
+    GLuint textures[2];
 };

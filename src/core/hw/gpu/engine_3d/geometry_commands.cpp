@@ -82,10 +82,9 @@ void GeometryEngine::LoadUnitMatrix() {
 }
 
 void GeometryEngine::SwapBuffers() {
-    state = GeometryEngineState::Halted;
-
     // TODO: handle bit 0 and 1 of parameter later
     DequeueEntry();
+    DoSwapBuffers();
 }
 
 void GeometryEngine::SetTextureParameters() {

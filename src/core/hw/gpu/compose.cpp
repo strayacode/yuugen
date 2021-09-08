@@ -57,5 +57,5 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
         pixel = gpu->render_engine.framebuffer[(256 * line) + x];
     }
 
-    framebuffer[(256 * line) + x] = Convert15To24(pixel);
+    framebuffer[(256 * line) + x] = Convert15To24(pixel) | (0xFF000000);
 }

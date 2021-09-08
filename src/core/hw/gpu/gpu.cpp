@@ -103,8 +103,6 @@ void GPU::RenderScanlineFinish() {
 
         hw->dma[0].Trigger(1);
         hw->dma[1].Trigger(1);
-
-        geometry_engine.DoSwapBuffers();
         break;
     case 262:
         // end of vblank
@@ -410,6 +408,11 @@ void GPU::MapVRAM() {
         case 0:
             for (int i = 0; i < 4; i++) {
                 lcdc[i + 0xA0].AddBank(&bank_i[i * 0x1000]);
+            }
+            break;
+        case 1:
+            for (int i = 0; i < 4; i++) {
+                bgb[i + 0x8].AddBank(&bank_i[i * 0x1000]);
             }
             break;
         case 2:

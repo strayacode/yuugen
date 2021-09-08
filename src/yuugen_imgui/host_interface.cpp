@@ -37,9 +37,21 @@ auto HostInterface::Initialise() -> bool {
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 15.0f);
 
-    clear_color = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-
     core.SetAudioInterface(audio_interface);
+
+    // initialise texture stuff
+    glGenTextures(2, &textures[0]);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     return true;
 }
@@ -57,10 +69,13 @@ void HostInterface::Run() {
         ImGui::Begin("Hello, world!");
         ImGui::End();
 
-        ImGui::Render();
+        if (core.GetState() == State::Running) {
+            DrawScreen();
+        }
 
+        ImGui::Render();
         glViewport(0, 0, 1280, 720);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
@@ -68,6 +83,8 @@ void HostInterface::Run() {
 }
 
 void HostInterface::Shutdown() {
+    // glDeleteTextures(2, &texture_id[0]);
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
@@ -83,6 +100,50 @@ void HostInterface::HandleInput() {
         ImGui_ImplSDL2_ProcessEvent(&event);
         if (event.type == SDL_QUIT) {
             running = false;
+        } else if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
+            bool key_pressed = event.type == SDL_KEYDOWN;
+            switch (event.key.keysym.sym) {
+            case SDLK_d:
+                core.hw.input.HandleInput(BUTTON_A, key_pressed);
+                break;
+            case SDLK_s:
+                core.hw.input.HandleInput(BUTTON_B, key_pressed);
+                break;
+            case SDLK_RSHIFT:
+                core.hw.input.HandleInput(BUTTON_SELECT, key_pressed);
+                break;
+            case SDLK_RETURN:
+                core.hw.input.HandleInput(BUTTON_START, key_pressed);
+                break;
+            case SDLK_RIGHT:
+                core.hw.input.HandleInput(BUTTON_RIGHT, key_pressed);
+                break;
+            case SDLK_LEFT:
+                core.hw.input.HandleInput(BUTTON_LEFT, key_pressed);
+                break;
+            case SDLK_UP:
+                core.hw.input.HandleInput(BUTTON_UP, key_pressed);
+                break;
+            case SDLK_DOWN:
+                core.hw.input.HandleInput(BUTTON_DOWN, key_pressed);
+                break;
+            case SDLK_e:
+                core.hw.input.HandleInput(BUTTON_R, key_pressed);
+                break;
+            case SDLK_w:
+                core.hw.input.HandleInput(BUTTON_L, key_pressed);
+                break;
+            }
+        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+            int x = event.button.x;
+            int y = event.button.y - 192;
+            
+            if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
+                // only do a touchscreen event if it occurs in the bottom screen
+                bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
+                core.hw.input.SetTouch(button_pressed);
+                core.hw.input.SetPoint(x, y);
+            }
         }
     }
 }
@@ -154,4 +215,39 @@ void HostInterface::UpdateTitle(float fps) {
         audio_interface.SetState(AudioState::Playing);
         file_dialog.ClearSelected();
     }
- }
+}
+
+void HostInterface::DrawScreen() {
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_RGBA, GL_UNSIGNED_BYTE, core.hw.gpu.GetFramebuffer(Screen::Top));
+
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_RGBA, GL_UNSIGNED_BYTE, core.hw.gpu.GetFramebuffer(Screen::Bottom));
+    // glBegin(GL_QUADS);
+    // glTexCoord2f(0.0f, 0.0f);
+    // glVertex2f(-1.0f,  1.0f);
+    // glTexCoord2f(1.0f, 0.0f);
+    // glVertex2f( 1.0f,  1.0f);
+    // glTexCoord2f(1.0f, 1.0f);
+    // glVertex2f( 1.0f,  0.0f);
+    // glTexCoord2f(0.0f, 1.0f);
+    // glVertex2f(-1.0f,  0.0f);
+    // glEnd();
+
+    ImGui::Begin("OpenGL Texture Text");
+    // ImGui::Text("pointer = %p", textures);
+    ImGui::Text("size = %d x %d", 256, 192);
+    ImGui::Image((void*)(intptr_t)textures[0], ImVec2(256, 192));
+    ImGui::Image((void*)(intptr_t)textures[1], ImVec2(256, 192));
+    ImGui::End();
+}
