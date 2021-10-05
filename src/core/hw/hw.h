@@ -108,10 +108,5 @@ public:
     // the arm7 provides io ports for the link port but it doesn't seem to be used
     u16 SIOCNT;
 
-    std::array<u8*, 0x100000> arm7_read_page_table;
-    std::array<u8*, 0x100000> arm9_read_page_table;
-    std::array<u8*, 0x100000> arm7_write_page_table;
-    std::array<u8*, 0x100000> arm9_write_page_table;
-
     std::string rom_path;
 };

@@ -168,6 +168,8 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
         switch (addr) {
         case 0x04000000:
             return hw->gpu.engine_a.DISPCNT & 0xFFFF;
+        case 0x04000002:
+            return hw->gpu.engine_a.DISPCNT >> 16;
         case 0x04000004:
             return hw->gpu.DISPSTAT9;
         case 0x04000006:

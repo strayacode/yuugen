@@ -74,6 +74,8 @@ void Interpreter::Run(int cycles) {
             u32 index = instruction >> 6;
             (this->*thumb_lut[index])();
         }
+
+        counter++;
     }
 }
 

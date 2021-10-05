@@ -162,54 +162,54 @@ void GeometryEngine::InterpretCommand() {
 
     if (total_size >= param_count) {
         switch (command) {
-        case 0x10:
-            SetMatrixMode();
-            break;
-        case 0x11:
-            PushCurrentMatrix();
-            break;
-        case 0x12:
-            PopCurrentMatrix();
-            break;
-        case 0x15:
-            LoadUnitMatrix();
-            break;
-        case 0x18:
-            Multiply4x4();
-            break;
-        case 0x19:
-            Multiply4x3();
-            break;
-        case 0x1A:
-            Multiply3x3();
-            break;
-        case 0x1C:
-            MultiplyTranslation();
-            break;
-        case 0x20:
-            SetVertexColour();
-            break;
-        case 0x23:
-            AddVertex16();
-            break;
-        case 0x29:
-            SetPolygonAttributes();
-            break;
-        case 0x2A:
-            SetTextureParameters();
-            break;
-        case 0x40:
-            BeginVertexList();
-            break;
-        case 0x41:
-            EndVertexList();
-            break;
-        case 0x50:
-            SwapBuffers();
-            break;
-        case 0x60:
-            SetViewport();
-            break;
+        // case 0x10:
+        //     SetMatrixMode();
+        //     break;
+        // case 0x11:
+        //     PushCurrentMatrix();
+        //     break;
+        // case 0x12:
+        //     PopCurrentMatrix();
+        //     break;
+        // case 0x15:
+        //     LoadUnitMatrix();
+        //     break;
+        // case 0x18:
+        //     Multiply4x4();
+        //     break;
+        // case 0x19:
+        //     Multiply4x3();
+        //     break;
+        // case 0x1A:
+        //     Multiply3x3();
+        //     break;
+        // case 0x1C:
+        //     MultiplyTranslation();
+        //     break;
+        // case 0x20:
+        //     SetVertexColour();
+        //     break;
+        // case 0x23:
+        //     AddVertex16();
+        //     break;
+        // case 0x29:
+        //     SetPolygonAttributes();
+        //     break;
+        // case 0x2A:
+        //     SetTextureParameters();
+        //     break;
+        // case 0x40:
+        //     BeginVertexList();
+        //     break;
+        // case 0x41:
+        //     EndVertexList();
+        //     break;
+        // case 0x50:
+        //     SwapBuffers();
+        //     break;
+        // case 0x60:
+        //     SetViewport();
+        //     break;
         default:
             // log_fatal("[GeometryEngine] Handle geometry command %02x", command);
             if (param_table[command] == 0) {
