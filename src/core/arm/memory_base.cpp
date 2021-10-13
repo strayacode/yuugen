@@ -40,12 +40,20 @@ void MemoryBase::FastWrite(u32 addr, T data) {
     if (write_page_table[index]) {
         memcpy(&write_page_table[index][offset], &data, sizeof(T));
     } else {
-        if constexpr (sizeof(T) == 1) {
-            WriteByte(addr, data);
-        } else if constexpr (sizeof(T) == 2) {
-            WriteHalf(addr, data);
+        if (IsMMIOAddress(addr)) {
+            mmio.Write(addr, data);
         } else {
-            WriteWord(addr, data);
+            if constexpr (sizeof(T) == 1) {
+                WriteByte(addr, data);
+            } else if constexpr (sizeof(T) == 2) {
+                WriteHalf(addr, data);
+            } else {
+                WriteWord(addr, data);
+            }
         }
     }
+}
+
+bool MemoryBase::IsMMIOAddress(u32 addr) {
+    return (addr >> 24) == 0x04;
 }

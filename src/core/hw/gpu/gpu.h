@@ -62,6 +62,8 @@ public:
 
     void VRAMMappingReset();
 
+    void RegisterMMIO(MMIO* mmio, MMIOType type);
+
     u16 POWCNT1;
     
     u8 VRAMCNT_A;

@@ -62,6 +62,8 @@ public:
 
     void InitialiseCPUCores(CPUCoreType core_type);
 
+    void RegisterMMIO(MMIO* mmio, MMIOType type);
+
     Cartridge cartridge;
     Scheduler scheduler;
     SPI spi;

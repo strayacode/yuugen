@@ -662,3 +662,13 @@ void GPU::WriteARM7(u32 addr, T data) {
         }
     }
 }
+
+void GPU::RegisterMMIO(MMIO* mmio, MMIOType type) {
+    // if (type == MMIOType::ARMv5) {
+    //     mmio->Register(0x04000304,
+        
+    //     );
+    // } else {
+    //     log_fatal("handle");
+    // }
+}
