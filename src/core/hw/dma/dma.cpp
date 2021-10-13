@@ -16,7 +16,6 @@ void DMA::Reset() {
 }
 
 // our problem was that we were scheduling transfer in repeat on next cycle
-
 void DMA::Transfer(int channel_index) {
     // make variables to make things easier
     u8 destination_control = (channel[channel_index].DMACNT >> 21) & 0x3;
@@ -195,15 +194,15 @@ void DMA::WriteDMACNT(int channel_index, u32 data) {
     WriteDMACNT_H(channel_index, data >> 16);
 }
 
-auto DMA::ReadDMACNT(int channel_index) -> u32 {
+u32 DMA::ReadDMACNT(int channel_index) {
     return channel[channel_index].DMACNT;
 }
 
-auto DMA::ReadDMACNT_L(int channel_index) -> u16 {
+u16 DMA::ReadDMACNT_L(int channel_index) {
     return channel[channel_index].DMACNT & 0xFFFF;
 }
 
-auto DMA::ReadDMACNT_H(int channel_index) -> u16 {
+u16 DMA::ReadDMACNT_H(int channel_index) {
     return channel[channel_index].DMACNT >> 16;
 }
 
@@ -229,7 +228,23 @@ void DMA::WriteLength(int channel_index, u32 data) {
     }
 }
 
-auto DMA::ReadLength(int channel_index) -> u32 {
+u32 DMA::ReadLength(int channel_index) {
     // get bits 0..20 of dmacnt
     return channel[channel_index].DMACNT & 0x1FFFFF;
+}
+
+void DMA::RegisterMMIO(MMIO* mmio, MMIOType type) {
+    if (type == MMIOType::ARMv5) {
+        // TODO: make this a clean for loop
+        mmio->Register<u16>(0x040000D0,
+            [this](u32) {
+                return channel[2].DMACNT & 0xFFFF;
+            },
+            [this](u32, u16 data) {
+                channel[2].DMACNT = (channel[2].DMACNT & ~0xFFFF) | (data & 0xFFFF);
+            }
+        );
+    } else {
+        log_fatal("handle");
+    }
 }

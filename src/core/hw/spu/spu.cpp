@@ -325,6 +325,17 @@ void SPU::SetAudioInterface(AudioInterface& interface) {
     audio_interface->Open(this, 32768, 1024, (Callback)AudioCallback);
 }
 
+void SPU::RegisterMMIO(MMIO* mmio) {
+    mmio->Register<u16>(0x04000504,
+        [this](u32) {
+            return soundbias;
+        },
+        [this](u32, u16 data) {
+            soundbias = data & 0x3FF;
+        }
+    );
+}
+
 void AudioCallback(SPU* spu, s16* stream, int len) {
     // divide by 2 since we are using 2 channels
     int no_samples = len / sizeof(s16) / 2;

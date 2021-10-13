@@ -18,15 +18,10 @@ void GPU::Reset() {
 
     POWCNT1 = 0;
     VCOUNT = 0;
-    VRAMCNT_A = 0;
-    VRAMCNT_B = 0;
-    VRAMCNT_C = 0;
-    VRAMCNT_D = 0;
-    VRAMCNT_E = 0;
-    VRAMCNT_F = 0;
-    VRAMCNT_G = 0;
-    VRAMCNT_H = 0;
-    VRAMCNT_I = 0;
+
+    for (int i = 0; i < 9; i++) {
+        vramcnt[i] = 0;
+    }
 
     VRAMSTAT = 0;
 
@@ -178,9 +173,9 @@ void GPU::MapVRAM() {
     VRAMMappingReset();
 
     // we will map vram blocks in increments of 4kb
-    if (GetVRAMCNTEnabled(VRAMCNT_A)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_A);
-        switch (GetVRAMCNTMST(VRAMCNT_A)) {
+    if (GetVRAMCNTEnabled(vramcnt[0])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[0]);
+        switch (GetVRAMCNTMST(vramcnt[0])) {
         case 0:
             for (int i = 0; i < 32; i++) {
                 lcdc[i].AddBank(&bank_a[i * 0x1000]);
@@ -199,13 +194,13 @@ void GPU::MapVRAM() {
         case 3:
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_A));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[0]));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_B)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_B);
-        switch (GetVRAMCNTMST(VRAMCNT_B)) {
+    if (GetVRAMCNTEnabled(vramcnt[1])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[1]);
+        switch (GetVRAMCNTMST(vramcnt[1])) {
         case 0:
             for (int i = 0; i < 32; i++) {
                 lcdc[i + 0x20].AddBank(&bank_b[i * 0x1000]);
@@ -224,13 +219,13 @@ void GPU::MapVRAM() {
         case 3:
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_B));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[1]));
         }
     }
     
-    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_C);
-        switch (GetVRAMCNTMST(VRAMCNT_C)) {
+    if (GetVRAMCNTEnabled(vramcnt[2])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[2]);
+        switch (GetVRAMCNTMST(vramcnt[2])) {
         case 0:
             for (int i = 0; i < 32; i++) {
                 lcdc[i + 0x40].AddBank(&bank_c[i * 0x1000]);
@@ -255,13 +250,13 @@ void GPU::MapVRAM() {
             }
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_C));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[2]));
         }
     }
     
-    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_D);
-        switch (GetVRAMCNTMST(VRAMCNT_D)) {
+    if (GetVRAMCNTEnabled(vramcnt[3])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[3]);
+        switch (GetVRAMCNTMST(vramcnt[3])) {
         case 0:
             for (int i = 0; i < 32; i++) {
                 lcdc[i + 0x60].AddBank(&bank_d[i * 0x1000]);
@@ -286,13 +281,13 @@ void GPU::MapVRAM() {
             }
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_D));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[3]));
         }
     }
     
-    if (GetVRAMCNTEnabled(VRAMCNT_E)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_E);
-        switch (GetVRAMCNTMST(VRAMCNT_E)) {
+    if (GetVRAMCNTEnabled(vramcnt[4])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[4]);
+        switch (GetVRAMCNTMST(vramcnt[4])) {
         case 0:
             for (int i = 0; i < 16; i++) {
                 lcdc[i + 0x80].AddBank(&bank_e[i * 0x1000]);
@@ -315,13 +310,13 @@ void GPU::MapVRAM() {
             // handle extpal later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_E));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[4]));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_F);
-        switch (GetVRAMCNTMST(VRAMCNT_F)) {
+    if (GetVRAMCNTEnabled(vramcnt[5])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[5]);
+        switch (GetVRAMCNTMST(vramcnt[5])) {
         case 0:
             for (int i = 0; i < 4; i++) {
                 lcdc[i + 0x90].AddBank(&bank_f[i * 0x1000]);
@@ -346,13 +341,13 @@ void GPU::MapVRAM() {
             // obj ext palette handle later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_F));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[5]));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_G);
-        switch (GetVRAMCNTMST(VRAMCNT_G)) {
+    if (GetVRAMCNTEnabled(vramcnt[6])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[6]);
+        switch (GetVRAMCNTMST(vramcnt[6])) {
         case 0:
             for (int i = 0; i < 4; i++) {
                 lcdc[i + 0x94].AddBank(&bank_g[i * 0x1000]);
@@ -377,13 +372,13 @@ void GPU::MapVRAM() {
             // handle extended palette later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_G));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[6]));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_H)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_H);
-        switch (GetVRAMCNTMST(VRAMCNT_H)) {
+    if (GetVRAMCNTEnabled(vramcnt[7])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[7]);
+        switch (GetVRAMCNTMST(vramcnt[7])) {
         case 0:
             for (int i = 0; i < 8; i++) {
                 lcdc[i + 0x98].AddBank(&bank_h[i * 0x1000]);
@@ -398,13 +393,13 @@ void GPU::MapVRAM() {
             // handle extpal later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_H));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[7]));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_I);
-        switch (GetVRAMCNTMST(VRAMCNT_I)) {
+    if (GetVRAMCNTEnabled(vramcnt[8])) {
+        u8 ofs = GetVRAMCNTOffset(vramcnt[8]);
+        switch (GetVRAMCNTMST(vramcnt[8])) {
         case 0:
             for (int i = 0; i < 4; i++) {
                 lcdc[i + 0xA0].AddBank(&bank_i[i * 0x1000]);
@@ -425,7 +420,7 @@ void GPU::MapVRAM() {
             // handle later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_I));
+            log_fatal("handle mst %d", GetVRAMCNTMST(vramcnt[8]));
         }
     }
 }
@@ -539,26 +534,26 @@ template <typename T>
 auto GPU::ReadExtPaletteBGA(u32 addr) -> T {
     T return_value = 0;
 
-    if (GetVRAMCNTEnabled(VRAMCNT_E)) {
+    if (GetVRAMCNTEnabled(vramcnt[4])) {
         // only lower 32kb are used
         // vram bank e can then hold all 4 8kb slots
-        if (in_range(0, 0x8000) && (GetVRAMCNTMST(VRAMCNT_E) == 4)) {
+        if (in_range(0, 0x8000) && (GetVRAMCNTMST(vramcnt[4]) == 4)) {
             memcpy(&return_value, &bank_e[addr & 0xFFFF], sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
+    if (GetVRAMCNTEnabled(vramcnt[5])) {
         // we will either access slots 0-1 or 2-3 depending on ofs
-        u32 offset = GetVRAMCNTOffset(VRAMCNT_F) & 0x1 ? 0x4000 : 0;
-        if (in_range(offset, 0x4000) && (GetVRAMCNTMST(VRAMCNT_F) == 4)) {
+        u32 offset = GetVRAMCNTOffset(vramcnt[5]) & 0x1 ? 0x4000 : 0;
+        if (in_range(offset, 0x4000) && (GetVRAMCNTMST(vramcnt[5]) == 4)) {
             memcpy(&return_value, &bank_f[addr & 0x3FFF], sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+    if (GetVRAMCNTEnabled(vramcnt[6])) {
         // we will either access slots 0-1 or 2-3 depending on ofs
-        u32 offset = GetVRAMCNTOffset(VRAMCNT_G) & 0x1 ? 0x4000 : 0;
-        if (in_range(offset, 0x4000) && (GetVRAMCNTMST(VRAMCNT_G) == 4)) {
+        u32 offset = GetVRAMCNTOffset(vramcnt[6]) & 0x1 ? 0x4000 : 0;
+        if (in_range(offset, 0x4000) && (GetVRAMCNTMST(vramcnt[6]) == 4)) {
             memcpy(&return_value, &bank_g[addr & 0x3FFF], sizeof(T));
         }
     }
@@ -573,9 +568,9 @@ template <typename T>
 auto GPU::ReadExtPaletteBGB(u32 addr) -> T {
     T return_value = 0;
 
-    if (GetVRAMCNTEnabled(VRAMCNT_H)) {
+    if (GetVRAMCNTEnabled(vramcnt[7])) {
         // vram bank h can cover all slots 0-3
-        if (in_range(0, 0x8000) && (GetVRAMCNTMST(VRAMCNT_H) == 2)) {
+        if (in_range(0, 0x8000) && (GetVRAMCNTMST(vramcnt[7]) == 2)) {
             memcpy(&return_value, &bank_h[addr & 0x7FFF], sizeof(T));
         }
     }
@@ -591,15 +586,15 @@ auto GPU::ReadExtPaletteOBJA(u32 addr) -> T {
     T return_value = 0;
 
     // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
-    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
-        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_F) == 5)) {
+    if (GetVRAMCNTEnabled(vramcnt[5])) {
+        if (in_range(0, 0x2000) && (GetVRAMCNTMST(vramcnt[5]) == 5)) {
             memcpy(&return_value, &bank_f[addr & 0x1FFF], sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+    if (GetVRAMCNTEnabled(vramcnt[6])) {
         // we will either access slots 0-1 or 2-3 depending on ofs
-        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_G) == 5)) {
+        if (in_range(0, 0x2000) && (GetVRAMCNTMST(vramcnt[6]) == 5)) {
             memcpy(&return_value, &bank_g[addr & 0x1FFF], sizeof(T));
         }
     }
@@ -615,8 +610,8 @@ auto GPU::ReadExtPaletteOBJB(u32 addr) -> T {
     T return_value = 0;
 
     // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
-    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
-        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_I) == 3)) {
+    if (GetVRAMCNTEnabled(vramcnt[8])) {
+        if (in_range(0, 0x2000) && (GetVRAMCNTMST(vramcnt[8]) == 3)) {
             memcpy(&return_value, &bank_i[addr & 0x1FFF], sizeof(T));
         }
     }
@@ -630,14 +625,14 @@ template auto GPU::ReadARM7(u32 addr) -> u32;
 template <typename T>
 auto GPU::ReadARM7(u32 addr) -> T {
     T return_value = 0;
-    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
+    if (GetVRAMCNTEnabled(vramcnt[2])) {
+        if (in_range(0x06000000 + (GetVRAMCNTOffset(vramcnt[2]) * 0x20000), 0x20000) && (GetVRAMCNTMST(vramcnt[2]) == 2)) {
             memcpy(&return_value, &bank_c[addr & 0x1FFFF], sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
+    if (GetVRAMCNTEnabled(vramcnt[3])) {
+        if (in_range(0x06000000 + (GetVRAMCNTOffset(vramcnt[3]) * 0x20000), 0x20000) && (GetVRAMCNTMST(vramcnt[3]) == 2)) {
             memcpy(&return_value, &bank_d[addr & 0x1FFFF], sizeof(T));
         }
     }
@@ -650,25 +645,99 @@ template void GPU::WriteARM7(u32 addr, u16 data);
 template void GPU::WriteARM7(u32 addr, u32 data);
 template <typename T>
 void GPU::WriteARM7(u32 addr, T data) {
-    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
+    if (GetVRAMCNTEnabled(vramcnt[2])) {
+        if (in_range(0x06000000 + (GetVRAMCNTOffset(vramcnt[2]) * 0x20000), 0x20000) && (GetVRAMCNTMST(vramcnt[2]) == 2)) {
             memcpy(&bank_c[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
+    if (GetVRAMCNTEnabled(vramcnt[3])) {
+        if (in_range(0x06000000 + (GetVRAMCNTOffset(vramcnt[3]) * 0x20000), 0x20000) && (GetVRAMCNTMST(vramcnt[3]) == 2)) {
             memcpy(&bank_d[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 }
 
 void GPU::RegisterMMIO(MMIO* mmio, MMIOType type) {
-    // if (type == MMIOType::ARMv5) {
-    //     mmio->Register(0x04000304,
-        
-    //     );
-    // } else {
-    //     log_fatal("handle");
-    // }
+    if (type == MMIOType::ARMv5) {
+        mmio->Register<u16>(0x04000004,
+            [this](u32) {
+                return DISPSTAT9 & 0xFFFF;
+            },
+            [this](u32, u16 data) {
+                DISPSTAT9 = (DISPSTAT9 & ~0xFFB8) | (data & 0xFFB8);
+            }
+        );
+
+        int masks[9] = {0x9B, 0x9B, 0x9F, 0x9F, 0x87, 0x9F, 0x9F, 0x83, 0x83};
+
+        for (int i = 0; i < 7; i++) {
+            mmio->Register<u8>(0x04000240 + i,
+                [&, this](u32) {
+                    return vramcnt[i];
+                },
+                [&, this](u32, u8 data) {
+                    vramcnt[i] = data & masks[i];
+
+                    MapVRAM();
+                }
+            );
+        }
+
+        mmio->Register<u8>(0x04000248,
+            [this](u32) {
+                return vramcnt[7];
+            },
+            [this](u32, u8 data) {
+                vramcnt[7] = data & 0x83;
+
+                MapVRAM();
+            }
+        );
+
+        mmio->Register<u8>(0x04000249,
+            [this](u32) {
+                return vramcnt[8];
+            },
+            [this](u32, u8 data) {
+                vramcnt[8] = data & 0x83;
+
+                MapVRAM();
+            }
+        );
+
+        mmio->Register<u32>(0x04000240,
+            [this](u32) {
+                return ((vramcnt[3] << 24) | (vramcnt[2] << 16) | (vramcnt[1] << 8) | (vramcnt[0]));
+            },
+            [this](u32, u32 data) {
+                vramcnt[0] = data & 0x9B;
+                vramcnt[1] = (data >> 8) & 0x9B;
+                vramcnt[2] = (data >> 16) & 0x9F;
+                vramcnt[3] = (data >> 24) & 0x9F;
+
+                MapVRAM();
+            }
+        );
+
+        mmio->Register<u16>(0x04000304,
+            [this](u32) {
+                return POWCNT1;
+            },
+            [this](u32, u16 data) {
+                POWCNT1 = data & 0x820F;
+            }
+        );
+
+        mmio->Register<u32>(0x04000304,
+            [this](u32) {
+                return POWCNT1;
+            },
+            [this](u32, u32 data) {
+                POWCNT1 = data & 0x820F;
+            }
+        );
+    } else {
+        log_fatal("handle");
+    }
 }

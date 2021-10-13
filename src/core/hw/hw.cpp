@@ -231,5 +231,14 @@ void HW::RegisterMMIO(MMIO* mmio, MMIOType type) {
                 POSTFLG7 = data & 0x1;
             }
         );
+
+        // mmio->Register<u32>(0x04000304,
+        //     [this](u32) {
+        //         return POWCNT2;
+        //     },
+        //     [this](u32, u32 data) {
+        //         POWCNT2 = data & 0x3;
+        //     }
+        // );
     }
 }

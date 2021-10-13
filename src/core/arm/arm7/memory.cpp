@@ -9,6 +9,7 @@ void ARM7Memory::Reset() {
     UpdateMemoryMap(0, 0xFFFFFFFF);
 
     hw->RegisterMMIO(&mmio, MMIOType::ARMv4);
+    hw->spu.RegisterMMIO(&mmio);
 }
 
 void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
@@ -449,9 +450,6 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
     //         break;
     //     case 0x04000500:
     //         hw->spu.soundcnt = data;
-    //         break;
-    //     case 0x04000504:
-    //         hw->spu.soundbias = data & 0x3FF;
     //         break;
     //     case 0x04000508:
     //         hw->spu.SNDCAPCNT[0] = data & 0xFF;

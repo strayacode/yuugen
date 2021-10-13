@@ -15,12 +15,16 @@ auto MemoryBase::FastRead(u32 addr) -> T {
     if (read_page_table[index]) {
         memcpy(&return_value, &read_page_table[index][offset], sizeof(T));
     } else {
-        if constexpr (sizeof(T) == 1) {
-            return ReadByte(addr);
-        } else if constexpr (sizeof(T) == 2) {
-            return ReadHalf(addr);
+        if (IsMMIOAddress(addr)) {
+            return mmio.Read<T>(addr);
         } else {
-            return ReadWord(addr);
+            if constexpr (sizeof(T) == 1) {
+                return ReadByte(addr);
+            } else if constexpr (sizeof(T) == 2) {
+                return ReadHalf(addr);
+            } else {
+                return ReadWord(addr);
+            }
         }
     }
 
@@ -41,7 +45,7 @@ void MemoryBase::FastWrite(u32 addr, T data) {
         memcpy(&write_page_table[index][offset], &data, sizeof(T));
     } else {
         if (IsMMIOAddress(addr)) {
-            mmio.Write(addr, data);
+            mmio.Write<T>(addr, data);
         } else {
             if constexpr (sizeof(T) == 1) {
                 WriteByte(addr, data);

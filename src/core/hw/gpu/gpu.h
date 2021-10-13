@@ -6,6 +6,7 @@
 #include <core/hw/gpu/engine_3d/render_engine.h>
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
 #include <core/hw/gpu/vram_page.h>
+#include <core/arm/mmio.h>
 #include <string.h>
 #include <functional>
 #include <array>
@@ -66,15 +67,7 @@ public:
 
     u16 POWCNT1;
     
-    u8 VRAMCNT_A;
-    u8 VRAMCNT_B;
-    u8 VRAMCNT_C;
-    u8 VRAMCNT_D;
-    u8 VRAMCNT_E;
-    u8 VRAMCNT_F;
-    u8 VRAMCNT_G;
-    u8 VRAMCNT_H;
-    u8 VRAMCNT_I;
+    u8 vramcnt[9];
 
     u8 VRAMSTAT;
 

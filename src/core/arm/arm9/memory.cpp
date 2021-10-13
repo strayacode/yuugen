@@ -9,8 +9,9 @@ void ARM9Memory::Reset() {
     UpdateMemoryMap(0, 0xFFFFFFFF);
 
     hw->RegisterMMIO(&mmio, MMIOType::ARMv5);
-
-    // call register mmio functions here
+    hw->gpu.RegisterMMIO(&mmio, MMIOType::ARMv5);
+    hw->gpu.engine_a.RegisterMMIO(&mmio, MMIOType::ARMv5);
+    hw->dma[1].RegisterMMIO(&mmio, MMIOType::ARMv5);
 }
 
 void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
@@ -797,9 +798,6 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
     //         break;
     //     case 0x04000300:
     //         hw->POSTFLG9 = data;
-    //         break;
-    //     case 0x04000304:
-    //         hw->gpu.POWCNT1 = data;
     //         break;
     //     case 0x04000330: case 0x04000331: case 0x04000332: case 0x04000333:
     //     case 0x04000334: case 0x04000335: case 0x04000336: case 0x04000337:

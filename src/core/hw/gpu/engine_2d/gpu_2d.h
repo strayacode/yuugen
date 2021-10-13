@@ -4,6 +4,7 @@
 #include <common/log.h>
 #include <common/memory_helpers.h>
 #include <string.h>
+#include <core/arm/mmio.h>
 
 #define COLOUR_TRANSPARENT 0x8000
 
@@ -47,6 +48,8 @@ struct GPU2D {
 
     void WriteBGX(int bg_index, u32 data);
     void WriteBGY(int bg_index, u32 data);
+
+    void RegisterMMIO(MMIO* mmio, MMIOType type);
 
     u32 framebuffer[256 * 192];
 
