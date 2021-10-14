@@ -29,6 +29,7 @@ public:
     void DrawMenubar();
     void DrawScreen();
     void SetupStyle();
+    void BootFirmware();
 
     void CartridgeWindow();
 

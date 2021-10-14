@@ -162,6 +162,10 @@ void HostInterface::UpdateTitle(float fps) {
                 file_dialog.Open();
             }
 
+            if (ImGui::MenuItem("Boot Firmware")) {
+                BootFirmware();
+            }
+
             if (ImGui::MenuItem("Quit")) {
                 running = false;
             }
@@ -302,4 +306,14 @@ void HostInterface::CartridgeWindow() {
     ImGui::Text("RAM Address: 0x%08x", core.hw.cartridge.header.arm9_ram_address);
     ImGui::Text("Size: 0x%08x", core.hw.cartridge.header.arm9_size);
     ImGui::End();
+}
+
+void HostInterface::BootFirmware() {
+    audio_interface.SetState(AudioState::Paused);
+    core.SetState(State::Idle);
+    core.SetRomPath("");
+    core.SetBootMode(BootMode::Firmware);
+    core.SetState(State::Running);
+    audio_interface.SetState(AudioState::Playing);
+    core.SetBootMode(BootMode::Direct);
 }
