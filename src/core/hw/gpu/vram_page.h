@@ -21,7 +21,7 @@ public:
     }
 
     template <typename T>
-    auto Read(u32 addr) -> T {
+    T Read(u32 addr) {
         T data = 0;
 
         for (int i = 0; i < bank_count; i++) {
@@ -42,5 +42,5 @@ public:
     }
 
     std::array<u8*, 8> banks;
-    int bank_count = 0;
+    int bank_count;
 };

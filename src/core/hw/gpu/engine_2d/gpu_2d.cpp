@@ -161,7 +161,7 @@ void GPU2D::RenderVRAMDisplay(u16 line) {
             data = (gpu->bank_d[addr + 1] << 8 | gpu->bank_d[addr]);
             break;
         }
-        framebuffer[(256 * line) + i] = Convert15To24(data);
+        framebuffer[(256 * line) + i] = Convert15To24(data) | (0xFF000000);
     }
 }
 

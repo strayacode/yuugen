@@ -25,7 +25,7 @@ add_library(core
     hw/gpu/vram_page.h
     hw/gpu/engine_2d/gpu_2d.h hw/gpu/engine_2d/gpu_2d.cpp
     hw/gpu/engine_2d/render/text.cpp hw/gpu/engine_2d/render/extended.cpp
-    hw/gpu/compose.cpp hw/gpu/engine_2d/render/object.cpp
+    hw/gpu/engine_2d/compose.cpp hw/gpu/engine_2d/render/object.cpp
     hw/gpu/engine_2d/render/affine.cpp
     hw/gpu/engine_3d/render_engine.h hw/gpu/engine_3d/render_engine.cpp
     hw/gpu/engine_3d/geometry_engine.h hw/gpu/engine_3d/geometry_engine.cpp
