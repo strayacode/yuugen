@@ -89,6 +89,8 @@ void Cartridge::LoadRom(std::string rom_path) {
 }
 
 void Cartridge::LoadHeaderData() {
+    memcpy(&header.game_title, &rom[0], 12);
+
     // load the u32 variables in the header struct from the respective areas of the rom
     memcpy(&header.gamecode, &rom[0x0C], 4);
     memcpy(&header.arm9_rom_offset, &rom[0x20], 4);

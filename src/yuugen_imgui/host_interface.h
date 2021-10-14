@@ -30,6 +30,8 @@ public:
     void DrawScreen();
     void SetupStyle();
 
+    void CartridgeWindow();
+
     bool running = true;
 
     Core core;
@@ -44,4 +46,6 @@ public:
 
     // TODO: separate framebuffer display into its own class
     GLuint textures[2];
+
+    bool cartridge_window = false;
 };

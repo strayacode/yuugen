@@ -36,6 +36,7 @@ auto HostInterface::Initialise() -> bool {
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 15.0f);
+    SetupStyle();
 
     core.SetAudioInterface(audio_interface);
 
@@ -65,12 +66,10 @@ void HostInterface::Run() {
         ImGui::NewFrame();
 
         DrawMenubar();
+        DrawScreen();
 
-        ImGui::Begin("Hello, world!");
-        ImGui::End();
-
-        if (core.GetState() == State::Running) {
-            DrawScreen();
+        if (cartridge_window) {
+            CartridgeWindow();
         }
 
         ImGui::Render();
@@ -176,21 +175,37 @@ void HostInterface::UpdateTitle(float fps) {
                 core.SetState(State::Running);
             }
 
-            ImGui::EndMenu();
-        }
+            if (ImGui::MenuItem("Pause")) {
+                if (core.GetState() == State::Running) {
+                    core.SetState(State::Paused);
+                    audio_interface.SetState(AudioState::Paused);
+                } else {
+                    core.SetState(State::Running);
+                    audio_interface.SetState(AudioState::Playing);
+                }
+                
+            }
 
-        if (ImGui::BeginMenu("View")) {
-            if (ImGui::MenuItem("Fit to DS Screen Size")) {
-                // SetToContentSize();
+            if (ImGui::MenuItem("Stop")) {
+                core.SetState(State::Idle);
+                audio_interface.SetState(AudioState::Paused);
+            }
+
+            if (ImGui::MenuItem("Restart")) {
+                core.SetState(State::Idle);
+                audio_interface.SetState(AudioState::Paused);
+
+                core.SetState(State::Running);
+                audio_interface.SetState(AudioState::Playing);
             }
 
             ImGui::EndMenu();
         }
 
         if (ImGui::BeginMenu("Debug")) {
-            // if (ImGui::MenuItem("Cartridge", nullptr, show_cartridge_window)) { 
-            //     show_cartridge_window = !show_cartridge_window; 
-            // }
+            if (ImGui::MenuItem("Cartridge", nullptr, cartridge_window)) { 
+                cartridge_window = !cartridge_window; 
+            }
             // if (ImGui::MenuItem("Interrupts", nullptr, show_interrupts_window)) { 
             //     show_interrupts_window = !show_interrupts_window; 
             // }
@@ -198,7 +213,6 @@ void HostInterface::UpdateTitle(float fps) {
             ImGui::EndMenu();
         }
 
-        // TODO: add settings, debug and help
         ImGui::EndMainMenuBar();
     }
 
@@ -224,7 +238,7 @@ void HostInterface::DrawScreen() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_RGBA, GL_UNSIGNED_BYTE, core.hw.gpu.GetFramebuffer(Screen::Top));
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.hw.gpu.GetFramebuffer(Screen::Top));
 
     glBindTexture(GL_TEXTURE_2D, textures[1]);
 
@@ -232,22 +246,60 @@ void HostInterface::DrawScreen() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_RGBA, GL_UNSIGNED_BYTE, core.hw.gpu.GetFramebuffer(Screen::Bottom));
-    // glBegin(GL_QUADS);
-    // glTexCoord2f(0.0f, 0.0f);
-    // glVertex2f(-1.0f,  1.0f);
-    // glTexCoord2f(1.0f, 0.0f);
-    // glVertex2f( 1.0f,  1.0f);
-    // glTexCoord2f(1.0f, 1.0f);
-    // glVertex2f( 1.0f,  0.0f);
-    // glTexCoord2f(0.0f, 1.0f);
-    // glVertex2f(-1.0f,  0.0f);
-    // glEnd();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.hw.gpu.GetFramebuffer(Screen::Bottom));
 
-    ImGui::Begin("OpenGL Texture Text");
-    // ImGui::Text("pointer = %p", textures);
-    ImGui::Text("size = %d x %d", 256, 192);
-    ImGui::Image((void*)(intptr_t)textures[0], ImVec2(256, 192));
-    ImGui::Image((void*)(intptr_t)textures[1], ImVec2(256, 192));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 0.0f });
+    ImGui::Begin("Screen", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
+    ImVec2 window_size = ImGui::GetContentRegionAvail();
+
+    const double scale_x = window_size.x / 256;
+    const double scale_y = window_size.y / 192;
+    const double scale = scale_x < scale_y ? scale_x : scale_y;
+    ImVec2 scaled_dimensions = ImVec2(256 * scale, 192 * scale);
+
+    ImGui::Image((void*)(intptr_t)textures[0], scaled_dimensions);
+    ImGui::Image((void*)(intptr_t)textures[1], scaled_dimensions);
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+}
+
+void HostInterface::SetupStyle() {
+    ImGui::GetStyle().WindowBorderSize = 0.0f;
+    ImGui::GetStyle().PopupBorderSize = 0.0f;
+    ImGui::GetStyle().WindowRounding = 10.0f;
+    ImGui::GetStyle().FrameRounding = 4.0f;
+    ImGui::GetStyle().PopupRounding = 6.0f;
+    ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_HeaderHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_HeaderActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_ResizeGrip] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = ImVec4(0.349f, 0.500f, 0.910f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_Tab] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TabHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TabActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_FrameBg] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+}
+
+void HostInterface::CartridgeWindow() {
+    ImGui::Begin("Cartridge");
+    ImGui::Text("%s", core.hw.cartridge.header.game_title);
+    ImGui::Text("ARM7");
+    ImGui::Text("Offset: 0x%08x", core.hw.cartridge.header.arm7_rom_offset);
+    ImGui::Text("Entrypoint: 0x%08x", core.hw.cartridge.header.arm7_entrypoint);
+    ImGui::Text("RAM Address: 0x%08x", core.hw.cartridge.header.arm7_ram_address);
+    ImGui::Text("Size: 0x%08x", core.hw.cartridge.header.arm7_size);
+    ImGui::Text("ARM9");
+    ImGui::Text("Offset: 0x%08x", core.hw.cartridge.header.arm9_rom_offset);
+    ImGui::Text("Entrypoint: 0x%08x", core.hw.cartridge.header.arm9_entrypoint);
+    ImGui::Text("RAM Address: 0x%08x", core.hw.cartridge.header.arm9_ram_address);
+    ImGui::Text("Size: 0x%08x", core.hw.cartridge.header.arm9_size);
     ImGui::End();
 }

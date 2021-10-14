@@ -58,6 +58,8 @@ public:
     void WriteSeed1_H(u16 data);
 
     struct CartridgeHeader {
+        char game_title[12];
+
         u32 arm9_rom_offset; // specifies from which offset in the rom data will be transferred to the arm9/arm7 bus
         u32 arm9_entrypoint; // specifies where r15 (program counter) will be set to in memory
         u32 arm9_ram_address; // specifies where in memory data from the cartridge will be transferred to
