@@ -276,18 +276,3 @@ void GPU2D::WriteBGY(int bg_index, u32 data) {
     // load the internal register
     internal_y[bg_index - 2] = data;
 }
-
-void GPU2D::RegisterMMIO(MMIO* mmio, MMIOType type) {
-    if (type == MMIOType::ARMv5) {
-        mmio->Register<u32>(0x04000000,
-            [this](u32) {
-                return DISPCNT;
-            },
-            [this](u32, u32 data) {
-                DISPCNT = data;
-            }
-        );
-    } else {
-        log_fatal("handle");
-    }
-}

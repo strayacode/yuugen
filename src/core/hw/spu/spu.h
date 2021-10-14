@@ -4,7 +4,6 @@
 #include <common/log.h>
 #include <string.h>
 #include <audio_common/audio_interface.h>
-#include <core/arm/mmio.h>
 #include <algorithm>
 
 enum ChannelRegisters {
@@ -48,10 +47,6 @@ public:
     auto GenerateSamples() -> u32;
 
     void SetAudioInterface(AudioInterface& interface);
-
-    // since only the arm7 has access to the spu we
-    // don't need the extra type parameter
-    void RegisterMMIO(MMIO* mmio);
 
     struct SPUChannel {
         u32 soundcnt; // sound control

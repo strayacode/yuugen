@@ -5,7 +5,6 @@ add_library(core
     config.h config.cpp
 
     arm/memory_base.h arm/memory_base.cpp
-    arm/mmio.h
     arm/cpu_base.h arm/cpu_base.cpp
     arm/cpu_registers.h
     arm/arm7/memory.h arm/arm7/memory.cpp

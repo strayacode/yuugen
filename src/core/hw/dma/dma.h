@@ -4,7 +4,6 @@
 #include <common/log.h>
 #include <common/types.h>
 #include <functional>
-#include <core/arm/mmio.h>
 
 class HW;
 
@@ -19,15 +18,13 @@ public:
     void WriteDMACNT_H(int channel_index, u16 data);
 
     void WriteDMACNT(int channel_index, u32 data);
-    u32 ReadDMACNT(int channel_index);
+    auto ReadDMACNT(int channel_index) -> u32;
 
-    u16 ReadDMACNT_L(int channel_index);
-    u16 ReadDMACNT_H(int channel_index);
+    auto ReadDMACNT_L(int channel_index) -> u16;
+    auto ReadDMACNT_H(int channel_index) -> u16;
 
-    u32 ReadLength(int channel_index);
+    auto ReadLength(int channel_index) -> u32;
     void WriteLength(int channel_index, u32 data);
-
-    void RegisterMMIO(MMIO* mmio, MMIOType type);
 
     HW* hw;
 

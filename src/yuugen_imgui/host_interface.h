@@ -28,6 +28,7 @@ public:
     void UpdateTitle(float fps);
     void DrawMenubar();
     void DrawScreen();
+    void SetupStyle();
 
     bool running = true;
 
