@@ -217,6 +217,15 @@ void HostInterface::UpdateTitle(float fps) {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("View")) {
+            if (ImGui::MenuItem("Toggle Fullscreen", nullptr, fullscreen)) {
+                fullscreen = !fullscreen;
+                SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+            }
+
+            ImGui::EndMenu();
+        }
+
         ImGui::EndMainMenuBar();
     }
 

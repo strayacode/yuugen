@@ -34,6 +34,7 @@ public:
     void CartridgeWindow();
 
     bool running = true;
+    bool fullscreen = false;
 
     Core core;
 
