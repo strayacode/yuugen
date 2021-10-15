@@ -72,6 +72,10 @@ void HostInterface::Run() {
             CartridgeWindow();
         }
 
+        if (arm_window) {
+            ARMWindow();
+        }
+
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
         glClearColor(0, 0, 0, 1);
@@ -210,6 +214,10 @@ void HostInterface::UpdateTitle(float fps) {
             if (ImGui::MenuItem("Cartridge", nullptr, cartridge_window)) { 
                 cartridge_window = !cartridge_window; 
             }
+
+            if (ImGui::MenuItem("ARM", nullptr, arm_window)) { 
+                arm_window = !arm_window; 
+            }
             // if (ImGui::MenuItem("Interrupts", nullptr, show_interrupts_window)) { 
             //     show_interrupts_window = !show_interrupts_window; 
             // }
@@ -325,4 +333,26 @@ void HostInterface::BootFirmware() {
     core.SetState(State::Running);
     audio_interface.SetState(AudioState::Playing);
     core.SetBootMode(BootMode::Direct);
+}
+
+void HostInterface::ARMWindow() {
+    ImGui::Begin("ARM");
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+    if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
+        if (ImGui::BeginTabItem("ARM7")) {
+            for (int i = 0; i < 16; i++) {
+                ImGui::Text("r%d: %08x", i, core.hw.cpu_core[0]->regs.r[i]);
+            }
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("ARM9")) {
+            for (int i = 0; i < 16; i++) {
+                ImGui::Text("r%d: %08x", i, core.hw.cpu_core[1]->regs.r[i]);
+            }
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
 }

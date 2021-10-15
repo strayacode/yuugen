@@ -32,6 +32,7 @@ public:
     void BootFirmware();
 
     void CartridgeWindow();
+    void ARMWindow();
 
     bool running = true;
     bool fullscreen = false;
@@ -50,4 +51,5 @@ public:
     GLuint textures[2];
 
     bool cartridge_window = false;
+    bool arm_window = false;
 };

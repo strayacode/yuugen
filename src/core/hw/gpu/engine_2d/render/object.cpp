@@ -113,7 +113,6 @@ void GPU2D::RenderObjects(u16 line) {
             }
         } else {
             // 16 colour / 16 palette
-            
             // in 1d mapping
             // each sprite will occupy 32 bytes for each 8x8 tile in it
             // for each 8 that height_difference goes we will move to a new tile

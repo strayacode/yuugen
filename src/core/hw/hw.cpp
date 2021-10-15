@@ -12,6 +12,7 @@ HW::HW() :
     rtc(this),
     arm7_memory(this),
     arm9_memory(this) {
+    InitialiseCPUCores(CPUCoreType::Interpreter);
 }
 
 HW::~HW() {
@@ -20,7 +21,6 @@ HW::~HW() {
 
 void HW::Reset() {
     InitialiseCPUCores(CPUCoreType::Interpreter);
-
     scheduler.Reset();
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
