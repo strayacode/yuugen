@@ -33,6 +33,8 @@ public:
 
     void CartridgeWindow();
     void ARMWindow();
+    void GPUWindow();
+    void GPU2DWindow();
 
     bool running = true;
     bool fullscreen = false;
@@ -52,4 +54,6 @@ public:
 
     bool cartridge_window = false;
     bool arm_window = false;
+    bool gpu_window = false;
+    bool gpu_2d_window = false;
 };

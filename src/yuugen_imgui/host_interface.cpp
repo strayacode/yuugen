@@ -76,6 +76,14 @@ void HostInterface::Run() {
             ARMWindow();
         }
 
+        if (gpu_window) {
+            GPUWindow();
+        }
+
+        if (gpu_2d_window) {
+            GPU2DWindow();
+        }
+
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
         glClearColor(0, 0, 0, 1);
@@ -218,9 +226,14 @@ void HostInterface::UpdateTitle(float fps) {
             if (ImGui::MenuItem("ARM", nullptr, arm_window)) { 
                 arm_window = !arm_window; 
             }
-            // if (ImGui::MenuItem("Interrupts", nullptr, show_interrupts_window)) { 
-            //     show_interrupts_window = !show_interrupts_window; 
-            // }
+
+            if (ImGui::MenuItem("GPU", nullptr, gpu_window)) { 
+                gpu_window = !gpu_window; 
+            }
+
+            if (ImGui::MenuItem("GPU2D", nullptr, gpu_2d_window)) { 
+                gpu_2d_window = !gpu_2d_window; 
+            }
 
             ImGui::EndMenu();
         }
@@ -340,7 +353,6 @@ void HostInterface::ARMWindow() {
     ImGui::Begin("ARM");
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
-        
         if (ImGui::BeginTabItem("ARM7")) {
             if (ImGui::BeginTable("registers", 4)) {
                 for (int i = 0; i < 4; i++) {
@@ -382,5 +394,62 @@ void HostInterface::ARMWindow() {
 
         ImGui::EndTabBar();
     }
+    ImGui::End();
+}
+
+void HostInterface::GPU2DWindow() {
+    ImGui::Begin("GPU2D");
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+
+    const char* bg_modes[7] = {
+        "Text/3D Text Text Text", "Text/3D Text Text Affine", "Text/3D Text Affine Affine", 
+        "Text/3D Text Text Extended", "Text/3D Text Affine Extended", "Text/3D Text Extended Extended", 
+        "3D - Large -",
+    };
+
+    if (ImGui::BeginTabBar("GPU2DTabs", tab_bar_flags)) {
+        if (ImGui::BeginTabItem("Engine A")) {
+            if (ImGui::CollapsingHeader("dispcnt", ImGuiTreeNodeFlags_None)) {
+                ImGui::Text("dispcnt: %08x", core.hw.gpu.engine_a.DISPCNT);
+                ImGui::Text("BG Mode %s", bg_modes[core.hw.gpu.engine_a.DISPCNT & 0x7]);
+                ImGui::Text("BG0 2D/3D Selection %s", (core.hw.gpu.engine_a.DISPCNT >> 3) & 0x1 ? "3D": "2D");
+                ImGui::Text("Tile OBJ Mapping %s", (core.hw.gpu.engine_a.DISPCNT >> 4) & 0x1 ? "2D": "1D");
+                ImGui::Text("Bitmap OBJ 2D-Dimension %s", (core.hw.gpu.engine_a.DISPCNT >> 5) & 0x1 ? "128x512": "256x256");
+                ImGui::Text("Bitmap OBJ Mapping %s", (core.hw.gpu.engine_a.DISPCNT >> 6) & 0x1 ? "2D": "1D");
+            }
+            
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Engine B")) {
+            if (ImGui::CollapsingHeader("dispcnt", ImGuiTreeNodeFlags_None)) {
+                ImGui::Text("dispcnt: %08x", core.hw.gpu.engine_b.DISPCNT);
+                ImGui::Text("BG Mode %s", bg_modes[core.hw.gpu.engine_b.DISPCNT & 0x7]);
+                ImGui::Text("BG0 2D/3D Selection %s", (core.hw.gpu.engine_b.DISPCNT >> 3) & 0x1 ? "3D": "2D");
+                ImGui::Text("Tile OBJ Mapping %s", (core.hw.gpu.engine_b.DISPCNT >> 4) & 0x1 ? "2D": "1D");
+                ImGui::Text("Bitmap OBJ 2D-Dimension %s", (core.hw.gpu.engine_b.DISPCNT >> 5) & 0x1 ? "128x512": "256x256");
+                ImGui::Text("Bitmap OBJ Mapping %s", (core.hw.gpu.engine_b.DISPCNT >> 6) & 0x1 ? "2D": "1D");
+            }
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
+
+    ImGui::End();
+}
+
+void HostInterface::GPUWindow() {
+    ImGui::Begin("GPU");
+    if (ImGui::CollapsingHeader("powcnt1", ImGuiTreeNodeFlags_None)) {
+        ImGui::Text("powcnt1: %04x", core.hw.gpu.POWCNT1);
+        ImGui::Text("Enable Both LCDs %s", core.hw.gpu.POWCNT1 & 0x1 ? "true" : "false");
+        ImGui::Text("Enable 2D Engine A %s", (core.hw.gpu.POWCNT1 >> 1) & 0x1 ? "true" : "false");
+        ImGui::Text("Enable 3D Rendering Engine %s", (core.hw.gpu.POWCNT1 >> 2) & 0x1 ? "true" : "false");
+        ImGui::Text("Enable 3D Geometry Engine %s", (core.hw.gpu.POWCNT1 >> 3) & 0x1 ? "true" : "false");
+        ImGui::Text("Enable 2D Engine B %s", (core.hw.gpu.POWCNT1 >> 9) & 0x1 ? "true" : "false");
+        ImGui::Text("Display Swap %s", (core.hw.gpu.POWCNT1 >> 15) & 0x1 ? "Engine A Top / Engine B Bottom" : "Engine B Top / Engine A Bottom");
+    }
+
     ImGui::End();
 }
