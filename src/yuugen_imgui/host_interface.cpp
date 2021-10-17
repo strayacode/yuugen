@@ -86,7 +86,7 @@ void HostInterface::Run() {
 }
 
 void HostInterface::Shutdown() {
-    // glDeleteTextures(2, &texture_id[0]);
+    glDeleteTextures(2, &textures[0]);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
@@ -288,10 +288,11 @@ void HostInterface::DrawScreen() {
 void HostInterface::SetupStyle() {
     ImGui::GetStyle().WindowBorderSize = 0.0f;
     ImGui::GetStyle().PopupBorderSize = 0.0f;
-    ImGui::GetStyle().WindowRounding = 10.0f;
+    ImGui::GetStyle().WindowRounding = 8.0f;
     ImGui::GetStyle().FrameRounding = 4.0f;
     ImGui::GetStyle().PopupRounding = 6.0f;
-    ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_HeaderHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_HeaderActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
@@ -339,16 +340,43 @@ void HostInterface::ARMWindow() {
     ImGui::Begin("ARM");
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
+        
         if (ImGui::BeginTabItem("ARM7")) {
-            for (int i = 0; i < 16; i++) {
-                ImGui::Text("r%d: %08x", i, core.hw.cpu_core[0]->regs.r[i]);
+            if (ImGui::BeginTable("registers", 4)) {
+                for (int i = 0; i < 4; i++) {
+                    ImGui::TableNextRow();
+                    for (int j = 0; j < 4; j++) {
+                        ImGui::TableSetColumnIndex(j);
+                        ImGui::Text("r%d: %08x", (i * 4) + j, core.hw.cpu_core[0]->regs.r[(i * 4) + j]);
+                    }
+                }
+                ImGui::EndTable();
             }
+
+            ImGui::Text("cpsr: %08x", core.hw.cpu_core[0]->regs.cpsr);
+            ImGui::Text("State: %s", core.hw.cpu_core[0]->halted ? "Halted" : "Running");
+            ImGui::Text("T Bit: %s", (!(core.hw.cpu_core[0]->regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
+            ImGui::Text("Mode: %02x", core.hw.cpu_core[0]->regs.cpsr & 0x1F);
+            
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("ARM9")) {
-            for (int i = 0; i < 16; i++) {
-                ImGui::Text("r%d: %08x", i, core.hw.cpu_core[1]->regs.r[i]);
+            if (ImGui::BeginTable("registers", 4)) {
+                for (int i = 0; i < 4; i++) {
+                    ImGui::TableNextRow();
+                    for (int j = 0; j < 4; j++) {
+                        ImGui::TableSetColumnIndex(j);
+                        ImGui::Text("r%d: %08x", (i * 4) + j, core.hw.cpu_core[1]->regs.r[(i * 4) + j]);
+                    }
+                }
+                ImGui::EndTable();
             }
+
+            ImGui::Text("cpsr: %08x", core.hw.cpu_core[1]->regs.cpsr);
+            ImGui::Text("State: %s", core.hw.cpu_core[1]->halted ? "Halted" : "Running");
+            ImGui::Text("T Bit: %s", (!(core.hw.cpu_core[1]->regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
+            ImGui::Text("Mode: %02x", core.hw.cpu_core[1]->regs.cpsr & 0x1F);
+            
             ImGui::EndTabItem();
         }
 

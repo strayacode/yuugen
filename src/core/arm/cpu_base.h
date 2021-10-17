@@ -27,7 +27,7 @@ public:
 
     CPURegisters regs;
 
-    bool halted;
+    bool halted = true;
 
     u32 irf;
     u32 ie;
