@@ -11,7 +11,6 @@
 #include <core/hw/dma/dma.h>
 #include <core/hw/input/input.h>
 #include <core/hw/ipc/ipc.h>
-#include <core/hw/interrupt/interrupt.h>
 #include <core/hw/timers/timers.h>
 #include <core/hw/spu/spu.h>
 #include <core/hw/rtc/rtc.h>

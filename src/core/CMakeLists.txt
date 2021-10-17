@@ -33,7 +33,6 @@ add_library(core
     hw/dma/dma.h hw/dma/dma.cpp
     hw/input/input.h hw/input/input.cpp
     hw/ipc/ipc.h hw/ipc/ipc.cpp
-    hw/interrupt/interrupt.h hw/interrupt/interrupt.cpp
     hw/timers/timers.h hw/timers/timers.cpp
     hw/spu/spu.h hw/spu/spu.cpp
     hw/rtc/rtc.h hw/rtc/rtc.cpp
