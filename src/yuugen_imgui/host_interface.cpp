@@ -407,6 +407,10 @@ void HostInterface::GPU2DWindow() {
         "3D - Large -",
     };
 
+    const char* display_modes[4] = {
+        "Display Off", "Graphics Display", "VRAM Display", "Main Memory Display"
+    };
+
     if (ImGui::BeginTabBar("GPU2DTabs", tab_bar_flags)) {
         if (ImGui::BeginTabItem("Engine A")) {
             if (ImGui::CollapsingHeader("dispcnt", ImGuiTreeNodeFlags_None)) {
@@ -416,6 +420,61 @@ void HostInterface::GPU2DWindow() {
                 ImGui::Text("Tile OBJ Mapping %s", (core.hw.gpu.engine_a.DISPCNT >> 4) & 0x1 ? "2D": "1D");
                 ImGui::Text("Bitmap OBJ 2D-Dimension %s", (core.hw.gpu.engine_a.DISPCNT >> 5) & 0x1 ? "128x512": "256x256");
                 ImGui::Text("Bitmap OBJ Mapping %s", (core.hw.gpu.engine_a.DISPCNT >> 6) & 0x1 ? "2D": "1D");
+                ImGui::Text("Forced Blank %s", (core.hw.gpu.engine_a.DISPCNT >> 7) & 0x1 ? "true": "false");
+                ImGui::Text("Display BG0 %s", (core.hw.gpu.engine_a.DISPCNT >> 8) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG1 %s", (core.hw.gpu.engine_a.DISPCNT >> 9) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG2 %s", (core.hw.gpu.engine_a.DISPCNT >> 10) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG3 %s", (core.hw.gpu.engine_a.DISPCNT >> 11) & 0x1 ? "On": "Off");
+                ImGui::Text("Display OBJ %s", (core.hw.gpu.engine_a.DISPCNT >> 12) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Window 0 %s", (core.hw.gpu.engine_a.DISPCNT >> 13) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Window 1 %s", (core.hw.gpu.engine_a.DISPCNT >> 14) & 0x1 ? "On": "Off");
+                ImGui::Text("Display OBJ Window %s", (core.hw.gpu.engine_a.DISPCNT >> 15) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Mode %s", display_modes[(core.hw.gpu.engine_a.DISPCNT >> 16) & 0x3]);
+                ImGui::Text("VRAM Block %c", 'A' + ((core.hw.gpu.engine_a.DISPCNT >> 18) & 0x3));
+                ImGui::Text("Tile OBJ 1D-Boundary %d", (core.hw.gpu.engine_a.DISPCNT >> 20) & 0x3);
+                ImGui::Text("Bitmap OBJ 1D-Boundary %d", (core.hw.gpu.engine_a.DISPCNT >> 22) & 0x1);
+                ImGui::Text("OBJ Processing during H-Blank %s", (core.hw.gpu.engine_a.DISPCNT >> 23) & 0x1 ? "true" : "false");
+                ImGui::Text("Character Base %08x", ((core.hw.gpu.engine_a.DISPCNT >> 24) & 0x7) * 0x10000);
+                ImGui::Text("Screen Base %08x", ((core.hw.gpu.engine_a.DISPCNT >> 27) & 0x7) * 0x10000);
+                ImGui::Text("BG Extended Palettes %s", (core.hw.gpu.engine_a.DISPCNT >> 30) & 0x1 ? "true" : "false");
+                ImGui::Text("OBJ Extended Palettes %s", (core.hw.gpu.engine_a.DISPCNT >> 31) & 0x1 ? "true" : "false");
+            }
+
+            switch (core.hw.gpu.engine_a.DISPCNT & 0x7) {
+            case 0x3: case 0x4:
+                if (((core.hw.gpu.engine_a.BGCNT[3] >> 7) & 0x1) == 0) {
+                    ImGui::Text("BG3 Extended Mode rot/scal 16-bit bg map entries");
+                } else {
+                    if ((core.hw.gpu.engine_a.BGCNT[3] >> 2) & 0x1) {
+                        ImGui::Text("BG3 Extended Mode rot/scal 256 colour bitmap");
+                    } else {
+                        ImGui::Text("BG3 Extended Mode rot/scal direct colour bitmap");
+                    }
+                }
+                
+                break;
+            case 0x5:
+                if (((core.hw.gpu.engine_a.BGCNT[2] >> 7) & 0x1) == 0) {
+                    ImGui::Text("BG2 Extended Mode rot/scal 16-bit bg map entries");
+                } else {
+                    if ((core.hw.gpu.engine_a.BGCNT[2] >> 2) & 0x1) {
+                        ImGui::Text("BG2 Extended Mode rot/scal 256 colour bitmap");
+                    } else {
+                        ImGui::Text("BG2 Extended Mode rot/scal direct colour bitmap");
+                    }
+                }
+
+                if (((core.hw.gpu.engine_a.BGCNT[3] >> 7) & 0x1) == 0) {
+                    ImGui::Text("BG3 Extended Mode rot/scal 16-bit bg map entries");
+                } else {
+                    if ((core.hw.gpu.engine_a.BGCNT[3] >> 2) & 0x1) {
+                        ImGui::Text("BG3 Extended Mode rot/scal 256 colour bitmap");
+                    } else {
+                        ImGui::Text("BG3 Extended Mode rot/scal direct colour bitmap");
+                    }
+                }
+                
+                break;
             }
             
             ImGui::EndTabItem();
@@ -425,11 +484,66 @@ void HostInterface::GPU2DWindow() {
             if (ImGui::CollapsingHeader("dispcnt", ImGuiTreeNodeFlags_None)) {
                 ImGui::Text("dispcnt: %08x", core.hw.gpu.engine_b.DISPCNT);
                 ImGui::Text("BG Mode %s", bg_modes[core.hw.gpu.engine_b.DISPCNT & 0x7]);
-                ImGui::Text("BG0 2D/3D Selection %s", (core.hw.gpu.engine_b.DISPCNT >> 3) & 0x1 ? "3D": "2D");
                 ImGui::Text("Tile OBJ Mapping %s", (core.hw.gpu.engine_b.DISPCNT >> 4) & 0x1 ? "2D": "1D");
                 ImGui::Text("Bitmap OBJ 2D-Dimension %s", (core.hw.gpu.engine_b.DISPCNT >> 5) & 0x1 ? "128x512": "256x256");
                 ImGui::Text("Bitmap OBJ Mapping %s", (core.hw.gpu.engine_b.DISPCNT >> 6) & 0x1 ? "2D": "1D");
+                ImGui::Text("Forced Blank %s", (core.hw.gpu.engine_b.DISPCNT >> 7) & 0x1 ? "true": "false");
+                ImGui::Text("Display BG0 %s", (core.hw.gpu.engine_b.DISPCNT >> 8) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG1 %s", (core.hw.gpu.engine_b.DISPCNT >> 9) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG2 %s", (core.hw.gpu.engine_b.DISPCNT >> 10) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG3 %s", (core.hw.gpu.engine_b.DISPCNT >> 11) & 0x1 ? "On": "Off");
+                ImGui::Text("Display OBJ %s", (core.hw.gpu.engine_b.DISPCNT >> 12) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Window 0 %s", (core.hw.gpu.engine_b.DISPCNT >> 13) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Window 1 %s", (core.hw.gpu.engine_b.DISPCNT >> 14) & 0x1 ? "On": "Off");
+                ImGui::Text("Display OBJ Window %s", (core.hw.gpu.engine_b.DISPCNT >> 15) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Mode %s", display_modes[(core.hw.gpu.engine_a.DISPCNT >> 16) & 0x3]);
+                ImGui::Text("Tile OBJ 1D-Boundary %d", (core.hw.gpu.engine_a.DISPCNT >> 20) & 0x3);
+                ImGui::Text("OBJ Processing during H-Blank %s", (core.hw.gpu.engine_a.DISPCNT >> 23) & 0x1 ? "true" : "false");
+
+                // TODO: should these be here?
+                ImGui::Text("Character Base %08x", ((core.hw.gpu.engine_a.DISPCNT >> 24) & 0x7) * 0x10000);
+                ImGui::Text("Screen Base %08x", ((core.hw.gpu.engine_a.DISPCNT >> 27) & 0x7) * 0x10000);
+                ImGui::Text("BG Extended Palettes %s", (core.hw.gpu.engine_a.DISPCNT >> 30) & 0x1 ? "true" : "false");
+                ImGui::Text("OBJ Extended Palettes %s", (core.hw.gpu.engine_a.DISPCNT >> 31) & 0x1 ? "true" : "false");
             }
+
+            switch (core.hw.gpu.engine_b.DISPCNT & 0x7) {
+            case 0x3: case 0x4:
+                if (((core.hw.gpu.engine_b.BGCNT[3] >> 7) & 0x1) == 0) {
+                    ImGui::Text("BG3 Extended Mode rot/scal 16-bit bg map entries");
+                } else {
+                    if ((core.hw.gpu.engine_b.BGCNT[3] >> 2) & 0x1) {
+                        ImGui::Text("BG3 Extended Mode rot/scal 256 colour bitmap");
+                    } else {
+                        ImGui::Text("BG3 Extended Mode rot/scal direct colour bitmap");
+                    }
+                }
+                
+                break;
+            case 0x5:
+                if (((core.hw.gpu.engine_b.BGCNT[2] >> 7) & 0x1) == 0) {
+                    ImGui::Text("BG2 Extended Mode rot/scal 16-bit bg map entries");
+                } else {
+                    if ((core.hw.gpu.engine_b.BGCNT[2] >> 2) & 0x1) {
+                        ImGui::Text("BG2 Extended Mode rot/scal 256 colour bitmap");
+                    } else {
+                        ImGui::Text("BG2 Extended Mode rot/scal direct colour bitmap");
+                    }
+                }
+
+                if (((core.hw.gpu.engine_b.BGCNT[3] >> 7) & 0x1) == 0) {
+                    ImGui::Text("BG3 Extended Mode rot/scal 16-bit bg map entries");
+                } else {
+                    if ((core.hw.gpu.engine_b.BGCNT[3] >> 2) & 0x1) {
+                        ImGui::Text("BG3 Extended Mode rot/scal 256 colour bitmap");
+                    } else {
+                        ImGui::Text("BG3 Extended Mode rot/scal direct colour bitmap");
+                    }
+                }
+                
+                break;
+            }
+
             ImGui::EndTabItem();
         }
 
