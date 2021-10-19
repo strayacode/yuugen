@@ -74,8 +74,6 @@ void Interpreter::Run(int cycles) {
             u32 index = instruction >> 6;
             (this->*thumb_lut[index])();
         }
-
-        counter++;
     }
 }
 
@@ -390,7 +388,6 @@ void Interpreter::HandleInterrupt() {
     // slight edgecase because the new instruction doesn't get loaded yet when an interrupt is handled
     instruction = pipeline[0];
 }
-
 
 void Interpreter::ARMCoprocessorRegisterTransfer() {
     if (arch == CPUArch::ARMv4) {
