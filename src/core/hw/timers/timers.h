@@ -18,16 +18,17 @@ public:
     void WriteTMCNT_L(int timer_index, u16 data);
     void WriteTMCNT_H(int timer_index, u16 data);
 
-    auto ReadTMCNT_L(int timer_index) -> u16;
-    auto ReadTMCNT_H(int timer_index) -> u16;
-
-    auto ReadTMCNT(int timer_index) -> u32;
+    u16 ReadTMCNT_L(int timer_index);
+    u16 ReadTMCNT_H(int timer_index);
+    u32 ReadTMCNT(int timer_index);
 
     void Overflow(int timer_index);
     void ActivateChannel(int timer_index);
     void DeactivateChannel(int timer_index);
 
     int GetEventId(int timer_index);
+
+    u16 UpdateCounter(int timer_index);
 
     struct Timer {
         u16 control;

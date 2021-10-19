@@ -87,13 +87,11 @@ void Timers::ActivateChannel(int timer_index) {
 }
 
 void Timers::DeactivateChannel(int timer_index) {
-    // this function is called when a timer is altered while a timer is on the scheduler
+    // update the counter of the timer
+    timer[timer_index].counter = UpdateCounter(timer_index);
 
     // mark the timer as not active anymore
     timer[timer_index].active = false;
-
-    // update the counter of the timer
-    timer[timer_index].counter += (hw->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
 
     if (timer[timer_index].counter >= 0x10000) {
         log_fatal("handle");
@@ -110,20 +108,25 @@ int Timers::GetEventId(int timer_index) {
     return id;
 }
 
-auto Timers::ReadTMCNT_L(int timer_index) -> u16 {
-    // we need to now update counter to be relative to the time that has passed since
-    // the timer was placed on the scheduler
-    if (timer[timer_index].active) {
-        timer[timer_index].counter = (hw->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
-    }
-    
-    return timer[timer_index].counter;
+u16 Timers::ReadTMCNT_L(int timer_index) {
+    return UpdateCounter(timer_index);
 }
 
-auto Timers::ReadTMCNT_H(int timer_index) -> u16 {
+u16 Timers::ReadTMCNT_H(int timer_index) {
     return timer[timer_index].control;
 }
 
-auto Timers::ReadTMCNT(int timer_index) -> u32 {
+u32 Timers::ReadTMCNT(int timer_index) {
     return (ReadTMCNT_H(timer_index) << 16) | (ReadTMCNT_L(timer_index));
+}
+
+u16 Timers::UpdateCounter(int timer_index) {
+    u16 counter = timer[timer_index].counter;
+    u16 change = (hw->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
+    
+    if (timer[timer_index].active) {
+        return counter + change;
+    } else {
+        return counter;
+    }
 }
