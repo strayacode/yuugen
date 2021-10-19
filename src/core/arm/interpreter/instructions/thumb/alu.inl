@@ -12,17 +12,9 @@ void ThumbAddSubtract() {
     u32 op2 = immediate ? rn : regs.r[rn];
 
     if (sub) {
-        regs.r[rd] = op1 - op2;
-        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
-        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, regs.r[rd]));
+        regs.r[rd] = SUB(op1, op2, true);
     } else {
-        regs.r[rd] = op1 + op2;
-        SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
-        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-        SetConditionFlag(C_FLAG, ADD_CARRY(op1, op2));
-        SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, regs.r[rd]));
+        regs.r[rd] = ADD(op1, op2, true);
     }
 
     regs.r[15] += 2;
@@ -86,32 +78,22 @@ void ThumbALUImmediate() {
 
     switch (opcode) {
     case 0x0:
-        result = immediate;
         regs.r[rd] = immediate;
+        SetConditionFlag(N_FLAG, false);
+        SetConditionFlag(Z_FLAG, result == 0);
         break;
     case 0x1:
-        result = regs.r[rd] - immediate;
-        SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rd], immediate));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rd], immediate, result));
+        CMP(regs.r[rd], immediate);
         break;
     case 0x2:
-        result = regs.r[rd] + immediate;
-        SetConditionFlag(C_FLAG, ADD_CARRY(regs.r[rd], immediate));
-        SetConditionFlag(V_FLAG, ADD_OVERFLOW(regs.r[rd], immediate, result));
-        regs.r[rd] += immediate;
+        regs.r[rd] = ADD(regs.r[rd], immediate, true);
         break;
     case 0x3:
-        result = regs.r[rd] - immediate;
-        SetConditionFlag(C_FLAG, SUB_CARRY(regs.r[rd], immediate));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(regs.r[rd], immediate, result));
-        regs.r[rd] -= immediate;
+        regs.r[rd] = SUB(regs.r[rd], immediate, true);
         break;
     default:
         log_fatal("handle opcode %d", opcode);
     }
-
-    SetConditionFlag(N_FLAG, result >> 31);
-    SetConditionFlag(Z_FLAG, result == 0);
 
     regs.r[15] += 2;
 }

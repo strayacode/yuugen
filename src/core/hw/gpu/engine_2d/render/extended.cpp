@@ -28,6 +28,7 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         break;
     }
 
+    // TODO: handle wraparound for all modes
     // if (BGCNT[bg_index] & (1 << 13)) {
     //     log_fatal("handle");
     // }
@@ -42,8 +43,19 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
             u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
             u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
 
-            // don't draw the pixel if the x and y coordinates are not inside the dimensions of the tilemap
-            if (coord_x < 0 || coord_x >= size || coord_y < 0 || coord_y >= size) {
+            if (BGCNT[bg_index] & (1 << 13)) {
+                coord_x %= size;
+
+                if (coord_x < 0) {
+                    log_fatal("handle");
+                }
+
+                coord_y %= size;
+
+                if (coord_y < 0) {
+                    log_fatal("handle");
+                }
+            } else if (coord_x < 0 || coord_x >= size || coord_y < 0 || coord_y >= size) {
                 continue;
             }
 

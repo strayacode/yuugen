@@ -8,13 +8,6 @@
 #include <array>
 #include <memory>
 
-// probably change these...
-#define ADD_CARRY(a, b)  ((0xFFFFFFFF-a) < b)
-#define SUB_CARRY(a, b)  (a >= b)
-
-#define ADD_OVERFLOW(a, b, res)  ((!(((a) ^ (b)) & 0x80000000)) && (((a) ^ (res)) & 0x80000000))
-#define SUB_OVERFLOW(a, b, res)  ((((a) ^ (b)) & 0x80000000) && (((a) ^ (res)) & 0x80000000))
-
 enum Mode {
     USR = 0x10,
     FIQ = 0x11,

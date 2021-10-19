@@ -66,7 +66,7 @@ void ARMDataProcessing() {
         regs.r[rd] = SUB(op1, op2, set_flags);
         break;
     case 0x3:
-        regs.r[rd] = RSB(op1, op2, set_flags);
+        regs.r[rd] = SUB(op2, op1, set_flags);
         break;
     case 0x4:
         regs.r[rd] = ADD(op1, op2, set_flags);
@@ -78,7 +78,7 @@ void ARMDataProcessing() {
         regs.r[rd] = SBC(op1, op2, set_flags);
         break;
     case 0x7:
-        regs.r[rd] = RSC(op1, op2, set_flags);
+        regs.r[rd] = SBC(op2, op1, set_flags);
         break;
     case 0x8:
         TST(op1, op2);
@@ -178,11 +178,10 @@ void TEQ(u32 op1, u32 op2) {
 void CMP(u32 op1, u32 op2) {
     u32 result = op1 - op2;
 
-    // set flags
     SetConditionFlag(N_FLAG, result >> 31);
     SetConditionFlag(Z_FLAG, result == 0);
-    SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
-    SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result));
+    SetConditionFlag(C_FLAG, op1 >= op2);
+    SetConditionFlag(V_FLAG, ((op1 ^ op2) & (op1 ^ result)) >> 31);
 }
 
 void CMN(u32 op1, u32 op2) {
@@ -190,8 +189,8 @@ void CMN(u32 op1, u32 op2) {
 
     SetConditionFlag(Z_FLAG, result == 0);
     SetConditionFlag(N_FLAG, result >> 31);
-    SetConditionFlag(C_FLAG, ADD_CARRY(op1, op2));
-    SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, result));
+    SetConditionFlag(C_FLAG, result < op1);
+    SetConditionFlag(V_FLAG, (~(op1 ^ op2) & (op2 ^ result)) >> 31);
 }
 
 void TST(u32 op1, u32 op2) {
@@ -201,74 +200,48 @@ void TST(u32 op1, u32 op2) {
     SetConditionFlag(N_FLAG, result >> 31);
 }
 
-auto ADD(u32 op1, u32 op2, u8 set_flags) -> u32 {
-    u64 result64 = (u64)op1 + (u64)op2;
+u32 ADD(u32 op1, u32 op2, u8 set_flags) {
     u32 result = op1 + op2;
 
     if (set_flags) {
-        SetConditionFlag(N_FLAG, result >> 31);
-        SetConditionFlag(Z_FLAG, result == 0);
-        SetConditionFlag(C_FLAG, result64 >> 32);
-        SetConditionFlag(V_FLAG, ADD_OVERFLOW(op1, op2, result));
-    }
-
-    return result;
-}
-
-auto ADC(u32 op1, u32 op2, u8 set_flags) -> u32 {
-    u64 result64 = (u64)op1 + (u64)op2 + (u64)GetConditionFlag(C_FLAG);
-    u32 result = (u32)result64;
-
-    if (set_flags) {
-        SetConditionFlag(C_FLAG, result64 >> 32);
         SetConditionFlag(Z_FLAG, result == 0);
         SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(C_FLAG, result < op1);
         SetConditionFlag(V_FLAG, (~(op1 ^ op2) & (op2 ^ result)) >> 31);
     }
 
     return result;
 }
 
-auto SBC(u32 op1, u32 op2, u8 set_flags) -> u32 {
-    u32 result = op1 - op2 - !GetConditionFlag(C_FLAG);
+u32 ADC(u32 op1, u32 op2, u8 set_flags) {
+    u64 result64 = (u64)op1 + (u64)op2 + (u64)GetConditionFlag(C_FLAG);
+    u32 result = (u32)result64;
 
     if (set_flags) {
-        SetConditionFlag(N_FLAG, result >> 31);
         SetConditionFlag(Z_FLAG, result == 0);
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result));
-        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2) & SUB_CARRY(op1 - op2, !GetConditionFlag(C_FLAG)));
+        SetConditionFlag(N_FLAG, result >> 31);
+        SetConditionFlag(C_FLAG, result64 >> 32);
+        SetConditionFlag(V_FLAG, (~(op1 ^ op2) & (op2 ^ result)) >> 31);
     }
 
     return result;
 }
 
-auto RSC(u32 op1, u32 op2, u8 set_flags) -> u32 {
-    u32 result = op2 - op1 - !GetConditionFlag(C_FLAG);
-    
+u32 SBC(u32 op1, u32 op2, u8 set_flags) {
+    u32 op3 = GetConditionFlag(C_FLAG) ^ 1;
+    u32 result = op1 - op2 - op3;
+
     if (set_flags) {
         SetConditionFlag(N_FLAG, result >> 31);
         SetConditionFlag(Z_FLAG, result == 0);
-        SetConditionFlag(C_FLAG, SUB_CARRY(op2, op1));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, op1, result));
+        SetConditionFlag(V_FLAG, ((op1 ^ op2) & (op1 ^ result)) >> 31);
+        SetConditionFlag(C_FLAG, (u64)op1 >= (u64)op2 + (u64)op3);
     }
 
     return result;
 }
 
-auto RSB(u32 op1, u32 op2, u8 set_flags) -> u32 {
-    u32 result = op2 - op1;
-    
-    if (set_flags) {
-        SetConditionFlag(N_FLAG, result >> 31);
-        SetConditionFlag(Z_FLAG, result == 0);
-        SetConditionFlag(C_FLAG, SUB_CARRY(op2, op1));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op2, op1, result));
-    }
-
-    return result;
-}
-
-auto EOR(u32 op1, u32 op2, u8 set_flags) -> u32 {
+u32 EOR(u32 op1, u32 op2, u8 set_flags) {
     u32 result = op1 ^ op2;
     
     if (set_flags) {
@@ -279,20 +252,20 @@ auto EOR(u32 op1, u32 op2, u8 set_flags) -> u32 {
     return result;
 }
 
-auto SUB(u32 op1, u32 op2, u8 set_flags) -> u32 {
+u32 SUB(u32 op1, u32 op2, u8 set_flags) {
     u32 result = op1 - op2;
     
     if (set_flags) {
         SetConditionFlag(N_FLAG, result >> 31);
         SetConditionFlag(Z_FLAG, result == 0);
-        SetConditionFlag(C_FLAG, SUB_CARRY(op1, op2));
-        SetConditionFlag(V_FLAG, SUB_OVERFLOW(op1, op2, result)); 
+        SetConditionFlag(C_FLAG, op1 >= op2);
+        SetConditionFlag(V_FLAG, ((op1 ^ op2) & (op1 ^ result)) >> 31);
     }
 
     return result;
 }
 
-auto ORR(u32 op1, u32 op2, u8 set_flags) -> u32 {
+u32 ORR(u32 op1, u32 op2, u8 set_flags) {
     u32 result = op1 | op2;
 
     if (set_flags) {
@@ -303,7 +276,7 @@ auto ORR(u32 op1, u32 op2, u8 set_flags) -> u32 {
     return result;
 }
 
-auto BIC(u32 op1, u32 op2, u8 set_flags) -> u32 {
+u32 BIC(u32 op1, u32 op2, u8 set_flags) {
     u32 result = op1 & ~op2;
 
     if (set_flags) {
@@ -314,8 +287,9 @@ auto BIC(u32 op1, u32 op2, u8 set_flags) -> u32 {
     return result;
 }
 
-auto AND(u32 op1, u32 op2, u8 set_flags) -> u32 {
+u32 AND(u32 op1, u32 op2, u8 set_flags) {
     u32 result = op1 & op2;
+
     if (set_flags) {
         SetConditionFlag(N_FLAG, result >> 31);
         SetConditionFlag(Z_FLAG, result == 0);
@@ -324,7 +298,7 @@ auto AND(u32 op1, u32 op2, u8 set_flags) -> u32 {
     return result;
 }
 
-auto ARMGetShiftedRegisterDataProcessing(u32 op2, u8 shift_type, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
+u32 ARMGetShiftedRegisterDataProcessing(u32 op2, u8 shift_type, u8 shift_amount, u8& carry_flag, bool immediate) {
     switch (shift_type) {
     case 0x0:
         op2 = LSL(op2, shift_amount, carry_flag);
@@ -343,7 +317,7 @@ auto ARMGetShiftedRegisterDataProcessing(u32 op2, u8 shift_type, u8 shift_amount
     return op2;
 }
 
-auto LSL(u32 op1, u8 shift_amount, u8& carry_flag) -> u32 {
+u32 LSL(u32 op1, u8 shift_amount, u8& carry_flag) {
     if (shift_amount == 0) {
         // carry flag remains unchanged
         // and result is just rm
@@ -368,7 +342,7 @@ auto LSL(u32 op1, u8 shift_amount, u8& carry_flag) -> u32 {
     return result;
 }
 
-auto LSR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
+u32 LSR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) {
     u32 result = 0;
 
     if (immediate) {
@@ -397,7 +371,7 @@ auto LSR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
     return result;
 }
 
-auto ASR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
+u32 ASR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) {
     u32 result = 0;
     u8 msb = op1 >> 31;
 
@@ -424,7 +398,7 @@ auto ASR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
     return result;
 }
 
-auto ROR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) -> u32 {
+u32 ROR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) {
     u32 result = 0;
 
     if (immediate) {
@@ -572,7 +546,7 @@ void ARMSaturatingAddSubtract() {
     switch (opcode) {
     case 0x0:
         result = regs.r[rm] + regs.r[rn];
-        if (ADD_OVERFLOW(regs.r[rm], regs.r[rn], result)) {
+        if ((~(regs.r[rm] ^ regs.r[rn]) & (regs.r[rn] ^ result)) >> 31) {
             // set q flag
             SetConditionFlag(Q_FLAG, true);
 
@@ -583,7 +557,7 @@ void ARMSaturatingAddSubtract() {
         break;
     case 0x2:
         result = regs.r[rm] - regs.r[rn];
-        if (SUB_OVERFLOW(regs.r[rm], regs.r[rn], result)) {
+        if (((regs.r[rm] ^ regs.r[rn]) & (regs.r[rm] ^ result)) >> 31) {
             // set q flag
             SetConditionFlag(Q_FLAG, true);
 
@@ -610,8 +584,7 @@ void ARMSaturatingAddSubtract() {
 
         u32 old_result = result;
         result += regs.r[rm];
-
-        if (ADD_OVERFLOW(old_result, regs.r[rm], result)) {
+        if ((~(old_result ^ regs.r[rm]) & (regs.r[rm] ^ result)) >> 31) {
             // set q flag
             SetConditionFlag(Q_FLAG, true);
 
@@ -643,7 +616,7 @@ void ARMSaturatingAddSubtract() {
         u32 old_result = result;
         // now subtract rm
         result = regs.r[rm] - result;
-        if (SUB_OVERFLOW(regs.r[rm], old_result, result)) {
+        if (((regs.r[rm] ^ old_result) & (regs.r[rm] ^ result)) >> 31) {
             // set q flag
             SetConditionFlag(Q_FLAG, true);
 
@@ -709,7 +682,7 @@ void ARMSignedHalfwordMultiply() {
 
         regs.r[op4] = result + operand;
 
-        if (ADD_OVERFLOW(result, operand, regs.r[op4])) {
+        if ((~(result ^ operand) & (operand ^ regs.r[op4])) >> 31) {
             SetConditionFlag(Q_FLAG, true);
         }
     } else {
@@ -745,7 +718,7 @@ void ARMSignedHalfwordWordMultiply() {
 
         regs.r[op4] = result + operand;
 
-        if (ADD_OVERFLOW(result, operand, regs.r[op4])) {
+        if ((~(result ^ operand) & (operand ^ regs.r[op4])) >> 31) {
             SetConditionFlag(Q_FLAG, true);
         }
     } else {
