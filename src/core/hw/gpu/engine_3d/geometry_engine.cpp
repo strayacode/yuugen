@@ -28,7 +28,6 @@ void GeometryEngine::Reset() {
     gxstat = 0;
     gxfifo = 0;
     gxfifo_write_count = 0;
-    busy = false;
     matrix_mode = 0;
     modelview_pointer = 0;
     vertex_ram_size = 0;
@@ -41,6 +40,8 @@ void GeometryEngine::Reset() {
     pipe.swap(empty_pipe_queue);
 
     state = GeometryEngineState::Running;
+
+    busy = false;
 }
 
 auto GeometryEngine::ReadGXSTAT() -> u32 {
@@ -63,7 +64,6 @@ auto GeometryEngine::ReadGXSTAT() -> u32 {
     u8 fifo_irq_mode = (gxstat >> 30) & 0x3;
     
     data |= (fifo_irq_mode << 30);
-    data |= (busy << 27);
 
     return data;
 }
@@ -101,136 +101,147 @@ void GeometryEngine::QueueCommand(u32 addr, u32 data) {
 }
 
 void GeometryEngine::QueueEntry(Entry entry) {
-    if (fifo.size() == 0 && pipe.size() < 4) {
-        pipe.push(entry);
-    } else {
-        fifo.push(entry);
+    // if (fifo.size() == 0 && pipe.size() < 4) {
+    //     pipe.push(entry);
+    // } else {
+    //     fifo.push(entry);
 
-        if (fifo.size() == 256) {
-            log_fatal("[GeometryEngine] Handle full fifo");
-        }
-    }
+    //     if (fifo.size() == 256) {
+    //         log_fatal("[GeometryEngine] Handle full fifo");
+    //     }
+    // }
+
+    fifo.push(entry);
 
     InterpretCommand();
 }
 
 auto GeometryEngine::DequeueEntry() -> Entry {
-    Entry entry = pipe.front();
+    Entry entry = fifo.front();
 
-    pipe.pop();
+    fifo.pop();
     
 
-    // if the pipe is running half empty
-    // move 2 entries from the fifo to the pipe
-    if (pipe.size() < 3) {
-        if (fifo.size() > 0) {
-            pipe.push(fifo.front());
-            fifo.pop();
-        }
+    // // if the pipe is running half empty
+    // // move 2 entries from the fifo to the pipe
+    // if (pipe.size() < 3) {
+    //     if (fifo.size() > 0) {
+    //         pipe.push(fifo.front());
+    //         fifo.pop();
+    //     }
 
-        if (fifo.size() > 0) {
-            pipe.push(fifo.front());
-            fifo.pop();
-        }
+    //     if (fifo.size() > 0) {
+    //         pipe.push(fifo.front());
+    //         fifo.pop();
+    //     }
 
-        CheckGXFIFOInterrupt();
+    //     CheckGXFIFOInterrupt();
 
-        // TODO: do dma stuff
-    }
+    //     // TODO: do dma stuff
+    // }
 
     return entry;
 }
 
 void GeometryEngine::InterpretCommand() {
-    // printf("current time %ld\n", gpu->hw->scheduler.GetCurrentTime());
-    int total_size = fifo.size() + pipe.size();
+    // int total_size = fifo.size() + pipe.size();
 
-    // don't interpret a command if the fifo and pipe are both empty
-    // or we were already interpreting commands
-    if ((total_size == 0) || busy) {
+    // // don't interpret a command if the fifo and pipe are both empty
+    // // or we were already interpreting commands
+    // if ((total_size == 0) || busy) {
+    //     return;
+    // }
+
+    // u8 command = pipe.front().command;
+    // u8 param_count = param_table[command];
+
+    // if (total_size >= param_count) {
+    //     switch (command) {
+    //     // case 0x10:
+    //     //     SetMatrixMode();
+    //     //     break;
+    //     // case 0x11:
+    //     //     PushCurrentMatrix();
+    //     //     break;
+    //     // case 0x12:
+    //     //     PopCurrentMatrix();
+    //     //     break;
+    //     // case 0x15:
+    //     //     LoadUnitMatrix();
+    //     //     break;
+    //     // case 0x18:
+    //     //     Multiply4x4();
+    //     //     break;
+    //     // case 0x19:
+    //     //     Multiply4x3();
+    //     //     break;
+    //     // case 0x1A:
+    //     //     Multiply3x3();
+    //     //     break;
+    //     // case 0x1C:
+    //     //     MultiplyTranslation();
+    //     //     break;
+    //     // case 0x20:
+    //     //     SetVertexColour();
+    //     //     break;
+    //     // case 0x23:
+    //     //     AddVertex16();
+    //     //     break;
+    //     // case 0x29:
+    //     //     SetPolygonAttributes();
+    //     //     break;
+    //     // case 0x2A:
+    //     //     SetTextureParameters();
+    //     //     break;
+    //     // case 0x40:
+    //     //     BeginVertexList();
+    //     //     break;
+    //     // case 0x41:
+    //     //     EndVertexList();
+    //     //     break;
+    //     // case 0x50:
+    //     //     SwapBuffers();
+    //     //     break;
+    //     // case 0x60:
+    //     //     SetViewport();
+    //     //     break;
+    //     default:
+    //         // log_fatal("[GeometryEngine] Handle geometry command %02x", command);
+    //         if (param_table[command] == 0) {
+    //             DequeueEntry();
+    //         } else {
+    //             for (int i = 0; i < param_table[command]; i++) {
+    //                 DequeueEntry();
+    //             }
+    //         }
+    //         break;
+    //     }
+
+    //     // keep on interpreting commands
+    //     // now that we interpreted a command bit 27 is 0 
+    //     // and no commands are being interpreted
+    //     busy = true;
+    //     gpu->hw->scheduler.Add(1, [this]() {
+    //         busy = false;
+    //         InterpretCommand();
+    //     });
+    // }
+
+    if (busy) {
         return;
     }
 
-    // don't interpret commands while the geometry engine
-    // is halted
-    if (state == GeometryEngineState::Halted) {
-        return;
-    }
+    if (fifo.size() > 0) {
+        DequeueEntry();
 
-    u8 command = pipe.front().command;
-    u8 param_count = param_table[command];
+        CheckGXFIFOInterrupt();
 
-    if (total_size >= param_count) {
-        switch (command) {
-        // case 0x10:
-        //     SetMatrixMode();
-        //     break;
-        // case 0x11:
-        //     PushCurrentMatrix();
-        //     break;
-        // case 0x12:
-        //     PopCurrentMatrix();
-        //     break;
-        // case 0x15:
-        //     LoadUnitMatrix();
-        //     break;
-        // case 0x18:
-        //     Multiply4x4();
-        //     break;
-        // case 0x19:
-        //     Multiply4x3();
-        //     break;
-        // case 0x1A:
-        //     Multiply3x3();
-        //     break;
-        // case 0x1C:
-        //     MultiplyTranslation();
-        //     break;
-        // case 0x20:
-        //     SetVertexColour();
-        //     break;
-        // case 0x23:
-        //     AddVertex16();
-        //     break;
-        // case 0x29:
-        //     SetPolygonAttributes();
-        //     break;
-        // case 0x2A:
-        //     SetTextureParameters();
-        //     break;
-        // case 0x40:
-        //     BeginVertexList();
-        //     break;
-        // case 0x41:
-        //     EndVertexList();
-        //     break;
-        // case 0x50:
-        //     SwapBuffers();
-        //     break;
-        // case 0x60:
-        //     SetViewport();
-        //     break;
-        default:
-            // log_fatal("[GeometryEngine] Handle geometry command %02x", command);
-            if (param_table[command] == 0) {
-                DequeueEntry();
-            } else {
-                for (int i = 0; i < param_table[command]; i++) {
-                    DequeueEntry();
-                }
-            }
-            break;
-        }
-
-        // keep on interpreting commands
-        // now that we interpreted a command bit 27 is 0 
-        // and no commands are being interpreted
         busy = true;
         gpu->hw->scheduler.Add(1, [this]() {
             busy = false;
             InterpretCommand();
         });
-    }
+    }   
 }
 
 void GeometryEngine::CheckGXFIFOInterrupt() {
@@ -319,9 +330,6 @@ void GeometryEngine::DoSwapBuffers() {
     gpu->render_engine.vertex_ram_size = vertex_ram_size;
 
     vertex_ram_size = 0;
-
-    // unhalt the geometry engine
-    state = GeometryEngineState::Running;
 }
 
 void GeometryEngine::AddVertex() {

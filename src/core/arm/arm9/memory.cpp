@@ -244,6 +244,8 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
             return hw->gpu.engine_b.WININ;
         case 0x0400104A:
             return hw->gpu.engine_b.WINOUT;
+        case 0x04001050:
+            return hw->gpu.engine_b.BLDCNT;
         case 0x0400106C:
             return hw->gpu.engine_b.MASTER_BRIGHT;
         case 0x04004004:
@@ -412,6 +414,9 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
             return hw->maths_unit.SQRT_PARAM & 0xFFFFFFFF;
         case 0x040002BC:
             return hw->maths_unit.SQRT_PARAM >> 32;
+        case 0x040004A4:
+            // is polygon attr even readable?
+            return 0;
         case 0x04000600:
             return hw->gpu.geometry_engine.ReadGXSTAT();
         case 0x04001000:

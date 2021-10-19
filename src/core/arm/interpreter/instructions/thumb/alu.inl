@@ -160,10 +160,6 @@ void ThumbDataProcessingRegister() {
 
         SetConditionFlag(N_FLAG, regs.r[rd] >> 31);
         SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
-
-        if (arch == CPUArch::ARMv4) {
-            SetConditionFlag(C_FLAG, false);
-        }
         break;
     case 0xE:
         regs.r[rd] = BIC(regs.r[rd], regs.r[rs], true);

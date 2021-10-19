@@ -107,6 +107,7 @@ void HW::RunFrame() {
 
         for (u32 i = 0; i < cycles; i++) {
             cpu_core[1]->Run(2);
+            // gpu.geometry_engine.InterpretCommand();
             cpu_core[0]->Run(1);
         }   
         
