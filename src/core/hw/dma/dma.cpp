@@ -21,6 +21,9 @@ void DMA::Transfer(int channel_index) {
     u8 source_control = (channel[channel_index].DMACNT >> 23) & 0x3;
 
     u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
+
+    int source_adjust = adjust_lut[(channel[channel_index].DMACNT >> 26) & 0x1][source_control];
+    int destination_adjust = adjust_lut[(channel[channel_index].DMACNT >> 26) & 0x1][destination_control];
     
     // check the transfer type (either halfwords or words)
     if (channel[channel_index].DMACNT & (1 << 26)) {
@@ -33,35 +36,8 @@ void DMA::Transfer(int channel_index) {
                 hw->arm7_memory.FastWrite<u32>(channel[channel_index].internal_destination, hw->arm7_memory.FastRead<u32>(channel[channel_index].internal_source));
             }
 
-            // case 2 is just fixed so nothing happens
-            switch (source_control) {
-            case 0:
-                // increment
-                channel[channel_index].internal_source += 4;
-                break;
-            case 1:
-                // decrement
-                channel[channel_index].internal_source -= 4;
-                break;
-            case 3:
-                log_fatal("prohibited in source control");
-                break;
-            }
-
-            // case 2 is just fixed so nothing happens
-            switch (destination_control) {
-            case 0: case 3:
-                // increment
-                channel[channel_index].internal_destination += 4;
-                break;
-            case 1:
-                // decrement
-                channel[channel_index].internal_destination -= 4;
-                break;
-            case 2:
-                // fixed
-                break;
-            }
+            channel[channel_index].internal_source += source_adjust;
+            channel[channel_index].internal_destination += destination_adjust;
         }
     } else {
         // halfword transfer
@@ -72,35 +48,8 @@ void DMA::Transfer(int channel_index) {
                 hw->arm7_memory.FastWrite<u16>(channel[channel_index].internal_destination, hw->arm7_memory.FastRead<u16>(channel[channel_index].internal_source));
             }
 
-            // case 2 is just fixed so nothing happens
-            switch (source_control) {
-            case 0:
-                // increment
-                channel[channel_index].internal_source += 2;
-                break;
-            case 1:
-                // decrement
-                channel[channel_index].internal_source -= 2;
-                break;
-            case 3:
-                log_fatal("prohibited in source control");
-                break;
-            }
-
-            // case 2 is just fixed so nothing happens
-            switch (destination_control) {
-            case 0: case 3:
-                // increment
-                channel[channel_index].internal_destination += 2;
-                break;
-            case 1:
-                // decrement
-                channel[channel_index].internal_destination -= 2;
-                break;
-            case 2:
-                // fixed
-                break;
-            }
+            channel[channel_index].internal_source += source_adjust;
+            channel[channel_index].internal_destination += destination_adjust;
         }
     }
 
@@ -189,15 +138,15 @@ void DMA::WriteDMACNT(int channel_index, u32 data) {
     WriteDMACNT_H(channel_index, data >> 16);
 }
 
-auto DMA::ReadDMACNT(int channel_index) -> u32 {
+u32 DMA::ReadDMACNT(int channel_index) {
     return channel[channel_index].DMACNT;
 }
 
-auto DMA::ReadDMACNT_L(int channel_index) -> u16 {
+u16 DMA::ReadDMACNT_L(int channel_index) {
     return channel[channel_index].DMACNT & 0xFFFF;
 }
 
-auto DMA::ReadDMACNT_H(int channel_index) -> u16 {
+u16 DMA::ReadDMACNT_H(int channel_index) {
     return channel[channel_index].DMACNT >> 16;
 }
 
@@ -223,7 +172,7 @@ void DMA::WriteLength(int channel_index, u32 data) {
     }
 }
 
-auto DMA::ReadLength(int channel_index) -> u32 {
+u32 DMA::ReadLength(int channel_index) {
     // get bits 0..20 of dmacnt
     return channel[channel_index].DMACNT & 0x1FFFFF;
 }

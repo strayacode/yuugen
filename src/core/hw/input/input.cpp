@@ -31,6 +31,6 @@ void Input::SetPoint(int x, int y) {
     point.y = y;
 }
 
-auto Input::TouchDown() -> bool {
+bool Input::TouchDown() {
     return (!(EXTKEYIN & (1 << 6)));
 }

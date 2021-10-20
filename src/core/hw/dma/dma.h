@@ -5,9 +5,10 @@
 #include <common/types.h>
 #include <functional>
 
-struct HW;
+class HW;
 
-struct DMA {
+class DMA {
+public:
     DMA(HW* hw, int arch);
     void Reset();
     void Transfer(int channel_index);
@@ -17,12 +18,12 @@ struct DMA {
     void WriteDMACNT_H(int channel_index, u16 data);
 
     void WriteDMACNT(int channel_index, u32 data);
-    auto ReadDMACNT(int channel_index) -> u32;
+    u32 ReadDMACNT(int channel_index);
 
-    auto ReadDMACNT_L(int channel_index) -> u16;
-    auto ReadDMACNT_H(int channel_index) -> u16;
+    u16 ReadDMACNT_L(int channel_index);
+    u16 ReadDMACNT_H(int channel_index);
 
-    auto ReadLength(int channel_index) -> u32;
+    u32 ReadLength(int channel_index);
     void WriteLength(int channel_index, u32 data);
 
     HW* hw;
@@ -34,7 +35,6 @@ struct DMA {
         u32 source, internal_source;
         u32 destination, internal_destination;
 
-
         // understanding: length and control account for the entire 32 bits of dma cnt
         // with length occupying bits 0..20 and control occupying bits 21..31
         u32 internal_length;
@@ -42,6 +42,11 @@ struct DMA {
     } channel[4];
 
     u32 DMAFILL[4];
+
+    static constexpr int adjust_lut[2][4] = {
+        {2, -2, 0, 2},
+        {4, -4, 0, 4},
+    };
 
     std::function<void()> TransferEvent[4]; 
 };
