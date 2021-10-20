@@ -12,7 +12,6 @@ void GeometryEngine::PushCurrentMatrix() {
     switch (matrix_mode) {
     case 0:
         projection_stack = projection_current;
-        UpdateClipMatrix();
         break;
     case 1: case 2:
         if ((modelview_pointer < 0) || (modelview_pointer >= 31)) {
@@ -21,7 +20,6 @@ void GeometryEngine::PushCurrentMatrix() {
             modelview_stack[modelview_pointer] = modelview_current;
             direction_stack[modelview_pointer] = direction_current;
             modelview_pointer++;
-            UpdateClipMatrix();
         }
         break;
     case 3:
