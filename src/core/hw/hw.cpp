@@ -106,9 +106,19 @@ void HW::RunFrame() {
         u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
 
         for (u32 i = 0; i < cycles; i++) {
-            cpu_core[1]->Run(2);
-            // gpu.geometry_engine.InterpretCommand();
+            cpu_core[1]->Run(1);
+            
+            if (dma[1].enabled) {
+                dma[1].Transfer();
+            }
+
+            cpu_core[1]->Run(1);
+
             cpu_core[0]->Run(1);
+
+            if (dma[0].enabled) {
+                dma[0].Transfer();
+            }
         }   
         
         scheduler.Tick(cycles);
