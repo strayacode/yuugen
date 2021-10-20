@@ -8,8 +8,8 @@
 #include <string>
 
 enum class BootMode {
-    Firmware,
     Direct,
+    Firmware,
 };
 
 enum class State {
@@ -31,6 +31,7 @@ public:
 
     void RunFrame();
     void SetBootMode(BootMode new_mode);
+    BootMode GetBootMode();
     void SetState(State new_state);
     auto GetState() -> State;
     void SetRomPath(std::string path);

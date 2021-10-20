@@ -35,6 +35,10 @@ void Core::SetBootMode(BootMode new_mode) {
     boot_mode = new_mode;
 }
 
+BootMode Core::GetBootMode() {
+    return boot_mode;
+}
+
 void Core::SetState(State new_state) {
     switch (new_state) {
     case State::Running:
