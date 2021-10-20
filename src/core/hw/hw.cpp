@@ -103,25 +103,10 @@ void HW::RunFrame() {
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
 
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        u32 cycles = std::min(frame_end_time, scheduler.GetEventTime()) - scheduler.GetCurrentTime();
-
-        for (u32 i = 0; i < cycles; i++) {
-            cpu_core[1]->Run(1);
-            
-            if (dma[1].enabled) {
-                dma[1].Transfer();
-            }
-
-            cpu_core[1]->Run(1);
-
-            cpu_core[0]->Run(1);
-
-            if (dma[0].enabled) {
-                dma[0].Transfer();
-            }
-        }   
+        cpu_core[1]->Run(2);
+        cpu_core[0]->Run(1);
         
-        scheduler.Tick(cycles);
+        scheduler.Tick(1);
         scheduler.RunEvents();
     }
 }
