@@ -61,13 +61,17 @@ public:
     // matrix operations
     void SetMatrixMode();
     void PushCurrentMatrix();
+    void StoreCurrentMatrix();
     void PopCurrentMatrix();
     void LoadUnitMatrix();
+    void Load4x4();
+    void Load4x3();
     void SwapBuffers();
     void Multiply4x4();
     void Multiply4x3();
     void Multiply3x3();
     void MultiplyTranslation();
+    void MultiplyScale();
 
     // vertex / polygon / texture operations
     void SetTextureParameters();
@@ -76,9 +80,21 @@ public:
     void EndVertexList();
     void SetVertexColour();
     void AddVertex16();
-
+    void SetTexturePaletteAddress();
+    void SetTextureCoordinates();
+    void SetRelativeVertexCoordinates();
+    void SetVertexXY();
+    void SetVertexXZ();
+    void SetVertexYZ();
+    
     // other
     void SetViewport();
+    void SetShininess();
+    void SetLightVector();
+    void SetDiffuseAmbientReflect();
+    void SetSpecularReflectEmission();
+    void SetLightColour();
+    void SetNormalVector();
 
     u32 gxstat;
     u32 gxfifo;
@@ -113,6 +129,4 @@ public:
     u8 screen_y2;
 
     GPU* gpu;
-
-    std::function<void()> InterpretCommandEvent;
 };

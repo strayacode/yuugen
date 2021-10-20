@@ -30,6 +30,29 @@ void GeometryEngine::PushCurrentMatrix() {
     }
 }
 
+void GeometryEngine::StoreCurrentMatrix() {
+    u32 parameter = DequeueEntry().parameter;
+    u32 stack_offset = parameter & 0x1F;
+
+    switch (matrix_mode) {
+    case 0:
+        projection_stack = projection_current;
+        break;
+    case 1: case 2:
+        if (stack_offset == 31) {
+            gxstat |= (1 << 15);
+        } else {
+            modelview_stack[stack_offset] = modelview_current;
+            direction_stack[stack_offset] = direction_current;
+        }
+
+        break;
+    case 3:
+        texture_stack = texture_current;
+        break;
+    }
+}
+
 void GeometryEngine::PopCurrentMatrix() {
     u32 parameter = DequeueEntry().parameter;
     u8 stack_offset = (s8)((parameter & 0x3F) << 2) >> 2;
@@ -77,6 +100,66 @@ void GeometryEngine::LoadUnitMatrix() {
         break;
     case 3:
         texture_current = unit_matrix;
+        break;
+    }
+}
+
+void GeometryEngine::Load4x4() {
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        projection_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 1:
+        modelview_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 2:
+        modelview_current = matrix;
+        direction_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture_current = matrix;
+        break;
+    }
+}
+
+void GeometryEngine::Load4x3() {
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 3; x++) {
+            u32 parameter = DequeueEntry().parameter;
+            matrix.field[y][x] = (s32)parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        projection_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 1:
+        modelview_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 2:
+        modelview_current = matrix;
+        direction_current = matrix;
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture_current = matrix;
         break;
     }
 }
@@ -193,6 +276,29 @@ void GeometryEngine::MultiplyTranslation() {
     }
 }
 
+void GeometryEngine::MultiplyScale() {
+    Matrix matrix;
+
+    for (int i = 0; i < 3; i++) {
+        u32 parameter = DequeueEntry().parameter;
+        matrix.field[i][i] = (s32)parameter;
+    }
+
+    switch (matrix_mode) {
+    case 0:
+        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
+        UpdateClipMatrix();
+        break;
+    case 1: case 2:
+        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
+        break;
+    }
+}
+
 void GeometryEngine::Multiply3x3() {
     Matrix matrix;
 
@@ -245,6 +351,85 @@ void GeometryEngine::AddVertex16() {
     current_vertex.x = (s16)(parameter1 & 0xFFFF);
     current_vertex.y = (s16)(parameter1 >> 16);
     current_vertex.z = (s16)(parameter2 & 0xFFFF);
+
+    AddVertex();
+}
+
+void GeometryEngine::SetShininess() {
+    // handle later
+    for (int i = 0; i < 32; i++) {
+        DequeueEntry();
+    }
+}
+
+void GeometryEngine::SetTexturePaletteAddress() {
+    // handle later
+    DequeueEntry();
+}
+
+void GeometryEngine::SetLightVector() {
+    // handle later
+    DequeueEntry();
+}
+
+void GeometryEngine::SetDiffuseAmbientReflect() {
+    // handle later
+    DequeueEntry();
+}
+
+void GeometryEngine::SetSpecularReflectEmission() {
+    // handle later
+    DequeueEntry();
+}
+
+void GeometryEngine::SetLightColour() {
+    // handle later
+    DequeueEntry();
+}
+
+void GeometryEngine::SetTextureCoordinates() {
+    // handle later
+    DequeueEntry();
+}
+
+void GeometryEngine::SetRelativeVertexCoordinates() {
+    u32 parameter = DequeueEntry().parameter;
+
+    current_vertex.x += ((s16)((parameter & 0x000003FF) << 6) / 8) >> 3;
+    current_vertex.y += ((s16)((parameter & 0x000FFC00) >> 4) / 8) >> 3;
+    current_vertex.z += ((s16)((parameter & 0x3FF00000) >> 14) / 8) >> 3;
+
+    AddVertex();
+}
+
+void GeometryEngine::SetNormalVector() {
+    // handle later
+    DequeueEntry();
+}
+
+void GeometryEngine::SetVertexXY() {
+    u32 parameter = DequeueEntry().parameter;
+
+    current_vertex.x = (s16)(parameter);
+    current_vertex.y = (s16)(parameter >> 16);
+
+    AddVertex();
+}
+
+void GeometryEngine::SetVertexXZ() {
+    u32 parameter = DequeueEntry().parameter;
+
+    current_vertex.x = (s16)(parameter);
+    current_vertex.z = (s16)(parameter >> 16);
+
+    AddVertex();
+}
+
+void GeometryEngine::SetVertexYZ() {
+    u32 parameter = DequeueEntry().parameter;
+
+    current_vertex.y = (s16)(parameter);
+    current_vertex.z = (s16)(parameter >> 16);
 
     AddVertex();
 }

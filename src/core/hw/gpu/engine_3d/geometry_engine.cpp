@@ -21,7 +21,7 @@ static constexpr std::array<int, 256> param_table = {{
 }};
 
 GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {
-    InterpretCommandEvent = std::bind(&GeometryEngine::InterpretCommand, this);
+
 }
 
 void GeometryEngine::Reset() {
@@ -101,147 +101,172 @@ void GeometryEngine::QueueCommand(u32 addr, u32 data) {
 }
 
 void GeometryEngine::QueueEntry(Entry entry) {
-    // if (fifo.size() == 0 && pipe.size() < 4) {
-    //     pipe.push(entry);
-    // } else {
-    //     fifo.push(entry);
+    if (fifo.size() == 0 && pipe.size() < 4) {
+        pipe.push(entry);
+    } else {
+        fifo.push(entry);
 
-    //     if (fifo.size() == 256) {
-    //         log_fatal("[GeometryEngine] Handle full fifo");
-    //     }
-    // }
-
-    fifo.push(entry);
+        if (fifo.size() == 256) {
+            log_fatal("[GeometryEngine] Handle full fifo");
+        }
+    }
 
     InterpretCommand();
 }
 
-auto GeometryEngine::DequeueEntry() -> Entry {
-    Entry entry = fifo.front();
+Entry GeometryEngine::DequeueEntry() {
+    Entry entry = pipe.front();
 
-    fifo.pop();
+    pipe.pop();
     
+    // if the pipe is running half empty
+    // move 2 entries from the fifo to the pipe
+    if (pipe.size() < 3) {
+        if (fifo.size() > 0) {
+            pipe.push(fifo.front());
+            fifo.pop();
+        }
 
-    // // if the pipe is running half empty
-    // // move 2 entries from the fifo to the pipe
-    // if (pipe.size() < 3) {
-    //     if (fifo.size() > 0) {
-    //         pipe.push(fifo.front());
-    //         fifo.pop();
-    //     }
+        if (fifo.size() > 0) {
+            pipe.push(fifo.front());
+            fifo.pop();
+        }
 
-    //     if (fifo.size() > 0) {
-    //         pipe.push(fifo.front());
-    //         fifo.pop();
-    //     }
+        CheckGXFIFOInterrupt();
 
-    //     CheckGXFIFOInterrupt();
-
-    //     // TODO: do dma stuff
-    // }
+        // TODO: do dma stuff
+    }
 
     return entry;
 }
 
 void GeometryEngine::InterpretCommand() {
-    // int total_size = fifo.size() + pipe.size();
+    int total_size = fifo.size() + pipe.size();
 
-    // // don't interpret a command if the fifo and pipe are both empty
-    // // or we were already interpreting commands
-    // if ((total_size == 0) || busy) {
-    //     return;
-    // }
-
-    // u8 command = pipe.front().command;
-    // u8 param_count = param_table[command];
-
-    // if (total_size >= param_count) {
-    //     switch (command) {
-    //     // case 0x10:
-    //     //     SetMatrixMode();
-    //     //     break;
-    //     // case 0x11:
-    //     //     PushCurrentMatrix();
-    //     //     break;
-    //     // case 0x12:
-    //     //     PopCurrentMatrix();
-    //     //     break;
-    //     // case 0x15:
-    //     //     LoadUnitMatrix();
-    //     //     break;
-    //     // case 0x18:
-    //     //     Multiply4x4();
-    //     //     break;
-    //     // case 0x19:
-    //     //     Multiply4x3();
-    //     //     break;
-    //     // case 0x1A:
-    //     //     Multiply3x3();
-    //     //     break;
-    //     // case 0x1C:
-    //     //     MultiplyTranslation();
-    //     //     break;
-    //     // case 0x20:
-    //     //     SetVertexColour();
-    //     //     break;
-    //     // case 0x23:
-    //     //     AddVertex16();
-    //     //     break;
-    //     // case 0x29:
-    //     //     SetPolygonAttributes();
-    //     //     break;
-    //     // case 0x2A:
-    //     //     SetTextureParameters();
-    //     //     break;
-    //     // case 0x40:
-    //     //     BeginVertexList();
-    //     //     break;
-    //     // case 0x41:
-    //     //     EndVertexList();
-    //     //     break;
-    //     // case 0x50:
-    //     //     SwapBuffers();
-    //     //     break;
-    //     // case 0x60:
-    //     //     SetViewport();
-    //     //     break;
-    //     default:
-    //         // log_fatal("[GeometryEngine] Handle geometry command %02x", command);
-    //         if (param_table[command] == 0) {
-    //             DequeueEntry();
-    //         } else {
-    //             for (int i = 0; i < param_table[command]; i++) {
-    //                 DequeueEntry();
-    //             }
-    //         }
-    //         break;
-    //     }
-
-    //     // keep on interpreting commands
-    //     // now that we interpreted a command bit 27 is 0 
-    //     // and no commands are being interpreted
-    //     busy = true;
-    //     gpu->hw->scheduler.Add(1, [this]() {
-    //         busy = false;
-    //         InterpretCommand();
-    //     });
-    // }
-
-    if (busy) {
+    if (busy || (total_size == 0)) {
         return;
     }
 
-    if (fifo.size() > 0) {
-        DequeueEntry();
+    u8 command = pipe.front().command;
+    u8 param_count = param_table[command];
 
-        CheckGXFIFOInterrupt();
+    if (total_size >= param_count) {
+        switch (command) {
+        case 0x10:
+            SetMatrixMode();
+            break;
+        case 0x11:
+            PushCurrentMatrix();
+            break;
+        case 0x12:
+            PopCurrentMatrix();
+            break;
+        case 0x13:
+            StoreCurrentMatrix();
+            break;
+        case 0x15:
+            LoadUnitMatrix();
+            break;
+        case 0x16:
+            Load4x4();
+            break;
+        case 0x17:
+            Load4x3();
+            break;
+        case 0x18:
+            Multiply4x4();
+            break;
+        case 0x19:
+            Multiply4x3();
+            break;
+        case 0x1A:
+            Multiply3x3();
+            break;
+        case 0x1B:
+            MultiplyScale();
+            break;
+        case 0x1C:
+            MultiplyTranslation();
+            break;
+        case 0x20:
+            SetVertexColour();
+            break;
+        case 0x21:
+            SetNormalVector();
+            break;
+        case 0x22:
+            SetTextureCoordinates();
+            break;
+        case 0x23:
+            AddVertex16();
+            break;
+        case 0x25:
+            SetVertexXY();
+            break;
+        case 0x26:
+            SetVertexXZ();
+            break;
+        case 0x27:
+            SetVertexYZ();
+            break;
+        case 0x28:
+            SetRelativeVertexCoordinates();
+            break;
+        case 0x29:
+            SetPolygonAttributes();
+            break;
+        case 0x2A:
+            SetTextureParameters();
+            break;
+        case 0x2B:
+            SetTexturePaletteAddress();
+            break;
+        case 0x30:
+            SetDiffuseAmbientReflect();
+            break;
+        case 0x31:
+            SetSpecularReflectEmission();
+            break;
+        case 0x32:
+            SetLightVector();
+            break;
+        case 0x33:
+            SetLightColour();
+            break;
+        case 0x34:
+            SetShininess();
+            break;
+        case 0x40:
+            BeginVertexList();
+            break;
+        case 0x41:
+            EndVertexList();
+            break;
+        case 0x50:
+            SwapBuffers();
+            break;
+        case 0x60:
+            SetViewport();
+            break;
+        default:
+            log_fatal("[Geometry Engine] Unknown geometry command %02x", command);
+            if (param_table[command] == 0) {
+                DequeueEntry();
+            } else {
+                for (int i = 0; i < param_table[command]; i++) {
+                    DequeueEntry();
+                }
+            }
 
+            break;
+        }
+        
         busy = true;
         gpu->hw->scheduler.Add(1, [this]() {
             busy = false;
             InterpretCommand();
         });
-    }   
+    }
 }
 
 void GeometryEngine::CheckGXFIFOInterrupt() {
