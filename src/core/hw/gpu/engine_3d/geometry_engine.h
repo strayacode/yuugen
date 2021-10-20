@@ -54,7 +54,8 @@ public:
     void PrintVertex(const Vertex& a);
     void DoSwapBuffers();
     void AddVertex();
-    auto ReadClipMatrix(u32 addr) -> u32;
+    u32 ReadClipMatrix(u32 addr);
+    u32 ReadVectorMatrix(u32 addr);
 
     // geometry commands
     // matrix operations

@@ -344,9 +344,16 @@ void GeometryEngine::AddVertex() {
     vertex_ram_size++;
 }
 
-auto GeometryEngine::ReadClipMatrix(u32 addr) -> u32 {
+u32 GeometryEngine::ReadClipMatrix(u32 addr) {
     int x = (addr - 0x04000640) % 4;
     int y = (addr - 0x04000640) / 4;
 
     return clip_current.field[y][x];
+}
+
+u32 GeometryEngine::ReadVectorMatrix(u32 addr) {
+    int x = (addr - 0x04000680) % 3;
+    int y = (addr - 0x04000680) / 3;
+
+    return direction_current.field[y][x];
 }

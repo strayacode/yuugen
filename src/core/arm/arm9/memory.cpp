@@ -300,6 +300,10 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         return hw->gpu.geometry_engine.ReadClipMatrix(addr);
     }
 
+    if ((addr >= 0x04000680) && (addr < 0x040006A4)) {
+        return hw->gpu.geometry_engine.ReadVectorMatrix(addr);
+    }
+
     switch (addr >> 24) {
     case REGION_SHARED_WRAM:
         switch (hw->WRAMCNT) {
