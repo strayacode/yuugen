@@ -20,7 +20,13 @@ HW::~HW() {
 }
 
 void HW::Reset() {
+    LoadARM7Bios();
+    LoadARM9Bios();
     InitialiseCPUCores(CPUCoreType::Interpreter);
+
+    arm7_memory.Reset();
+    arm9_memory.Reset();
+
     scheduler.Reset();
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
@@ -53,11 +59,6 @@ void HW::Reset() {
     BIOSPROT = 0;
     SIOCNT = 0;
 
-    LoadARM7Bios();
-    LoadARM9Bios();
-
-    arm7_memory.Reset();
-    arm9_memory.Reset();
     cpu_core[0]->Reset();
     cpu_core[1]->Reset();
 }
@@ -93,6 +94,7 @@ void HW::DirectBoot() {
 void HW::FirmwareBoot() {
     cpu_core[1]->FirmwareBoot();
     cpu_core[0]->FirmwareBoot();
+    cartridge.FirmwareBoot();
 }
 
 void HW::SetRomPath(std::string path) {

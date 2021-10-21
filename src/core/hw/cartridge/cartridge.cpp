@@ -31,6 +31,15 @@ void Cartridge::Reset() {
     backup_size = 0;
     key1_encryption = false;
     command_type = CartridgeCommandType::Dummy;
+
+    // copy the key1 buffer from the arm7 bios
+    for (int i = 0; i < 0x412; i++) {
+        key1_buffer[i] = hw->arm7_memory.FastRead<u32>(0x30 + (i * 4));
+    }
+
+    for (int i = 0; i < 3; i++) {
+        key1_code[i] = 0;
+    }
 }
 
 void Cartridge::LoadRom(std::string rom_path) {
@@ -105,15 +114,10 @@ void Cartridge::LoadHeaderData() {
     memcpy(&header.arm7_ram_address, &rom[0x38], 4);
     memcpy(&header.arm7_size, &rom[0x3C], 4);
     memcpy(&header.icon_title_offset, &rom[0x68], 4);
-    // LoadIconTitle();
     log_debug("[ARM9]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm9_rom_offset, header.arm9_entrypoint, header.arm9_ram_address, header.arm9_size);
     log_debug("[ARM7]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm7_rom_offset, header.arm7_entrypoint, header.arm7_ram_address, header.arm7_size);
 
     log_debug("[Cartridge] Header data loaded");
-}
-
-void Cartridge::LoadSecureArea() {
-    
 }
 
 void Cartridge::DetectBackupType() {
@@ -178,7 +182,8 @@ void Cartridge::StartTransfer() {
     }
 
     if (key1_encryption) {
-        log_fatal("handle key1 encryption");
+        InitKeyCode(2, 2);
+        command = Decrypt64(command);
     }
 
     if (rom_size) {
@@ -270,7 +275,7 @@ auto Cartridge::ReadData() -> u32 {
         }
     }
 
-    // after reading a word from the cartridge we must increment transfer_count by 4 as we just read 4 bytes
+    // after readtableing a word from the cartridge we must increment transfer_count by 4 as we just read 4 bytes
     transfer_count += 4;
 
     if (transfer_count == transfer_size) {
@@ -294,7 +299,6 @@ auto Cartridge::ReadData() -> u32 {
 
     return data;
 }
-
 
 void Cartridge::WriteAUXSPICNT(u16 data) {
     AUXSPICNT = data;
@@ -352,6 +356,34 @@ void Cartridge::DirectBoot() {
     log_debug("[Cartridge] Data transferred into memory");
 }
 
+void Cartridge::FirmwareBoot() {
+    if (rom_size >= 0x8000) {
+        u64 encry_obj = 0x6A624F7972636E65;
+
+        memcpy(&rom[0x4000], &encry_obj, 8);
+
+        // encrypt the first 2kb of the secure area
+        for (int i = 0; i < 0x800; i += 8) {
+            u64 data = 0;
+            memcpy(&data, &rom[0x4000 + i], 8);
+
+            InitKeyCode(3, 2);
+            u64 encrypted_data = Encrypt64(data);
+            memcpy(&rom[0x4000 + i], &encrypted_data, 8);
+        }
+
+        // double encrypt the first 8 bytes
+        u64 data = 0;
+        memcpy(&data, &rom[0x4000], 8);
+
+        InitKeyCode(2, 2);
+        u64 encrypted_data = Encrypt64(data);
+        memcpy(&rom[0x4000], &encrypted_data, 8);
+
+        log_debug("[Cartridge] First 2kb of secure area encrypted successfully");
+    }
+}
+
 // TODO: handle key2 encryption later
 void Cartridge::WriteSeed0_L(u32 data) {
 
@@ -367,4 +399,93 @@ void Cartridge::WriteSeed0_H(u16 data) {
 
 void Cartridge::WriteSeed1_H(u16 data) {
 
+}
+
+u64 Cartridge::Decrypt64(u64 data) {
+    u32 y = data & 0xFFFFFFFF;
+    u32 x = data >> 32;
+
+    for (int i = 0x11; i >= 0x02; i--) {
+        u32 z = key1_buffer[i] ^ x;
+        x = key1_buffer[0x12 + ((z >> 24) & 0xFF)];
+        x = key1_buffer[0x112 + ((z >> 16) & 0xFF)] + x;
+        x = key1_buffer[0x212 + ((z >> 8) & 0xFF)] ^ x;
+        x = key1_buffer[0x312 + (z & 0xFF)] + x;
+        x = y ^ x;
+        y = z;
+    }
+
+    u64 result = ((u64)(y ^ key1_buffer[0]) << 32) | (x ^ key1_buffer[1]);
+    return result;
+}
+
+u64 Cartridge::Encrypt64(u64 data) {
+    u32 y = data & 0xFFFFFFFF;
+    u32 x = data >> 32;
+
+    for (int i = 0; i <= 0x0F; i++) {
+        u32 z = key1_buffer[i] ^ x;
+        x = key1_buffer[0x12 + ((z >> 24) & 0xFF)];
+        x = key1_buffer[0x112 + ((z >> 16) & 0xFF)] + x;
+        x = key1_buffer[0x212 + ((z >> 8) & 0xFF)] ^ x;
+        x = key1_buffer[0x312 + (z & 0xFF)] + x;
+        x = y ^ x;
+        y = z;
+    }
+
+    u64 result = ((u64)(y ^ key1_buffer[0x11]) << 32) | (x ^ key1_buffer[0x10]);
+    return result;
+}
+
+void Cartridge::InitKeyCode(u32 level, u32 modulo) {
+    key1_code[0] = header.gamecode;
+    key1_code[1] = header.gamecode / 2;
+    key1_code[2] = header.gamecode * 2;
+
+    if (level >= 1) {
+        ApplyKeyCode(modulo);
+    }
+
+    if (level >= 2) {
+        ApplyKeyCode(modulo);
+    }
+
+    key1_code[1] *= 2;
+    key1_code[2] /= 2;
+
+    if (level >= 3) {
+        ApplyKeyCode(modulo);
+    }
+}
+
+void Cartridge::ApplyKeyCode(u32 modulo) {
+    u64 encrypt_result = Encrypt64(((u64)key1_code[2] << 32) | key1_code[1]);
+    key1_code[1] = encrypt_result & 0xFFFFFFFF;
+    key1_code[2] = encrypt_result >> 32;
+
+    u64 encrypt_result1 = Encrypt64(((u64)key1_code[1] << 32) | key1_code[0]);
+    key1_code[0] = encrypt_result1 & 0xFFFFFFFF;
+    key1_code[1] = encrypt_result1 >> 32;
+
+    for (int i = 0; i <= 0x11; i++) {
+        key1_buffer[i] ^= BSwap32(key1_code[i % modulo]);
+    }
+
+    u64 scratch = 0;
+
+    for (int i = 0; i <= 0x410; i += 2) {
+        scratch = Decrypt64(scratch);
+        key1_buffer[i] = scratch >> 32;
+        key1_buffer[i + 1] = scratch & 0xFFFFFFFF;
+    }
+}
+
+u32 Cartridge::BSwap32(u32 data) {
+    u32 result = 0;
+    result |= data >> 24;
+    result |= (data >> 8) & 0xFF00;
+    result |= (data << 8) & 0xFF0000;
+    result |= data << 24;
+
+    return result;
 }

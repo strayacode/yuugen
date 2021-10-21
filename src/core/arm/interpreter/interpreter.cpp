@@ -59,6 +59,10 @@ void Interpreter::Run(int cycles) {
             pipeline[1] = ReadHalf(regs.r[15]);
         }
 
+        if (regs.r[15] == 0x1CDC) {
+            log_warn("handle");
+        }
+
         if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
             HandleInterrupt();
         }

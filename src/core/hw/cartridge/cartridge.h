@@ -50,10 +50,10 @@ public:
     void Reset();
     void LoadRom(std::string rom_path);
     void LoadHeaderData();
-    void LoadSecureArea();
     void DetectBackupType();
 
     void DirectBoot();
+    void FirmwareBoot();
 
     void WriteROMCTRL(u32 data);
     void WriteAUXSPICNT(u16 data);
@@ -69,6 +69,12 @@ public:
 
     void WriteSeed0_H(u16 data);
     void WriteSeed1_H(u16 data);
+
+    u64 Decrypt64(u64 data);
+    u64 Encrypt64(u64 data);
+    void InitKeyCode(u32 level, u32 modulo);
+    void ApplyKeyCode(u32 modulo);
+    u32 BSwap32(u32 data);
 
     struct CartridgeHeader {
         char game_title[12];
@@ -119,4 +125,9 @@ public:
 
     bool key1_encryption;
     CartridgeCommandType command_type;
+
+    u32 key1_buffer[0x412];
+    u32 key1_code[3];
+
+    u8 secure_area[0x4000];
 };
