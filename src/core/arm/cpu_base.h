@@ -14,16 +14,33 @@ enum class CPUArch {
 // cached interpreter and jit
 class CPUBase {
 public:
-    CPUBase(MemoryBase& memory, CPUArch arch);
+    CPUBase(MemoryBase& memory, CPUArch arch) : memory(memory), arch(arch) {}
     virtual ~CPUBase() {};
     virtual void Reset() = 0;
     virtual void Run(int cycles) = 0;
     virtual void DirectBoot(u32 entrypoint) = 0;
     virtual void FirmwareBoot() = 0;
 
-    void SendInterrupt(int interrupt);
-    void Halt();
-    auto Halted() -> bool;
+    void SendInterrupt(int interrupt) {
+        // set the appropriate bit in IF
+        irf |= (1 << interrupt);
+        
+        // check if the interrupt is enabled too
+        if (ie & (1 << interrupt)) {
+            // to unhalt on the arm9 ime needs to be set
+            if (ime || arch == CPUArch::ARMv4) {
+                halted = false;
+            }
+        }
+    }
+
+    void Halt() {
+        halted = true;
+    }
+
+    bool Halted() {
+        return halted;
+    }
 
     CPURegisters regs;
 

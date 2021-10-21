@@ -84,8 +84,6 @@ void HostInterface::Run() {
             GPU2DWindow();
         }
 
-        ImGui::ShowDemoWindow();
-
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
         glClearColor(0, 0, 0, 1);
@@ -188,8 +186,8 @@ void HostInterface::UpdateTitle(float fps) {
 
         if (ImGui::BeginMenu("Emulator")) {
             if (ImGui::BeginMenu("Boot Mode")) {
-                static bool direct_boot = core.GetBootMode() == BootMode::Direct;
-                static bool firmware_boot = !direct_boot;
+                bool direct_boot = core.GetBootMode() == BootMode::Direct;
+                bool firmware_boot = !direct_boot;
 
                 if (ImGui::MenuItem("Direct", "", &direct_boot)) {
                     core.SetBootMode(BootMode::Direct);

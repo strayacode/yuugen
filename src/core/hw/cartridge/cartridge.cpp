@@ -22,12 +22,15 @@ void Cartridge::Reset() {
 
     transfer_count = 0;
     transfer_size = 0;
+    rom_position = 0;
     command = 0;
     rom_size = 0;
     seed0 = seed1 = 0;
     backup_write_count = 0;
     backup_type = 0;
     backup_size = 0;
+    key1_encryption = false;
+    command_type = CartridgeCommandType::Dummy;
 }
 
 void Cartridge::LoadRom(std::string rom_path) {
@@ -168,6 +171,36 @@ void Cartridge::StartTransfer() {
         transfer_size = 0x100 << block_size;
     }
 
+    u64 command = 0;
+
+    for (int i = 0; i < 8; i++) {
+        command |= ((u64)command_buffer[i] << ((7 - i) * 8));
+    }
+
+    if (key1_encryption) {
+        log_fatal("handle key1 encryption");
+    }
+
+    if (rom_size) {
+        if ((command & 0xFF00000000FFFFFF) == 0xB700000000000000) {
+            rom_position = (command >> 24) & 0xFFFFFFFF;
+            command_type = CartridgeCommandType::ReadData;
+        } else if (command == 0xB800000000000000) {
+            command_type = CartridgeCommandType::GetThirdID;  
+        } else if (command == 0x9F00000000000000) {
+            command_type = CartridgeCommandType::Dummy;
+        } else if (command == 0x0000000000000000) {
+            command_type = CartridgeCommandType::ReadHeader;  
+        } else if (command == 0x9000000000000000) {
+            command_type = CartridgeCommandType::GetFirstID;  
+        } else if ((command >> 56) == 0x3C) {
+            key1_encryption = true;
+            command_type = CartridgeCommandType::None;
+        } else {
+            log_fatal("handle %016lx", command);
+        }
+    }
+
     if (transfer_size == 0) {
         // we won't need to read any data from the rom
         // indicate that the block is ready (empty block) and that no word is ready for reading yet
@@ -175,6 +208,7 @@ void Cartridge::StartTransfer() {
         ROMCTRL &= ~(1 << 31);
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
+        // TODO: are we meant to send interrupt to both cpus?
         if (AUXSPICNT & (1 << 14)) {
             hw->cpu_core[0]->SendInterrupt(19);
             hw->cpu_core[1]->SendInterrupt(19);
@@ -208,34 +242,31 @@ auto Cartridge::ReadData() -> u32 {
     // only do commands if a rom exists
     if (rom_size) {
         // check the first command in the command buffer
-        switch (command_buffer[0]) {
-        case READ_HEADER:
-            // return the cartridge header repeated every 0x1000 bytes
-            memcpy(&data, &rom[transfer_count & 0xFFF], 4);
+        switch (command_type) {
+        case CartridgeCommandType::Dummy:
             break;
-        case DUMMY_COMMAND:
-            // data remains as 0xFFFFFFFF
-            break;
-        case READ_DATA: {
-            // get the address from the 4 parameter bytes after the command byte in command buffer
-            u32 address = (command_buffer[1] << 24) | (command_buffer[2] << 16) | (command_buffer[3] << 8) | (command_buffer[4]);
-            if (address < 0x8000) {
-                address = 0x8000 + (address & 0x1FF);
+        case CartridgeCommandType::ReadData:
+            if (rom_position < 0x8000) {
+                rom_position = 0x8000 + (rom_position & 0x1FF);
             }
 
-            if (address + transfer_count >= rom_size) {
+            if ((rom_position + transfer_count) >= rom_size) {
                 log_fatal("[Cartridge] Read data command exceeds rom size");
             }
 
             // otherwise read
-            memcpy(&data, &rom[address + transfer_count], 4);
+            memcpy(&data, &rom[rom_position + transfer_count], 4);
             break;
-        }
-        case FIRST_CHIP_ID: case SECOND_CHIP_ID:
+        case CartridgeCommandType::GetFirstID: 
+        case CartridgeCommandType::GetThirdID:
             data = 0x1FC2;
             break;
+        case CartridgeCommandType::ReadHeader:
+            // return the cartridge header repeated every 0x1000 bytes
+            memcpy(&data, &rom[transfer_count & 0xFFF], 4);
+            break;
         default:
-            log_fatal("[Cartridge] Handle cartridge command %02x", command_buffer[0]);
+            log_fatal("handle cartridge command type %d", static_cast<int>(command_type));
         }
     }
 

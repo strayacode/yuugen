@@ -13,12 +13,23 @@
 
 #pragma once
 
+// TODO: change this to an enum class
 enum CartridgeCommand {
     READ_HEADER = 0x00,
+    ENABLE_KEY1 = 0x3C,
     FIRST_CHIP_ID = 0x90,
     DUMMY_COMMAND = 0x9F,
     READ_DATA = 0xB7,
     SECOND_CHIP_ID = 0xB8,
+};
+
+enum class CartridgeCommandType {
+    Dummy,
+    ReadData,
+    GetFirstID,
+    GetThirdID,
+    ReadHeader,
+    None,
 };
 
 enum BackupType {
@@ -30,6 +41,8 @@ enum BackupType {
 
 class HW;
 
+// TODO: check if the rom is encrypted. if it is then 
+// transfer as unencrypted
 class Cartridge {
 public:
     Cartridge(HW* hw);
@@ -78,6 +91,7 @@ public:
 
     u32 transfer_count;
     u32 transfer_size;
+    u32 rom_position;
 
     u32 ROMCTRL;
     u16 AUXSPICNT;
@@ -102,4 +116,7 @@ public:
 
     u32 backup_type;
     u32 backup_size;
+
+    bool key1_encryption;
+    CartridgeCommandType command_type;
 };
