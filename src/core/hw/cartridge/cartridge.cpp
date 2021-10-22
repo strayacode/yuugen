@@ -32,11 +32,6 @@ void Cartridge::Reset() {
     key1_encryption = false;
     command_type = CartridgeCommandType::Dummy;
 
-    // copy the key1 buffer from the arm7 bios
-    for (int i = 0; i < 0x412; i++) {
-        key1_buffer[i] = hw->arm7_memory.FastRead<u32>(0x30 + (i * 4));
-    }
-
     for (int i = 0; i < 3; i++) {
         key1_code[i] = 0;
     }
@@ -201,6 +196,9 @@ void Cartridge::StartTransfer() {
         } else if ((command >> 56) == 0x3C) {
             key1_encryption = true;
             command_type = CartridgeCommandType::None;
+        } else if ((command >> 60) == 0x4) {
+            // ignore key2 encryption
+            command_type = CartridgeCommandType::None;  
         } else {
             log_fatal("handle %016lx", command);
         }
@@ -275,7 +273,7 @@ auto Cartridge::ReadData() -> u32 {
         }
     }
 
-    // after readtableing a word from the cartridge we must increment transfer_count by 4 as we just read 4 bytes
+    // after reading a word from the cartridge we must increment transfer_count by 4 as we just read 4 bytes
     transfer_count += 4;
 
     if (transfer_count == transfer_size) {
@@ -362,12 +360,13 @@ void Cartridge::FirmwareBoot() {
 
         memcpy(&rom[0x4000], &encry_obj, 8);
 
+        InitKeyCode(3, 2);
+
         // encrypt the first 2kb of the secure area
         for (int i = 0; i < 0x800; i += 8) {
             u64 data = 0;
             memcpy(&data, &rom[0x4000 + i], 8);
 
-            InitKeyCode(3, 2);
             u64 encrypted_data = Encrypt64(data);
             memcpy(&rom[0x4000 + i], &encrypted_data, 8);
         }
@@ -438,6 +437,11 @@ u64 Cartridge::Encrypt64(u64 data) {
 }
 
 void Cartridge::InitKeyCode(u32 level, u32 modulo) {
+    // copy the key1 buffer from the arm7 bios
+    for (int i = 0; i < 0x412; i++) {
+        key1_buffer[i] = hw->arm7_memory.FastRead<u32>(0x30 + (i * 4));
+    }
+
     key1_code[0] = header.gamecode;
     key1_code[1] = header.gamecode / 2;
     key1_code[2] = header.gamecode * 2;
@@ -450,10 +454,10 @@ void Cartridge::InitKeyCode(u32 level, u32 modulo) {
         ApplyKeyCode(modulo);
     }
 
-    key1_code[1] *= 2;
-    key1_code[2] /= 2;
-
     if (level >= 3) {
+        key1_code[1] *= 2;
+        key1_code[2] /= 2;
+
         ApplyKeyCode(modulo);
     }
 }
@@ -474,7 +478,7 @@ void Cartridge::ApplyKeyCode(u32 modulo) {
     u64 scratch = 0;
 
     for (int i = 0; i <= 0x410; i += 2) {
-        scratch = Decrypt64(scratch);
+        scratch = Encrypt64(scratch);
         key1_buffer[i] = scratch >> 32;
         key1_buffer[i + 1] = scratch & 0xFFFFFFFF;
     }
