@@ -39,7 +39,7 @@ void GPU2D::ComposePixel(u16 line, u16 x) {
         // only check priority if the bg layer is enabled as indicated by the variable enabled, which has taken into account window logic
         if ((enabled & (1 << i)) && (bg_layers[i][(256 * line) + x] != 0x8000)) {
             if ((BGCNT[i] & 0x3) <= priority) {
-                priority = (BGCNT[i] & 0x3);
+                priority = BGCNT[i] & 0x3;
                 pixel = bg_layers[i][(256 * line) + x];
             }
         }

@@ -343,6 +343,7 @@ void GeometryEngine::DoSwapBuffers() {
 
             render_vertex.x = render_x;
             render_vertex.y = render_y;
+            render_vertex.colour = vertex_ram[i].colour;
         } else {
             render_vertex.x = 0;
             render_vertex.y = 0;

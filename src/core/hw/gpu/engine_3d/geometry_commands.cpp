@@ -53,7 +53,7 @@ void GeometryEngine::StoreCurrentMatrix() {
 
 void GeometryEngine::PopCurrentMatrix() {
     u32 parameter = DequeueEntry().parameter;
-    u8 stack_offset = (s8)((parameter & 0x3F) << 2) >> 2;
+    s8 stack_offset = ((s8)(parameter & 0x3F) << 2) >> 2;
 
     switch (matrix_mode) {
     case 0:
@@ -207,7 +207,7 @@ void GeometryEngine::Multiply4x4() {
         break;
     case 2:
         modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
-        direction_current = MultiplyMatrixMatrix(matrix, projection_current);
+        direction_current = MultiplyMatrixMatrix(matrix, direction_current);
         UpdateClipMatrix();
         break;
     case 3:
@@ -237,7 +237,7 @@ void GeometryEngine::Multiply4x3() {
         break;
     case 2:
         modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
-        direction_current = MultiplyMatrixMatrix(matrix, projection_current);
+        direction_current = MultiplyMatrixMatrix(matrix, direction_current);
         UpdateClipMatrix();
         break;
     case 3:
@@ -265,7 +265,7 @@ void GeometryEngine::MultiplyTranslation() {
         break;
     case 2:
         modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
-        direction_current = MultiplyMatrixMatrix(matrix, projection_current);
+        direction_current = MultiplyMatrixMatrix(matrix, direction_current);
         UpdateClipMatrix();
         break;
     case 3:
@@ -318,7 +318,7 @@ void GeometryEngine::Multiply3x3() {
         break;
     case 2:
         modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
-        direction_current = MultiplyMatrixMatrix(matrix, projection_current);
+        direction_current = MultiplyMatrixMatrix(matrix, direction_current);
         UpdateClipMatrix();
         break;
     case 3:
@@ -330,6 +330,8 @@ void GeometryEngine::Multiply3x3() {
 void GeometryEngine::BeginVertexList() {
     // TODO: handle polygon rendering later
     DequeueEntry();
+
+    vertex_ram_size = 0;
 }
 
 void GeometryEngine::EndVertexList() {
@@ -408,7 +410,7 @@ void GeometryEngine::SetNormalVector() {
 void GeometryEngine::SetVertexXY() {
     u32 parameter = DequeueEntry().parameter;
 
-    current_vertex.x = (s16)(parameter);
+    current_vertex.x = (s16)(parameter & 0xFFFF);
     current_vertex.y = (s16)(parameter >> 16);
 
     AddVertex();
@@ -417,7 +419,7 @@ void GeometryEngine::SetVertexXY() {
 void GeometryEngine::SetVertexXZ() {
     u32 parameter = DequeueEntry().parameter;
 
-    current_vertex.x = (s16)(parameter);
+    current_vertex.x = (s16)(parameter & 0xFFFF);
     current_vertex.z = (s16)(parameter >> 16);
 
     AddVertex();
@@ -426,7 +428,7 @@ void GeometryEngine::SetVertexXZ() {
 void GeometryEngine::SetVertexYZ() {
     u32 parameter = DequeueEntry().parameter;
 
-    current_vertex.y = (s16)(parameter);
+    current_vertex.y = (s16)(parameter & 0xFFFF);
     current_vertex.z = (s16)(parameter >> 16);
 
     AddVertex();
