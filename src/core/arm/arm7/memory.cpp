@@ -609,7 +609,7 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
             hw->spu.SNDCAPDAD[1] = data;
             break;
         default:
-            log_fatal("[ARM7] Undefined 32-bit io write %08x = %08x", addr, data);
+            log_warn("[ARM7] Undefined 32-bit io write %08x = %08x", addr, data);
         }
         break;
     case REGION_VRAM:

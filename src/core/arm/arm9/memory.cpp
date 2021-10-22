@@ -1086,6 +1086,19 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
         case 0x04000064:
             hw->gpu.DISPCAPCNT = data;
             break;
+        case 0x04000068:
+            // handle main memory display fifo later
+            break;
+        case 0x0400006C:
+            hw->gpu.engine_a.MASTER_BRIGHT = data & 0xFFFF;
+            break;
+        case 0x04000070: case 0x04000074: case 0x04000078: case 0x0400007C:
+        case 0x04000080: case 0x04000084: case 0x04000088: case 0x0400008C:
+        case 0x04000090: case 0x04000094: case 0x04000098: case 0x0400009C:
+        case 0x040000A0: case 0x040000A4: case 0x040000A8: case 0x040000AC:
+        case 0x040000F0: case 0x040000F4: case 0x040000F8: case 0x040000FC:
+            // no clue why the firmware does this (will investigate later)
+            break;
         case 0x040000B0:
             hw->dma[1].channel[0].source = data;
             break;
@@ -1355,7 +1368,7 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             hw->gpu.engine_b.MASTER_BRIGHT = data & 0xFFFF;
             break;
         default:
-            log_fatal("[ARM9] Undefined 32-bit io write %08x = %08x", addr, data);
+            log_warn("[ARM9] Undefined 32-bit io write %08x = %08x", addr, data);
         }
         break;
     case REGION_PALETTE_RAM:
