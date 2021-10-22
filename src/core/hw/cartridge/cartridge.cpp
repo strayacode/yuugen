@@ -170,38 +170,16 @@ void Cartridge::StartTransfer() {
         transfer_size = 0x100 << block_size;
     }
 
-    u64 command = 0;
+    command = 0;
 
     for (int i = 0; i < 8; i++) {
         command |= ((u64)command_buffer[i] << ((7 - i) * 8));
     }
 
     if (key1_encryption) {
-        InitKeyCode(2, 2);
-        command = Decrypt64(command);
-    }
-
-    if (rom_size) {
-        if ((command & 0xFF00000000FFFFFF) == 0xB700000000000000) {
-            rom_position = (command >> 24) & 0xFFFFFFFF;
-            command_type = CartridgeCommandType::ReadData;
-        } else if (command == 0xB800000000000000) {
-            command_type = CartridgeCommandType::GetThirdID;  
-        } else if (command == 0x9F00000000000000) {
-            command_type = CartridgeCommandType::Dummy;
-        } else if (command == 0x0000000000000000) {
-            command_type = CartridgeCommandType::ReadHeader;  
-        } else if (command == 0x9000000000000000) {
-            command_type = CartridgeCommandType::GetFirstID;  
-        } else if ((command >> 56) == 0x3C) {
-            key1_encryption = true;
-            command_type = CartridgeCommandType::None;
-        } else if ((command >> 60) == 0x4) {
-            // ignore key2 encryption
-            command_type = CartridgeCommandType::None;  
-        } else {
-            log_fatal("handle %016lx", command);
-        }
+        InterpretEncryptedCommand();
+    } else {
+        InterpretDecryptedCommand();
     }
 
     if (transfer_size == 0) {
@@ -234,6 +212,54 @@ void Cartridge::StartTransfer() {
     
 }
 
+void Cartridge::InterpretEncryptedCommand() {
+    InitKeyCode(2, 2);
+    command = Decrypt64(command);
+    if (rom_size) {
+        switch (command >> 60) {
+        case 0x1:
+            command_type = CartridgeCommandType::GetSecondID;
+            break;
+        case 0x2:
+            rom_position = ((command >> 44) & 0xFFFF) * 0x1000;
+            command_type = CartridgeCommandType::ReadSecureArea;
+            break;
+        case 0x4:
+            command_type = CartridgeCommandType::None;
+            break;
+        case 0xA:
+            // enter main data mode (disable key1 encryption)
+            key1_encryption = false;
+            command_type = CartridgeCommandType::None;
+            break;
+        default:
+            log_fatal("handle encrypted %016lx", command);
+        }
+    }
+}
+
+void Cartridge::InterpretDecryptedCommand() {
+    if (rom_size) {
+        if ((command & 0xFF00000000FFFFFF) == 0xB700000000000000) {
+            rom_position = (command >> 24) & 0xFFFFFFFF;
+            command_type = CartridgeCommandType::ReadData;
+        } else if (command == 0xB800000000000000) {
+            command_type = CartridgeCommandType::GetThirdID;  
+        } else if (command == 0x9F00000000000000) {
+            command_type = CartridgeCommandType::Dummy;
+        } else if (command == 0x0000000000000000) {
+            command_type = CartridgeCommandType::ReadHeader;  
+        } else if (command == 0x9000000000000000) {
+            command_type = CartridgeCommandType::GetFirstID;  
+        } else if ((command >> 56) == 0x3C) {
+            key1_encryption = true;
+            command_type = CartridgeCommandType::None;
+        } else {
+            log_fatal("handle unencrypted %016lx", command);
+        }
+    }
+}
+
 auto Cartridge::ReadData() -> u32 {
     u32 data = 0xFFFFFFFF;
 
@@ -260,13 +286,17 @@ auto Cartridge::ReadData() -> u32 {
             // otherwise read
             memcpy(&data, &rom[rom_position + transfer_count], 4);
             break;
-        case CartridgeCommandType::GetFirstID: 
+        case CartridgeCommandType::GetFirstID:
+        case CartridgeCommandType::GetSecondID:
         case CartridgeCommandType::GetThirdID:
             data = 0x1FC2;
             break;
         case CartridgeCommandType::ReadHeader:
             // return the cartridge header repeated every 0x1000 bytes
             memcpy(&data, &rom[transfer_count & 0xFFF], 4);
+            break;
+        case CartridgeCommandType::ReadSecureArea:
+            memcpy(&data, &rom[rom_position + transfer_count], 4);
             break;
         default:
             log_fatal("handle cartridge command type %d", static_cast<int>(command_type));

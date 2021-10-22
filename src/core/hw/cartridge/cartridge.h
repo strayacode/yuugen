@@ -27,8 +27,10 @@ enum class CartridgeCommandType {
     Dummy,
     ReadData,
     GetFirstID,
+    GetSecondID,
     GetThirdID,
     ReadHeader,
+    ReadSecureArea,
     None,
 };
 
@@ -63,6 +65,8 @@ public:
     auto ReadCommand(int command_index) -> u8;
     auto ReadData() -> u32;
     void StartTransfer();
+    void InterpretEncryptedCommand();
+    void InterpretDecryptedCommand();
 
     void WriteSeed0_L(u32 data);
     void WriteSeed1_L(u32 data);
@@ -105,7 +109,7 @@ public:
 
     u8 command_buffer[8];
 
-    u8 command;
+    u64 command;
 
     HW* hw;
 

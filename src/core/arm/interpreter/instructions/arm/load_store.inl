@@ -334,11 +334,7 @@ void ARMBlockDataTransfer() {
                 }
             }
         } else {
-            if (arch == CPUArch::ARMv5) {
-                regs.r[rn] = address;
-            } else {
-                regs.r[rn] = address;
-            }
+            regs.r[rn] = address;
         }
     } 
 
