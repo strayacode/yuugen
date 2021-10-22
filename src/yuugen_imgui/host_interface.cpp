@@ -315,9 +315,11 @@ void HostInterface::DrawScreen() {
 void HostInterface::SetupStyle() {
     ImGui::GetStyle().WindowBorderSize = 0.0f;
     ImGui::GetStyle().PopupBorderSize = 0.0f;
+    ImGui::GetStyle().ChildBorderSize = 0.0f;
     ImGui::GetStyle().WindowRounding = 8.0f;
     ImGui::GetStyle().FrameRounding = 4.0f;
     ImGui::GetStyle().PopupRounding = 6.0f;
+    ImGui::GetStyle().ChildRounding = 6.0f;
     ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
