@@ -32,15 +32,12 @@ Regardless of the platform you're on you will need to have a dump of the ARM7 an
     ```
 4. Organise folders:
 
-    In the ```yuugen``` directory, place the ```bios7.bin``` and ```bios9.bin``` files in a ```bios``` folder and the ```firmware.bin``` in a ```firmware```. Also make sure to place your dumped ROMs in the ```roms``` folder.
+    In the ```yuugen``` directory, place the ```bios7.bin``` and ```bios9.bin``` files in a ```bios``` folder and the ```firmware.bin``` in a ```firmware``` folder. Also make sure to place your dumped ROMs in the ```roms``` folder.
 
-For now CMake will by default build with the SDL frontend, but you can manually change one of the ```CMakeLists.txt``` files to build for the Qt frontend. In the future however the installation process should be alot simpler.
-
-Right now there is no Windows support but again that should come in the future
+Right now there is no Windows support but that should come in the future
 
 ## Roadmap of future endeavours:
 - 3D Engine
-- Encryption
 - Proper CPU timings
 - ARM to x86 recompiler
 - Resolution upscaling
