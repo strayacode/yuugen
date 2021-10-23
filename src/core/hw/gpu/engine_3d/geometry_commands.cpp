@@ -11,68 +11,72 @@ void GeometryEngine::PushCurrentMatrix() {
 
     switch (matrix_mode) {
     case 0:
-        projection_stack = projection_current;
+        projection.Push();
         break;
     case 1: case 2:
-        if ((modelview_pointer < 0) || (modelview_pointer >= 31)) {
-            gxstat |= (1 << 15);
-        } else {
-            modelview_stack[modelview_pointer] = modelview_current;
-            direction_stack[modelview_pointer] = direction_current;
-            modelview_pointer++;
-        }
+        modelview.Push();
+        direction.Push();
         break;
     case 3:
-        texture_stack = texture_current;
+        texture.Push();
         break;
     }
 }
 
 void GeometryEngine::StoreCurrentMatrix() {
     u32 parameter = DequeueEntry().parameter;
-    u32 stack_offset = parameter & 0x1F;
+    u32 offset = parameter & 0x1F;
 
     switch (matrix_mode) {
     case 0:
-        projection_stack = projection_current;
+        projection.Store(offset);
         break;
     case 1: case 2:
-        if (stack_offset == 31) {
-            gxstat |= (1 << 15);
-        } else {
-            modelview_stack[stack_offset] = modelview_current;
-            direction_stack[stack_offset] = direction_current;
-        }
-
+        modelview.Store(offset);
+        direction.Store(offset);
         break;
     case 3:
-        texture_stack = texture_current;
+        texture.Store(offset);
         break;
     }
 }
 
 void GeometryEngine::PopCurrentMatrix() {
     u32 parameter = DequeueEntry().parameter;
-    s8 stack_offset = ((s8)(parameter & 0x3F) << 2) >> 2;
+    s32 offset = ((s8)(parameter & 0x3F) << 26) >> 26;
 
     switch (matrix_mode) {
     case 0:
-        projection_current = projection_stack;
+        projection.Pop(offset);
         UpdateClipMatrix();
         break;
     case 1: case 2:
-        modelview_pointer -= stack_offset;
-
-        if ((modelview_pointer < 0) || (modelview_pointer >= 31)) {
-            gxstat |= (1 << 15);
-        } else {
-            modelview_current = modelview_stack[modelview_pointer];
-            direction_current = direction_stack[modelview_pointer];
-            UpdateClipMatrix();
-        }
+        modelview.Pop(offset);
+        direction.Pop(offset);
+        UpdateClipMatrix();
         break;
     case 3:
-        texture_current = texture_stack;
+        texture.Pop(offset);
+        break;
+    }
+}
+
+void GeometryEngine::RestoreCurrentMatrix() {
+    u32 parameter = DequeueEntry().parameter;
+    u32 offset = parameter & 0x1F;
+
+    switch (matrix_mode) {
+    case 0:
+        projection.Restore(offset);
+        UpdateClipMatrix();
+        break;
+    case 1: case 2:
+        modelview.Restore(offset);
+        direction.Restore(offset);
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture.Restore(offset);
         break;
     }
 }
@@ -84,20 +88,20 @@ void GeometryEngine::LoadUnitMatrix() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = unit_matrix;
+        projection.current = unit_matrix;
         UpdateClipMatrix();
         break;
     case 1:
-        modelview_current = unit_matrix;
+        modelview.current = unit_matrix;
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = unit_matrix;
-        direction_current = unit_matrix;
+        modelview.current = unit_matrix;
+        direction.current = unit_matrix;
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = unit_matrix;
+        texture.current = unit_matrix;
         break;
     }
 }
@@ -114,20 +118,20 @@ void GeometryEngine::Load4x4() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = matrix;
+        projection.current = matrix;
         UpdateClipMatrix();
         break;
     case 1:
-        modelview_current = matrix;
+        modelview.current = matrix;
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = matrix;
-        direction_current = matrix;
+        modelview.current = matrix;
+        direction.current = matrix;
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = matrix;
+        texture.current = matrix;
         break;
     }
 }
@@ -144,20 +148,20 @@ void GeometryEngine::Load4x3() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = matrix;
+        projection.current = matrix;
         UpdateClipMatrix();
         break;
     case 1:
-        modelview_current = matrix;
+        modelview.current = matrix;
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = matrix;
-        direction_current = matrix;
+        modelview.current = matrix;
+        direction.current = matrix;
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = matrix;
+        texture.current = matrix;
         break;
     }
 }
@@ -198,20 +202,20 @@ void GeometryEngine::Multiply4x4() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
+        projection.current = MultiplyMatrixMatrix(matrix, projection.current);
         UpdateClipMatrix();
         break;
     case 1: 
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
-        direction_current = MultiplyMatrixMatrix(matrix, direction_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
+        direction.current = MultiplyMatrixMatrix(matrix, direction.current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
+        texture.current = MultiplyMatrixMatrix(matrix, texture.current);
         break;
     }
 }
@@ -228,20 +232,20 @@ void GeometryEngine::Multiply4x3() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
+        projection.current = MultiplyMatrixMatrix(matrix, projection.current);
         UpdateClipMatrix();
         break;
     case 1: 
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
-        direction_current = MultiplyMatrixMatrix(matrix, direction_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
+        direction.current = MultiplyMatrixMatrix(matrix, direction.current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
+        texture.current = MultiplyMatrixMatrix(matrix, texture.current);
         break;
     }
 }
@@ -256,20 +260,20 @@ void GeometryEngine::MultiplyTranslation() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
+        projection.current = MultiplyMatrixMatrix(matrix, projection.current);
         UpdateClipMatrix();
         break;
     case 1: 
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
-        direction_current = MultiplyMatrixMatrix(matrix, direction_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
+        direction.current = MultiplyMatrixMatrix(matrix, direction.current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
+        texture.current = MultiplyMatrixMatrix(matrix, texture.current);
         break;
     }
 }
@@ -284,15 +288,15 @@ void GeometryEngine::MultiplyScale() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
+        projection.current = MultiplyMatrixMatrix(matrix, projection.current);
         UpdateClipMatrix();
         break;
     case 1: case 2:
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
+        texture.current = MultiplyMatrixMatrix(matrix, texture.current);
         break;
     }
 }
@@ -309,20 +313,20 @@ void GeometryEngine::Multiply3x3() {
 
     switch (matrix_mode) {
     case 0:
-        projection_current = MultiplyMatrixMatrix(matrix, projection_current);
+        projection.current = MultiplyMatrixMatrix(matrix, projection.current);
         UpdateClipMatrix();
         break;
     case 1: 
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         UpdateClipMatrix();
         break;
     case 2:
-        modelview_current = MultiplyMatrixMatrix(matrix, modelview_current);
-        direction_current = MultiplyMatrixMatrix(matrix, direction_current);
+        modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
+        direction.current = MultiplyMatrixMatrix(matrix, direction.current);
         UpdateClipMatrix();
         break;
     case 3:
-        texture_current = MultiplyMatrixMatrix(matrix, texture_current);
+        texture.current = MultiplyMatrixMatrix(matrix, texture.current);
         break;
     }
 }
@@ -351,6 +355,16 @@ void GeometryEngine::AddVertex16() {
     current_vertex.x = (s16)(parameter1 & 0xFFFF);
     current_vertex.y = (s16)(parameter1 >> 16);
     current_vertex.z = (s16)(parameter2 & 0xFFFF);
+
+    AddVertex();
+}
+
+void GeometryEngine::AddVertex10() {
+    u32 parameter = DequeueEntry().parameter;
+
+    current_vertex.x = (s16)((parameter & 0x000003FF) << 6);
+    current_vertex.y = (s16)((parameter & 0x000FFC00) >> 4);
+    current_vertex.z = (s16)((parameter & 0x3FF00000) >> 14);
 
     AddVertex();
 }
@@ -432,4 +446,10 @@ void GeometryEngine::SetVertexYZ() {
     current_vertex.z = (s16)(parameter >> 16);
 
     AddVertex();
+}
+
+void GeometryEngine::BoxTest() {
+    DequeueEntry();
+    DequeueEntry();
+    DequeueEntry();
 }

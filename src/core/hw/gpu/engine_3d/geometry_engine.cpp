@@ -29,7 +29,6 @@ void GeometryEngine::Reset() {
     gxfifo = 0;
     gxfifo_write_count = 0;
     matrix_mode = 0;
-    modelview_pointer = 0;
     vertex_ram_size = 0;
     screen_x1 = screen_x2 = screen_y1 = screen_y2 = 0;
 
@@ -164,6 +163,9 @@ void GeometryEngine::InterpretCommand() {
         case 0x13:
             StoreCurrentMatrix();
             break;
+        case 0x14:
+            RestoreCurrentMatrix();
+            break;
         case 0x15:
             LoadUnitMatrix();
             break;
@@ -199,6 +201,9 @@ void GeometryEngine::InterpretCommand() {
             break;
         case 0x23:
             AddVertex16();
+            break;
+        case 0x24:
+            AddVertex10();
             break;
         case 0x25:
             SetVertexXY();
@@ -248,6 +253,9 @@ void GeometryEngine::InterpretCommand() {
         case 0x60:
             SetViewport();
             break;
+        case 0x70:
+            BoxTest();
+            break;
         default:
             log_fatal("[Geometry Engine] Unknown geometry command %02x", command);
             if (param_table[command] == 0) {
@@ -287,7 +295,7 @@ void GeometryEngine::CheckGXFIFOInterrupt() {
 }
 
 void GeometryEngine::UpdateClipMatrix() {
-    clip_current = MultiplyMatrixMatrix(modelview_current, projection_current);
+    clip = MultiplyMatrixMatrix(modelview.current, projection.current);
 }
 
 auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix {
@@ -365,7 +373,7 @@ void GeometryEngine::AddVertex() {
 
     current_vertex.w = 1 << 12;
     vertex_ram[vertex_ram_size] = current_vertex;
-    vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(vertex_ram[vertex_ram_size], clip_current);
+    vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(vertex_ram[vertex_ram_size], clip);
 
     vertex_ram_size++;
 }
@@ -374,12 +382,12 @@ u32 GeometryEngine::ReadClipMatrix(u32 addr) {
     int x = (addr - 0x04000640) % 4;
     int y = (addr - 0x04000640) / 4;
 
-    return clip_current.field[y][x];
+    return clip.field[y][x];
 }
 
 u32 GeometryEngine::ReadVectorMatrix(u32 addr) {
     int x = (addr - 0x04000680) % 3;
     int y = (addr - 0x04000680) / 3;
 
-    return direction_current.field[y][x];
+    return direction.current.field[y][x];
 }

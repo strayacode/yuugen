@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common/types.h>
-#include <string.h>
 
 class Matrix {
 public:

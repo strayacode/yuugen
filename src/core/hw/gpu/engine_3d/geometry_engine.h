@@ -4,6 +4,7 @@
 #include <common/matrix.h>
 #include <common/vertex.h>
 #include <common/polygon.h>
+#include <common/matrix_stack.h>
 #include <common/log.h>
 #include <common/circular_buffer.h>
 #include <functional>
@@ -63,6 +64,7 @@ public:
     void PushCurrentMatrix();
     void StoreCurrentMatrix();
     void PopCurrentMatrix();
+    void RestoreCurrentMatrix();
     void LoadUnitMatrix();
     void Load4x4();
     void Load4x3();
@@ -80,6 +82,7 @@ public:
     void EndVertexList();
     void SetVertexColour();
     void AddVertex16();
+    void AddVertex10();
     void SetTexturePaletteAddress();
     void SetTextureCoordinates();
     void SetRelativeVertexCoordinates();
@@ -95,6 +98,7 @@ public:
     void SetSpecularReflectEmission();
     void SetLightColour();
     void SetNormalVector();
+    void BoxTest();
 
     u32 gxstat;
     u32 gxfifo;
@@ -104,17 +108,11 @@ public:
     std::queue<Entry> fifo;
     std::queue<Entry> pipe;
 
-    Matrix projection_stack;
-    Matrix projection_current;
-    Matrix modelview_stack[31];
-    Matrix modelview_current;
-    Matrix direction_stack[31];
-    Matrix direction_current;
-    Matrix texture_stack;
-    Matrix texture_current;
-    Matrix clip_current;
-
-    int modelview_pointer;
+    MatrixStack<1> projection;
+    MatrixStack<31> modelview;
+    MatrixStack<31> direction;
+    MatrixStack<1> texture;
+    Matrix clip;
 
     GeometryEngineState state;
 
@@ -123,10 +121,10 @@ public:
 
     Vertex current_vertex;
 
-    u8 screen_x1;
-    u8 screen_x2;
-    u8 screen_y1;
-    u8 screen_y2;
+    u32 screen_x1;
+    u32 screen_x2;
+    u32 screen_y1;
+    u32 screen_y2;
 
     GPU* gpu;
 };

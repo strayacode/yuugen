@@ -218,6 +218,8 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
             return hw->ipc.IPCFIFOCNT9;
         case 0x040001A0:
             return hw->cartridge.AUXSPICNT;
+        case 0x040001A2:
+            return hw->cartridge.AUXSPIDATA;
         case 0x04000204:
             return hw->EXMEMCNT;
         case 0x04000208:
@@ -782,6 +784,9 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             break;
         case 0x040001A0:
             hw->cartridge.WriteAUXSPICNT(data);
+            break;
+        case 0x040001A2:
+            hw->cartridge.WriteAUXSPIDATA(data);
             break;
         case 0x04000204:
             hw->EXMEMCNT = data;

@@ -1,6 +1,7 @@
 add_library(common
     types.h log.h
     memory_helpers.h matrix.h
+    matrix_stack.h
     polygon.h vertex.h
     log_file.h lut_helpers.h
     arithmetic.h
