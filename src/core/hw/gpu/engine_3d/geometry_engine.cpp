@@ -285,7 +285,7 @@ void GeometryEngine::InterpretCommand() {
 
             break;
         }
-        
+
         busy = true;
         gpu->hw->scheduler.Add(1, [this]() {
             busy = false;
@@ -315,13 +315,16 @@ void GeometryEngine::UpdateClipMatrix() {
     clip = MultiplyMatrixMatrix(modelview.current, projection.current);
 }
 
-auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix {
+Matrix GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) {
     Matrix new_matrix;
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
+            s64 result = 0;
             for (int i = 0; i < 4; i++) {
-                new_matrix.field[y][x] += ((s64)a.field[y][i] * (s64)b.field[i][x]) >> 12;
-            } 
+                result += ((s64)a.field[y][i] * b.field[i][x]);
+            }
+
+            new_matrix.field[y][x] = result >> 12;
         }
     }
     return new_matrix;
@@ -356,20 +359,8 @@ void GeometryEngine::DoSwapBuffers() {
         Vertex render_vertex;
 
         if (vertex_ram[i].w != 0) {
-            // u16 screen_width = (screen_x2 - screen_x1 + 1) & 0x1FF;
-            // u16 screen_height = (screen_y2 - screen_y1 + 1) & 0xFF;
-            // s64 render_x = (((s64)(vertex_ram[i].x + vertex_ram[i].w) * screen_width) / (2 * vertex_ram[i].w)) + screen_x1;
-            // s64 render_y = (((-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height) / (2 * vertex_ram[i].w)) + screen_y1;
-            // // TODO: update z coord here
-            // render_x &= 0x1FF;
-            // render_y &= 0xFF;
             int render_x = (( vertex_ram[i].x * 128) / vertex_ram[i].w) + 128;
             int render_y = ((-vertex_ram[i].y * 96)  / vertex_ram[i].w) + 96;
-            // int render_x = vertex_ram[i].x * 128 / vertex_ram[i].w + 128;
-            // int render_y = -vertex_ram[i].y * 96 / vertex_ram[i].w + 96;
-            // render_x &= 0x1FF;
-            // render_y &= 0xFF;
-            // log_file->Log("%d %d\n", render_x, render_y);
 
             render_vertex.x = render_x;
             render_vertex.y = render_y;
@@ -390,9 +381,7 @@ void GeometryEngine::AddVertex() {
 
     current_vertex.w = 1 << 12;
     vertex_ram[vertex_ram_size] = current_vertex;
-    log_file->Log("before add vertex %d %d %d %d\n", vertex_ram[vertex_ram_size].x, vertex_ram[vertex_ram_size].y, vertex_ram[vertex_ram_size].z, vertex_ram[vertex_ram_size].w);
     vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(vertex_ram[vertex_ram_size], clip);
-    log_file->Log("add vertex %d %d %d %d\n", vertex_ram[vertex_ram_size].x, vertex_ram[vertex_ram_size].y, vertex_ram[vertex_ram_size].z, vertex_ram[vertex_ram_size].w);
     
     vertex_ram_size++;
 }
@@ -409,4 +398,25 @@ u32 GeometryEngine::ReadVectorMatrix(u32 addr) {
     int y = (addr - 0x04000680) / 3;
 
     return direction.current.field[y][x];
+}
+
+void GeometryEngine::DebugMatrixStacks() {
+    log_file->Log("projection:\n");
+    DebugMatrix(projection.current);
+    log_file->Log("modelview:\n");
+    DebugMatrix(modelview.current);
+    log_file->Log("direction:\n");
+    DebugMatrix(direction.current);
+    log_file->Log("texture:\n");
+    DebugMatrix(texture.current);
+}
+
+void GeometryEngine::DebugMatrix(const Matrix& a) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            log_file->Log("%d ", a.field[i][j]);
+        }
+
+        log_file->Log("\n");
+    }
 }

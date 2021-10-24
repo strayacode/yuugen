@@ -51,7 +51,7 @@ public:
     void InterpretCommand();
     void CheckGXFIFOInterrupt();
     void UpdateClipMatrix();
-    auto MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> Matrix;
+    Matrix MultiplyMatrixMatrix(const Matrix& a, const Matrix& b);
     auto MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex;
     void PrintMatrix(const Matrix& a);
     void PrintVertex(const Vertex& a);
@@ -101,6 +101,9 @@ public:
     void SetLightColour();
     void SetNormalVector();
     void BoxTest();
+
+    void DebugMatrixStacks();
+    void DebugMatrix(const Matrix& a);
 
     u32 gxstat;
     u32 gxfifo;

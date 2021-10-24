@@ -224,6 +224,9 @@ void GeometryEngine::Multiply4x3() {
         }
     }
 
+    log_file->Log("4x3 matrix thingo:\n");
+    DebugMatrix(matrix);
+
     switch (matrix_mode) {
     case 0:
         projection.current = MultiplyMatrixMatrix(matrix, projection.current);
