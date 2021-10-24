@@ -22,6 +22,9 @@ void RenderEngine::Render() {
 
     for (int i = 0; i < vertex_ram_size; i++) {
         Vertex vertex = vertex_ram[i];
-        framebuffer[(vertex.y * 256) + vertex.x] = 0xFFFFFFFF;
+        
+        if ((vertex.x >= 0 && vertex.x < 256) && (vertex.y >= 0 && vertex.y < 192)) {
+            framebuffer[(vertex.y * 256) + vertex.x] = 0xFFFFFFFF;
+        }
     }
 }

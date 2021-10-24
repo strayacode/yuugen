@@ -4,6 +4,7 @@
 // to abstract matrix stacks
 #include <common/types.h>
 #include <common/matrix.h>
+#include <common/log.h>
 
 template <int size>
 class MatrixStack {
@@ -25,10 +26,10 @@ public:
     void Store(int offset) {
         if (size == 1) {
             stack[0] = current;
-        } else if (offset == size) {
-            error = true;
-        } else {
+        } else if (offset < size) {
             stack[offset] = current;
+        } else {
+            error = true;
         }
     }
 
@@ -49,16 +50,14 @@ public:
     void Restore(int offset) {
         if (size == 1) {
             current = stack[0];
-            stack[0] = current;
-        } else if (offset == size) {
-            error = true;
-        } else {
+        } else if (offset < size) {
             current = stack[offset];
+        } else {
+            error = true;
         }
     }
 
     Matrix stack[size];
-
     Matrix current;
     bool error;
     int pointer;

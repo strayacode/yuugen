@@ -21,7 +21,7 @@ static constexpr std::array<int, 256> param_table = {{
 }};
 
 GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {
-
+    log_file = std::make_unique<LogFile>("../../log-stuff/yuugen.log");
 }
 
 void GeometryEngine::Reset() {
@@ -152,45 +152,59 @@ void GeometryEngine::InterpretCommand() {
     if (total_size >= param_count) {
         switch (command) {
         case 0x10:
+            // CHECK
             SetMatrixMode();
             break;
         case 0x11:
+            // CHECK
             PushCurrentMatrix();
             break;
         case 0x12:
+            // CHECK
             PopCurrentMatrix();
             break;
         case 0x13:
+            // CHECK
             StoreCurrentMatrix();
             break;
         case 0x14:
+            // CHECK
             RestoreCurrentMatrix();
             break;
         case 0x15:
+            // CHECK
             LoadUnitMatrix();
             break;
         case 0x16:
+            // CHECK
             Load4x4();
             break;
         case 0x17:
+            // CHECK
             Load4x3();
             break;
         case 0x18:
+            // CHECK
             Multiply4x4();
             break;
         case 0x19:
+            // CHECK
             Multiply4x3();
             break;
         case 0x1A:
+            // CHECK
             Multiply3x3();
             break;
         case 0x1B:
+            // CHECK
             MultiplyScale();
             break;
         case 0x1C:
+            // CHECK
             MultiplyTranslation();
             break;
         case 0x20:
+            // CHECK
             SetVertexColour();
             break;
         case 0x21:
@@ -200,6 +214,7 @@ void GeometryEngine::InterpretCommand() {
             SetTextureCoordinates();
             break;
         case 0x23:
+            // CHECK
             AddVertex16();
             break;
         case 0x24:
@@ -242,12 +257,14 @@ void GeometryEngine::InterpretCommand() {
             SetShininess();
             break;
         case 0x40:
+            // CHECK
             BeginVertexList();
             break;
         case 0x41:
             EndVertexList();
             break;
         case 0x50:
+            // CHECK
             SwapBuffers();
             break;
         case 0x60:
@@ -302,10 +319,8 @@ auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> M
     Matrix new_matrix;
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            s64 value = 0;
             for (int i = 0; i < 4; i++) {
-                value += (s64)a.field[y][i] * (s64)b.field[i][x];
-                new_matrix.field[y][x] = (s32)(value >> 12);
+                new_matrix.field[y][x] += ((s64)a.field[y][i] * (s64)b.field[i][x]) >> 12;
             } 
         }
     }
@@ -314,10 +329,10 @@ auto GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) -> M
 
 auto GeometryEngine::MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex {
     Vertex new_vertex;
-    new_vertex.x = (s32)((s64)a.x * b.field[0][0] + (s64)a.y * b.field[1][0] + (s64)a.z * b.field[2][0] + (s64)a.w * b.field[3][0]) >> 12;
-    new_vertex.y = (s32)((s64)a.x * b.field[0][1] + (s64)a.y * b.field[1][1] + (s64)a.z * b.field[2][1] + (s64)a.w * b.field[3][1]) >> 12;
-    new_vertex.z = (s32)((s64)a.x * b.field[0][2] + (s64)a.y * b.field[1][2] + (s64)a.z * b.field[2][2] + (s64)a.w * b.field[3][2]) >> 12;
-    new_vertex.w = (s32)((s64)a.x * b.field[0][3] + (s64)a.y * b.field[1][3] + (s64)a.z * b.field[2][3] + (s64)a.w * b.field[3][3]) >> 12;
+    new_vertex.x = ((s64)a.x * b.field[0][0] + (s64)a.y * b.field[1][0] + (s64)a.z * b.field[2][0] + (s64)a.w * b.field[3][0]) >> 12;
+    new_vertex.y = ((s64)a.x * b.field[0][1] + (s64)a.y * b.field[1][1] + (s64)a.z * b.field[2][1] + (s64)a.w * b.field[3][1]) >> 12;
+    new_vertex.z = ((s64)a.x * b.field[0][2] + (s64)a.y * b.field[1][2] + (s64)a.z * b.field[2][2] + (s64)a.w * b.field[3][2]) >> 12;
+    new_vertex.w = ((s64)a.x * b.field[0][3] + (s64)a.y * b.field[1][3] + (s64)a.z * b.field[2][3] + (s64)a.w * b.field[3][3]) >> 12;
 
     return new_vertex;
 }
@@ -341,24 +356,26 @@ void GeometryEngine::DoSwapBuffers() {
         Vertex render_vertex;
 
         if (vertex_ram[i].w != 0) {
-            u16 screen_width = (screen_x2 - screen_x1 + 1) & 0x1FF;
-            u16 screen_height = (screen_y2 - screen_y1 + 1) & 0xFF;
-            s64 render_x = (((s64)(vertex_ram[i].x + vertex_ram[i].w) * screen_width) / (2 * vertex_ram[i].w)) + screen_x1;
-            s64 render_y = (((-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height) / (2 * vertex_ram[i].w)) + screen_y1;
-            // TODO: update z coord here
-            render_x &= 0x1FF;
-            render_y &= 0xFF;
+            // u16 screen_width = (screen_x2 - screen_x1 + 1) & 0x1FF;
+            // u16 screen_height = (screen_y2 - screen_y1 + 1) & 0xFF;
+            // s64 render_x = (((s64)(vertex_ram[i].x + vertex_ram[i].w) * screen_width) / (2 * vertex_ram[i].w)) + screen_x1;
+            // s64 render_y = (((-(s64)vertex_ram[i].y + vertex_ram[i].w) * screen_height) / (2 * vertex_ram[i].w)) + screen_y1;
+            // // TODO: update z coord here
+            // render_x &= 0x1FF;
+            // render_y &= 0xFF;
+            int render_x = (( vertex_ram[i].x * 128) / vertex_ram[i].w) + 128;
+            int render_y = ((-vertex_ram[i].y * 96)  / vertex_ram[i].w) + 96;
+            // int render_x = vertex_ram[i].x * 128 / vertex_ram[i].w + 128;
+            // int render_y = -vertex_ram[i].y * 96 / vertex_ram[i].w + 96;
+            // render_x &= 0x1FF;
+            // render_y &= 0xFF;
+            // log_file->Log("%d %d\n", render_x, render_y);
 
             render_vertex.x = render_x;
             render_vertex.y = render_y;
             render_vertex.colour = vertex_ram[i].colour;
-        } else {
-            render_vertex.x = 0;
-            render_vertex.y = 0;
-            render_vertex.z = 0;
-        }
-
-        gpu->render_engine.vertex_ram[i] = render_vertex;
+            gpu->render_engine.vertex_ram[i] = render_vertex;
+        }        
     }
 
     gpu->render_engine.vertex_ram_size = vertex_ram_size;
@@ -373,8 +390,10 @@ void GeometryEngine::AddVertex() {
 
     current_vertex.w = 1 << 12;
     vertex_ram[vertex_ram_size] = current_vertex;
+    log_file->Log("before add vertex %d %d %d %d\n", vertex_ram[vertex_ram_size].x, vertex_ram[vertex_ram_size].y, vertex_ram[vertex_ram_size].z, vertex_ram[vertex_ram_size].w);
     vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(vertex_ram[vertex_ram_size], clip);
-
+    log_file->Log("add vertex %d %d %d %d\n", vertex_ram[vertex_ram_size].x, vertex_ram[vertex_ram_size].y, vertex_ram[vertex_ram_size].z, vertex_ram[vertex_ram_size].w);
+    
     vertex_ram_size++;
 }
 

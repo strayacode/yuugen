@@ -7,9 +7,11 @@
 #include <common/matrix_stack.h>
 #include <common/log.h>
 #include <common/circular_buffer.h>
+#include <common/log_file.h>
 #include <functional>
 #include <queue>
 #include <array>
+#include <memory>
 
 struct Entry {
     u8 command = 0;
@@ -127,4 +129,6 @@ public:
     u32 screen_y2;
 
     GPU* gpu;
+
+    std::unique_ptr<LogFile> log_file;
 };

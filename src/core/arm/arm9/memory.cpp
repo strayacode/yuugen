@@ -182,6 +182,10 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
             return hw->gpu.engine_a.BGCNT[2];
         case 0x0400000E:
             return hw->gpu.engine_a.BGCNT[3];
+        case 0x04000044:
+            return hw->gpu.engine_a.WINV[0];
+        case 0x04000046:
+            return hw->gpu.engine_a.WINV[1];
         case 0x04000048:
             return hw->gpu.engine_a.WININ;
         case 0x0400004A:
@@ -242,6 +246,10 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
             return hw->gpu.engine_b.BGCNT[2];
         case 0x0400100E:
             return hw->gpu.engine_b.BGCNT[3];
+        case 0x04001044:
+            return hw->gpu.engine_b.WINV[0];
+        case 0x04001046:
+            return hw->gpu.engine_b.WINV[1];
         case 0x04001048:
             return hw->gpu.engine_b.WININ;
         case 0x0400104A:
@@ -332,6 +340,14 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
             return (hw->gpu.engine_a.BGCNT[1] << 16) | (hw->gpu.engine_a.BGCNT[0]);
         case 0x0400000C:
             return (hw->gpu.engine_a.BGCNT[3] << 16) | (hw->gpu.engine_a.BGCNT[2]);
+        case 0x04000010:
+            return (hw->gpu.engine_a.BGHOFS[0] << 16) | (hw->gpu.engine_a.BGVOFS[0]);
+        case 0x04000014:
+            return (hw->gpu.engine_a.BGHOFS[1] << 16) | (hw->gpu.engine_a.BGVOFS[1]);
+        case 0x04000018:
+            return (hw->gpu.engine_a.BGHOFS[2] << 16) | (hw->gpu.engine_a.BGVOFS[2]);
+        case 0x0400001C:
+            return (hw->gpu.engine_a.BGHOFS[3] << 16) | (hw->gpu.engine_a.BGVOFS[3]);
         case 0x04000048:
             return (hw->gpu.engine_a.WINOUT << 16) | hw->gpu.engine_a.WININ;
         case 0x0400004C:
@@ -427,6 +443,14 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
             return hw->gpu.geometry_engine.ReadGXSTAT();
         case 0x04001000:
             return hw->gpu.engine_b.DISPCNT;
+        case 0x04001010:
+            return (hw->gpu.engine_b.BGHOFS[0] << 16) | (hw->gpu.engine_b.BGVOFS[0]);
+        case 0x04001014:
+            return (hw->gpu.engine_b.BGHOFS[1] << 16) | (hw->gpu.engine_b.BGVOFS[1]);
+        case 0x04001018:
+            return (hw->gpu.engine_b.BGHOFS[2] << 16) | (hw->gpu.engine_b.BGVOFS[2]);
+        case 0x0400101C:
+            return (hw->gpu.engine_b.BGHOFS[3] << 16) | (hw->gpu.engine_b.BGVOFS[3]);
         case 0x04004000:
             return 0;
         case 0x04004008:

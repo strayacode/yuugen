@@ -23,6 +23,26 @@ void GeometryEngine::PushCurrentMatrix() {
     }
 }
 
+void GeometryEngine::PopCurrentMatrix() {
+    u32 parameter = DequeueEntry().parameter;
+    s8 offset = ((s8)(parameter & 0x3F) << 2) >> 2;
+
+    switch (matrix_mode) {
+    case 0:
+        projection.Pop(offset);
+        UpdateClipMatrix();
+        break;
+    case 1: case 2:
+        modelview.Pop(offset);
+        direction.Pop(offset);
+        UpdateClipMatrix();
+        break;
+    case 3:
+        texture.Pop(offset);
+        break;
+    }
+}
+
 void GeometryEngine::StoreCurrentMatrix() {
     u32 parameter = DequeueEntry().parameter;
     u32 offset = parameter & 0x1F;
@@ -37,26 +57,6 @@ void GeometryEngine::StoreCurrentMatrix() {
         break;
     case 3:
         texture.Store(offset);
-        break;
-    }
-}
-
-void GeometryEngine::PopCurrentMatrix() {
-    u32 parameter = DequeueEntry().parameter;
-    s32 offset = ((s8)(parameter & 0x3F) << 26) >> 26;
-
-    switch (matrix_mode) {
-    case 0:
-        projection.Pop(offset);
-        UpdateClipMatrix();
-        break;
-    case 1: case 2:
-        modelview.Pop(offset);
-        direction.Pop(offset);
-        UpdateClipMatrix();
-        break;
-    case 3:
-        texture.Pop(offset);
         break;
     }
 }
@@ -84,24 +84,22 @@ void GeometryEngine::RestoreCurrentMatrix() {
 void GeometryEngine::LoadUnitMatrix() {
     DequeueEntry();
 
-    Matrix unit_matrix;
-
     switch (matrix_mode) {
     case 0:
-        projection.current = unit_matrix;
+        projection.current = Matrix();
         UpdateClipMatrix();
         break;
     case 1:
-        modelview.current = unit_matrix;
+        modelview.current = Matrix();
         UpdateClipMatrix();
         break;
     case 2:
-        modelview.current = unit_matrix;
-        direction.current = unit_matrix;
+        modelview.current = Matrix();
+        direction.current = Matrix();
         UpdateClipMatrix();
         break;
     case 3:
-        texture.current = unit_matrix;
+        texture.current = Matrix();
         break;
     }
 }
@@ -111,8 +109,7 @@ void GeometryEngine::Load4x4() {
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            u32 parameter = DequeueEntry().parameter;
-            matrix.field[y][x] = (s32)parameter;
+            matrix.field[y][x] = DequeueEntry().parameter;
         }
     }
 
@@ -141,8 +138,7 @@ void GeometryEngine::Load4x3() {
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 3; x++) {
-            u32 parameter = DequeueEntry().parameter;
-            matrix.field[y][x] = (s32)parameter;
+            matrix.field[y][x] = DequeueEntry().parameter;
         }
     }
 
@@ -195,8 +191,7 @@ void GeometryEngine::Multiply4x4() {
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            u32 parameter = DequeueEntry().parameter;
-            matrix.field[y][x] = (s32)parameter;
+            matrix.field[y][x] = DequeueEntry().parameter;
         }
     }
 
@@ -225,8 +220,7 @@ void GeometryEngine::Multiply4x3() {
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 3; x++) {
-            u32 parameter = DequeueEntry().parameter;
-            matrix.field[y][x] = (s32)parameter;
+            matrix.field[y][x] = DequeueEntry().parameter;
         }
     }
 
@@ -254,8 +248,7 @@ void GeometryEngine::MultiplyTranslation() {
     Matrix matrix;
 
     for (int i = 0; i < 3; i++) {
-        u32 parameter = DequeueEntry().parameter;
-        matrix.field[3][i] = (s32)parameter;
+        matrix.field[3][i] = DequeueEntry().parameter;
     }
 
     switch (matrix_mode) {
@@ -282,8 +275,7 @@ void GeometryEngine::MultiplyScale() {
     Matrix matrix;
 
     for (int i = 0; i < 3; i++) {
-        u32 parameter = DequeueEntry().parameter;
-        matrix.field[i][i] = (s32)parameter;
+        matrix.field[i][i] = DequeueEntry().parameter;
     }
 
     switch (matrix_mode) {
@@ -306,8 +298,7 @@ void GeometryEngine::Multiply3x3() {
 
     for (int y = 0; y < 3; y++) {
         for (int x = 0; x < 3; x++) {
-            u32 parameter = DequeueEntry().parameter;
-            matrix.field[y][x] = (s32)parameter;
+            matrix.field[y][x] = DequeueEntry().parameter;
         }
     }
 
@@ -335,7 +326,7 @@ void GeometryEngine::BeginVertexList() {
     // TODO: handle polygon rendering later
     DequeueEntry();
 
-    vertex_ram_size = 0;
+    // vertex_ram_size = 0;
 }
 
 void GeometryEngine::EndVertexList() {
