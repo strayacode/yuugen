@@ -25,12 +25,28 @@ void RenderEngine::Render() {
     for (int i = 0; i < polygon_ram_size; i++) {
         Polygon polygon = polygon_ram[i];
 
+        // int y_min = 256;
+        // int y_max = 0;
+
+        // // find the index of the 2 vertices that have the lowest and highest y value
         for (int j = 0; j < polygon.size; j++) {
-            Vertex vertex = polygon.vertices[j];
+            Vertex vertex = NormaliseVertex(polygon.vertices[j]);
 
             if ((vertex.x >= 0 && vertex.x < 256) && (vertex.y >= 0 && vertex.y < 192)) {
                 framebuffer[(vertex.y * 256) + vertex.x] = 0xFFFFFFFF;
             }
         }
     }
+}
+
+Vertex RenderEngine::NormaliseVertex(Vertex vertex) {
+    Vertex render_vertex;
+
+    if (vertex.w != 0) {
+        render_vertex.x = (( vertex.x * 128) / vertex.w) + 128;
+        render_vertex.y = ((-vertex.y * 96)  / vertex.w) + 96;
+    }
+
+    render_vertex.colour = vertex.colour;
+    return render_vertex;
 }

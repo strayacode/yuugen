@@ -119,7 +119,6 @@ void GeometryEngine::QueueEntry(Entry entry) {
 
 Entry GeometryEngine::DequeueEntry() {
     Entry entry = pipe.front();
-
     pipe.pop();
     
     // if the pipe is running half empty
@@ -343,13 +342,6 @@ void GeometryEngine::PrintVertex(const Vertex& a) {
 
 void GeometryEngine::DoSwapBuffers() {
     for (int i = 0; i < vertex_ram_size; i++) {
-        Vertex render_vertex;
-
-        if (vertex_ram[i].w != 0) {
-            vertex_ram[i].x = (( vertex_ram[i].x * 128) / vertex_ram[i].w) + 128;
-            vertex_ram[i].y = ((-vertex_ram[i].y * 96)  / vertex_ram[i].w) + 96;
-        }
-
         gpu->render_engine.vertex_ram[i] = vertex_ram[i];
     }
 
