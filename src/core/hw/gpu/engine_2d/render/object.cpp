@@ -10,33 +10,21 @@ void GPU2D::RenderObjects(u16 line) {
     // assume 1d mapping for now
     // each object in oam consists of 6 bytes
     // with 2 bytes for each attribute
-
-    // loop through every object
-    // to see if they lie within the current line
     for (int i = 0; i < 128; i++) {
-        u16 attribute[3];
-
-        // obtain the attributes for the current object
-        attribute[0] = ReadOAM<u16>(i * 8);
-        attribute[1] = ReadOAM<u16>((i * 8) + 2);
-        attribute[2] = ReadOAM<u16>((i * 8) + 4);
+        u16 attribute[3] = {
+            ReadOAM<u16>(i * 8),
+            ReadOAM<u16>((i * 8) + 2),
+            ReadOAM<u16>((i * 8) + 4),
+        };
 
         u8 shape = (attribute[0] >> 14) & 0x3;
         u8 size = (attribute[1] >> 14) & 0x3;
-
-        // get the y coordinate of the object
         u16 y = attribute[0] & 0xFF;
-
-        // get the x coordinate of the object
         u16 x = attribute[1] & 0x1FF;
-
-        // now we must determine the width and height of the object
         u8 width;
         u8 height;
-
         u8 horizontal_flip = (attribute[1] >> 12) & 0x1;
         u8 vertical_flip = (attribute[1] >> 13) & 0x1;
-
         u8 priority = (attribute[2] >> 10) & 0x3;
 
         width = dimensions[shape][size][0];
@@ -44,8 +32,8 @@ void GPU2D::RenderObjects(u16 line) {
         
         u16 height_difference = line - y;
 
+        // check if an object should be rendered on the current scanline
         if (height_difference < 0 || height_difference >= height) {
-            // then don't render the object and move onto the next one
             continue;
         }
 
@@ -61,11 +49,8 @@ void GPU2D::RenderObjects(u16 line) {
         }
 
         u32 tile_number = attribute[2] & 0x3FF;
-
-        u32 bound = (DISPCNT & (1 << 4)) ? (32 << ((DISPCNT >> 20) & 0x3)): 32; 
-
+        u32 bound = (DISPCNT & (1 << 4)) ? (32 << ((DISPCNT >> 20) & 0x3)) : 32; 
         u32 obj_base = obj_addr + (tile_number * bound);
-
         u8 palette_number = (attribute[2] >> 12) & 0xF;
 
         if (attribute[0] & (1 << 13)) {
