@@ -1,5 +1,6 @@
 #include <core/hw/gpu/engine_3d/render_engine.h>
 #include <core/hw/gpu/gpu.h>
+#include <common/slope.h>
 
 RenderEngine::RenderEngine(GPU* gpu) : gpu(gpu) {
 
@@ -21,19 +22,33 @@ void RenderEngine::Reset() {
 void RenderEngine::Render() {
     memset(framebuffer, 0, 256 * 192 * sizeof(u32));
 
-    // iterate through all the polygons instead and use our line interpolation stuff
     for (int i = 0; i < polygon_ram_size; i++) {
         Polygon polygon = polygon_ram[i];
 
-        // int y_min = 256;
-        // int y_max = 0;
-
-        // // find the index of the 2 vertices that have the lowest and highest y value
+        // for each vertex in the polygon we want to draw a line from that vertex to the next vertex
         for (int j = 0; j < polygon.size; j++) {
-            Vertex vertex = NormaliseVertex(polygon.vertices[j]);
+            int next = (j == polygon.size - 1) ? 0 : (j + 1);
 
-            if ((vertex.x >= 0 && vertex.x < 256) && (vertex.y >= 0 && vertex.y < 192)) {
-                framebuffer[(vertex.y * 256) + vertex.x] = 0xFFFFFFFF;
+            Vertex vertex = NormaliseVertex(polygon.vertices[j]);
+            Vertex next_vertex = NormaliseVertex(polygon.vertices[next]);
+
+            s32 x0 = vertex.x;
+            s32 x1 = next_vertex.x;
+            s32 y0 = vertex.y;
+            s32 y1 = next_vertex.y;
+            
+            for (int line = 0; line < 192; line++) {
+                if ((line >= y0 && line <= y1) || (line >= y1 && line <= y0)) {
+                    Slope slope;
+                    slope.Setup(x0, x1, y0, y1);
+                    s32 span_start = slope.SpanStart(line);
+                    s32 span_end = slope.SpanEnd(line);
+                    for (int x = span_start; x <= span_end; x++) {
+                        if (x >= 0 && x < 256) {
+                            framebuffer[(line * 256) + x] = 0xFFFFFFFF;
+                        }
+                    }
+                }
             }
         }
     }

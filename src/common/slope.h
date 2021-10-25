@@ -27,7 +27,7 @@ public:
         // lines should always be rendered from top to bottom
         if (y1 < y0) {
             std::swap(x0, x1);
-            std::swap(y0, t1);
+            std::swap(y0, y1);
         }
 
         // store x0 in our line with fractional bits since we are potentially adding a fixed pointer number (bias)
@@ -39,7 +39,7 @@ public:
         negative = x1 < x0;
 
         if (negative) {
-            std::swap(x0, x1)
+            std::swap(x0, x1);
             line.x0--;
         }
 
@@ -101,14 +101,14 @@ public:
     }
     
 private:
-    static constexpr frac_bits = 18;
-    static constexpr one = 1 << frac_bits;
+    static constexpr u32 frac_bits = 18;
+    static constexpr u32 one = 1 << frac_bits;
 
     // bias applied to x start with x major lines
-    static constexpr bias = one >> 1;
+    static constexpr u32 bias = one >> 1;
 
     // mask used to remove the lower 9 fractional bits
-    static constexpr mask = (~0) << (frac_bits / 2);
+    static constexpr u32 mask = (0xFFFFFFFF) << (frac_bits / 2);
 
     Line line;
 

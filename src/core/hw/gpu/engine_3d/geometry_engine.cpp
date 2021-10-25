@@ -373,6 +373,21 @@ void GeometryEngine::AddVertex() {
             AddPolygon();
         }
         break;
+    case PolygonType::Quad:
+        if (vertex_count % 4 == 0) {
+            AddPolygon();
+        }
+        break;
+    case PolygonType::TriangleStrip:
+        if (vertex_count >= 3) {
+            AddPolygon();
+        }
+        break;
+    case PolygonType::QuadStrip:
+        if ((vertex_count >= 4) && (vertex_count % 2 == 0)) {
+            AddPolygon();
+        }
+        break;
     default:
         log_fatal("handle polygon type %d", static_cast<int>(polygon_type));
     }
