@@ -19,6 +19,8 @@ struct Line {
 // these are ones where dx > dy, meaning the line has a gradient from -1 to 1
 // y major lines:
 // these are ones where dy > dx, meaning the line has a gradient greater than 1 or less than -1
+// span:
+// a horizontal line on 1 scanline that represents a small part of a full line
 class Slope {
 public:
     void Setup(s32 x0, s32 x1, s32 y0, s32 y1) {
@@ -62,6 +64,42 @@ public:
             dx *= one;
         }
     }
+
+    // returns the x coordinate of the start of the span with fractional bits
+    s32 FracSpanStart(s32 y) {
+        s32 displacement = (y - line.y0) * dx;
+        if (negative) {
+            return line.x0 - displacement;
+        } else {
+            return line.x0 + displacement;
+        }
+    }
+
+    // returns the x coordinate of the end of the span with fractional bits
+    s32 FracSpanEnd(s32 y) {
+        s32 result = FracSpanStart(y);
+        // y major lines only have 1 pixel per scanline
+        if (x_major) {
+            if (negative) {
+                result = result + (~mask - (result & ~mask)) - dx + one;
+            } else {
+                result = (result & mask) + dx - one;
+            }
+        }
+        
+        return result;
+    }
+
+    // returns the x coordinate of the start of the span without fractional bits
+    s32 SpanStart(s32 y) {
+        return FracSpanStart(y) >> frac_bits;
+    }
+
+    // returns the x coordinate of the end of the span without fractional bits
+    s32 SpanEnd(s32 y) {
+        return FracSpanEnd(y) >> frac_bits;
+    }
+    
 private:
     static constexpr frac_bits = 18;
     static constexpr one = 1 << frac_bits;
