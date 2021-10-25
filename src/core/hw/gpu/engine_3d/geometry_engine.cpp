@@ -28,7 +28,6 @@ void GeometryEngine::Reset() {
     gxstat = 0;
     gxfifo = 0;
     gxfifo_write_count = 0;
-    matrix_mode = 0;
     vertex_ram_size = 0;
     screen_x1 = screen_x2 = screen_y1 = screen_y2 = 0;
 
@@ -41,6 +40,9 @@ void GeometryEngine::Reset() {
     state = GeometryEngineState::Running;
 
     busy = false;
+
+    polygon_type = PolygonType::Triangle;
+    matrix_mode = MatrixMode::Projection;
 }
 
 auto GeometryEngine::ReadGXSTAT() -> u32 {
@@ -152,59 +154,45 @@ void GeometryEngine::InterpretCommand() {
     if (total_size >= param_count) {
         switch (command) {
         case 0x10:
-            // CHECK
             SetMatrixMode();
             break;
         case 0x11:
-            // CHECK
             PushCurrentMatrix();
             break;
         case 0x12:
-            // CHECK
             PopCurrentMatrix();
             break;
         case 0x13:
-            // CHECK
             StoreCurrentMatrix();
             break;
         case 0x14:
-            // CHECK
             RestoreCurrentMatrix();
             break;
         case 0x15:
-            // CHECK
             LoadUnitMatrix();
             break;
         case 0x16:
-            // CHECK
             Load4x4();
             break;
         case 0x17:
-            // CHECK
             Load4x3();
             break;
         case 0x18:
-            // CHECK
             Multiply4x4();
             break;
         case 0x19:
-            // CHECK
             Multiply4x3();
             break;
         case 0x1A:
-            // CHECK
             Multiply3x3();
             break;
         case 0x1B:
-            // CHECK
             MultiplyScale();
             break;
         case 0x1C:
-            // CHECK
             MultiplyTranslation();
             break;
         case 0x20:
-            // CHECK
             SetVertexColour();
             break;
         case 0x21:
@@ -214,7 +202,6 @@ void GeometryEngine::InterpretCommand() {
             SetTextureCoordinates();
             break;
         case 0x23:
-            // CHECK
             AddVertex16();
             break;
         case 0x24:
@@ -257,14 +244,12 @@ void GeometryEngine::InterpretCommand() {
             SetShininess();
             break;
         case 0x40:
-            // CHECK
             BeginVertexList();
             break;
         case 0x41:
             EndVertexList();
             break;
         case 0x50:
-            // CHECK
             SwapBuffers();
             break;
         case 0x60:

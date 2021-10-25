@@ -36,6 +36,22 @@ enum class GeometryEngineState {
     Running,
 };
 
+enum class MatrixMode {
+    Projection = 0,
+    Modelview = 1,
+    Simultaneous = 2,
+    Texture = 3,
+};
+
+enum class PolygonType {
+    Triangle = 0,
+    Quad = 1,
+    TriangleStrip = 2,
+    QuadStrip = 3,
+};
+
+// TODO: add matrix mode enum class
+
 class GPU;
 
 class GeometryEngine {
@@ -108,7 +124,7 @@ public:
     u32 gxstat;
     u32 gxfifo;
     int gxfifo_write_count;
-    u8 matrix_mode;
+    MatrixMode matrix_mode;
     bool busy;
     std::queue<Entry> fifo;
     std::queue<Entry> pipe;
@@ -130,6 +146,8 @@ public:
     u32 screen_x2;
     u32 screen_y1;
     u32 screen_y2;
+
+    PolygonType polygon_type;
 
     GPU* gpu;
 
