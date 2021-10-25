@@ -73,6 +73,7 @@ public:
     void PrintVertex(const Vertex& a);
     void DoSwapBuffers();
     void AddVertex();
+    void AddPolygon();
     u32 ReadClipMatrix(u32 addr);
     u32 ReadVectorMatrix(u32 addr);
 
@@ -118,9 +119,6 @@ public:
     void SetNormalVector();
     void BoxTest();
 
-    void DebugMatrixStacks();
-    void DebugMatrix(const Matrix& a);
-
     u32 gxstat;
     u32 gxfifo;
     int gxfifo_write_count;
@@ -139,8 +137,13 @@ public:
 
     Vertex vertex_ram[6144];
     int vertex_ram_size;
+    int vertex_count;
+
+    Polygon polygon_ram[2048];
+    int polygon_ram_size;
 
     Vertex current_vertex;
+    Polygon current_polygon;
 
     u32 screen_x1;
     u32 screen_x2;

@@ -326,6 +326,7 @@ void GeometryEngine::BeginVertexList() {
     // TODO: handle polygon rendering later
     u32 parameter = DequeueEntry().parameter;
     polygon_type = static_cast<PolygonType>(parameter & 0x3);
+    vertex_count = 0;
 }
 
 void GeometryEngine::EndVertexList() {

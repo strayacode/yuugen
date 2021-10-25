@@ -15,16 +15,22 @@ void RenderEngine::Reset() {
     fog_offset = 0;
     alpha_test_ref = 0;
     memset(framebuffer, 0, 256 * 192 * sizeof(u32));
+    polygon_ram_size = 0;
 }
 
 void RenderEngine::Render() {
     memset(framebuffer, 0, 256 * 192 * sizeof(u32));
 
-    for (int i = 0; i < vertex_ram_size; i++) {
-        Vertex vertex = vertex_ram[i];
-        
-        if ((vertex.x >= 0 && vertex.x < 256) && (vertex.y >= 0 && vertex.y < 192)) {
-            framebuffer[(vertex.y * 256) + vertex.x] = 0xFFFFFFFF;
+    // iterate through all the polygons instead and use our line interpolation stuff
+    for (int i = 0; i < polygon_ram_size; i++) {
+        Polygon polygon = polygon_ram[i];
+
+        for (int j = 0; j < polygon.size; j++) {
+            Vertex vertex = polygon.vertices[j];
+
+            if ((vertex.x >= 0 && vertex.x < 256) && (vertex.y >= 0 && vertex.y < 192)) {
+                framebuffer[(vertex.y * 256) + vertex.x] = 0xFFFFFFFF;
+            }
         }
     }
 }

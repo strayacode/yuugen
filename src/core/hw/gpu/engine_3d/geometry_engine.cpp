@@ -29,6 +29,7 @@ void GeometryEngine::Reset() {
     gxfifo = 0;
     gxfifo_write_count = 0;
     vertex_ram_size = 0;
+    vertex_count = 0;
     screen_x1 = screen_x2 = screen_y1 = screen_y2 = 0;
 
     std::queue<Entry> empty_fifo_queue;
@@ -43,6 +44,7 @@ void GeometryEngine::Reset() {
 
     polygon_type = PolygonType::Triangle;
     matrix_mode = MatrixMode::Projection;
+    polygon_ram_size = 0;
 }
 
 auto GeometryEngine::ReadGXSTAT() -> u32 {
@@ -344,19 +346,23 @@ void GeometryEngine::DoSwapBuffers() {
         Vertex render_vertex;
 
         if (vertex_ram[i].w != 0) {
-            int render_x = (( vertex_ram[i].x * 128) / vertex_ram[i].w) + 128;
-            int render_y = ((-vertex_ram[i].y * 96)  / vertex_ram[i].w) + 96;
+            vertex_ram[i].x = (( vertex_ram[i].x * 128) / vertex_ram[i].w) + 128;
+            vertex_ram[i].y = ((-vertex_ram[i].y * 96)  / vertex_ram[i].w) + 96;
+        }
 
-            render_vertex.x = render_x;
-            render_vertex.y = render_y;
-            render_vertex.colour = vertex_ram[i].colour;
-            gpu->render_engine.vertex_ram[i] = render_vertex;
-        }        
+        gpu->render_engine.vertex_ram[i] = vertex_ram[i];
+    }
+
+    for (int i = 0; i < polygon_ram_size; i++) {
+        gpu->render_engine.polygon_ram[i] = polygon_ram[i];
     }
 
     gpu->render_engine.vertex_ram_size = vertex_ram_size;
+    gpu->render_engine.polygon_ram_size = polygon_ram_size;
 
     vertex_ram_size = 0;
+    vertex_count = 0;
+    polygon_ram_size = 0;
 }
 
 void GeometryEngine::AddVertex() {
@@ -365,10 +371,30 @@ void GeometryEngine::AddVertex() {
     }
 
     current_vertex.w = 1 << 12;
-    vertex_ram[vertex_ram_size] = current_vertex;
-    vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(vertex_ram[vertex_ram_size], clip);
-    
+    vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(current_vertex, clip);
     vertex_ram_size++;
+    vertex_count++;
+
+    switch (polygon_type) {
+    case PolygonType::Triangle:
+        if (vertex_count % 3 == 0) {
+            AddPolygon();
+        }
+        break;
+    default:
+        log_fatal("handle polygon type %d", static_cast<int>(polygon_type));
+    }
+}
+
+void GeometryEngine::AddPolygon() {
+    if (polygon_ram_size >= 2048) {
+        return;
+    }
+
+    int size = 3 + (static_cast<int>(polygon_type) & 0x1);
+    current_polygon.size = size;
+    current_polygon.vertices = &vertex_ram[vertex_ram_size - size];
+    polygon_ram[polygon_ram_size++] = current_polygon;
 }
 
 u32 GeometryEngine::ReadClipMatrix(u32 addr) {
@@ -383,25 +409,4 @@ u32 GeometryEngine::ReadVectorMatrix(u32 addr) {
     int y = (addr - 0x04000680) / 3;
 
     return direction.current.field[y][x];
-}
-
-void GeometryEngine::DebugMatrixStacks() {
-    log_file->Log("projection:\n");
-    DebugMatrix(projection.current);
-    log_file->Log("modelview:\n");
-    DebugMatrix(modelview.current);
-    log_file->Log("direction:\n");
-    DebugMatrix(direction.current);
-    log_file->Log("texture:\n");
-    DebugMatrix(texture.current);
-}
-
-void GeometryEngine::DebugMatrix(const Matrix& a) {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            log_file->Log("%d ", a.field[i][j]);
-        }
-
-        log_file->Log("\n");
-    }
 }
