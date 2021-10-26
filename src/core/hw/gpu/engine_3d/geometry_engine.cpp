@@ -2,8 +2,6 @@
 #include <core/hw/gpu/gpu.h>
 #include <core/hw/hw.h>
 
-EventType geometry_command_event;
-
 static constexpr std::array<int, 256> param_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1, 0, 1, 1, 1, 0, 16, 12, 16, 12, 9, 3, 3, 0, 0, 0,

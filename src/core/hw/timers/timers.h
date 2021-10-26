@@ -6,6 +6,7 @@
 #include <string.h>
 #include <functional>
 #include <memory>
+#include <core/scheduler/scheduler.h>
 
 class HW;
 
@@ -45,4 +46,6 @@ public:
     int arch;
 
     static constexpr int shifts[4] = {0, 6, 8, 10};
+
+    EventType overflow_event[4];
 };

@@ -9,6 +9,7 @@
 #include <string.h>
 #include <functional>
 #include <array>
+#include <core/scheduler/scheduler.h>
 
 class HW;
 
@@ -105,4 +106,7 @@ public:
     u16 VCOUNT;
 
     u32 DISPCAPCNT;
+
+    EventType scanline_start_event;
+    EventType scanline_finish_event;
 };

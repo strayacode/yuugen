@@ -2,8 +2,6 @@
 #include <core/hw/hw.h>
 #include <string>
 
-EventType transfer_event[8];
-
 DMA::DMA(HW* hw, int arch) : hw(hw), arch(arch) {
     
 }
@@ -15,23 +13,19 @@ void DMA::Reset() {
     }
 
     for (int i = 0; i < 4; i++) {
-        transfer_event[(arch * 4) + i] = hw->scheduler.RegisterEvent("DMATransfer" + std::to_string(i), [this, i]() {
+        transfer_event[i] = hw->scheduler.RegisterEvent("DMATransfer" + std::to_string(i), [this, i]() {
             Transfer(i);
         });
     }
 }
 
 void DMA::Transfer(int channel_index) {
-    // make variables to make things easier
     u8 destination_control = (channel[channel_index].DMACNT >> 21) & 0x3;
     u8 source_control = (channel[channel_index].DMACNT >> 23) & 0x3;
-
     u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
-
     int source_adjust = adjust_lut[(channel[channel_index].DMACNT >> 26) & 0x1][source_control];
     int destination_adjust = adjust_lut[(channel[channel_index].DMACNT >> 26) & 0x1][destination_control];
     
-    // check the transfer type (either halfwords or words)
     if (channel[channel_index].DMACNT & (1 << 26)) {
         // word transfer
         // loop through all the data units specified by internal length
@@ -90,7 +84,7 @@ void DMA::Trigger(u8 mode) {
             start_timing = (channel[channel_index].DMACNT >> 28) & 0x3;
         }
         if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == mode)) {
-            hw->scheduler.AddEvent(1, &transfer_event[(arch * 4) + channel_index]);
+            hw->scheduler.AddEvent(1, &transfer_event[channel_index]);
         }
     }
 }
@@ -133,7 +127,7 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     }
 
     if (start_timing == 0) {
-        hw->scheduler.AddEvent(1, &transfer_event[(arch * 4) + channel_index]);
+        hw->scheduler.AddEvent(1, &transfer_event[channel_index]);
     }
 }
 

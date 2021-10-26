@@ -4,6 +4,7 @@
 #include <common/log.h>
 #include <common/types.h>
 #include <functional>
+#include <core/scheduler/scheduler.h>
 
 class HW;
 
@@ -47,4 +48,6 @@ public:
         {2, -2, 0, 2},
         {4, -4, 0, 4},
     };
+
+    EventType transfer_event[4];
 };

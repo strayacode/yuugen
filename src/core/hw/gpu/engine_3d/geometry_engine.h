@@ -11,6 +11,7 @@
 #include <queue>
 #include <array>
 #include <memory>
+#include <core/scheduler/scheduler.h>
 
 struct Entry {
     u8 command = 0;
@@ -152,4 +153,6 @@ public:
     PolygonType polygon_type;
 
     GPU* gpu;
+
+    EventType geometry_command_event;
 };

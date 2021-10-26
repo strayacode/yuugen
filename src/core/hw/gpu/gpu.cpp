@@ -1,9 +1,6 @@
 #include <core/hw/gpu/gpu.h>
 #include <core/hw/hw.h>
 
-EventType scanline_start_event;
-EventType scanline_finish_event;
-
 GPU::GPU(HW* hw) : hw(hw), engine_a(this, 1), engine_b(this , 0), render_engine(this), geometry_engine(this) {
 
 }
