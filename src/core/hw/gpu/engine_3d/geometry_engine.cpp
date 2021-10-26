@@ -2,6 +2,8 @@
 #include <core/hw/gpu/gpu.h>
 #include <core/hw/hw.h>
 
+EventType geometry_command_event;
+
 static constexpr std::array<int, 256> param_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1, 0, 1, 1, 1, 0, 16, 12, 16, 12, 9, 3, 3, 0, 0, 0,
@@ -21,7 +23,7 @@ static constexpr std::array<int, 256> param_table = {{
 }};
 
 GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {
-    log_file = std::make_unique<LogFile>("../../log-stuff/yuugen.log");
+
 }
 
 void GeometryEngine::Reset() {
@@ -45,6 +47,11 @@ void GeometryEngine::Reset() {
     polygon_type = PolygonType::Triangle;
     matrix_mode = MatrixMode::Projection;
     polygon_ram_size = 0;
+
+    geometry_command_event = gpu->hw->scheduler.RegisterEvent("GeometryCommand", [this]() {
+        busy = false;
+        InterpretCommand();
+    });
 }
 
 auto GeometryEngine::ReadGXSTAT() -> u32 {
@@ -273,10 +280,7 @@ void GeometryEngine::InterpretCommand() {
         }
 
         busy = true;
-        gpu->hw->scheduler.Add(1, [this]() {
-            busy = false;
-            InterpretCommand();
-        });
+        gpu->hw->scheduler.AddEvent(1, &geometry_command_event);
     }
 }
 

@@ -1,10 +1,14 @@
 #include <core/hw/dma/dma.h>
 #include <core/hw/hw.h>
+#include <string>
 
+EventType transfer_event[4];
 
 DMA::DMA(HW* hw, int arch) : hw(hw), arch(arch) {
     for (int i = 0; i < 4; i++) {
-        TransferEvent[i] = std::bind(&DMA::Transfer, this, i);
+        transfer_event[i] = hw->scheduler.RegisterEvent("DMATransfer" + std::to_string(i), [this, i]() {
+            Transfer(i);
+        });
     }
 }
 
@@ -84,8 +88,7 @@ void DMA::Trigger(u8 mode) {
             start_timing = (channel[channel_index].DMACNT >> 28) & 0x3;
         }
         if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == mode)) {
-            // activate that dma channel
-            hw->scheduler.Add(1, TransferEvent[channel_index]);
+            hw->scheduler.AddEvent(1, &transfer_event[channel_index]);
         }
     }
 }
@@ -128,7 +131,7 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     }
 
     if (start_timing == 0) {
-        hw->scheduler.Add(1, TransferEvent[channel_index]);
+        hw->scheduler.AddEvent(1, &transfer_event[channel_index]);
     }
 }
 

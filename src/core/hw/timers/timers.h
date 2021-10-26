@@ -26,8 +26,6 @@ public:
     void ActivateChannel(int timer_index);
     void DeactivateChannel(int timer_index);
 
-    int GetEventId(int timer_index);
-
     u16 UpdateCounter(int timer_index);
 
     struct Timer {
@@ -47,6 +45,4 @@ public:
     int arch;
 
     static constexpr int shifts[4] = {0, 6, 8, 10};
-
-    std::function<void()> OverflowEvent[4];
 };

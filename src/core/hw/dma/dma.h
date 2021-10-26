@@ -47,6 +47,4 @@ public:
         {2, -2, 0, 2},
         {4, -4, 0, 4},
     };
-
-    std::function<void()> TransferEvent[4]; 
 };

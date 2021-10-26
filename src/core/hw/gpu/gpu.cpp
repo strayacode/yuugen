@@ -1,6 +1,9 @@
 #include <core/hw/gpu/gpu.h>
 #include <core/hw/hw.h>
 
+EventType scanline_start_event;
+EventType scanline_finish_event;
+
 GPU::GPU(HW* hw) : hw(hw), engine_a(this, 1), engine_b(this , 0), render_engine(this), geometry_engine(this) {
 
 }
@@ -40,10 +43,17 @@ void GPU::Reset() {
     geometry_engine.Reset();
     render_engine.Reset();
 
-    // schedule the first RenderScanlineStart event
-    // we would expect hblank to start at 1536 (256 * 6) cycles
-    // but actually the hblank flag stays 0 until 1606 cycles have passed
-    hw->scheduler.Add(1606, RenderScanlineStartTask);
+    scanline_start_event = hw->scheduler.RegisterEvent("ScanlineStart", [this]() {
+        RenderScanlineStart();
+        hw->scheduler.AddEvent(524, &scanline_finish_event);
+    });
+
+    scanline_finish_event = hw->scheduler.RegisterEvent("ScanlineFinish", [this]() {
+        RenderScanlineFinish();
+        hw->scheduler.AddEvent(1606, &scanline_start_event);
+    });
+
+    hw->scheduler.AddEvent(1606, &scanline_start_event);
 
     MapVRAM();
 }
@@ -79,8 +89,6 @@ void GPU::RenderScanlineStart() {
     if ((VCOUNT > 1) && (VCOUNT < 194)) {
         hw->dma[1].Trigger(3);
     }
-
-    hw->scheduler.Add(524, RenderScanlineFinishTask);
 }
 
 void GPU::RenderScanlineFinish() {
@@ -137,8 +145,6 @@ void GPU::RenderScanlineFinish() {
     } else if (DISPSTAT9 & (1 << 2)) {
         DISPSTAT9 &= ~(1 << 2);
     }
-
-    hw->scheduler.Add(1606, RenderScanlineStartTask);
 }
 
 void GPU::WriteDISPSTAT7(u16 data) {

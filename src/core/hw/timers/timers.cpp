@@ -1,9 +1,13 @@
 #include <core/hw/timers/timers.h>
 #include <core/hw/hw.h>
 
+EventType overflow_event[4];
+
 Timers::Timers(HW* hw, int arch) : hw(hw), arch(arch) {
     for (int i = 0; i < 4; i++) {
-        OverflowEvent[i] = std::bind(&Timers::Overflow, this, i);
+        overflow_event[i] = hw->scheduler.RegisterEvent("TimerOverflow" + std::to_string(i), [this, i]() {
+            Overflow(i);
+        });
     }
 }
 
@@ -83,29 +87,18 @@ void Timers::ActivateChannel(int timer_index) {
     u64 delay = (0x10000 - timer[timer_index].counter) << timer[timer_index].shift;
 
     // now add the event
-    hw->scheduler.AddWithId(delay, GetEventId(timer_index), OverflowEvent[timer_index]);
+    hw->scheduler.AddEvent(delay, &overflow_event[timer_index]);
 }
 
 void Timers::DeactivateChannel(int timer_index) {
-    // update the counter of the timer
     timer[timer_index].counter = UpdateCounter(timer_index);
-
-    // mark the timer as not active anymore
     timer[timer_index].active = false;
 
     if (timer[timer_index].counter >= 0x10000) {
         log_fatal("handle");
     }
 
-    // cancel the event
-    hw->scheduler.Cancel(GetEventId(timer_index));
-}
-
-// TODO: inline small functions later
-int Timers::GetEventId(int timer_index) {
-    int id = TimerEvent + (arch * 4) + timer_index;
-
-    return id;
+    hw->scheduler.CancelEvent(&overflow_event[timer_index]);
 }
 
 u16 Timers::ReadTMCNT_L(int timer_index) {

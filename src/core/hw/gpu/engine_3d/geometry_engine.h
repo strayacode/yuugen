@@ -7,7 +7,6 @@
 #include <common/matrix_stack.h>
 #include <common/log.h>
 #include <common/circular_buffer.h>
-#include <common/log_file.h>
 #include <functional>
 #include <queue>
 #include <array>
@@ -153,6 +152,4 @@ public:
     PolygonType polygon_type;
 
     GPU* gpu;
-
-    std::unique_ptr<LogFile> log_file;
 };
