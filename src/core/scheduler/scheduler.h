@@ -31,7 +31,7 @@ public:
     int CalculateEventIndex(Event& event);
 
     EventType RegisterEvent(std::string name, SchedulerCallback callback);
-private:
+
     u64 current_time;
 
     std::vector<Event> events;
@@ -39,4 +39,6 @@ private:
     // this is increment on each register event call such that each event type is given
     // a unique id
     int current_event_id;
+
+    FILE* log = fopen("../../log-stuff/new.log", "w");
 };

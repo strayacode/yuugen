@@ -2,7 +2,6 @@
 
 void Scheduler::Reset() {
     events.clear();
-
     current_time = 0;
     current_event_id = 0;
 }
@@ -12,7 +11,6 @@ void Scheduler::Tick(int cycles) {
 }
 
 void Scheduler::ResetCurrentTime() {
-    // this will be ran at the start of each frame
     current_time = 0;
 }
 
@@ -30,7 +28,7 @@ int Scheduler::CalculateEventIndex(Event& event) {
    
     while (lower_bound <= upper_bound) {
         int mid = (lower_bound + upper_bound) / 2;
-        
+
         if (event.time > events[mid].time) {
             lower_bound = mid + 1;
         } else {
@@ -70,6 +68,6 @@ EventType Scheduler::RegisterEvent(std::string name, SchedulerCallback callback)
     type.id = current_event_id;
     type.callback = callback;
     current_event_id++;
-
+    
     return type;
 }
