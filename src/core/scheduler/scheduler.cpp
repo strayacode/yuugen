@@ -14,31 +14,6 @@ void Scheduler::ResetCurrentTime() {
     current_time = 0;
 }
 
-u64 Scheduler::GetCurrentTime() {
-    return current_time;
-}
-
-u64 Scheduler::GetEventTime() {
-    return events[0].time;
-}
-
-int Scheduler::CalculateEventIndex(Event& event) {
-    int lower_bound = 0;
-    int upper_bound = events.size() - 1;
-   
-    while (lower_bound <= upper_bound) {
-        int mid = (lower_bound + upper_bound) / 2;
-
-        if (event.time > events[mid].time) {
-            lower_bound = mid + 1;
-        } else {
-            upper_bound = mid - 1;
-        }
-    }
-
-    return lower_bound;
-}
-
 void Scheduler::RunEvents() {
     while (events[0].time <= GetCurrentTime() && events.size() > 0) {
         events[0].type->callback();
@@ -62,6 +37,23 @@ void Scheduler::CancelEvent(EventType* type) {
     }
 }
 
+int Scheduler::CalculateEventIndex(Event& event) {
+    int lower_bound = 0;
+    int upper_bound = events.size() - 1;
+   
+    while (lower_bound <= upper_bound) {
+        int mid = (lower_bound + upper_bound) / 2;
+
+        if (event.time > events[mid].time) {
+            lower_bound = mid + 1;
+        } else {
+            upper_bound = mid - 1;
+        }
+    }
+
+    return lower_bound;
+}
+
 EventType Scheduler::RegisterEvent(std::string name, SchedulerCallback callback) {
     EventType type;
     type.name = name;
@@ -70,4 +62,12 @@ EventType Scheduler::RegisterEvent(std::string name, SchedulerCallback callback)
     current_event_id++;
     
     return type;
+}
+
+u64 Scheduler::GetCurrentTime() const {
+    return current_time;
+}
+
+u64 Scheduler::GetEventTime() const {
+    return events[0].time;
 }

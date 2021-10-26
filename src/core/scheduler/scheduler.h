@@ -24,23 +24,19 @@ class Scheduler {
 public:
     void Reset();
     void Tick(int cycles);
-    u64 GetCurrentTime();
-    u64 GetEventTime();
     void ResetCurrentTime();
     void RunEvents();
     void AddEvent(u64 delay, EventType* type);
     void CancelEvent(EventType* type);
     int CalculateEventIndex(Event& event);
-
     EventType RegisterEvent(std::string name, SchedulerCallback callback);
 
-    u64 current_time;
+    u64 GetCurrentTime() const;
+    u64 GetEventTime() const;
+
+private:
 
     std::vector<Event> events;
-
-    // this is increment on each register event call such that each event type is given
-    // a unique id
+    u64 current_time;
     int current_event_id;
-
-    FILE* log = fopen("../../log-stuff/new.log", "w");
 };
