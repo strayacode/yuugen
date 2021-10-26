@@ -67,7 +67,7 @@ auto ARM7Memory::ReadByte(u32 addr) -> u8 {
     }
 
     switch (addr >> 24) {
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000138:
             return hw->rtc.ReadRTC();
@@ -89,7 +89,7 @@ auto ARM7Memory::ReadByte(u32 addr) -> u8 {
         default:
             log_fatal("[ARM7] Undefined 8-bit io read %08x", addr);
         }
-    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+    case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
         if (!(hw->EXMEMCNT & (1 << 7))) {
@@ -111,7 +111,7 @@ auto ARM7Memory::ReadHalf(u32 addr) -> u16 {
     }
 
     switch (addr >> 24) {
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000004:
             return hw->gpu.DISPSTAT7;
@@ -196,10 +196,10 @@ auto ARM7Memory::ReadHalf(u32 addr) -> u16 {
         default:
             log_fatal("[ARM7] Undefined 16-bit io read %08x", addr);
         }
-    case REGION_VRAM:
+    case 0x06:
         return_value = hw->gpu.ReadARM7<u16>(addr);
         break;
-    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+    case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
         if (!(hw->EXMEMCNT & (1 << 7))) {
@@ -227,7 +227,7 @@ auto ARM7Memory::ReadWord(u32 addr) -> u32 {
     u32 return_value = 0;
 
     switch (addr >> 24) {
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000004:
             return hw->gpu.VCOUNT;
@@ -257,9 +257,8 @@ auto ARM7Memory::ReadWord(u32 addr) -> u32 {
             log_fatal("[ARM7] Undefined 32-bit io read %08x", addr);
         }
         break;
-    case REGION_VRAM:
-        return_value = hw->gpu.ReadARM7<u32>(addr);
-        break;
+    case 0x06:
+        return hw->gpu.ReadARM7<u32>(addr);
     default:
         log_fatal("handle %08x", addr);
     }
@@ -280,10 +279,10 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
     }
 
     switch (addr >> 24) {
-    case REGION_ARM7_BIOS:
+    case 0x00:
         // ignore all bios writes
         break;
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000138:
             hw->rtc.WriteRTC(data);
@@ -337,7 +336,7 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
             log_fatal("[ARM7] Undefined 8-bit io write %08x = %08x", addr, data);
         }
         break;
-    case REGION_VRAM:
+    case 0x06:
         hw->gpu.WriteARM7<u8>(addr, data);
         break;
     default:
@@ -358,10 +357,10 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
     }
 
     switch (addr >> 24) {
-    case REGION_ARM7_BIOS:
+    case 0x00:
         // ignore all bios writes
         break;
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000004:
             hw->gpu.WriteDISPSTAT7(data);
@@ -522,7 +521,7 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
     }
 
     switch (addr >> 24) {
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x040000B0:
             hw->dma[0].channel[0].source = data;
@@ -612,10 +611,10 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
             log_warn("[ARM7] Undefined 32-bit io write %08x = %08x", addr, data);
         }
         break;
-    case REGION_VRAM:
+    case 0x06:
         hw->gpu.WriteARM7<u32>(addr, data);
         break;
-    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+    case 0x08: case 0x09:
         // for now do nothing lol
         break;
     default:

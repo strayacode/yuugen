@@ -84,6 +84,10 @@ void HostInterface::Run() {
             GPU2DWindow();
         }
 
+        if (scheduler_window) {
+            SchedulerWindow();
+        }
+
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
         glClearColor(0, 0, 0, 1);
@@ -248,6 +252,10 @@ void HostInterface::UpdateTitle(float fps) {
 
             if (ImGui::MenuItem("GPU2D", nullptr, gpu_2d_window)) { 
                 gpu_2d_window = !gpu_2d_window; 
+            }
+
+            if (ImGui::MenuItem("Scheduler", nullptr, scheduler_window)) { 
+                scheduler_window = !scheduler_window; 
             }
 
             ImGui::EndMenu();
@@ -581,5 +589,14 @@ void HostInterface::GPUWindow() {
         ImGui::Text("Display Swap %s", (core.hw.gpu.POWCNT1 >> 15) & 0x1 ? "Engine A Top / Engine B Bottom" : "Engine B Top / Engine A Bottom");
     }
 
+    ImGui::End();
+}
+
+void HostInterface::SchedulerWindow() {
+    ImGui::Begin("Scheduler");
+    ImGui::Text("Current Time: %ld", core.hw.scheduler.GetCurrentTime());
+    for (Event event : core.hw.scheduler.GetEvents()) {
+        ImGui::Text("%s +%ld", event.type->name.c_str(), event.time - core.hw.scheduler.GetCurrentTime());
+    }
     ImGui::End();
 }

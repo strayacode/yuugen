@@ -101,7 +101,7 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
 
 auto ARM9Memory::ReadByte(u32 addr) -> u8 {
     switch (addr >> 24) {
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x040001A8:
         case 0x040001A9:
@@ -122,9 +122,9 @@ auto ARM9Memory::ReadByte(u32 addr) -> u8 {
         default:
             log_fatal("[ARM9] Undefined 8-bit io read %08x", addr);
         }
-    case REGION_VRAM:
+    case 0x06:
         return hw->gpu.ReadVRAM<u8>(addr);
-    case REGION_OAM:
+    case 0x07:
         if ((addr & 0x7FF) < 0x400) {
             return hw->gpu.engine_a.ReadOAM<u8>(addr);
         } else {
@@ -132,7 +132,7 @@ auto ARM9Memory::ReadByte(u32 addr) -> u8 {
         }
 
         break;
-    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+    case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
         if (hw->EXMEMCNT & (1 << 7)) {
@@ -149,7 +149,7 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
     u16 return_value = 0;
 
     switch (addr >> 24) {
-    case REGION_SHARED_WRAM:
+    case 0x03:
         switch (hw->WRAMCNT) {
         case 0:
             memcpy(&return_value, &hw->shared_wram[addr & 0x7FFF], 2);
@@ -164,7 +164,7 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
             return 0;
         }
         break;
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000000:
             return hw->gpu.engine_a.DISPCNT & 0xFFFF;
@@ -265,7 +265,7 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
         default:
             log_fatal("[ARM9] Undefined 16-bit io read %08x", addr);
         }
-    case REGION_PALETTE_RAM:
+    case 0x05:
         // TODO: change to templated version
         if ((addr & 0x7FF) < 400) {
             // this is the first block which is assigned to engine a
@@ -275,9 +275,9 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
             memcpy(&return_value, &hw->gpu.engine_b.palette_ram[addr & 0x3FF], 2);
         }
         break;
-    case REGION_VRAM:
+    case 0x06:
         return hw->gpu.ReadVRAM<u16>(addr);
-    case REGION_OAM:
+    case 0x07:
         if ((addr & 0x7FF) < 0x400) {
             // this is the first block of oam which is 1kb and is assigned to engine a
             return_value = hw->gpu.engine_a.ReadOAM<u16>(addr);
@@ -287,7 +287,7 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
         }
 
         break;
-    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+    case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
         if (hw->EXMEMCNT & (1 << 7)) {
@@ -315,7 +315,7 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
     }
 
     switch (addr >> 24) {
-    case REGION_SHARED_WRAM:
+    case 0x03:
         switch (hw->WRAMCNT) {
         case 0:
             memcpy(&return_value, &hw->shared_wram[addr & 0x7FFF], 4);
@@ -330,7 +330,7 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
             return 0;
         }
         break;
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000000:
             return hw->gpu.engine_a.DISPCNT;
@@ -462,7 +462,7 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         default:
             log_fatal("[ARM9] Undefined 32-bit io read %08x", addr);
         }
-    case REGION_PALETTE_RAM:
+    case 0x05:
         if ((addr & 0x7FF) < 0x400) {
             hw->gpu.engine_a.ReadPaletteRAM<u32>(addr);
         } else {
@@ -470,9 +470,9 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         }
 
         break;
-    case REGION_VRAM:
+    case 0x06:
         return hw->gpu.ReadVRAM<u32>(addr);
-    case REGION_OAM:
+    case 0x07:
         if ((addr & 0x7FF) < 0x400) {
             return_value = hw->gpu.engine_a.ReadOAM<u32>(addr);
         } else {
@@ -480,7 +480,7 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         }
 
         break;
-    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+    case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
         if (hw->EXMEMCNT & (1 << 7)) {
@@ -488,7 +488,7 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFFFFFFFF;
-    case REGION_GBA_RAM:
+    case 0x0A:
         return 0;
     default:
         log_fatal("handle word read from %08x", addr);
@@ -499,7 +499,7 @@ auto ARM9Memory::ReadWord(u32 addr) -> u32 {
 
 void ARM9Memory::WriteByte(u32 addr, u8 data) {
     switch (addr >> 24) {
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000040:
             hw->gpu.engine_a.WINH[0] = (hw->gpu.engine_a.WINH[0] & ~0xFF) | data;
@@ -622,7 +622,7 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
             break;
         }
         break;
-    case REGION_PALETTE_RAM:
+    case 0x05:
         if ((addr & 0x7FF) < 0x400) {
             hw->gpu.engine_a.WritePaletteRAM<u8>(addr, data);
         } else {
@@ -630,7 +630,7 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
         }
 
         break;
-    case REGION_VRAM:
+    case 0x06:
         hw->gpu.WriteVRAM<u8>(addr, data);
         break;
     default:
@@ -640,7 +640,7 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
 
 void ARM9Memory::WriteHalf(u32 addr, u16 data) {
     switch (addr >> 24) {
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000000:
             hw->gpu.engine_a.DISPCNT = (hw->gpu.engine_a.DISPCNT & ~0xFFFF) | data;
@@ -985,7 +985,7 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             log_fatal("[ARM9] Undefined 16-bit io write %08x = %04x", addr, data);
         }
         break;
-    case REGION_PALETTE_RAM:
+    case 0x05:
         if ((addr & 0x7FF) < 0x400) {
             // this is the first block of oam which is 1kb and is assigned to engine a
             hw->gpu.engine_a.WritePaletteRAM<u16>(addr, data);
@@ -995,10 +995,10 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
         }
 
         break;
-    case REGION_VRAM:
+    case 0x06:
         hw->gpu.WriteVRAM<u16>(addr, data);
         break;
-    case REGION_OAM:
+    case 0x07:
         if ((addr & 0x7FF) < 0x400) {
             // this is the first block of oam which is 1kb and is assigned to engine a
             hw->gpu.engine_a.WriteOAM<u16>(addr, data);
@@ -1008,7 +1008,7 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
         }
 
         break;
-    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+    case 0x08: case 0x09:
         // for now do nothing lol
         break;
     default:
@@ -1028,7 +1028,7 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
     }
 
     switch (addr >> 24) {
-    case REGION_IO:
+    case 0x04:
         switch (addr) {
         case 0x04000000:
             hw->gpu.engine_a.DISPCNT = data;
@@ -1400,7 +1400,7 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             log_warn("[ARM9] Undefined 32-bit io write %08x = %08x", addr, data);
         }
         break;
-    case REGION_PALETTE_RAM:
+    case 0x05:
         if ((addr & 0x7FF) < 0x400) {
             // this is the first block of oam which is 1kb and is assigned to engine a
             hw->gpu.engine_a.WritePaletteRAM<u32>(addr, data);
@@ -1410,10 +1410,10 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
         }
 
         break;
-    case REGION_VRAM:
+    case 0x06:
         hw->gpu.WriteVRAM<u32>(addr, data);
         break;
-    case REGION_OAM:
+    case 0x07:
         if ((addr & 0x7FF) < 0x400) {
             // this is the first block of oam which is 1kb and is assigned to engine a
             hw->gpu.engine_a.WriteOAM<u32>(addr, data);
@@ -1423,7 +1423,7 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
         }
 
         break;
-    case REGION_GBA_ROM_L: case REGION_GBA_ROM_H:
+    case 0x08: case 0x09:
         // for now do nothing lol
         break;
     default:

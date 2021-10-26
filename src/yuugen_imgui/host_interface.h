@@ -35,6 +35,7 @@ public:
     void ARMWindow();
     void GPUWindow();
     void GPU2DWindow();
+    void SchedulerWindow();
 
     bool running = true;
     bool fullscreen = false;
@@ -56,4 +57,5 @@ public:
     bool arm_window = false;
     bool gpu_window = false;
     bool gpu_2d_window = false;
+    bool scheduler_window = false;
 };

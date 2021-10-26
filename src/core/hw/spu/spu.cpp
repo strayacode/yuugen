@@ -149,14 +149,11 @@ void SPU::RunChannel(int channel_index) {
     }
 }
 
-auto SPU::GenerateSamples() -> u32 {
+u32 SPU::GenerateSamples() {
     s64 sample_left = 0;
     s64 sample_right = 0;
 
     for (int i = 0; i < 16; i++) {
-        // TODO: use channel reference instead of channel[i] for
-        // cleaner code
-
         // don't mix audio from channels
         // that are disabled
         if (!(channel[i].soundcnt >> 31)) {
@@ -164,9 +161,7 @@ auto SPU::GenerateSamples() -> u32 {
         }
 
         s64 data = 0;
-
         u8 data_size = 0;
-
         u8 format = (channel[i].soundcnt >> 29) & 0x3;
 
         switch (format) {

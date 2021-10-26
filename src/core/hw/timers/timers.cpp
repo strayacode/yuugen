@@ -11,7 +11,10 @@ void Timers::Reset() {
     }
 
     for (int i = 0; i < 4; i++) {
-        overflow_event[i] = hw->scheduler.RegisterEvent("TimerOverflow" + std::to_string(i), [this, i]() {
+        std::string name;
+        name += arch == 1 ? "ARM9" : "ARM7";
+        name += "TimerOverflow" + std::to_string(i);
+        overflow_event[i] = hw->scheduler.RegisterEvent(name, [this, i]() {
             Overflow(i);
         });
     }

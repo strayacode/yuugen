@@ -71,3 +71,7 @@ u64 Scheduler::GetCurrentTime() const {
 u64 Scheduler::GetEventTime() const {
     return events[0].time;
 }
+
+std::vector<Event>& Scheduler::GetEvents() {
+    return events;
+}

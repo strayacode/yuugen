@@ -2,7 +2,6 @@
 
 #include <common/types.h>
 #include <common/log.h>
-#include <common/log_file.h>
 #include <string.h>
 #include <functional>
 #include <memory>

@@ -44,7 +44,7 @@ public:
     // and will combine audio data from all channels
     // into a left and right sample to send to the
     // audio stream
-    auto GenerateSamples() -> u32;
+    u32 GenerateSamples();
 
     void SetAudioInterface(AudioInterface& interface);
 

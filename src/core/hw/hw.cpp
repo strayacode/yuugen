@@ -26,7 +26,6 @@ void HW::Reset() {
 
     arm7_memory.Reset();
     arm9_memory.Reset();
-
     scheduler.Reset();
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
@@ -92,8 +91,8 @@ void HW::DirectBoot() {
 }
 
 void HW::FirmwareBoot() {
-    cpu_core[1]->FirmwareBoot();
     cpu_core[0]->FirmwareBoot();
+    cpu_core[1]->FirmwareBoot();
     cartridge.FirmwareBoot();
 }
 
@@ -172,7 +171,7 @@ void HW::WriteHALTCNT(u8 data) {
     }
 }
 
-auto HW::CartridgeAccessRights() -> bool {
+bool HW::CartridgeAccessRights() {
     // check which cpu has access to the nds cartridge
     if (EXMEMCNT & (1 << 11)) {
         return false; // 0 = ARMv4

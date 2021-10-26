@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <vector>
-#include <stdio.h>
 #include <common/types.h>
 #include <common/log.h>
 #include <string>
@@ -33,9 +32,9 @@ public:
 
     u64 GetCurrentTime() const;
     u64 GetEventTime() const;
+    std::vector<Event>& GetEvents();
 
 private:
-
     std::vector<Event> events;
     u64 current_time;
     int current_event_id;
