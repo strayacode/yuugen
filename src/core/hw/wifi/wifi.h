@@ -1,9 +1,9 @@
 #pragma once
 
 #include <common/types.h>
-#include <common/log.h>
 
-struct Wifi {
+class Wifi {
+public:
     void Reset();
 
     u16 W_TXREQ_SET;

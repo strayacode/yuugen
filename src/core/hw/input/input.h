@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common/types.h>
-#include <stdio.h>
 
 enum ButtonInput {
     BUTTON_A,

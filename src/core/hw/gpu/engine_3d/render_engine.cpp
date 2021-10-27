@@ -1,10 +1,8 @@
+#include <common/slope.h>
 #include <core/hw/gpu/engine_3d/render_engine.h>
 #include <core/hw/gpu/gpu.h>
-#include <common/slope.h>
 
-RenderEngine::RenderEngine(GPU* gpu) : gpu(gpu) {
-
-}
+RenderEngine::RenderEngine(GPU* gpu) : gpu(gpu) {}
 
 void RenderEngine::Reset() {
     disp3dcnt = 0;

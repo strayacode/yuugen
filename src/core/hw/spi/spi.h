@@ -1,10 +1,7 @@
 #pragma once
-#include <common/types.h>
-#include <common/log.h>
-#include <string.h>
+
 #include <vector>
-#include <fstream>
-#include <iterator>
+#include <common/types.h>
 
 class System;
 
@@ -26,7 +23,6 @@ public:
 
     void LoadFirmware();
     void LoadCalibrationPoints();
-
 
     u16 SPICNT;
     u8 SPIDATA;

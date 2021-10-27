@@ -1,10 +1,7 @@
 #pragma once
 
-#include <common/types.h>
-#include <common/log.h>
-#include <string.h>
 #include <functional>
-#include <memory>
+#include <common/types.h>
 #include <core/scheduler/scheduler.h>
 
 class System;

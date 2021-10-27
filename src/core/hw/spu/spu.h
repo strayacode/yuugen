@@ -1,10 +1,7 @@
 #pragma once
 
 #include <common/types.h>
-#include <common/log.h>
-#include <string.h>
 #include <audio_common/audio_interface.h>
-#include <algorithm>
 
 enum ChannelRegisters {
     REG_SOUNDCNT = 0x0,

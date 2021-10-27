@@ -1,3 +1,6 @@
+#include <fstream>
+#include <iterator>
+#include <common/log.h>
 #include <core/hw/spi/spi.h>
 #include <core/core.h>
 

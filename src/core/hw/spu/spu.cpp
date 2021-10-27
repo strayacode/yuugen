@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <common/log.h>
 #include <core/hw/spu/spu.h>
 #include <core/core.h>
 

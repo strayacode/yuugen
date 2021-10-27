@@ -1,16 +1,14 @@
 #pragma once
 
+#include <functional>
+#include <queue>
+#include <array>
+#include <memory>
 #include <common/types.h>
 #include <common/matrix.h>
 #include <common/vertex.h>
 #include <common/polygon.h>
 #include <common/matrix_stack.h>
-#include <common/log.h>
-#include <common/circular_buffer.h>
-#include <functional>
-#include <queue>
-#include <array>
-#include <memory>
 #include <core/scheduler/scheduler.h>
 
 struct Entry {

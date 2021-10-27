@@ -1,3 +1,4 @@
+#include <common/log.h>
 #include <core/hw/timers/timers.h>
 #include <core/core.h>
 

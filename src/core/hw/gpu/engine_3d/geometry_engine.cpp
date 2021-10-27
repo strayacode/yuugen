@@ -1,6 +1,7 @@
+#include <common/log.h>
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
 #include <core/hw/gpu/gpu.h>
-#include <core/system.h>
+#include <core/core.h>
 
 static constexpr std::array<int, 256> param_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -20,9 +21,7 @@ static constexpr std::array<int, 256> param_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 }};
 
-GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {
-
-}
+GeometryEngine::GeometryEngine(GPU* gpu) : gpu(gpu) {}
 
 void GeometryEngine::Reset() {
     gxstat = 0;

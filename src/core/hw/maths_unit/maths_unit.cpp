@@ -1,6 +1,7 @@
-#include <core/hw/maths_unit/maths_unit.h>
-#include <math.h>
 #include <limits>
+#include <math.h>
+#include <common/log.h>
+#include <core/hw/maths_unit/maths_unit.h>
 
 void MathsUnit::Reset() {
     DIVCNT = 0;

@@ -3,7 +3,6 @@
 #include <common/types.h>
 #include <common/vertex.h>
 #include <common/polygon.h>
-#include <string.h>
 
 class GPU;
 

@@ -1,14 +1,14 @@
 #pragma once
 
+#include <functional>
+#include <array>
+#include <common/log.h>
 #include <common/types.h>
 #include <common/memory_helpers.h>
 #include <core/hw/gpu/engine_2d/gpu_2d.h>
 #include <core/hw/gpu/engine_3d/render_engine.h>
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
 #include <core/hw/gpu/vram_page.h>
-#include <string.h>
-#include <functional>
-#include <array>
 #include <core/scheduler/scheduler.h>
 
 class System;

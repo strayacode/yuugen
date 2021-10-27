@@ -1,3 +1,4 @@
+#include <common/log.h>
 #include <core/scheduler/scheduler.h>
 
 void Scheduler::Reset() {

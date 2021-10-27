@@ -29,7 +29,6 @@ public:
         ipc(*this),
         timers {Timers(*this, 0), Timers(*this, 1)},
         spu(*this),
-        rtc(*this),
         arm7_memory(*this),
         arm9_memory(*this) {
         InitialiseCPUCores(CPUCoreType::Interpreter);

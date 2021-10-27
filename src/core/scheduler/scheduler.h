@@ -2,9 +2,8 @@
 
 #include <functional>
 #include <vector>
-#include <common/types.h>
-#include <common/log.h>
 #include <string>
+#include <common/types.h>
 
 using SchedulerCallback = std::function<void()>;
 

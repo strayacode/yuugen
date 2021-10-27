@@ -1,9 +1,6 @@
+#include <ctime>
+#include <common/log.h>
 #include <core/hw/rtc/rtc.h>
-#include <core/core.h>
-
-RTC::RTC(System& system) : system(system) {
-
-}
 
 void RTC::Reset() {
     RTC_REG = 0;
@@ -18,7 +15,7 @@ void RTC::Reset() {
     }
 }
 
-auto RTC::ReadRTC() -> u8 {
+u8 RTC::ReadRTC() {
     return RTC_REG;
 }
 
@@ -57,7 +54,7 @@ void RTC::WriteRTC(u8 data) {
     RTC_REG = data;
 }
 
-auto RTC::InterpretReadCommand(u8 data) -> u8 {
+u8 RTC::InterpretReadCommand(u8 data) {
     // extract the specific command from the command byte
     u8 command_type = (command >> 4) & 0x7;
     switch (command_type) {
@@ -162,7 +159,7 @@ void RTC::InterpretWriteCommand(u8 data) {
     }
 }
 
-auto RTC::ConvertToBCD(u8 data) -> u8 {
+u8 RTC::ConvertToBCD(u8 data) {
     // the tens digit will be stored in the top 4 bits and the ones digit in the bottom 4 bits
     u8 result = ((data / 10) << 4) | ((data % 10));
 

@@ -1,9 +1,8 @@
+#include <common/log.h>
 #include <core/hw/ipc/ipc.h>
 #include <core/core.h>
 
-IPC::IPC(System& system) : system(system) {
-
-}
+IPC::IPC(System& system) : system(system) {}
 
 void IPC::Reset() {
     IPCSYNC7 = 0;
