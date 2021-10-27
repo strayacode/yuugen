@@ -11,7 +11,7 @@
 #include <array>
 #include <core/scheduler/scheduler.h>
 
-class HW;
+class System;
 
 enum class Screen {
     Top,
@@ -20,7 +20,7 @@ enum class Screen {
 
 class GPU {
 public:
-    GPU(HW* hw);
+    GPU(System& system);
 
     auto GetFramebuffer(Screen screen) -> const u32*;
     void Reset();
@@ -79,7 +79,7 @@ public:
 
     u16 DISPSTAT7, DISPSTAT9;
 
-    HW* hw;
+    System& system;
 
     u8 bank_a[0x20000];
     u8 bank_b[0x20000];

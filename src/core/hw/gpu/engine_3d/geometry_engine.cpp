@@ -1,6 +1,6 @@
 #include <core/hw/gpu/engine_3d/geometry_engine.h>
 #include <core/hw/gpu/gpu.h>
-#include <core/hw/hw.h>
+#include <core/system.h>
 
 static constexpr std::array<int, 256> param_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -46,7 +46,7 @@ void GeometryEngine::Reset() {
     matrix_mode = MatrixMode::Projection;
     polygon_ram_size = 0;
 
-    geometry_command_event = gpu->hw->scheduler.RegisterEvent("GeometryCommand", [this]() {
+    geometry_command_event = gpu->system.scheduler.RegisterEvent("GeometryCommand", [this]() {
         busy = false;
         InterpretCommand();
     });
@@ -278,7 +278,7 @@ void GeometryEngine::InterpretCommand() {
         }
 
         busy = true;
-        gpu->hw->scheduler.AddEvent(1, &geometry_command_event);
+        gpu->system.scheduler.AddEvent(1, &geometry_command_event);
     }
 }
 
@@ -287,13 +287,13 @@ void GeometryEngine::CheckGXFIFOInterrupt() {
     case 1:
         // trigger interrupt if fifo is less than half full
         if (fifo.size() < 128) {
-            gpu->hw->cpu_core[1]->SendInterrupt(21);
+            gpu->system.cpu_core[1]->SendInterrupt(21);
         }
         break;
     case 2:
         // trigger interrupt if fifo is empty
         if (fifo.size() == 0) {
-            gpu->hw->cpu_core[1]->SendInterrupt(21);
+            gpu->system.cpu_core[1]->SendInterrupt(21);
         }
         break;
     }

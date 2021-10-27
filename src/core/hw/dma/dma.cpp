@@ -1,8 +1,8 @@
 #include <core/hw/dma/dma.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 #include <string>
 
-DMA::DMA(HW* hw, int arch) : hw(hw), arch(arch) {
+DMA::DMA(System& system, int arch) : system(system), arch(arch) {
     
 }
 
@@ -13,7 +13,7 @@ void DMA::Reset() {
     }
 
     for (int i = 0; i < 4; i++) {
-        transfer_event[i] = hw->scheduler.RegisterEvent("DMATransfer" + std::to_string(i), [this, i]() {
+        transfer_event[i] = system.scheduler.RegisterEvent("DMATransfer" + std::to_string(i), [this, i]() {
             Transfer(i);
         });
     }
@@ -31,9 +31,9 @@ void DMA::Transfer(int channel_index) {
         // loop through all the data units specified by internal length
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
             if (arch == 1) {
-                hw->arm9_memory.FastWrite<u32>(channel[channel_index].internal_destination, hw->arm9_memory.FastRead<u32>(channel[channel_index].internal_source));
+                system.arm9_memory.FastWrite<u32>(channel[channel_index].internal_destination, system.arm9_memory.FastRead<u32>(channel[channel_index].internal_source));
             } else {
-                hw->arm7_memory.FastWrite<u32>(channel[channel_index].internal_destination, hw->arm7_memory.FastRead<u32>(channel[channel_index].internal_source));
+                system.arm7_memory.FastWrite<u32>(channel[channel_index].internal_destination, system.arm7_memory.FastRead<u32>(channel[channel_index].internal_source));
             }
 
             channel[channel_index].internal_source += source_adjust;
@@ -43,9 +43,9 @@ void DMA::Transfer(int channel_index) {
         // halfword transfer
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
             if (arch == 1) {
-                hw->arm9_memory.FastWrite<u16>(channel[channel_index].internal_destination, hw->arm9_memory.FastRead<u16>(channel[channel_index].internal_source));
+                system.arm9_memory.FastWrite<u16>(channel[channel_index].internal_destination, system.arm9_memory.FastRead<u16>(channel[channel_index].internal_source));
             } else {
-                hw->arm7_memory.FastWrite<u16>(channel[channel_index].internal_destination, hw->arm7_memory.FastRead<u16>(channel[channel_index].internal_source));
+                system.arm7_memory.FastWrite<u16>(channel[channel_index].internal_destination, system.arm7_memory.FastRead<u16>(channel[channel_index].internal_source));
             }
 
             channel[channel_index].internal_source += source_adjust;
@@ -55,7 +55,7 @@ void DMA::Transfer(int channel_index) {
 
     // request dma irq upon end of word count if enabled 
     if (channel[channel_index].DMACNT & (1 << 30)) {
-        hw->cpu_core[arch]->SendInterrupt(8 + channel_index);
+        system.cpu_core[arch]->SendInterrupt(8 + channel_index);
     }
 
     if (channel[channel_index].DMACNT & (1 << 25) && start_timing != 0) {
@@ -84,7 +84,7 @@ void DMA::Trigger(u8 mode) {
             start_timing = (channel[channel_index].DMACNT >> 28) & 0x3;
         }
         if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == mode)) {
-            hw->scheduler.AddEvent(1, &transfer_event[channel_index]);
+            system.scheduler.AddEvent(1, &transfer_event[channel_index]);
         }
     }
 }
@@ -127,7 +127,7 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     }
 
     if (start_timing == 0) {
-        hw->scheduler.AddEvent(1, &transfer_event[channel_index]);
+        system.scheduler.AddEvent(1, &transfer_event[channel_index]);
     }
 }
 

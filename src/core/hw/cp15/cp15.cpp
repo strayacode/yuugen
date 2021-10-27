@@ -1,7 +1,7 @@
 #include <core/hw/cp15/cp15.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 
-CP15::CP15(HW* hw) : hw(hw) {
+CP15::CP15(System& system) : system(system) {
 
 }
 
@@ -57,8 +57,8 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         control_register = data;
 
         // update the itcm and dtcm memory map, as now flags may have changed
-        hw->arm9_memory.UpdateMemoryMap(0, itcm_size);
-        hw->arm9_memory.UpdateMemoryMap(dtcm_base, dtcm_base + dtcm_size);
+        system.arm9_memory.UpdateMemoryMap(0, itcm_size);
+        system.arm9_memory.UpdateMemoryMap(dtcm_base, dtcm_base + dtcm_size);
         break;
     }
     case 0x020000:
@@ -80,7 +80,7 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         // dont do anything lol this is just protection unit region stuff which we dont need to emulate
         break;
     case 0x070004:
-        hw->cpu_core[1]->Halt();
+        system.cpu_core[1]->Halt();
     case 0x070500:
         // invalidate entire instruction cache
         break;
@@ -125,8 +125,8 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         dtcm_size = 512 << dtcm_size;
 
         // now make sure to remap dtcm
-        hw->arm9_memory.UpdateMemoryMap(old_dtcm_base, old_dtcm_base + old_dtcm_size);
-        hw->arm9_memory.UpdateMemoryMap(dtcm_base, dtcm_base + dtcm_size);
+        system.arm9_memory.UpdateMemoryMap(old_dtcm_base, old_dtcm_base + old_dtcm_size);
+        system.arm9_memory.UpdateMemoryMap(dtcm_base, dtcm_base + dtcm_size);
 
         log_debug("[CP15]\nDtcm Size: 0x%08x\nDtcm Base: 0x%08x", dtcm_size, dtcm_base);
         break;
@@ -145,7 +145,7 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         itcm_size = 512 << itcm_size;
 
         // now make sure to remap itcm
-        hw->arm9_memory.UpdateMemoryMap(0, std::max(old_itcm_size, itcm_size));
+        system.arm9_memory.UpdateMemoryMap(0, std::max(old_itcm_size, itcm_size));
         
         log_debug("[CP15]\nItcm Size: 0x%08x\nItcm Base: 0x%08x", itcm_size, itcm_base);
         break;

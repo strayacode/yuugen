@@ -1,7 +1,7 @@
 #include <core/hw/gpu/gpu.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 
-GPU::GPU(HW* hw) : hw(hw), engine_a(this, 1), engine_b(this , 0), render_engine(this), geometry_engine(this) {
+GPU::GPU(System& system) : system(system), engine_a(this, 1), engine_b(this , 0), render_engine(this), geometry_engine(this) {
 
 }
 
@@ -40,17 +40,17 @@ void GPU::Reset() {
     geometry_engine.Reset();
     render_engine.Reset();
 
-    scanline_start_event = hw->scheduler.RegisterEvent("ScanlineStart", [this]() {
+    scanline_start_event = system.scheduler.RegisterEvent("ScanlineStart", [this]() {
         RenderScanlineStart();
-        hw->scheduler.AddEvent(524, &scanline_finish_event);
+        system.scheduler.AddEvent(524, &scanline_finish_event);
     });
 
-    scanline_finish_event = hw->scheduler.RegisterEvent("ScanlineFinish", [this]() {
+    scanline_finish_event = system.scheduler.RegisterEvent("ScanlineFinish", [this]() {
         RenderScanlineFinish();
-        hw->scheduler.AddEvent(1606, &scanline_start_event);
+        system.scheduler.AddEvent(1606, &scanline_start_event);
     });
 
-    hw->scheduler.AddEvent(1606, &scanline_start_event);
+    system.scheduler.AddEvent(1606, &scanline_start_event);
 
     MapVRAM();
 }
@@ -61,18 +61,18 @@ void GPU::RenderScanlineStart() {
         engine_b.RenderScanline(VCOUNT);
 
         // trigger an arm9 dma transfer on hblank (only for visible scanlines)
-        hw->dma[1].Trigger(2);
+        system.dma[1].Trigger(2);
     }
 
     DISPSTAT7 |= (1 << 1);
     DISPSTAT9 |= (1 << 1);
     
     if (DISPSTAT7 & (1 << 4)) {
-        hw->cpu_core[0]->SendInterrupt(1);
+        system.cpu_core[0]->SendInterrupt(1);
     }
 
     if (DISPSTAT9 & (1 << 4)) {
-        hw->cpu_core[1]->SendInterrupt(1);
+        system.cpu_core[1]->SendInterrupt(1);
     }
 
     if (VCOUNT == 215) {
@@ -84,7 +84,7 @@ void GPU::RenderScanlineStart() {
     // if so trigger a start of display dma transfer
     // TODO: on scanline 194 automatically clear the enable bit in DMA
     if ((VCOUNT > 1) && (VCOUNT < 194)) {
-        hw->dma[1].Trigger(3);
+        system.dma[1].Trigger(3);
     }
 }
 
@@ -99,15 +99,15 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT9 |= 1;
 
         if (DISPSTAT7 & (1 << 3)) {
-            hw->cpu_core[0]->SendInterrupt(0);
+            system.cpu_core[0]->SendInterrupt(0);
         }
 
         if (DISPSTAT9 & (1 << 3)) {
-            hw->cpu_core[1]->SendInterrupt(0);
+            system.cpu_core[1]->SendInterrupt(0);
         }
 
-        hw->dma[0].Trigger(1);
-        hw->dma[1].Trigger(1);
+        system.dma[0].Trigger(1);
+        system.dma[1].Trigger(1);
         break;
     case 262:
         // end of vblank
@@ -125,7 +125,7 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT7 |= (1 << 2);
 
         if (DISPSTAT7 & (1 << 5)) {
-            hw->cpu_core[0]->SendInterrupt(2);
+            system.cpu_core[0]->SendInterrupt(2);
         }
 
     } else if (DISPSTAT7 & (1 << 2)) {
@@ -136,7 +136,7 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT9 |= (1 << 2);
 
         if (DISPSTAT9 & (1 << 5)) {
-            hw->cpu_core[1]->SendInterrupt(2);
+            system.cpu_core[1]->SendInterrupt(2);
         }
 
     } else if (DISPSTAT9 & (1 << 2)) {

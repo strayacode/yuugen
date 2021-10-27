@@ -1,3 +1,5 @@
+#pragma once
+
 #include <common/types.h>
 #include <common/log.h>
 #include <core/hw/cartridge/backup/generic_backup.h>
@@ -10,8 +12,6 @@
 #include <string>
 #include <iterator>
 #include <memory>
-
-#pragma once
 
 // TODO: change this to an enum class
 enum CartridgeCommand {
@@ -41,13 +41,13 @@ enum BackupType {
     NO_BACKUP,
 };
 
-class HW;
+class System;
 
 // TODO: check if the rom is encrypted. if it is then 
 // transfer as unencrypted
 class Cartridge {
 public:
-    Cartridge(HW* hw);
+    Cartridge(System& system);
     ~Cartridge();
     void Reset();
     void LoadRom(std::string rom_path);
@@ -111,7 +111,7 @@ public:
 
     u64 command;
 
-    HW* hw;
+    System& system;
 
     std::vector<u8> rom;
 

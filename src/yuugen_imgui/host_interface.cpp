@@ -119,34 +119,34 @@ void HostInterface::HandleInput() {
             bool key_pressed = event.type == SDL_KEYDOWN;
             switch (event.key.keysym.sym) {
             case SDLK_d:
-                core.hw.input.HandleInput(BUTTON_A, key_pressed);
+                core.system.input.HandleInput(BUTTON_A, key_pressed);
                 break;
             case SDLK_s:
-                core.hw.input.HandleInput(BUTTON_B, key_pressed);
+                core.system.input.HandleInput(BUTTON_B, key_pressed);
                 break;
             case SDLK_RSHIFT:
-                core.hw.input.HandleInput(BUTTON_SELECT, key_pressed);
+                core.system.input.HandleInput(BUTTON_SELECT, key_pressed);
                 break;
             case SDLK_RETURN:
-                core.hw.input.HandleInput(BUTTON_START, key_pressed);
+                core.system.input.HandleInput(BUTTON_START, key_pressed);
                 break;
             case SDLK_RIGHT:
-                core.hw.input.HandleInput(BUTTON_RIGHT, key_pressed);
+                core.system.input.HandleInput(BUTTON_RIGHT, key_pressed);
                 break;
             case SDLK_LEFT:
-                core.hw.input.HandleInput(BUTTON_LEFT, key_pressed);
+                core.system.input.HandleInput(BUTTON_LEFT, key_pressed);
                 break;
             case SDLK_UP:
-                core.hw.input.HandleInput(BUTTON_UP, key_pressed);
+                core.system.input.HandleInput(BUTTON_UP, key_pressed);
                 break;
             case SDLK_DOWN:
-                core.hw.input.HandleInput(BUTTON_DOWN, key_pressed);
+                core.system.input.HandleInput(BUTTON_DOWN, key_pressed);
                 break;
             case SDLK_e:
-                core.hw.input.HandleInput(BUTTON_R, key_pressed);
+                core.system.input.HandleInput(BUTTON_R, key_pressed);
                 break;
             case SDLK_w:
-                core.hw.input.HandleInput(BUTTON_L, key_pressed);
+                core.system.input.HandleInput(BUTTON_L, key_pressed);
                 break;
             }
         } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
@@ -156,8 +156,8 @@ void HostInterface::HandleInput() {
             if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
                 // only do a touchscreen event if it occurs in the bottom screen
                 bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
-                core.hw.input.SetTouch(button_pressed);
-                core.hw.input.SetPoint(x, y);
+                core.system.input.SetTouch(button_pressed);
+                core.system.input.SetPoint(x, y);
             }
         }
     }
@@ -294,7 +294,7 @@ void HostInterface::DrawScreen() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.hw.gpu.GetFramebuffer(Screen::Top));
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Top));
 
     glBindTexture(GL_TEXTURE_2D, textures[1]);
 
@@ -302,7 +302,7 @@ void HostInterface::DrawScreen() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.hw.gpu.GetFramebuffer(Screen::Bottom));
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Bottom));
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 0.0f });
     ImGui::Begin("Screen", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
@@ -349,17 +349,17 @@ void HostInterface::SetupStyle() {
 
 void HostInterface::CartridgeWindow() {
     ImGui::Begin("Cartridge");
-    ImGui::Text("%s", core.hw.cartridge.header.game_title);
+    ImGui::Text("%s", core.system.cartridge.header.game_title);
     ImGui::Text("ARM7");
-    ImGui::Text("Offset: 0x%08x", core.hw.cartridge.header.arm7_rom_offset);
-    ImGui::Text("Entrypoint: 0x%08x", core.hw.cartridge.header.arm7_entrypoint);
-    ImGui::Text("RAM Address: 0x%08x", core.hw.cartridge.header.arm7_ram_address);
-    ImGui::Text("Size: 0x%08x", core.hw.cartridge.header.arm7_size);
+    ImGui::Text("Offset: 0x%08x", core.system.cartridge.header.arm7_rom_offset);
+    ImGui::Text("Entrypoint: 0x%08x", core.system.cartridge.header.arm7_entrypoint);
+    ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.header.arm7_ram_address);
+    ImGui::Text("Size: 0x%08x", core.system.cartridge.header.arm7_size);
     ImGui::Text("ARM9");
-    ImGui::Text("Offset: 0x%08x", core.hw.cartridge.header.arm9_rom_offset);
-    ImGui::Text("Entrypoint: 0x%08x", core.hw.cartridge.header.arm9_entrypoint);
-    ImGui::Text("RAM Address: 0x%08x", core.hw.cartridge.header.arm9_ram_address);
-    ImGui::Text("Size: 0x%08x", core.hw.cartridge.header.arm9_size);
+    ImGui::Text("Offset: 0x%08x", core.system.cartridge.header.arm9_rom_offset);
+    ImGui::Text("Entrypoint: 0x%08x", core.system.cartridge.header.arm9_entrypoint);
+    ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.header.arm9_ram_address);
+    ImGui::Text("Size: 0x%08x", core.system.cartridge.header.arm9_size);
     ImGui::End();
 }
 
@@ -383,16 +383,16 @@ void HostInterface::ARMWindow() {
                     ImGui::TableNextRow();
                     for (int j = 0; j < 4; j++) {
                         ImGui::TableSetColumnIndex(j);
-                        ImGui::Text("r%d: %08x", (i * 4) + j, core.hw.cpu_core[0]->regs.r[(i * 4) + j]);
+                        ImGui::Text("r%d: %08x", (i * 4) + j, core.system.cpu_core[0]->regs.r[(i * 4) + j]);
                     }
                 }
                 ImGui::EndTable();
             }
 
-            ImGui::Text("cpsr: %08x", core.hw.cpu_core[0]->regs.cpsr);
-            ImGui::Text("State: %s", core.hw.cpu_core[0]->halted ? "Halted" : "Running");
-            ImGui::Text("T Bit: %s", (!(core.hw.cpu_core[0]->regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
-            ImGui::Text("Mode: %02x", core.hw.cpu_core[0]->regs.cpsr & 0x1F);
+            ImGui::Text("cpsr: %08x", core.system.cpu_core[0]->regs.cpsr);
+            ImGui::Text("State: %s", core.system.cpu_core[0]->halted ? "Halted" : "Running");
+            ImGui::Text("T Bit: %s", (!(core.system.cpu_core[0]->regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
+            ImGui::Text("Mode: %02x", core.system.cpu_core[0]->regs.cpsr & 0x1F);
             
             ImGui::EndTabItem();
         }
@@ -402,16 +402,16 @@ void HostInterface::ARMWindow() {
                     ImGui::TableNextRow();
                     for (int j = 0; j < 4; j++) {
                         ImGui::TableSetColumnIndex(j);
-                        ImGui::Text("r%d: %08x", (i * 4) + j, core.hw.cpu_core[1]->regs.r[(i * 4) + j]);
+                        ImGui::Text("r%d: %08x", (i * 4) + j, core.system.cpu_core[1]->regs.r[(i * 4) + j]);
                     }
                 }
                 ImGui::EndTable();
             }
 
-            ImGui::Text("cpsr: %08x", core.hw.cpu_core[1]->regs.cpsr);
-            ImGui::Text("State: %s", core.hw.cpu_core[1]->halted ? "Halted" : "Running");
-            ImGui::Text("T Bit: %s", (!(core.hw.cpu_core[1]->regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
-            ImGui::Text("Mode: %02x", core.hw.cpu_core[1]->regs.cpsr & 0x1F);
+            ImGui::Text("cpsr: %08x", core.system.cpu_core[1]->regs.cpsr);
+            ImGui::Text("State: %s", core.system.cpu_core[1]->halted ? "Halted" : "Running");
+            ImGui::Text("T Bit: %s", (!(core.system.cpu_core[1]->regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
+            ImGui::Text("Mode: %02x", core.system.cpu_core[1]->regs.cpsr & 0x1F);
             
             ImGui::EndTabItem();
         }
@@ -438,38 +438,38 @@ void HostInterface::GPU2DWindow() {
     if (ImGui::BeginTabBar("GPU2DTabs", tab_bar_flags)) {
         if (ImGui::BeginTabItem("Engine A")) {
             if (ImGui::CollapsingHeader("dispcnt", ImGuiTreeNodeFlags_None)) {
-                ImGui::Text("dispcnt: %08x", core.hw.gpu.engine_a.DISPCNT);
-                ImGui::Text("BG Mode %s", bg_modes[core.hw.gpu.engine_a.DISPCNT & 0x7]);
-                ImGui::Text("BG0 2D/3D Selection %s", (core.hw.gpu.engine_a.DISPCNT >> 3) & 0x1 ? "3D": "2D");
-                ImGui::Text("Tile OBJ Mapping %s", (core.hw.gpu.engine_a.DISPCNT >> 4) & 0x1 ? "2D": "1D");
-                ImGui::Text("Bitmap OBJ 2D-Dimension %s", (core.hw.gpu.engine_a.DISPCNT >> 5) & 0x1 ? "128x512": "256x256");
-                ImGui::Text("Bitmap OBJ Mapping %s", (core.hw.gpu.engine_a.DISPCNT >> 6) & 0x1 ? "2D": "1D");
-                ImGui::Text("Forced Blank %s", (core.hw.gpu.engine_a.DISPCNT >> 7) & 0x1 ? "true": "false");
-                ImGui::Text("Display BG0 %s", (core.hw.gpu.engine_a.DISPCNT >> 8) & 0x1 ? "On": "Off");
-                ImGui::Text("Display BG1 %s", (core.hw.gpu.engine_a.DISPCNT >> 9) & 0x1 ? "On": "Off");
-                ImGui::Text("Display BG2 %s", (core.hw.gpu.engine_a.DISPCNT >> 10) & 0x1 ? "On": "Off");
-                ImGui::Text("Display BG3 %s", (core.hw.gpu.engine_a.DISPCNT >> 11) & 0x1 ? "On": "Off");
-                ImGui::Text("Display OBJ %s", (core.hw.gpu.engine_a.DISPCNT >> 12) & 0x1 ? "On": "Off");
-                ImGui::Text("Display Window 0 %s", (core.hw.gpu.engine_a.DISPCNT >> 13) & 0x1 ? "On": "Off");
-                ImGui::Text("Display Window 1 %s", (core.hw.gpu.engine_a.DISPCNT >> 14) & 0x1 ? "On": "Off");
-                ImGui::Text("Display OBJ Window %s", (core.hw.gpu.engine_a.DISPCNT >> 15) & 0x1 ? "On": "Off");
-                ImGui::Text("Display Mode %s", display_modes[(core.hw.gpu.engine_a.DISPCNT >> 16) & 0x3]);
-                ImGui::Text("VRAM Block %c", 'A' + ((core.hw.gpu.engine_a.DISPCNT >> 18) & 0x3));
-                ImGui::Text("Tile OBJ 1D-Boundary %d", (core.hw.gpu.engine_a.DISPCNT >> 20) & 0x3);
-                ImGui::Text("Bitmap OBJ 1D-Boundary %d", (core.hw.gpu.engine_a.DISPCNT >> 22) & 0x1);
-                ImGui::Text("OBJ Processing during H-Blank %s", (core.hw.gpu.engine_a.DISPCNT >> 23) & 0x1 ? "true" : "false");
-                ImGui::Text("Character Base %08x", ((core.hw.gpu.engine_a.DISPCNT >> 24) & 0x7) * 0x10000);
-                ImGui::Text("Screen Base %08x", ((core.hw.gpu.engine_a.DISPCNT >> 27) & 0x7) * 0x10000);
-                ImGui::Text("BG Extended Palettes %s", (core.hw.gpu.engine_a.DISPCNT >> 30) & 0x1 ? "true" : "false");
-                ImGui::Text("OBJ Extended Palettes %s", (core.hw.gpu.engine_a.DISPCNT >> 31) & 0x1 ? "true" : "false");
+                ImGui::Text("dispcnt: %08x", core.system.gpu.engine_a.DISPCNT);
+                ImGui::Text("BG Mode %s", bg_modes[core.system.gpu.engine_a.DISPCNT & 0x7]);
+                ImGui::Text("BG0 2D/3D Selection %s", (core.system.gpu.engine_a.DISPCNT >> 3) & 0x1 ? "3D": "2D");
+                ImGui::Text("Tile OBJ Mapping %s", (core.system.gpu.engine_a.DISPCNT >> 4) & 0x1 ? "2D": "1D");
+                ImGui::Text("Bitmap OBJ 2D-Dimension %s", (core.system.gpu.engine_a.DISPCNT >> 5) & 0x1 ? "128x512": "256x256");
+                ImGui::Text("Bitmap OBJ Mapping %s", (core.system.gpu.engine_a.DISPCNT >> 6) & 0x1 ? "2D": "1D");
+                ImGui::Text("Forced Blank %s", (core.system.gpu.engine_a.DISPCNT >> 7) & 0x1 ? "true": "false");
+                ImGui::Text("Display BG0 %s", (core.system.gpu.engine_a.DISPCNT >> 8) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG1 %s", (core.system.gpu.engine_a.DISPCNT >> 9) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG2 %s", (core.system.gpu.engine_a.DISPCNT >> 10) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG3 %s", (core.system.gpu.engine_a.DISPCNT >> 11) & 0x1 ? "On": "Off");
+                ImGui::Text("Display OBJ %s", (core.system.gpu.engine_a.DISPCNT >> 12) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Window 0 %s", (core.system.gpu.engine_a.DISPCNT >> 13) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Window 1 %s", (core.system.gpu.engine_a.DISPCNT >> 14) & 0x1 ? "On": "Off");
+                ImGui::Text("Display OBJ Window %s", (core.system.gpu.engine_a.DISPCNT >> 15) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Mode %s", display_modes[(core.system.gpu.engine_a.DISPCNT >> 16) & 0x3]);
+                ImGui::Text("VRAM Block %c", 'A' + ((core.system.gpu.engine_a.DISPCNT >> 18) & 0x3));
+                ImGui::Text("Tile OBJ 1D-Boundary %d", (core.system.gpu.engine_a.DISPCNT >> 20) & 0x3);
+                ImGui::Text("Bitmap OBJ 1D-Boundary %d", (core.system.gpu.engine_a.DISPCNT >> 22) & 0x1);
+                ImGui::Text("OBJ Processing during H-Blank %s", (core.system.gpu.engine_a.DISPCNT >> 23) & 0x1 ? "true" : "false");
+                ImGui::Text("Character Base %08x", ((core.system.gpu.engine_a.DISPCNT >> 24) & 0x7) * 0x10000);
+                ImGui::Text("Screen Base %08x", ((core.system.gpu.engine_a.DISPCNT >> 27) & 0x7) * 0x10000);
+                ImGui::Text("BG Extended Palettes %s", (core.system.gpu.engine_a.DISPCNT >> 30) & 0x1 ? "true" : "false");
+                ImGui::Text("OBJ Extended Palettes %s", (core.system.gpu.engine_a.DISPCNT >> 31) & 0x1 ? "true" : "false");
             }
 
-            switch (core.hw.gpu.engine_a.DISPCNT & 0x7) {
+            switch (core.system.gpu.engine_a.DISPCNT & 0x7) {
             case 0x3: case 0x4:
-                if (((core.hw.gpu.engine_a.BGCNT[3] >> 7) & 0x1) == 0) {
+                if (((core.system.gpu.engine_a.BGCNT[3] >> 7) & 0x1) == 0) {
                     ImGui::Text("BG3 Extended Mode rot/scal 16-bit bg map entries");
                 } else {
-                    if ((core.hw.gpu.engine_a.BGCNT[3] >> 2) & 0x1) {
+                    if ((core.system.gpu.engine_a.BGCNT[3] >> 2) & 0x1) {
                         ImGui::Text("BG3 Extended Mode rot/scal 256 colour bitmap");
                     } else {
                         ImGui::Text("BG3 Extended Mode rot/scal direct colour bitmap");
@@ -478,20 +478,20 @@ void HostInterface::GPU2DWindow() {
                 
                 break;
             case 0x5:
-                if (((core.hw.gpu.engine_a.BGCNT[2] >> 7) & 0x1) == 0) {
+                if (((core.system.gpu.engine_a.BGCNT[2] >> 7) & 0x1) == 0) {
                     ImGui::Text("BG2 Extended Mode rot/scal 16-bit bg map entries");
                 } else {
-                    if ((core.hw.gpu.engine_a.BGCNT[2] >> 2) & 0x1) {
+                    if ((core.system.gpu.engine_a.BGCNT[2] >> 2) & 0x1) {
                         ImGui::Text("BG2 Extended Mode rot/scal 256 colour bitmap");
                     } else {
                         ImGui::Text("BG2 Extended Mode rot/scal direct colour bitmap");
                     }
                 }
 
-                if (((core.hw.gpu.engine_a.BGCNT[3] >> 7) & 0x1) == 0) {
+                if (((core.system.gpu.engine_a.BGCNT[3] >> 7) & 0x1) == 0) {
                     ImGui::Text("BG3 Extended Mode rot/scal 16-bit bg map entries");
                 } else {
-                    if ((core.hw.gpu.engine_a.BGCNT[3] >> 2) & 0x1) {
+                    if ((core.system.gpu.engine_a.BGCNT[3] >> 2) & 0x1) {
                         ImGui::Text("BG3 Extended Mode rot/scal 256 colour bitmap");
                     } else {
                         ImGui::Text("BG3 Extended Mode rot/scal direct colour bitmap");
@@ -506,37 +506,37 @@ void HostInterface::GPU2DWindow() {
 
         if (ImGui::BeginTabItem("Engine B")) {
             if (ImGui::CollapsingHeader("dispcnt", ImGuiTreeNodeFlags_None)) {
-                ImGui::Text("dispcnt: %08x", core.hw.gpu.engine_b.DISPCNT);
-                ImGui::Text("BG Mode %s", bg_modes[core.hw.gpu.engine_b.DISPCNT & 0x7]);
-                ImGui::Text("Tile OBJ Mapping %s", (core.hw.gpu.engine_b.DISPCNT >> 4) & 0x1 ? "2D": "1D");
-                ImGui::Text("Bitmap OBJ 2D-Dimension %s", (core.hw.gpu.engine_b.DISPCNT >> 5) & 0x1 ? "128x512": "256x256");
-                ImGui::Text("Bitmap OBJ Mapping %s", (core.hw.gpu.engine_b.DISPCNT >> 6) & 0x1 ? "2D": "1D");
-                ImGui::Text("Forced Blank %s", (core.hw.gpu.engine_b.DISPCNT >> 7) & 0x1 ? "true": "false");
-                ImGui::Text("Display BG0 %s", (core.hw.gpu.engine_b.DISPCNT >> 8) & 0x1 ? "On": "Off");
-                ImGui::Text("Display BG1 %s", (core.hw.gpu.engine_b.DISPCNT >> 9) & 0x1 ? "On": "Off");
-                ImGui::Text("Display BG2 %s", (core.hw.gpu.engine_b.DISPCNT >> 10) & 0x1 ? "On": "Off");
-                ImGui::Text("Display BG3 %s", (core.hw.gpu.engine_b.DISPCNT >> 11) & 0x1 ? "On": "Off");
-                ImGui::Text("Display OBJ %s", (core.hw.gpu.engine_b.DISPCNT >> 12) & 0x1 ? "On": "Off");
-                ImGui::Text("Display Window 0 %s", (core.hw.gpu.engine_b.DISPCNT >> 13) & 0x1 ? "On": "Off");
-                ImGui::Text("Display Window 1 %s", (core.hw.gpu.engine_b.DISPCNT >> 14) & 0x1 ? "On": "Off");
-                ImGui::Text("Display OBJ Window %s", (core.hw.gpu.engine_b.DISPCNT >> 15) & 0x1 ? "On": "Off");
-                ImGui::Text("Display Mode %s", display_modes[(core.hw.gpu.engine_a.DISPCNT >> 16) & 0x3]);
-                ImGui::Text("Tile OBJ 1D-Boundary %d", (core.hw.gpu.engine_a.DISPCNT >> 20) & 0x3);
-                ImGui::Text("OBJ Processing during H-Blank %s", (core.hw.gpu.engine_a.DISPCNT >> 23) & 0x1 ? "true" : "false");
+                ImGui::Text("dispcnt: %08x", core.system.gpu.engine_b.DISPCNT);
+                ImGui::Text("BG Mode %s", bg_modes[core.system.gpu.engine_b.DISPCNT & 0x7]);
+                ImGui::Text("Tile OBJ Mapping %s", (core.system.gpu.engine_b.DISPCNT >> 4) & 0x1 ? "2D": "1D");
+                ImGui::Text("Bitmap OBJ 2D-Dimension %s", (core.system.gpu.engine_b.DISPCNT >> 5) & 0x1 ? "128x512": "256x256");
+                ImGui::Text("Bitmap OBJ Mapping %s", (core.system.gpu.engine_b.DISPCNT >> 6) & 0x1 ? "2D": "1D");
+                ImGui::Text("Forced Blank %s", (core.system.gpu.engine_b.DISPCNT >> 7) & 0x1 ? "true": "false");
+                ImGui::Text("Display BG0 %s", (core.system.gpu.engine_b.DISPCNT >> 8) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG1 %s", (core.system.gpu.engine_b.DISPCNT >> 9) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG2 %s", (core.system.gpu.engine_b.DISPCNT >> 10) & 0x1 ? "On": "Off");
+                ImGui::Text("Display BG3 %s", (core.system.gpu.engine_b.DISPCNT >> 11) & 0x1 ? "On": "Off");
+                ImGui::Text("Display OBJ %s", (core.system.gpu.engine_b.DISPCNT >> 12) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Window 0 %s", (core.system.gpu.engine_b.DISPCNT >> 13) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Window 1 %s", (core.system.gpu.engine_b.DISPCNT >> 14) & 0x1 ? "On": "Off");
+                ImGui::Text("Display OBJ Window %s", (core.system.gpu.engine_b.DISPCNT >> 15) & 0x1 ? "On": "Off");
+                ImGui::Text("Display Mode %s", display_modes[(core.system.gpu.engine_a.DISPCNT >> 16) & 0x3]);
+                ImGui::Text("Tile OBJ 1D-Boundary %d", (core.system.gpu.engine_a.DISPCNT >> 20) & 0x3);
+                ImGui::Text("OBJ Processing during H-Blank %s", (core.system.gpu.engine_a.DISPCNT >> 23) & 0x1 ? "true" : "false");
 
                 // TODO: should these be here?
-                ImGui::Text("Character Base %08x", ((core.hw.gpu.engine_a.DISPCNT >> 24) & 0x7) * 0x10000);
-                ImGui::Text("Screen Base %08x", ((core.hw.gpu.engine_a.DISPCNT >> 27) & 0x7) * 0x10000);
-                ImGui::Text("BG Extended Palettes %s", (core.hw.gpu.engine_a.DISPCNT >> 30) & 0x1 ? "true" : "false");
-                ImGui::Text("OBJ Extended Palettes %s", (core.hw.gpu.engine_a.DISPCNT >> 31) & 0x1 ? "true" : "false");
+                ImGui::Text("Character Base %08x", ((core.system.gpu.engine_a.DISPCNT >> 24) & 0x7) * 0x10000);
+                ImGui::Text("Screen Base %08x", ((core.system.gpu.engine_a.DISPCNT >> 27) & 0x7) * 0x10000);
+                ImGui::Text("BG Extended Palettes %s", (core.system.gpu.engine_a.DISPCNT >> 30) & 0x1 ? "true" : "false");
+                ImGui::Text("OBJ Extended Palettes %s", (core.system.gpu.engine_a.DISPCNT >> 31) & 0x1 ? "true" : "false");
             }
 
-            switch (core.hw.gpu.engine_b.DISPCNT & 0x7) {
+            switch (core.system.gpu.engine_b.DISPCNT & 0x7) {
             case 0x3: case 0x4:
-                if (((core.hw.gpu.engine_b.BGCNT[3] >> 7) & 0x1) == 0) {
+                if (((core.system.gpu.engine_b.BGCNT[3] >> 7) & 0x1) == 0) {
                     ImGui::Text("BG3 Extended Mode rot/scal 16-bit bg map entries");
                 } else {
-                    if ((core.hw.gpu.engine_b.BGCNT[3] >> 2) & 0x1) {
+                    if ((core.system.gpu.engine_b.BGCNT[3] >> 2) & 0x1) {
                         ImGui::Text("BG3 Extended Mode rot/scal 256 colour bitmap");
                     } else {
                         ImGui::Text("BG3 Extended Mode rot/scal direct colour bitmap");
@@ -545,20 +545,20 @@ void HostInterface::GPU2DWindow() {
                 
                 break;
             case 0x5:
-                if (((core.hw.gpu.engine_b.BGCNT[2] >> 7) & 0x1) == 0) {
+                if (((core.system.gpu.engine_b.BGCNT[2] >> 7) & 0x1) == 0) {
                     ImGui::Text("BG2 Extended Mode rot/scal 16-bit bg map entries");
                 } else {
-                    if ((core.hw.gpu.engine_b.BGCNT[2] >> 2) & 0x1) {
+                    if ((core.system.gpu.engine_b.BGCNT[2] >> 2) & 0x1) {
                         ImGui::Text("BG2 Extended Mode rot/scal 256 colour bitmap");
                     } else {
                         ImGui::Text("BG2 Extended Mode rot/scal direct colour bitmap");
                     }
                 }
 
-                if (((core.hw.gpu.engine_b.BGCNT[3] >> 7) & 0x1) == 0) {
+                if (((core.system.gpu.engine_b.BGCNT[3] >> 7) & 0x1) == 0) {
                     ImGui::Text("BG3 Extended Mode rot/scal 16-bit bg map entries");
                 } else {
-                    if ((core.hw.gpu.engine_b.BGCNT[3] >> 2) & 0x1) {
+                    if ((core.system.gpu.engine_b.BGCNT[3] >> 2) & 0x1) {
                         ImGui::Text("BG3 Extended Mode rot/scal 256 colour bitmap");
                     } else {
                         ImGui::Text("BG3 Extended Mode rot/scal direct colour bitmap");
@@ -580,13 +580,13 @@ void HostInterface::GPU2DWindow() {
 void HostInterface::GPUWindow() {
     ImGui::Begin("GPU");
     if (ImGui::CollapsingHeader("powcnt1", ImGuiTreeNodeFlags_None)) {
-        ImGui::Text("powcnt1: %04x", core.hw.gpu.POWCNT1);
-        ImGui::Text("Enable Both LCDs %s", core.hw.gpu.POWCNT1 & 0x1 ? "true" : "false");
-        ImGui::Text("Enable 2D Engine A %s", (core.hw.gpu.POWCNT1 >> 1) & 0x1 ? "true" : "false");
-        ImGui::Text("Enable 3D Rendering Engine %s", (core.hw.gpu.POWCNT1 >> 2) & 0x1 ? "true" : "false");
-        ImGui::Text("Enable 3D Geometry Engine %s", (core.hw.gpu.POWCNT1 >> 3) & 0x1 ? "true" : "false");
-        ImGui::Text("Enable 2D Engine B %s", (core.hw.gpu.POWCNT1 >> 9) & 0x1 ? "true" : "false");
-        ImGui::Text("Display Swap %s", (core.hw.gpu.POWCNT1 >> 15) & 0x1 ? "Engine A Top / Engine B Bottom" : "Engine B Top / Engine A Bottom");
+        ImGui::Text("powcnt1: %04x", core.system.gpu.POWCNT1);
+        ImGui::Text("Enable Both LCDs %s", core.system.gpu.POWCNT1 & 0x1 ? "true" : "false");
+        ImGui::Text("Enable 2D Engine A %s", (core.system.gpu.POWCNT1 >> 1) & 0x1 ? "true" : "false");
+        ImGui::Text("Enable 3D Rendering Engine %s", (core.system.gpu.POWCNT1 >> 2) & 0x1 ? "true" : "false");
+        ImGui::Text("Enable 3D Geometry Engine %s", (core.system.gpu.POWCNT1 >> 3) & 0x1 ? "true" : "false");
+        ImGui::Text("Enable 2D Engine B %s", (core.system.gpu.POWCNT1 >> 9) & 0x1 ? "true" : "false");
+        ImGui::Text("Display Swap %s", (core.system.gpu.POWCNT1 >> 15) & 0x1 ? "Engine A Top / Engine B Bottom" : "Engine B Top / Engine A Bottom");
     }
 
     ImGui::End();
@@ -594,9 +594,9 @@ void HostInterface::GPUWindow() {
 
 void HostInterface::SchedulerWindow() {
     ImGui::Begin("Scheduler");
-    ImGui::Text("Current Time: %ld", core.hw.scheduler.GetCurrentTime());
-    for (Event event : core.hw.scheduler.GetEvents()) {
-        ImGui::Text("%s +%ld", event.type->name.c_str(), event.time - core.hw.scheduler.GetCurrentTime());
+    ImGui::Text("Current Time: %ld", core.system.scheduler.GetCurrentTime());
+    for (Event event : core.system.scheduler.GetEvents()) {
+        ImGui::Text("%s +%ld", event.type->name.c_str(), event.time - core.system.scheduler.GetCurrentTime());
     }
     ImGui::End();
 }

@@ -1,7 +1,7 @@
 #include <core/hw/timers/timers.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 
-Timers::Timers(HW* hw, int arch) : hw(hw), arch(arch) {
+Timers::Timers(System& system, int arch) : system(system), arch(arch) {
     
 }
 
@@ -14,7 +14,7 @@ void Timers::Reset() {
         std::string name;
         name += arch == 1 ? "ARM9" : "ARM7";
         name += "TimerOverflow" + std::to_string(i);
-        overflow_event[i] = hw->scheduler.RegisterEvent(name, [this, i]() {
+        overflow_event[i] = system.scheduler.RegisterEvent(name, [this, i]() {
             Overflow(i);
         });
     }
@@ -57,7 +57,7 @@ void Timers::Overflow(int timer_index) {
     timer[timer_index].counter = timer[timer_index].reload_value;
 
     if (timer[timer_index].control & (1 << 6)) {
-        hw->cpu_core[arch]->SendInterrupt(3 + timer_index);
+        system.cpu_core[arch]->SendInterrupt(3 + timer_index);
     }
 
     // reactivate the timer if it's not in count up mode
@@ -77,7 +77,7 @@ void Timers::Overflow(int timer_index) {
 
 void Timers::ActivateChannel(int timer_index) {
     timer[timer_index].active = true;
-    timer[timer_index].activation_time = hw->scheduler.GetCurrentTime();
+    timer[timer_index].activation_time = system.scheduler.GetCurrentTime();
 
     // determine the delay of the event
     // for this we must see how many cycles are left internally until the
@@ -85,7 +85,7 @@ void Timers::ActivateChannel(int timer_index) {
     u64 delay = (0x10000 - timer[timer_index].counter) << timer[timer_index].shift;
 
     // now add the event
-    hw->scheduler.AddEvent(delay, &overflow_event[timer_index]);
+    system.scheduler.AddEvent(delay, &overflow_event[timer_index]);
 }
 
 void Timers::DeactivateChannel(int timer_index) {
@@ -96,7 +96,7 @@ void Timers::DeactivateChannel(int timer_index) {
         log_fatal("handle");
     }
 
-    hw->scheduler.CancelEvent(&overflow_event[timer_index]);
+    system.scheduler.CancelEvent(&overflow_event[timer_index]);
 }
 
 u16 Timers::ReadTMCNT_L(int timer_index) {
@@ -113,7 +113,7 @@ u32 Timers::ReadTMCNT(int timer_index) {
 
 u16 Timers::UpdateCounter(int timer_index) {
     u16 counter = timer[timer_index].counter;
-    u16 change = (hw->scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
+    u16 change = (system.scheduler.GetCurrentTime() - timer[timer_index].activation_time) >> timer[timer_index].shift;
     
     if (timer[timer_index].active) {
         return counter + change;

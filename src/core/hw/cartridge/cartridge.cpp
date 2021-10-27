@@ -1,8 +1,8 @@
 #include <core/hw/cartridge/cartridge.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 #include <core/hw/cartridge/save_database.h>
 
-Cartridge::Cartridge(HW* hw) : hw(hw) {
+Cartridge::Cartridge(System& system) : system(system) {
 
 }
 
@@ -191,8 +191,8 @@ void Cartridge::StartTransfer() {
         // send a transfer ready interrupt if enabled in AUXSPICNT
         // TODO: are we meant to send interrupt to both cpus?
         if (AUXSPICNT & (1 << 14)) {
-            hw->cpu_core[0]->SendInterrupt(19);
-            hw->cpu_core[1]->SendInterrupt(19);
+            system.cpu_core[0]->SendInterrupt(19);
+            system.cpu_core[1]->SendInterrupt(19);
         }
     } else {
         // since we are starting a new transfer transfer_count must start at 0
@@ -203,10 +203,10 @@ void Cartridge::StartTransfer() {
         ROMCTRL |= (1 << 23);
 
         // start a dma transfer to read from rom
-        if (hw->CartridgeAccessRights()) {
-            hw->dma[1].Trigger(5);
+        if (system.CartridgeAccessRights()) {
+            system.dma[1].Trigger(5);
         } else {
-            hw->dma[0].Trigger(2);
+            system.dma[0].Trigger(2);
         }
     }
     
@@ -313,15 +313,15 @@ auto Cartridge::ReadData() -> u32 {
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {
-            hw->cpu_core[0]->SendInterrupt(19);
-            hw->cpu_core[1]->SendInterrupt(19);
+            system.cpu_core[0]->SendInterrupt(19);
+            system.cpu_core[1]->SendInterrupt(19);
         }
     } else {
         // trigger another nds cartridge dma
-        if (hw->CartridgeAccessRights()) {
-            hw->dma[1].Trigger(5);
+        if (system.CartridgeAccessRights()) {
+            system.dma[1].Trigger(5);
         } else {
-            hw->dma[0].Trigger(2);
+            system.dma[0].Trigger(2);
         }
     }
 
@@ -368,17 +368,17 @@ auto Cartridge::ReadCommand(int command_index) -> u8 {
 void Cartridge::DirectBoot() {
     // first transfer the cartridge header (this is taken from rom address 0 and loaded into main memory at address 0x27FFE00)
     for (u32 i = 0; i < 0x170; i++) {
-        hw->arm9_memory.FastWrite<u8>(0x027FFE00 + i, rom[i]);
+        system.arm9_memory.FastWrite<u8>(0x027FFE00 + i, rom[i]);
     }
 
     // next transfer the arm9 code
     for (u32 i = 0; i < header.arm9_size; i++) {
-        hw->arm9_memory.FastWrite<u8>(header.arm9_ram_address + i, rom[header.arm9_rom_offset + i]);
+        system.arm9_memory.FastWrite<u8>(header.arm9_ram_address + i, rom[header.arm9_rom_offset + i]);
     }
 
     // finally transfer the arm7 code
     for (u32 i = 0; i < header.arm7_size; i++) {
-        hw->arm7_memory.FastWrite<u8>(header.arm7_ram_address + i, rom[header.arm7_rom_offset + i]);
+        system.arm7_memory.FastWrite<u8>(header.arm7_ram_address + i, rom[header.arm7_rom_offset + i]);
     }
 
     log_debug("[Cartridge] Data transferred into memory");
@@ -469,7 +469,7 @@ u64 Cartridge::Encrypt64(u64 data) {
 void Cartridge::InitKeyCode(u32 level, u32 modulo) {
     // copy the key1 buffer from the arm7 bios
     for (int i = 0; i < 0x412; i++) {
-        key1_buffer[i] = hw->arm7_memory.FastRead<u32>(0x30 + (i * 4));
+        key1_buffer[i] = system.arm7_memory.FastRead<u32>(0x30 + (i * 4));
     }
 
     key1_code[0] = header.gamecode;

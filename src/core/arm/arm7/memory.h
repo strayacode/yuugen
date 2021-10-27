@@ -5,11 +5,11 @@
 #include <common/types.h>
 #include <common/log.h>
 
-class HW;
+class System;
 
 class ARM7Memory : public MemoryBase {
 public:
-    ARM7Memory(HW* hw);
+    ARM7Memory(System& system);
 
     void Reset();
     void UpdateMemoryMap(u32 low_addr, u32 high_addr);
@@ -22,5 +22,5 @@ public:
     void WriteHalf(u32 addr, u16 data) override;
     void WriteWord(u32 addr, u32 data) override;
 
-    HW* hw;
+    System& system;
 };

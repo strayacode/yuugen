@@ -1,7 +1,7 @@
 #include <core/hw/rtc/rtc.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 
-RTC::RTC(HW* hw) : hw(hw) {
+RTC::RTC(System& system) : system(system) {
 
 }
 

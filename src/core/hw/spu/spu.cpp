@@ -1,5 +1,5 @@
 #include <core/hw/spu/spu.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 
 // sound notes:
 // for pcm audio data,
@@ -7,7 +7,7 @@
 // the same volume as pcm16 data
 // NN00
 
-SPU::SPU(HW* hw) : hw(hw) {
+SPU::SPU(System& system) : system(system) {
     
 }
 
@@ -138,7 +138,7 @@ void SPU::RunChannel(int channel_index) {
     switch (format) {
     case 0x2:
         // read in the adpcm header
-        channel[channel_index].adpcm_header = hw->arm7_memory.FastRead<u32>(channel[channel_index].internal_address);
+        channel[channel_index].adpcm_header = system.arm7_memory.FastRead<u32>(channel[channel_index].internal_address);
         channel[channel_index].adpcm_value = (s16)channel[channel_index].adpcm_header;
         channel[channel_index].adpcm_index = std::min((channel[channel_index].adpcm_header >> 16) & 0x7F, 88U);
         channel[channel_index].internal_address += 4;
@@ -166,7 +166,7 @@ u32 SPU::GenerateSamples() {
 
         switch (format) {
         case 0x1:
-            data = (s16)hw->arm7_memory.FastRead<u16>(channel[i].internal_address);
+            data = (s16)system.arm7_memory.FastRead<u16>(channel[i].internal_address);
             data_size = 2;
             break;
         case 0x2:
@@ -189,7 +189,7 @@ u32 SPU::GenerateSamples() {
 
                 if (format == 2) {
                     // decode adpcm data
-                    u8 adpcm_data = hw->arm7_memory.FastRead<u8>(channel[i].internal_address);
+                    u8 adpcm_data = system.arm7_memory.FastRead<u8>(channel[i].internal_address);
 
                     // each sample is 4-bit
                     if (channel[i].adpcm_second_sample) {

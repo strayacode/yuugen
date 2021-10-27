@@ -5,11 +5,11 @@
 #include <string.h>
 #include <algorithm>
 
-class HW;
+class System;
 
 class CP15 {
 public:
-    CP15(HW* hw);
+    CP15(System& system);
 
     void Reset();
     void DirectBoot();
@@ -46,5 +46,5 @@ public:
     u32 dtcm_size;
     u32 itcm_size;
 
-    HW* hw;
+    System& system;
 };

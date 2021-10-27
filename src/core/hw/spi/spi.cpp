@@ -1,8 +1,7 @@
 #include <core/hw/spi/spi.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 
-
-SPI::SPI(HW* hw) : hw(hw) {
+SPI::SPI(System& system) : system(system) {
     
 }
 
@@ -39,7 +38,7 @@ void SPI::WriteSPIDATA(u8 data) {
 void SPI::DirectBoot() {
     // write user settings 1 (0x70 in length) to address 0x027FFC80 in main memory
     for (u32 i = 0; i < 0x70; i++) {
-        hw->arm9_memory.FastWrite<u8>(0x027FFC80 + i, firmware[0x3FF00 + i]);
+        system.arm9_memory.FastWrite<u8>(0x027FFC80 + i, firmware[0x3FF00 + i]);
     }
 }
 
@@ -133,7 +132,7 @@ void SPI::Transfer(u8 data) {
 
     // if enabled trigger a transfer finished irq
     if (SPICNT & (1 << 14)) {
-        hw->cpu_core[0]->SendInterrupt(23);
+        system.cpu_core[0]->SendInterrupt(23);
     }
 }
 
@@ -188,11 +187,11 @@ void SPI::TouchscreenTransfer(u8 data) {
         u8 channel = (data >> 4) & 0x7;
 
         // only return true touchscreen points if the touchscreen is currently pressed
-        if (hw->input.TouchDown()) {
+        if (system.input.TouchDown()) {
             // the formula in gbatek is used to convert touchscreen values to screen / pixel values
             // with some rearrangement we get the formula to convert screen / pixel values to touchscreen values
-            touch_x = (hw->input.point.x - scr_x1 + 1) * (adc_x2 - adc_x1) / (scr_x2 - scr_x1) + adc_x1;
-            touch_y = (hw->input.point.y - scr_y1 + 1) * (adc_y2 - adc_y1) / (scr_y2 - scr_y1) + adc_y1;
+            touch_x = (system.input.point.x - scr_x1 + 1) * (adc_x2 - adc_x1) / (scr_x2 - scr_x1) + adc_x1;
+            touch_y = (system.input.point.y - scr_y1 + 1) * (adc_y2 - adc_y1) / (scr_y2 - scr_y1) + adc_y1;
 
             switch (channel) {
             case 1:

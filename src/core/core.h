@@ -1,9 +1,9 @@
 #pragma once
 
-#include <core/hw/hw.h>
 #include <yuugen_common/emu_thread.h>
 #include <audio_common/audio_interface.h>
 #include <core/config.h>
+#include <core/system.h>
 #include <functional>
 #include <string>
 
@@ -38,7 +38,7 @@ public:
     void ToggleFramelimiter();
     void SetAudioInterface(AudioInterface& interface);
 
-    HW hw;
+    System system;
 
     Config config;
     

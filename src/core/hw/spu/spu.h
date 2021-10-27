@@ -14,11 +14,7 @@ enum ChannelRegisters {
     REG_SOUNDLEN = 0xC,
 };
 
-class SPU;
-
-void AudioCallback(SPU* spu, s16* stream, int len);
-
-class HW;
+class System;
 
 // TODO: use synchronous audio (filling a buffer relative to a channels timer)
 // (when timer of channel overflows generate a sample) instead of getting all the
@@ -26,7 +22,7 @@ class HW;
 
 class SPU {
 public:
-    SPU(HW* hw);
+    SPU(System& system);
     ~SPU();
     void Reset();
 
@@ -67,7 +63,7 @@ public:
         bool adpcm_second_sample;
     } channel[16];
 
-    HW* hw;
+    System& system;
 
     // used by the arm7
     u16 soundcnt;
@@ -92,3 +88,5 @@ public:
         0x3BB9, 0x41B2, 0x4844, 0x4F7E, 0x5771, 0x602F, 0x69CE, 0x7462, 0x7FFF
     };
 };
+
+void AudioCallback(SPU* spu, s16* stream, int len);

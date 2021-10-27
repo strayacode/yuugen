@@ -1,7 +1,7 @@
 #include <core/hw/ipc/ipc.h>
-#include <core/hw/hw.h>
+#include <core/core.h>
 
-IPC::IPC(HW* hw) : hw(hw) {
+IPC::IPC(System& system) : system(system) {
 
 }
 
@@ -24,7 +24,7 @@ void IPC::WriteIPCSYNC7(u16 data) {
     
     // if ipcsync 7 is sending an interrupt and interrupts are enabled on ipcsync9
     if ((IPCSYNC7 & (1 << 13)) && (IPCSYNC9 & (1 << 14))) {
-        hw->cpu_core[1]->SendInterrupt(16);
+        system.cpu_core[1]->SendInterrupt(16);
     }
 }
 
@@ -39,7 +39,7 @@ void IPC::WriteIPCSYNC9(u16 data) {
     
     // if ipcsync 9 is sending an interrupt and interrupts are enabled on ipcsync 7
     if ((IPCSYNC9 & (1 << 13)) && (IPCSYNC7 & (1 << 14))) {
-        hw->cpu_core[0]->SendInterrupt(16);
+        system.cpu_core[0]->SendInterrupt(16);
     }
 }
 
@@ -68,19 +68,19 @@ void IPC::WriteIPCFIFOCNT7(u16 data) {
 
         // request a Send Fifo Empty IRQ if bit 2 is set
         if (IPCFIFOCNT7 & (1 << 2)) {
-            hw->cpu_core[0]->SendInterrupt(17);
+            system.cpu_core[0]->SendInterrupt(17);
         }
 
     }
 
     // request a send fifo empty irq if (bit 2 and bit 0) goes from 0 to 1
     if (!(IPCFIFOCNT7 & (1 << 2)) && (IPCFIFOCNT7 & 1) && (data & (1 << 2))) {
-        hw->cpu_core[0]->SendInterrupt(17);
+        system.cpu_core[0]->SendInterrupt(17);
     }
 
     // request a fifo recv not empty irq if (bit 10 and not bit 8) goes from 0 to 1
     if (!(IPCFIFOCNT7 & (1 << 10)) && !(IPCFIFOCNT7 & (1 << 8)) && (data & (1 << 10))) {
-        hw->cpu_core[0]->SendInterrupt(18);
+        system.cpu_core[0]->SendInterrupt(18);
     }
 
     // if bit 14 is set then this signifies that the error has been acknowledged
@@ -106,18 +106,18 @@ void IPC::WriteIPCFIFOCNT9(u16 data) {
 
         // request a Send Fifo Empty IRQ if bit 2 is set
         if (IPCFIFOCNT9 & (1 << 2)) {
-            hw->cpu_core[1]->SendInterrupt(17);
+            system.cpu_core[1]->SendInterrupt(17);
         }
     }
 
     // request a send fifo empty irq if (bit 2 and bit 0) goes from 0 to 1
     if (!(IPCFIFOCNT9 & (1 << 2)) && (IPCFIFOCNT9 & 1) && (data & (1 << 2))) {
-        hw->cpu_core[1]->SendInterrupt(17);
+        system.cpu_core[1]->SendInterrupt(17);
     }
 
     // request a fifo recv not empty irq if (bit 10 and not bit 8) goes from 0 to 1
     if (!(IPCFIFOCNT9 & (1 << 10)) && !(IPCFIFOCNT9 & (1 << 8)) && (data & (1 << 10))) {
-        hw->cpu_core[1]->SendInterrupt(18);
+        system.cpu_core[1]->SendInterrupt(18);
     }
 
     // if bit 14 is set then this signifies that the error has been acknowledged
@@ -156,7 +156,7 @@ auto IPC::ReadFIFORECV7() -> u32 {
                 // trigger a recieve fifo empty irq if enabled
                 // on the other ipcfifocnt
                 if (IPCFIFOCNT9 & (1 << 2)) {
-                    hw->cpu_core[1]->SendInterrupt(17);
+                    system.cpu_core[1]->SendInterrupt(17);
                 }
             } else if (fifo9.size() == 15) {
                 // recieve fifo now went from full to not full
@@ -189,7 +189,7 @@ auto IPC::ReadFIFORECV9() -> u32 {
                 // trigger a recieve fifo empty irq if enabled
                 // on the other ipcfifocnt
                 if (IPCFIFOCNT7 & (1 << 2)) {
-                    hw->cpu_core[0]->SendInterrupt(17);
+                    system.cpu_core[0]->SendInterrupt(17);
                 }
             } else if (fifo7.size() == 15) {
                 // recieve fifo now went from full to not full
@@ -217,7 +217,7 @@ void IPC::WriteFIFOSEND7(u32 data) {
                 IPCFIFOCNT9 &= ~(1 << 8);
                 if (IPCFIFOCNT9 & (1 << 10)) {
                     // send recv fifo not empty irq to other cpu
-                    hw->cpu_core[1]->SendInterrupt(18);
+                    system.cpu_core[1]->SendInterrupt(18);
                 }
             } else if (fifo7.size() == 16) {
                 // set the full bits since fifo is full
@@ -245,7 +245,7 @@ void IPC::WriteFIFOSEND9(u32 data) {
 
                 if (IPCFIFOCNT7 & (1 << 10)) {
                     // send recv fifo not empty irq to other cpu
-                    hw->cpu_core[0]->SendInterrupt(18);
+                    system.cpu_core[0]->SendInterrupt(18);
                 }
             } else if (fifo9.size() == 16) {
                 // set the full bits since fifo is full

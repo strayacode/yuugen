@@ -1,6 +1,7 @@
 add_library(core
     core.h core.cpp
     config.h config.cpp
+    system.h system.cpp
 
     arm/memory_base.h arm/cpu_base.h
     arm/cpu_registers.h
@@ -9,7 +10,6 @@ add_library(core
     arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
     arm/interpreter/lookup_table.cpp
     
-    hw/hw.h hw/hw.cpp
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
     hw/cartridge/backup/flash/flash.h hw/cartridge/backup/flash/flash.cpp
     hw/cartridge/backup/eeprom/eeprom.h hw/cartridge/backup/eeprom/eeprom.cpp

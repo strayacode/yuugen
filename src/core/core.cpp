@@ -12,12 +12,12 @@ void Core::Initialise() {
 }
 
 void Core::Start() {
-    hw.Reset();
+    system.Reset();
 
     if (boot_mode == BootMode::Firmware) {
-        hw.FirmwareBoot();
+        system.FirmwareBoot();
     } else {
-        hw.DirectBoot();
+        system.DirectBoot();
     }
 }
 
@@ -28,7 +28,7 @@ void Core::Shutdown() {
 }
 
 void Core::RunFrame() {
-    hw.RunFrame();
+    system.RunFrame();
 }
 
 void Core::SetBootMode(BootMode new_mode) {
@@ -62,7 +62,7 @@ auto Core::GetState() -> State {
 }
 
 void Core::SetRomPath(std::string path) {
-    hw.SetRomPath(path);
+    system.SetRomPath(path);
 }
 
 void Core::ToggleFramelimiter() {
@@ -70,5 +70,6 @@ void Core::ToggleFramelimiter() {
 }
 
 void Core::SetAudioInterface(AudioInterface& interface) {
-    hw.spu.SetAudioInterface(interface);
+    system.spu.SetAudioInterface(interface);
 }
+

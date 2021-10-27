@@ -7,12 +7,12 @@
 #include <memory>
 #include <core/scheduler/scheduler.h>
 
-class HW;
+class System;
 
 // the NDS has 4 timers for each cpu, so 8 timers in total
 class Timers {
 public:
-    Timers(HW* hw, int arch);
+    Timers(System& system, int arch);
     void Reset();
 
     void WriteTMCNT_L(int timer_index, u16 data);
@@ -40,7 +40,7 @@ public:
         int shift;
     } timer[4];
 
-    HW* hw;
+    System& system;
 
     int arch;
 

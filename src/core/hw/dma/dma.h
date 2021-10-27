@@ -6,11 +6,11 @@
 #include <functional>
 #include <core/scheduler/scheduler.h>
 
-class HW;
+class System;
 
 class DMA {
 public:
-    DMA(HW* hw, int arch);
+    DMA(System& system, int arch);
     void Reset();
     void Transfer(int channel_index);
     void Trigger(u8 mode);
@@ -27,7 +27,7 @@ public:
     u32 ReadLength(int channel_index);
     void WriteLength(int channel_index, u32 data);
 
-    HW* hw;
+    System& system;
 
     int arch;
 

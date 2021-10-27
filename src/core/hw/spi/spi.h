@@ -6,11 +6,11 @@
 #include <fstream>
 #include <iterator>
 
-class HW;
+class System;
 
 class SPI {
 public:
-    SPI(HW* hw);
+    SPI(System& system);
     void Reset();
     void WriteSPICNT(u16 data);
     void WriteSPIDATA(u8 data);
@@ -48,7 +48,7 @@ public:
     // Write/Program/Erase in Progess
     bool write_in_progress;
 
-    HW* hw;
+    System& system;
 
     u16 adc_x1;
     u16 adc_x2;
