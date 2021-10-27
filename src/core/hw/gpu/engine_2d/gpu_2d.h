@@ -27,6 +27,7 @@ struct GPU2D {
     void RenderExtended(int bg_index, u16 line);
     void RenderObjects(u16 line);
     void RenderAffine(int bg_index, u16 line);
+    void RenderLarge(int bg_index, u16 line);
 
     auto Convert15To24(u32 colour) -> u32;
 

@@ -121,7 +121,6 @@ void GPU2D::RenderScanline(u16 line) {
         obj_layer[(256 * line) + i].priority = 4;
     }
 
-    // get the display mode (bits 16..17)
     u8 display_mode = (DISPCNT >> 16) & 0x3;
     switch (display_mode) {
     case 0:
@@ -167,93 +166,58 @@ void GPU2D::RenderVRAMDisplay(u16 line) {
 
 void GPU2D::RenderGraphicsDisplay(u16 line) {
     u8 bg_mode = DISPCNT & 0x7;
-    switch (bg_mode) {
-    case 0:
-        if (DISPCNT & (1 << 8)) {
+
+    if (DISPCNT & (1 << 8)) {
+        if ((DISPCNT & (1 << 3)) || (bg_mode == 6)) {
+            for (int i = 0; i < 256; i++) {
+                bg_layers[0][(256 * line) + i] = gpu->render_engine.framebuffer[(256 * line) + i];
+            }
+        } else {
             RenderText(0, line);
         }
-        if (DISPCNT & (1 << 9)) {
+    }
+
+    if (DISPCNT & (1 << 9)) {
+        if (bg_mode != 6) {
             RenderText(1, line);
         }
-        if (DISPCNT & (1 << 10)) {
+    }
+
+    if (DISPCNT & (1 << 10)) {
+        switch (bg_mode) {
+        case 0:
+        case 1:
+        case 3:
             RenderText(2, line);
-        }
-        if (DISPCNT & (1 << 11)) {
-            RenderText(3, line);
-        }
-        break;
-    case 1:
-        if (DISPCNT & (1 << 8)) {
-            RenderText(0, line);
-        }
-        if (DISPCNT & (1 << 9)) {
-            RenderText(1, line);
-        }
-        if (DISPCNT & (1 << 10)) {
-            RenderText(2, line);
-        }
-        if (DISPCNT & (1 << 11)) {
-            RenderAffine(3, line);
-        }
-        break;
-    case 2:
-        if (DISPCNT & (1 << 8)) {
-            RenderText(0, line);
-        }
-        if (DISPCNT & (1 << 9)) {
-            RenderText(1, line);
-        }
-        if (DISPCNT & (1 << 10)) {
+            break;
+        case 2:
+        case 4:
             RenderAffine(2, line);
-        }
-        if (DISPCNT & (1 << 11)) {
-            RenderAffine(3, line);
-        }
-        break;
-    case 3:
-        if (DISPCNT & (1 << 8)) {
-            RenderText(0, line);
-        }
-        if (DISPCNT & (1 << 9)) {
-            RenderText(1, line);
-        }
-        if (DISPCNT & (1 << 10)) {
-            RenderText(2, line);
-        }
-        if (DISPCNT & (1 << 11)) {
-            RenderExtended(3, line);
-        }
-        break;
-    case 4:
-        if (DISPCNT & (1 << 8)) {
-            RenderText(0, line);
-        }
-        if (DISPCNT & (1 << 9)) {
-            RenderText(1, line);
-        }
-        if (DISPCNT & (1 << 10)) {
-            RenderAffine(2, line);
-        }
-        if (DISPCNT & (1 << 11)) {
-            RenderExtended(3, line);
-        }
-        break;
-    case 5:
-        if (DISPCNT & (1 << 8)) {
-            RenderText(0, line);
-        }
-        if (DISPCNT & (1 << 9)) {
-            RenderText(1, line);
-        }
-        if (DISPCNT & (1 << 10)) {
+            break;
+        case 5:
             RenderExtended(2, line);
+            break;
+        case 6:
+            RenderLarge(2, line);
+            break;
         }
-        if (DISPCNT & (1 << 11)) {
+    }
+
+    if (DISPCNT & (1 << 11)) {
+        switch (bg_mode) {
+        case 0:
+            RenderText(3, line);
+            break;
+        case 1:
+        case 2:
+            RenderAffine(3, line);
+            break;
+        case 3:
+        case 4:
+        case 5:
             RenderExtended(3, line);
+            break;
         }
-        break;
-    default:
-        log_fatal("[GPU2D] BG mode %d is unimplemented", bg_mode);
     }
 
     if (DISPCNT & (1 << 12)) {
