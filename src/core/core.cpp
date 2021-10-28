@@ -4,7 +4,8 @@ Core::Core(UpdateFunction update_fps) :
     emu_thread([this]() {
         RunFrame();
     }, update_fps) {
-        
+    audio_interface = std::make_shared<SDLAudioInterface>();
+    system.spu.SetAudioInterface(audio_interface);
 }
 
 void Core::Initialise() {
@@ -46,10 +47,12 @@ void Core::SetState(State new_state) {
             Start();
         }
 
+        audio_interface->SetState(AudioState::Playing);
         emu_thread.Start();
         break;
     case State::Paused:
     case State::Idle:
+        audio_interface->SetState(AudioState::Paused);
         emu_thread.Stop();
         break;
     }
@@ -57,19 +60,32 @@ void Core::SetState(State new_state) {
     state = new_state;
 }
 
-auto Core::GetState() -> State {
+State Core::GetState() {
     return state;
 }
 
-void Core::SetRomPath(std::string path) {
-    system.SetRomPath(path);
+void Core::BootGame(std::string path) {
+    SetState(State::Idle);
+    SetGamePath(path);
+    SetState(State::Running);
+}
+
+void Core::BootFirmware() {
+    BootMode old_boot_mode = GetBootMode();
+
+    SetState(State::Idle);
+    SetGamePath("");
+    SetBootMode(BootMode::Firmware);
+    SetState(State::Running);
+
+    // make sure to go back to the previously configured boot mode
+    SetBootMode(old_boot_mode);
 }
 
 void Core::ToggleFramelimiter() {
     emu_thread.ToggleFramelimiter();
 }
 
-void Core::SetAudioInterface(AudioInterface& interface) {
-    system.spu.SetAudioInterface(interface);
+void Core::SetGamePath(std::string path) {
+    system.SetGamePath(path);
 }
-

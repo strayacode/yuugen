@@ -26,7 +26,7 @@ public:
     void Reset();
     void DirectBoot();
     void FirmwareBoot();
-    void SetRomPath(std::string path);
+    void SetGamePath(std::string path);
     void RunFrame();
     void WriteHALTCNT(u8 data);
     void WriteWRAMCNT(u8 data);

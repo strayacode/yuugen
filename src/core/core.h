@@ -1,11 +1,13 @@
 #pragma once
 
-#include <yuugen_common/emu_thread.h>
-#include <audio_common/audio_interface.h>
-#include <core/config.h>
-#include <core/system.h>
 #include <functional>
 #include <string>
+#include <memory>
+#include <yuugen_common/emu_thread.h>
+#include <audio_common/audio_interface.h>
+#include <audio_common/sdl/audio_interface.h>
+#include <core/config.h>
+#include <core/system.h>
 
 enum class BootMode {
     Direct,
@@ -33,21 +35,18 @@ public:
     void SetBootMode(BootMode new_mode);
     BootMode GetBootMode();
     void SetState(State new_state);
-    auto GetState() -> State;
-    void SetRomPath(std::string path);
+    State GetState();
+    void BootGame(std::string path);
+    void BootFirmware();
     void ToggleFramelimiter();
-    void SetAudioInterface(AudioInterface& interface);
+    void SetGamePath(std::string path);
 
     System system;
-
     Config config;
+    std::shared_ptr<AudioInterface> audio_interface;
     
 private:
-    // if not configured yet just direct boot
     BootMode boot_mode = BootMode::Direct;
-
-    // initally the core should be idle
     State state = State::Idle;
-
     EmuThread emu_thread;
 };

@@ -78,7 +78,7 @@ void System::FirmwareBoot() {
     cartridge.FirmwareBoot();
 }
 
-void System::SetRomPath(std::string path) {
+void System::SetGamePath(std::string path) {
     rom_path = path;
 }
 

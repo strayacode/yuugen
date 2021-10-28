@@ -1,6 +1,5 @@
 #pragma once
 
-#include <audio_common/sdl/audio_interface.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
@@ -29,8 +28,6 @@ public:
     void DrawMenubar();
     void DrawScreen();
     void SetupStyle();
-    void BootFirmware();
-
     void CartridgeWindow();
     void ARMWindow();
     void GPUWindow();
@@ -47,8 +44,6 @@ public:
     const char* glsl_version = "#version 330";
 
     ImGui::FileBrowser file_dialog;
-
-    SDLAudioInterface audio_interface;
 
     // TODO: separate framebuffer display into its own class
     GLuint textures[2];

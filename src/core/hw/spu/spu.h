@@ -2,6 +2,7 @@
 
 #include <common/types.h>
 #include <audio_common/audio_interface.h>
+#include <memory>
 
 enum ChannelRegisters {
     REG_SOUNDCNT = 0x0,
@@ -39,7 +40,7 @@ public:
     // audio stream
     u32 GenerateSamples();
 
-    void SetAudioInterface(AudioInterface& interface);
+    void SetAudioInterface(std::shared_ptr<AudioInterface> interface);
 
     struct SPUChannel {
         u32 soundcnt; // sound control
@@ -70,7 +71,7 @@ public:
     u32 SNDCAPDAD[2];
     u32 SNDCAPLEN[2];
 
-    AudioInterface* audio_interface;
+    std::shared_ptr<AudioInterface> audio_interface;
 
     static constexpr int index_table[8] = {-1, -1, -1, -1, 2, 4, 6, 8};
     static constexpr int adpcm_table[89] = {

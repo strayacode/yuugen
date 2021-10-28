@@ -2,6 +2,7 @@
 #include <common/log.h>
 #include <core/hw/spu/spu.h>
 #include <core/core.h>
+#include <audio_common/audio_interface.h>
 
 // sound notes:
 // for pcm audio data,
@@ -312,12 +313,12 @@ u32 SPU::GenerateSamples() {
     return (sample_right << 16) | (sample_left & 0xFFFF);
 }
 
-void SPU::SetAudioInterface(AudioInterface& interface) {
-    if (audio_interface != nullptr) {
+void SPU::SetAudioInterface(std::shared_ptr<AudioInterface> interface) {
+    if (audio_interface) {
         audio_interface->Close();
     }
 
-    audio_interface = &interface;
+    audio_interface = interface;
 
     audio_interface->Open(this, 32768, 1024, (Callback)AudioCallback);
 }

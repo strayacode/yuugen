@@ -38,8 +38,6 @@ auto HostInterface::Initialise() -> bool {
     io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 15.0f);
     SetupStyle();
 
-    core.SetAudioInterface(audio_interface);
-
     // initialise texture stuff
     glGenTextures(2, &textures[0]);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
@@ -179,7 +177,7 @@ void HostInterface::UpdateTitle(float fps) {
             }
 
             if (ImGui::MenuItem("Boot Firmware")) {
-                BootFirmware();
+                core.BootFirmware();
             }
 
             if (ImGui::MenuItem("Quit")) {
@@ -213,25 +211,18 @@ void HostInterface::UpdateTitle(float fps) {
             if (ImGui::MenuItem("Pause")) {
                 if (core.GetState() == State::Running) {
                     core.SetState(State::Paused);
-                    audio_interface.SetState(AudioState::Paused);
                 } else {
                     core.SetState(State::Running);
-                    audio_interface.SetState(AudioState::Playing);
                 }
-                
             }
 
             if (ImGui::MenuItem("Stop")) {
                 core.SetState(State::Idle);
-                audio_interface.SetState(AudioState::Paused);
             }
 
             if (ImGui::MenuItem("Restart")) {
                 core.SetState(State::Idle);
-                audio_interface.SetState(AudioState::Paused);
-
                 core.SetState(State::Running);
-                audio_interface.SetState(AudioState::Playing);
             }
 
             ImGui::EndMenu();
@@ -278,11 +269,7 @@ void HostInterface::UpdateTitle(float fps) {
 
     file_dialog.Display();
     if (file_dialog.HasSelected()) {
-        audio_interface.SetState(AudioState::Paused);
-        core.SetState(State::Idle);
-        core.SetRomPath(file_dialog.GetSelected().string());
-        core.SetState(State::Running);
-        audio_interface.SetState(AudioState::Playing);
+        core.BootGame(file_dialog.GetSelected().string());
         file_dialog.ClearSelected();
     }
 }
@@ -361,16 +348,6 @@ void HostInterface::CartridgeWindow() {
     ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.header.arm9_ram_address);
     ImGui::Text("Size: 0x%08x", core.system.cartridge.header.arm9_size);
     ImGui::End();
-}
-
-void HostInterface::BootFirmware() {
-    audio_interface.SetState(AudioState::Paused);
-    core.SetState(State::Idle);
-    core.SetRomPath("");
-    core.SetBootMode(BootMode::Firmware);
-    core.SetState(State::Running);
-    audio_interface.SetState(AudioState::Playing);
-    core.SetBootMode(BootMode::Direct);
 }
 
 void HostInterface::ARMWindow() {
