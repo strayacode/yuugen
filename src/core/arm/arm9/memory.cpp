@@ -1,8 +1,9 @@
+#include <common/log.h>
 #include <core/arm/arm9/memory.h>
 #include <core/core.h>
 
 ARM9Memory::ARM9Memory(System& system) : system(system) {
-
+    bios = LoadBios<0x8000>("../bios/bios9.bin");
 }
 
 void ARM9Memory::Reset() {
@@ -46,7 +47,7 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
                 break;
             case 0xFF:
                 if ((addr & 0xFFFF0000) == 0xFFFF0000) {
-                    read_page_table[index] = &system.arm9_bios[addr & 0x7FFF];
+                    read_page_table[index] = &bios[addr & 0x7FFF];
                 } else {
                     read_page_table[index] = nullptr;
                 }

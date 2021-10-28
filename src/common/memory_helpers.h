@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <common/types.h>
 
 template <typename T>
 auto read(void* dest) -> T {

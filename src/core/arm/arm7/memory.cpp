@@ -3,7 +3,7 @@
 
 
 ARM7Memory::ARM7Memory(System& system) : system(system) {
-
+    bios = LoadBios<0x4000>("../bios/bios7.bin");
 }
 
 void ARM7Memory::Reset() {
@@ -16,7 +16,7 @@ void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
         int index = addr >> 12;
         switch (addr >> 24) {
         case 0x00:
-            read_page_table[index] = &system.arm7_bios[addr & 0x3FFF];
+            read_page_table[index] = &bios[addr & 0x3FFF];
             write_page_table[index] = nullptr;
             break;
         case 0x02:

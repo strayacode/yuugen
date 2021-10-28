@@ -23,4 +23,5 @@ public:
     void WriteWord(u32 addr, u32 data) override;
 
     System& system;
+    std::array<u8, 0x4000> bios;
 };

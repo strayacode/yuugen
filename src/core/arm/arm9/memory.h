@@ -1,9 +1,8 @@
 #pragma once
 
-#include <core/arm/memory_base.h>
 #include <common/memory_helpers.h>
 #include <common/types.h>
-#include <common/log.h>
+#include <core/arm/memory_base.h>
 
 class System;
 
@@ -23,4 +22,5 @@ public:
     void WriteWord(u32 addr, u32 data) override;
 
     System& system;
+    std::array<u8, 0x8000> bios;
 };

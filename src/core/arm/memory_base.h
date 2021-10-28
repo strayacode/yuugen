@@ -1,14 +1,16 @@
 #pragma once
 
+#include <array>
+#include <string>
+#include <fstream>
+#include <string.h>
+#include <assert.h>
 #include <common/types.h>
 #include <common/log.h>
-#include <string.h>
-#include <array>
 
 // this is a base class
 // which is used by the arm7
 // and arm9 memory classes
-
 class MemoryBase {
 public:
     template <typename T>
@@ -55,9 +57,32 @@ public:
         }
     }
 
+    template <int size>
+    std::array<u8, size> LoadBios(std::string path) {
+        std::ifstream file(path, std::ios::binary | std::ios::ate);
+        std::array<u8, size> bios;
+
+        if (!file) {
+            log_fatal("bios could not be found");
+        }
+
+        file.unsetf(std::ios::skipws);
+
+        std::streampos bios_size = file.tellg();
+
+        assert(bios_size <= size);
+
+        file.seekg(0, std::ios::beg);
+        file.read(reinterpret_cast<char*>(bios.data()), size);
+        file.close();
+
+        log_debug("bios loaded successfully!");
+
+        return bios;
+    }
+
     std::array<u8*, 0x100000> read_page_table;
     std::array<u8*, 0x100000> write_page_table;
-
 private:
     virtual auto ReadByte(u32 addr) -> u8 = 0;
     virtual auto ReadHalf(u32 addr) -> u16 = 0;

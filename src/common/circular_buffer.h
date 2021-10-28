@@ -12,11 +12,11 @@ public:
         buffer = {};
     }
 
-    auto Empty() -> bool {
+    bool Empty() {
         return items == 0;
     }
 
-    auto Full() -> bool {
+    bool Full() {
         return items == size;
     }
 
@@ -30,7 +30,7 @@ public:
         items++;
     }
 
-    auto Pop() -> T {
+    T Pop() {
         T data = buffer[head_index];
 
         if (!Empty()) {
@@ -41,11 +41,11 @@ public:
         return data;
     }
 
-    auto Front() -> T {
+    T Front() {
         return buffer[head_index];
     }
 
-    auto Size() -> int {
+    int Size() {
         return items;
     }
 
