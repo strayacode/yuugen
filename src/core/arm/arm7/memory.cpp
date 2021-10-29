@@ -57,7 +57,7 @@ void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
     }
 }
 
-auto ARM7Memory::ReadByte(u32 addr) -> u8 {
+u8 ARM7Memory::ReadByte(u32 addr) {
     if (in_range(0x04000400, 0x100)) {
         return system.spu.ReadByte(addr);
     }
@@ -103,7 +103,7 @@ auto ARM7Memory::ReadByte(u32 addr) -> u8 {
     }
 }
 
-auto ARM7Memory::ReadHalf(u32 addr) -> u16 {
+u16 ARM7Memory::ReadHalf(u32 addr) {
     u16 return_value = 0;
 
     if (in_range(0x04800000, 0x100000)) {
@@ -215,7 +215,7 @@ auto ARM7Memory::ReadHalf(u32 addr) -> u16 {
     return return_value;
 }
 
-auto ARM7Memory::ReadWord(u32 addr) -> u32 {
+u32 ARM7Memory::ReadWord(u32 addr) {
     if (in_range(0x04000400, 0x100)) {
         return system.spu.ReadWord(addr);
     }

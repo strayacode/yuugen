@@ -1,12 +1,8 @@
+#include <assert.h>
 #include <core/hw/gpu/engine_2d/gpu_2d.h>
 #include <core/hw/gpu/gpu.h>
 
 void GPU2D::RenderObjects(u16 line) {
-    // check for 1d / 2d mapping
-    if (!(DISPCNT & (1 << 4))) {
-        // log_warn("handle 2d obj mapping");
-    }
-
     // assume 1d mapping for now
     // each object in oam consists of 6 bytes
     // with 2 bytes for each attribute
@@ -30,7 +26,7 @@ void GPU2D::RenderObjects(u16 line) {
         width = dimensions[shape][size][0];
         height = dimensions[shape][size][1];
         
-        u16 height_difference = line - y;
+        int height_difference = line - y;
 
         // check if an object should be rendered on the current scanline
         if (height_difference < 0 || height_difference >= height) {
@@ -38,22 +34,52 @@ void GPU2D::RenderObjects(u16 line) {
         }
 
         u8 mode = (attribute[0] >> 10) & 0x3;
+        // bool tile_mapping_2d = DISPCNT & (1 << 4);
 
-        // for now we will just ignore semi transparent and window objs
-        if (mode != 0) {
-            // log_fatal("[GPU2D] handle non-normal object %d", mode);
-        }
-
-        if (attribute[0] & (1 << 8)) {
-            // log_fatal("[GPU2D] handle rotscal object");
-        }
+        // handle double size bit
+        // assert(((attribute[0] >> 9) & 0x1) == 0);
+        assert(mode != 3);
+        // assert(tile_mapping_2d);
 
         u32 tile_number = attribute[2] & 0x3FF;
         u32 bound = (DISPCNT & (1 << 4)) ? (32 << ((DISPCNT >> 20) & 0x3)) : 32; 
         u32 obj_base = obj_addr + (tile_number * bound);
         u8 palette_number = (attribute[2] >> 12) & 0xF;
+        bool is_8bpp = attribute[0] & (1 << 13);
 
-        if (attribute[0] & (1 << 13)) {
+        if (attribute[0] & (1 << 8)) {
+            // rotscale objects
+            // first fetch the rotscal parameters
+            u8 parameter_selection = (attribute[1] >> 9) & 0x1F;
+            s16 parameters[4] = {
+                (s16)ReadOAM<u16>((parameter_selection * 32) + 0x06),
+                (s16)ReadOAM<u16>((parameter_selection * 32) + 0x0E),
+                (s16)ReadOAM<u16>((parameter_selection * 32) + 0x16),
+                (s16)ReadOAM<u16>((parameter_selection * 32) + 0x1E),
+            };
+
+            if (is_8bpp) {
+                log_fatal("handle 8bpp");
+            } else {
+                for (int j = 0; j < width; j++) {
+                    u32 coord_x = (((parameters[0] * (j - width / 2)) + (parameters[1] * (height_difference - height / 2))) >> 8) + (width / 2);     
+                    u32 coord_y = (((parameters[2] * (j - height / 2)) + (parameters[3] * (height_difference - height / 2))) >> 8) + (height / 2);
+                    u32 offset = obj_base + ((coord_y / 8) * width + coord_y % 8) * 4 + (coord_x / 8) * 32 + (coord_x % 8) / 2;
+                    u8 palette_indices = gpu->ReadVRAM<u8>(offset);
+                    u8 palette_index = (coord_x & 0x1) ? (palette_indices >> 4) : (palette_indices & 0xF);
+                    u16 colour = palette_index == 0 ? 0x8000 : ReadPaletteRAM<u16>(0x200 + (palette_number * 32) + palette_index * 2);
+                    u16 layer_offset = x + j;
+
+                    // only update a specific obj pixel if this one has lower priority and is non transparent too
+                    if (colour != 0x8000) {
+                        if (priority < obj_layer[(256 * line) + layer_offset].priority) {
+                            obj_layer[(256 * line) + layer_offset].colour = colour;
+                            obj_layer[(256 * line) + layer_offset].priority = priority;
+                        }
+                    }
+                }
+            }
+        } else if (is_8bpp) {
             // 256 colour / 1 palette
             // in 1d mapping
             // each sprite will occupy 64 bytes for each 8x8 tile in it

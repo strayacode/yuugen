@@ -25,7 +25,6 @@ using UpdateFunction = std::function<void(float fps)>;
 class Core {
 public:
     Core(UpdateFunction update_fps);
-    void Initialise();
     void Start();
     void Reset();
     void Stop();

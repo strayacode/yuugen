@@ -8,10 +8,6 @@ Core::Core(UpdateFunction update_fps) :
     system.spu.SetAudioInterface(audio_interface);
 }
 
-void Core::Initialise() {
-    
-}
-
 void Core::Start() {
     system.Reset();
 

@@ -100,7 +100,7 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
     }
 }
 
-auto ARM9Memory::ReadByte(u32 addr) -> u8 {
+u8 ARM9Memory::ReadByte(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
@@ -146,7 +146,7 @@ auto ARM9Memory::ReadByte(u32 addr) -> u8 {
     }
 }
 
-auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
+u16 ARM9Memory::ReadHalf(u32 addr) {
     u16 return_value = 0;
 
     switch (addr >> 24) {
@@ -304,7 +304,7 @@ auto ARM9Memory::ReadHalf(u32 addr) -> u16 {
     return return_value;
 }
 
-auto ARM9Memory::ReadWord(u32 addr) -> u32 {
+u32 ARM9Memory::ReadWord(u32 addr) {
     u32 return_value = 0;
 
     if ((addr >= 0x04000640) && (addr < 0x04000680)) {
