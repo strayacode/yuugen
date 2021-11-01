@@ -74,13 +74,11 @@ void ThumbALUImmediate() {
     u8 rd = (instruction >> 8) & 0x7;
     u8 opcode = (instruction >> 11) & 0x3;
 
-    u32 result = 0;
-
     switch (opcode) {
     case 0x0:
         regs.r[rd] = immediate;
         SetConditionFlag(N_FLAG, false);
-        SetConditionFlag(Z_FLAG, result == 0);
+        SetConditionFlag(Z_FLAG, regs.r[rd] == 0);
         break;
     case 0x1:
         CMP(regs.r[rd], immediate);
@@ -151,6 +149,9 @@ void ThumbDataProcessingRegister() {
         break;
     case 0xA:
         CMP(regs.r[rd], regs.r[rs]);
+        break;
+    case 0xB:
+        CMN(regs.r[rd], regs.r[rs]);
         break;
     case 0xC:
         regs.r[rd] = ORR(regs.r[rd], regs.r[rs], true);
