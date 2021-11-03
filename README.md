@@ -47,7 +47,8 @@ Right now there is no Windows support but that should come in the future
 - Support for different platforms (e.g. Android)
 - Wifi support
 - Further optimisation
-
+- Audio interpolation
+- Cheat code support
 
 
 
