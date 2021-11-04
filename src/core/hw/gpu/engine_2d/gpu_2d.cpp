@@ -58,11 +58,11 @@ void GPU2D::WritePaletteRAM(u32 addr, T data) {
     memcpy(&palette_ram[addr & 0x3FF], &data, sizeof(T));
 }
 
-template auto GPU2D::ReadPaletteRAM(u32 addr) -> u8;
-template auto GPU2D::ReadPaletteRAM(u32 addr) -> u16;
-template auto GPU2D::ReadPaletteRAM(u32 addr) -> u32;
+template u8 GPU2D::ReadPaletteRAM(u32 addr);
+template u16 GPU2D::ReadPaletteRAM(u32 addr);
+template u32 GPU2D::ReadPaletteRAM(u32 addr);
 template <typename T>
-auto GPU2D::ReadPaletteRAM(u32 addr) -> T {
+T GPU2D::ReadPaletteRAM(u32 addr) {
     T return_value = 0;
     memcpy(&return_value, &palette_ram[addr & 0x3FF], sizeof(T));
 
@@ -77,18 +77,18 @@ void GPU2D::WriteOAM(u32 addr, T data) {
     memcpy(&oam[addr & 0x3FF], &data, sizeof(T));
 }
 
-template auto GPU2D::ReadOAM(u32 addr) -> u8;
-template auto GPU2D::ReadOAM(u32 addr) -> u16;
-template auto GPU2D::ReadOAM(u32 addr) -> u32;
+template u8 GPU2D::ReadOAM(u32 addr);
+template u16 GPU2D::ReadOAM(u32 addr);
+template u32 GPU2D::ReadOAM(u32 addr);
 template <typename T>
-auto GPU2D::ReadOAM(u32 addr) -> T {
+T GPU2D::ReadOAM(u32 addr) {
     T return_value = 0;
     memcpy(&return_value, &oam[addr & 0x3FF], sizeof(T));
 
     return return_value;
 }
 
-auto GPU2D::GetFramebuffer() -> const u32* {
+const u32* GPU2D::GetFramebuffer() {
     return &framebuffer[0];
 }
 

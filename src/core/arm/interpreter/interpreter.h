@@ -81,7 +81,7 @@ private:
     void ARMFlushPipeline();
     void ThumbFlushPipeline();
 
-    auto GetCurrentSPSR() -> u32;
+    u32 GetCurrentSPSR();
     void SetCurrentSPSR(u32 data);
     bool HasSPSR();
     bool PrivilegedMode();
@@ -105,16 +105,14 @@ private:
 
     void HandleInterrupt();
     void ARMSoftwareInterrupt();
-    void ARM_UND();
-
     void ThumbSoftwareInterrupt();
-
+    void ARMUndefinedException();
     void ARMCoprocessorRegisterTransfer();
 
-    auto ReadByte(u32 addr) -> u8;
-    auto ReadHalf(u32 addr) -> u16;
-    auto ReadWord(u32 addr) -> u32;
-    auto ReadWordRotate(u32 addr) -> u32;
+    u8 ReadByte(u32 addr);
+    u16 ReadHalf(u32 addr);
+    u32 ReadWord(u32 addr);
+    u32 ReadWordRotate(u32 addr);
 
     void WriteByte(u32 addr, u8 data);
     void WriteHalf(u32 addr, u16 data);
@@ -133,6 +131,4 @@ private:
     std::array<Instruction, 4096> arm_lut;
 
     std::unique_ptr<LogFile> log_file;
-
-    int counter = 0;
 };

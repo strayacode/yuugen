@@ -12,13 +12,14 @@ struct OBJPixel {
     u8 priority;
 };
 
-struct GPU;
+class GPU;
 
-struct GPU2D {
+class GPU2D {
+public:
     GPU2D(GPU* gpu, int engine_id);
 
     void Reset();
-    auto GetFramebuffer() -> const u32*;
+    const u32* GetFramebuffer();
     void RenderScanline(u16 line);
     void RenderVRAMDisplay(u16 line);
     void RenderBlankScreen(u16 line);
@@ -29,13 +30,13 @@ struct GPU2D {
     void RenderAffine(int bg_index, u16 line);
     void RenderLarge(int bg_index, u16 line);
 
-    auto Convert15To24(u32 colour) -> u32;
+    u32 Convert15To24(u32 colour);
 
     template <typename T>
-    auto ReadPaletteRAM(u32 addr) -> T;
+    T ReadPaletteRAM(u32 addr);
 
     template <typename T>
-    auto ReadOAM(u32 addr) -> T;
+    T ReadOAM(u32 addr);
 
     template <typename T>
     void WritePaletteRAM(u32 addr, T data);

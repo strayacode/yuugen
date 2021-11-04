@@ -12,9 +12,6 @@ struct CPURegisters {
     // the current program status register
     u32 cpsr;
 
-    // the current spsr
-    u32 spsr;
-
     // this is for the banked spsrs
     u32 spsr_banked[6];
 };

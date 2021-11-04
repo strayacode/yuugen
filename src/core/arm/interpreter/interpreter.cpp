@@ -26,8 +26,6 @@ void Interpreter::Reset() {
         regs.spsr_banked[i] = 0;
     }
 
-    regs.spsr = 0;
-
     halted = false;
 
     // enter supervisor mode
@@ -78,17 +76,6 @@ void Interpreter::Run(int cycles) {
 }
 
 void Interpreter::DirectBoot(u32 entrypoint) {
-    // set general purpose registers r0-r11 to 0 regardless of the cpu arch
-    for (int i = 0; i < 12; i++) {
-        regs.r[i] = 0;
-    }
-
-    regs.r_banked[BANK_IRQ][6] = 0;
-    regs.spsr_banked[BANK_IRQ] = 0;
-
-    regs.r_banked[BANK_SVC][6] = 0;
-    regs.spsr_banked[BANK_SVC] = 0;
-
     regs.r[12] = regs.r[14] = regs.r[15] = entrypoint;
 
     // armv4/armv5 specific
@@ -138,7 +125,7 @@ void Interpreter::ThumbFlushPipeline() {
     regs.r[15] += 4;
 }
 
-auto Interpreter::GetCurrentSPSR() -> u32 {
+u32 Interpreter::GetCurrentSPSR() {
     switch (regs.cpsr & 0x1F) {
     case FIQ:
         return regs.spsr_banked[BANK_FIQ];
@@ -328,19 +315,19 @@ void Interpreter::LogRegisters() {
         regs.r[8], regs.r[9], regs.r[10], regs.r[11], regs.r[12], regs.r[13], regs.r[14], regs.r[15], instruction, regs.cpsr);
 }
 
-auto Interpreter::ReadByte(u32 addr) -> u8 {
+u8 Interpreter::ReadByte(u32 addr) {
     return memory.FastRead<u8>(addr);
 }
 
-auto Interpreter::ReadHalf(u32 addr) -> u16 {
+u16 Interpreter::ReadHalf(u32 addr) {
     return memory.FastRead<u16>(addr);
 }
 
-auto Interpreter::ReadWord(u32 addr) -> u32 {
+u32 Interpreter::ReadWord(u32 addr) {
     return memory.FastRead<u32>(addr);
 }
 
-auto Interpreter::ReadWordRotate(u32 addr) -> u32 {
+u32 Interpreter::ReadWordRotate(u32 addr) {
     u32 return_value = memory.FastRead<u32>(addr);
 
     if (addr & 0x3) {
@@ -413,57 +400,41 @@ void Interpreter::ARMCoprocessorRegisterTransfer() {
 }
 
 void Interpreter::ARMSoftwareInterrupt() {
-    // store the cpsr in spsr_svc
     regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
-    // enter supervisor mode
     SwitchMode(SVC);
 
-    // disable normal interrupts
     regs.cpsr |= (1 << 7);
-
     regs.r[14] = regs.r[15] - 4;
-    // check the exception base and jump to the correct address in the bios
-    // also only use cp15 exception base from control register if arm9
+
+    // jump to the exception base in the bios
     regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x08;
-    
     ARMFlushPipeline();
 }
 
 void Interpreter::ThumbSoftwareInterrupt() {
-    // store the cpsr in spsr_svc
     regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
-    // enter supervisor mode
     SwitchMode(SVC);
 
-    // always execute in arm state
     regs.cpsr &= ~(1 << 5);
-
-    // disable normal interrupts
     regs.cpsr |= (1 << 7);
-    
     regs.r[14] = regs.r[15] - 2;
-    // check the exception base and jump to the correct address in the bios
+
+    // jump to the exception base in the bios
     regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x08;
-    
     ARMFlushPipeline();
 }
 
-void Interpreter::ARM_UND() {
-    // store the cpsr in spsr_und
+void Interpreter::ARMUndefinedException() {
     regs.spsr_banked[BANK_UND] = regs.cpsr;
 
-    // enter undefined mode
     SwitchMode(UND);
 
-    // disable normal interrupts
     regs.cpsr |= (1 << 7);
-
     regs.r[14] = regs.r[15] - 4;
-    // check the exception base and jump to the correct address in the bios
-    // also only use cp15 exception base from control register if arm9
+
+    // jump to the exception base in the bios
     regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x04;
-    
     ARMFlushPipeline();
 }
