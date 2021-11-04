@@ -32,18 +32,16 @@ void ARMPSRTransfer() {
             value = regs.r[rm];
         }
 
-        value &= mask;
-
         if constexpr (spsr) {
             if (HasSPSR()) {
-                SetCurrentSPSR((GetCurrentSPSR() & ~mask) | value);
+                SetCurrentSPSR((GetCurrentSPSR() & ~mask) | (value & mask));
             }
         } else {
             if (instruction & (1 << 16) && PrivilegedMode()) {
-                SwitchMode(regs.r[rm] & 0x1F);
+                SwitchMode(value & 0x1F);
             }
 
-            regs.cpsr = (regs.cpsr & ~mask) | value;
+            regs.cpsr = (regs.cpsr & ~mask) | (value & mask);
         }
     } else {
         // mrs
