@@ -341,3 +341,11 @@ void MainWindow::UpdateTitle(float fps) {
     QString title = "yuugen [" + QString::number(fps, 'f', 2) + " FPS | " + QString::number(1000.0 / fps, 'f', 2) + " ms]";
     this->setWindowTitle(title);
 }
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);
+
+    QSize window_dimensions = size();
+
+    games_list_widget->games_list_widget->resize(window_dimensions.width(), window_dimensions.height() - 22);
+}
