@@ -10,4 +10,8 @@ public:
 
     QTableView* games_list_widget;
 private:
+
+signals:
+    void GameDoubleClicked(QString path);
+
 };

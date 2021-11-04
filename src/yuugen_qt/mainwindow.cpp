@@ -17,6 +17,18 @@ MainWindow::MainWindow() :
     setMinimumSize(256, 384 + 22);
 
     games_list_widget = new GamesListWidget(this);
+
+    connect(games_list_widget, &GamesListWidget::GameDoubleClicked, this, [=](QString path) {
+        core.SetState(State::Idle);
+        render_timer->stop();
+        pause_action->setEnabled(true);
+        stop_action->setEnabled(true);
+        restart_action->setEnabled(true);
+        frame_limit_action->setEnabled(true);
+        core.BootGame(path.toStdString());
+        ShowScreen();
+        render_timer->start(1000 / 60);
+    });
     
     stack_widget = new QStackedWidget;
 

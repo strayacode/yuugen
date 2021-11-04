@@ -23,5 +23,8 @@ GamesListWidget::GamesListWidget(QWidget* parent) : QWidget(parent) {
     header->setMinimumSectionSize(40);
     header->setSectionResizeMode(static_cast<int>(ColumnType::Name), QHeaderView::Stretch);
 
-    games_list_widget->setMinimumSize(256, 384);
+    connect(games_list_widget, &QTableView::doubleClicked, [=](const QModelIndex& index) {
+        QString path = games_list_model->games_list.at(index.row());
+        emit GameDoubleClicked(path);
+    });
 }
