@@ -8,22 +8,27 @@ MainWindow::MainWindow() :
 
     CreateMenubar();
 
-    top_image = QImage(256, 192, QImage::Format_RGB32);
-    bottom_image = QImage(256, 192, QImage::Format_RGB32);
+    render_widget = new RenderWidget(this, core);
 
     render_timer = new QTimer(this);
-    connect(render_timer, SIGNAL(timeout()), this, SLOT(RenderScreen()));
+    connect(render_timer, &QTimer::timeout, this, &MainWindow::RenderScreen);
 
     // account for menubar
     setMinimumSize(256, 384 + 22);
 
-    screen_width = screen_height = 0;
-
     games_list_widget = new GamesListWidget(this);
+    
     stack_widget = new QStackedWidget;
 
     stack_widget->addWidget(games_list_widget);
+    stack_widget->addWidget(render_widget);
     setCentralWidget(stack_widget);
+}
+
+void MainWindow::RenderScreen() {
+    update();
+
+    render_widget->RenderScreen();
 }
 
 void MainWindow::CreateMenubar() {
@@ -82,6 +87,7 @@ void MainWindow::CreateEmulationMenu() {
         stop_action->setEnabled(false);
         restart_action->setEnabled(false);
         frame_limit_action->setEnabled(false);
+        ShowGamesList();
 
         // stop the render timer, as there isn't anything to render
         render_timer->stop();
@@ -148,159 +154,6 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     event->accept();
 }
 
-void MainWindow::RenderScreen() {
-    // trigger a paintEvent
-    update();
-}
-
-void MainWindow::paintEvent(QPaintEvent* event) {
-    // TODO: split the renderwindow into its own separate struct and use setCentralWidget
-    if (core.GetState() == State::Running) {
-        QPainter painter(this);
-        painter.fillRect(rect(), Qt::black);
-
-        memcpy(top_image.scanLine(0), core.system.gpu.GetFramebuffer(Screen::Top), 256 * 192 * 4);
-        memcpy(bottom_image.scanLine(0), core.system.gpu.GetFramebuffer(Screen::Bottom), 256 * 192 * 4);
-
-        QSize window_dimensions = size();
-
-        QImage top_image_scaled = top_image.scaled(window_dimensions.width(), window_dimensions.height() / 2 - 11, Qt::KeepAspectRatio);
-        QImage bottom_image_scaled = bottom_image.scaled(window_dimensions.width(), window_dimensions.height() / 2 - 11, Qt::KeepAspectRatio);
-
-        screen_width = top_image_scaled.width();
-        screen_height = top_image_scaled.height() * 2;
-
-        painter.drawImage((window_dimensions.width() - top_image_scaled.width()) / 2, 22, top_image_scaled);
-        painter.drawImage((window_dimensions.width() - bottom_image_scaled.width()) / 2, bottom_image_scaled.height() + 22, bottom_image_scaled);
-    }
-}
-
-// TODO: combine into 1 key handler function
-void MainWindow::keyPressEvent(QKeyEvent *event) {
-    event->accept();
-
-    if (core.GetState() == State::Running) {
-        switch (event->key()) {
-        case Qt::Key_D:
-            core.system.input.HandleInput(BUTTON_A, true);
-            break;
-        case Qt::Key_S:
-            core.system.input.HandleInput(BUTTON_B, true);
-            break;
-        case Qt::Key_Shift:
-            core.system.input.HandleInput(BUTTON_SELECT, true);
-            break;
-        case Qt::Key_Return:
-            core.system.input.HandleInput(BUTTON_START, true);
-            break;
-        case Qt::Key_Right:
-            core.system.input.HandleInput(BUTTON_RIGHT, true);
-            break;
-        case Qt::Key_Left:
-            core.system.input.HandleInput(BUTTON_LEFT, true);
-            break;
-        case Qt::Key_Up:
-            core.system.input.HandleInput(BUTTON_UP, true);
-            break;
-        case Qt::Key_Down:
-            core.system.input.HandleInput(BUTTON_DOWN, true);
-            break;
-        case Qt::Key_E:
-            core.system.input.HandleInput(BUTTON_R, true);
-            break;
-        case Qt::Key_W:
-            core.system.input.HandleInput(BUTTON_L, true);
-            break;
-        }
-    }
-}
-
-void MainWindow::keyReleaseEvent(QKeyEvent *event) {
-    event->accept();
-
-    if (core.GetState() == State::Running) {
-        switch (event->key()) {
-        case Qt::Key_D:
-            core.system.input.HandleInput(BUTTON_A, false);
-            break;
-        case Qt::Key_S:
-            core.system.input.HandleInput(BUTTON_B, false);
-            break;
-        case Qt::Key_Shift:
-            core.system.input.HandleInput(BUTTON_SELECT, false);
-            break;
-        case Qt::Key_Return:
-            core.system.input.HandleInput(BUTTON_START, false);
-            break;
-        case Qt::Key_Right:
-            core.system.input.HandleInput(BUTTON_RIGHT, false);
-            break;
-        case Qt::Key_Left:
-            core.system.input.HandleInput(BUTTON_LEFT, false);
-            break;
-        case Qt::Key_Up:
-            core.system.input.HandleInput(BUTTON_UP, false);
-            break;
-        case Qt::Key_Down:
-            core.system.input.HandleInput(BUTTON_DOWN, false);
-            break;
-        case Qt::Key_E:
-            core.system.input.HandleInput(BUTTON_R, false);
-            break;
-        case Qt::Key_W:
-            core.system.input.HandleInput(BUTTON_L, false);
-            break;
-        }
-    }
-}
-
-void MainWindow::mousePressEvent(QMouseEvent* event) {
-    event->accept();
-
-    if (core.GetState() == State::Running) {
-        int window_width = size().width();
-        float scale = screen_height / 384.0;
-        int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
-        int y = ((event->y() - 22) / scale) - 192;
-        
-        if ((y >= 0) && (x >= 0) && event->button() == Qt::LeftButton) {
-            core.system.input.SetTouch(true);
-            core.system.input.SetPoint(x, y);
-        }
-    }
-}
-
-void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
-    event->accept();
-
-    if (core.GetState() == State::Running) {
-        int window_width = size().width();
-        float scale = screen_height / 384.0;
-        int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
-        int y = ((event->y() - 22) / scale) - 192;
-        
-        if ((y >= 0) && (x >= 0) && event->button() == Qt::LeftButton) {
-            core.system.input.SetTouch(false);
-            core.system.input.SetPoint(x, y);
-        }
-    }
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent* event) {
-    event->accept();
-
-    if (core.GetState() == State::Running) {
-        int window_width = size().width();
-        float scale = screen_height / 384.0;
-        int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
-        int y = ((event->y() - 22) / scale) - 192;
-        
-        if ((y >= 0) && (x >= 0)) {
-            core.system.input.SetPoint(x, y);
-        }
-    }
-}
-
 void MainWindow::LoadRom() {
     QFileDialog dialog(this);
     dialog.setAcceptMode(QFileDialog::AcceptOpen);
@@ -318,6 +171,7 @@ void MainWindow::LoadRom() {
         restart_action->setEnabled(true);
         frame_limit_action->setEnabled(true);
         core.BootGame(path.toStdString());
+        ShowScreen();
         render_timer->start(1000 / 60);
     }
 }
@@ -332,6 +186,7 @@ void MainWindow::BootFirmware() {
     frame_limit_action->setEnabled(true);
 
     core.BootFirmware();
+    ShowScreen();
 
     // start the draw timer so we can update the screen at 60 fps
     render_timer->start(1000 / 60);
@@ -348,4 +203,13 @@ void MainWindow::resizeEvent(QResizeEvent* event) {
     QSize window_dimensions = size();
 
     games_list_widget->games_list_widget->resize(window_dimensions.width(), window_dimensions.height() - 22);
+}
+
+void MainWindow::ShowGamesList() {
+    this->setWindowTitle("yuugen");
+    stack_widget->setCurrentIndex(0);
+}
+
+void MainWindow::ShowScreen() {
+    stack_widget->setCurrentIndex(1);
 }

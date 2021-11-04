@@ -13,7 +13,7 @@ set(SOURCES
     audio_settings_window.cpp
     games_list_widget.cpp
     games_list_model.cpp
-    render_window.cpp
+    render_widget.cpp
 )
 
 find_package(Qt5 COMPONENTS Core Widgets)

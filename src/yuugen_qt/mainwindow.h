@@ -9,6 +9,7 @@
 #include <functional>
 #include "audio_settings_window.h"
 #include "games_list_widget.h"
+#include "render_widget.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -17,12 +18,6 @@ public:
 
 protected:
     void closeEvent(QCloseEvent* event) override;
-    void paintEvent(QPaintEvent* event) override;
-    void keyPressEvent(QKeyEvent* event) override;
-    void keyReleaseEvent(QKeyEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
 
 private:
@@ -32,6 +27,8 @@ private:
     void CreateSettingsMenu();
     void CreateViewMenu();
     void UpdateTitle(float fps);
+    void ShowGamesList();
+    void ShowScreen();
 
     QAction* pause_action;
     QAction* stop_action;
@@ -39,15 +36,11 @@ private:
     QAction* frame_limit_action;
     QStackedWidget* stack_widget;
     GamesListWidget* games_list_widget;
+    RenderWidget* render_widget;
 
     Core core;
 
     QTimer* render_timer;
-
-    QImage top_image, bottom_image;
-
-    int screen_width;
-    int screen_height;
 
     QString path;
 
