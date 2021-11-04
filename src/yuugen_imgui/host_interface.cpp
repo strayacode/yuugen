@@ -336,17 +336,17 @@ void HostInterface::SetupStyle() {
 
 void HostInterface::CartridgeWindow() {
     ImGui::Begin("Cartridge");
-    ImGui::Text("%s", core.system.cartridge.header.game_title);
+    ImGui::Text("%s", core.system.cartridge.loader.header.game_title);
     ImGui::Text("ARM7");
-    ImGui::Text("Offset: 0x%08x", core.system.cartridge.header.arm7_rom_offset);
-    ImGui::Text("Entrypoint: 0x%08x", core.system.cartridge.header.arm7_entrypoint);
-    ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.header.arm7_ram_address);
-    ImGui::Text("Size: 0x%08x", core.system.cartridge.header.arm7_size);
+    ImGui::Text("Offset: 0x%08x", core.system.cartridge.loader.GetARM7Offset());
+    ImGui::Text("Entrypoint: 0x%08x", core.system.cartridge.loader.GetARM7Entrypoint());
+    ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.loader.GetARM7RAMAddress());
+    ImGui::Text("Size: 0x%08x", core.system.cartridge.loader.GetARM7Size());
     ImGui::Text("ARM9");
-    ImGui::Text("Offset: 0x%08x", core.system.cartridge.header.arm9_rom_offset);
-    ImGui::Text("Entrypoint: 0x%08x", core.system.cartridge.header.arm9_entrypoint);
-    ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.header.arm9_ram_address);
-    ImGui::Text("Size: 0x%08x", core.system.cartridge.header.arm9_size);
+    ImGui::Text("Offset: 0x%08x", core.system.cartridge.loader.GetARM9Offset());
+    ImGui::Text("Entrypoint: 0x%08x", core.system.cartridge.loader.GetARM9Entrypoint());
+    ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.loader.GetARM9RAMAddress());
+    ImGui::Text("Size: 0x%08x", core.system.cartridge.loader.GetARM9Size());
     ImGui::End();
 }
 

@@ -161,7 +161,7 @@ u32 Cartridge::ReadData() {
             }
 
             // otherwise read
-            memcpy(&data, &loader.rom[rom_position + transfer_count], 4);
+            memcpy(&data, loader.GetPointer(rom_position + transfer_count), 4);
             break;
         case CartridgeCommandType::GetFirstID:
         case CartridgeCommandType::GetSecondID:
@@ -170,10 +170,10 @@ u32 Cartridge::ReadData() {
             break;
         case CartridgeCommandType::ReadHeader:
             // return the cartridge header repeated every 0x1000 bytes
-            memcpy(&data, &loader.rom[transfer_count & 0xFFF], 4);
+            memcpy(&data, loader.GetPointer(transfer_count & 0xFFF), 4);
             break;
         case CartridgeCommandType::ReadSecureArea:
-            memcpy(&data, &loader.rom[rom_position + transfer_count], 4);
+            memcpy(&data, loader.GetPointer(rom_position + transfer_count), 4);
             break;
         default:
             log_fatal("handle cartridge command type %d", static_cast<int>(command_type));
@@ -250,12 +250,12 @@ void Cartridge::DirectBoot() {
 
     // next transfer the arm9 code
     for (u32 i = 0; i < loader.GetARM9Size(); i++) {
-        system.arm9_memory.FastWrite<u8>(loader.GetARM9RAMAddress() + i, loader.rom[loader.GetARM9Offset() + i]);
+        system.arm9_memory.FastWrite<u8>(loader.GetARM9RAMAddress() + i, *loader.GetPointer(loader.GetARM9Offset() + i));
     }
 
     // finally transfer the arm7 code
     for (u32 i = 0; i < loader.GetARM7Size(); i++) {
-        system.arm7_memory.FastWrite<u8>(loader.GetARM7RAMAddress() + i, loader.rom[loader.GetARM7Offset() + i]);
+        system.arm7_memory.FastWrite<u8>(loader.GetARM7RAMAddress() + i, *loader.GetPointer(loader.GetARM7Offset() + i));
     }
 
     log_debug("[Cartridge] Data transferred into memory");
@@ -265,26 +265,26 @@ void Cartridge::FirmwareBoot() {
     if (loader.GetSize() >= 0x8000) {
         u64 encry_obj = 0x6A624F7972636E65;
 
-        memcpy(&loader.rom[0x4000], &encry_obj, 8);
+        memcpy(loader.GetPointer(0x4000), &encry_obj, 8);
 
         InitKeyCode(3, 2);
 
         // encrypt the first 2kb of the secure area
         for (int i = 0; i < 0x800; i += 8) {
             u64 data = 0;
-            memcpy(&data, &loader.rom[0x4000 + i], 8);
+            memcpy(&data, loader.GetPointer(0x4000 + i), 8);
 
             u64 encrypted_data = Encrypt64(data);
-            memcpy(&loader.rom[0x4000 + i], &encrypted_data, 8);
+            memcpy(loader.GetPointer(0x4000 + i), &encrypted_data, 8);
         }
 
         // double encrypt the first 8 bytes
         u64 data = 0;
-        memcpy(&data, &loader.rom[0x4000], 8);
+        memcpy(&data, loader.GetPointer(0x4000), 8);
 
         InitKeyCode(2, 2);
         u64 encrypted_data = Encrypt64(data);
-        memcpy(&loader.rom[0x4000], &encrypted_data, 8);
+        memcpy(loader.GetPointer(0x4000), &encrypted_data, 8);
 
         log_debug("[Cartridge] First 2kb of secure area encrypted successfully");
     }

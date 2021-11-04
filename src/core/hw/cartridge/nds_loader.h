@@ -34,7 +34,6 @@ public:
     u32 GetARM9Offset();
     u32 GetGamecode();
 
-// private:
     struct CartridgeHeader {
         char game_title[12];
 
