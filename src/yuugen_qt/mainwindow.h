@@ -34,6 +34,8 @@ private:
     QAction* stop_action;
     QAction* restart_action;
     QAction* frame_limit_action;
+    QAction* firmware_action;
+    QAction* direct_action;
     QStackedWidget* stack_widget;
     GamesListWidget* games_list_widget;
     RenderWidget* render_widget;

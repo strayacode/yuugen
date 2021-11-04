@@ -68,7 +68,29 @@ void MainWindow::CreateEmulationMenu() {
 
     QAction* boot_firmware_action = emulation_menu->addAction(tr("Boot Firmware"));
 
+    QMenu* boot_mode_menu = emulation_menu->addMenu(tr("Boot Mode"));
+    firmware_action = boot_mode_menu->addAction(tr("Firmware"));
+    direct_action = boot_mode_menu->addAction(tr("Direct"));
+
+    firmware_action->setCheckable(true);
+    direct_action->setCheckable(true);
+
+    firmware_action->setChecked(core.GetBootMode() == BootMode::Firmware);
+    direct_action->setChecked(core.GetBootMode() == BootMode::Direct);
+
     connect(boot_firmware_action, &QAction::triggered, this, &MainWindow::BootFirmware);
+
+    connect(firmware_action, &QAction::triggered, this, [this]() {
+        core.SetBootMode(BootMode::Firmware);
+        firmware_action->setChecked(core.GetBootMode() == BootMode::Firmware);
+        direct_action->setChecked(core.GetBootMode() == BootMode::Direct);
+    });
+
+    connect(direct_action, &QAction::triggered, this, [this]() {
+        core.SetBootMode(BootMode::Direct);
+        firmware_action->setChecked(core.GetBootMode() == BootMode::Firmware);
+        direct_action->setChecked(core.GetBootMode() == BootMode::Direct);
+    });
 
     connect(pause_action, &QAction::triggered, this, [this]() {
         if (core.GetState() == State::Running) {
