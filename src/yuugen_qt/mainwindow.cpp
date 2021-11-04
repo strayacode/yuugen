@@ -1,10 +1,10 @@
 #include <QtWidgets>
 #include "mainwindow.h"
 
-MainWindow::MainWindow() {
-    core = std::make_unique<Core>([this](float fps) {
+MainWindow::MainWindow() :
+    core([this](float fps) {
         UpdateTitle(fps);
-    });
+    }) {
 
     CreateMenubar();
 
@@ -18,9 +18,6 @@ MainWindow::MainWindow() {
     setMinimumSize(256, 384 + 22);
 
     screen_width = screen_height = 0;
-    
-    // initialise audio
-    core->SetAudioInterface(audio_interface);
 }
 
 void MainWindow::CreateMenubar() {
@@ -63,20 +60,17 @@ void MainWindow::CreateEmulationMenu() {
     connect(boot_firmware_action, &QAction::triggered, this, &MainWindow::BootFirmware);
 
     connect(pause_action, &QAction::triggered, this, [this]() {
-        if (core->GetState() == State::Running) {
-            core->SetState(State::Paused);
-            audio_interface.SetState(AudioState::Paused);
+        if (core.GetState() == State::Running) {
+            core.SetState(State::Paused);
             render_timer->stop();
         } else {
-            core->SetState(State::Running);
-            audio_interface.SetState(AudioState::Playing);
+            core.SetState(State::Running);
             render_timer->start(1000 / 60);
         }
     });
 
     connect(stop_action, &QAction::triggered, this, [this]() {
-        core->SetState(State::Idle);
-        audio_interface.SetState(AudioState::Paused);
+        core.SetState(State::Idle);
 
         pause_action->setEnabled(false);
         stop_action->setEnabled(false);
@@ -88,25 +82,23 @@ void MainWindow::CreateEmulationMenu() {
     });
 
     connect(restart_action, &QAction::triggered, this, [this]() {
-        core->SetState(State::Idle);
-        audio_interface.SetState(AudioState::Paused);
+        core.SetState(State::Idle);
 
         // stop the render timer, as there isn't anything to render
         render_timer->stop();
 
-        core->SetState(State::Running);
-        audio_interface.SetState(AudioState::Playing);
+        core.SetState(State::Running);
 
         render_timer->start(1000 / 60);
     });
 
     connect(frame_limit_action, &QAction::triggered, this, [this]() {
-        core->SetState(State::Paused);
+        core.SetState(State::Paused);
         render_timer->stop();
 
-        core->ToggleFramelimiter();
+        core.ToggleFramelimiter();
 
-        core->SetState(State::Running);
+        core.SetState(State::Running);
         render_timer->start(1000 / 60);
     });
 }
@@ -116,7 +108,7 @@ void MainWindow::CreateSettingsMenu() {
     QAction* audio_settings_action = settings_menu->addAction(tr("Audio Settings"));
 
     connect(audio_settings_action, &QAction::triggered, this, [this]() {
-        audio_settings_window = new AudioSettingsWindow(this, core->config);
+        audio_settings_window = new AudioSettingsWindow(this, core.config);
 
         audio_settings_window->show();
         audio_settings_window->raise();
@@ -157,12 +149,12 @@ void MainWindow::RenderScreen() {
 
 void MainWindow::paintEvent(QPaintEvent* event) {
     // TODO: split the renderwindow into its own separate struct and use setCentralWidget
-    if (core->GetState() == State::Running) {
+    if (core.GetState() == State::Running) {
         QPainter painter(this);
         painter.fillRect(rect(), Qt::black);
 
-        memcpy(top_image.scanLine(0), core->hw.gpu.GetFramebuffer(Screen::Top), 256 * 192 * 4);
-        memcpy(bottom_image.scanLine(0), core->hw.gpu.GetFramebuffer(Screen::Bottom), 256 * 192 * 4);
+        memcpy(top_image.scanLine(0), core.system.gpu.GetFramebuffer(Screen::Top), 256 * 192 * 4);
+        memcpy(bottom_image.scanLine(0), core.system.gpu.GetFramebuffer(Screen::Bottom), 256 * 192 * 4);
 
         QSize window_dimensions = size();
 
@@ -181,37 +173,37 @@ void MainWindow::paintEvent(QPaintEvent* event) {
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     event->accept();
 
-    if (core->GetState() == State::Running) {
+    if (core.GetState() == State::Running) {
         switch (event->key()) {
         case Qt::Key_D:
-            core->hw.input.HandleInput(BUTTON_A, true);
+            core.system.input.HandleInput(BUTTON_A, true);
             break;
         case Qt::Key_S:
-            core->hw.input.HandleInput(BUTTON_B, true);
+            core.system.input.HandleInput(BUTTON_B, true);
             break;
         case Qt::Key_Shift:
-            core->hw.input.HandleInput(BUTTON_SELECT, true);
+            core.system.input.HandleInput(BUTTON_SELECT, true);
             break;
         case Qt::Key_Return:
-            core->hw.input.HandleInput(BUTTON_START, true);
+            core.system.input.HandleInput(BUTTON_START, true);
             break;
         case Qt::Key_Right:
-            core->hw.input.HandleInput(BUTTON_RIGHT, true);
+            core.system.input.HandleInput(BUTTON_RIGHT, true);
             break;
         case Qt::Key_Left:
-            core->hw.input.HandleInput(BUTTON_LEFT, true);
+            core.system.input.HandleInput(BUTTON_LEFT, true);
             break;
         case Qt::Key_Up:
-            core->hw.input.HandleInput(BUTTON_UP, true);
+            core.system.input.HandleInput(BUTTON_UP, true);
             break;
         case Qt::Key_Down:
-            core->hw.input.HandleInput(BUTTON_DOWN, true);
+            core.system.input.HandleInput(BUTTON_DOWN, true);
             break;
         case Qt::Key_E:
-            core->hw.input.HandleInput(BUTTON_R, true);
+            core.system.input.HandleInput(BUTTON_R, true);
             break;
         case Qt::Key_W:
-            core->hw.input.HandleInput(BUTTON_L, true);
+            core.system.input.HandleInput(BUTTON_L, true);
             break;
         }
     }
@@ -220,37 +212,37 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 void MainWindow::keyReleaseEvent(QKeyEvent *event) {
     event->accept();
 
-    if (core->GetState() == State::Running) {
+    if (core.GetState() == State::Running) {
         switch (event->key()) {
         case Qt::Key_D:
-            core->hw.input.HandleInput(BUTTON_A, false);
+            core.system.input.HandleInput(BUTTON_A, false);
             break;
         case Qt::Key_S:
-            core->hw.input.HandleInput(BUTTON_B, false);
+            core.system.input.HandleInput(BUTTON_B, false);
             break;
         case Qt::Key_Shift:
-            core->hw.input.HandleInput(BUTTON_SELECT, false);
+            core.system.input.HandleInput(BUTTON_SELECT, false);
             break;
         case Qt::Key_Return:
-            core->hw.input.HandleInput(BUTTON_START, false);
+            core.system.input.HandleInput(BUTTON_START, false);
             break;
         case Qt::Key_Right:
-            core->hw.input.HandleInput(BUTTON_RIGHT, false);
+            core.system.input.HandleInput(BUTTON_RIGHT, false);
             break;
         case Qt::Key_Left:
-            core->hw.input.HandleInput(BUTTON_LEFT, false);
+            core.system.input.HandleInput(BUTTON_LEFT, false);
             break;
         case Qt::Key_Up:
-            core->hw.input.HandleInput(BUTTON_UP, false);
+            core.system.input.HandleInput(BUTTON_UP, false);
             break;
         case Qt::Key_Down:
-            core->hw.input.HandleInput(BUTTON_DOWN, false);
+            core.system.input.HandleInput(BUTTON_DOWN, false);
             break;
         case Qt::Key_E:
-            core->hw.input.HandleInput(BUTTON_R, false);
+            core.system.input.HandleInput(BUTTON_R, false);
             break;
         case Qt::Key_W:
-            core->hw.input.HandleInput(BUTTON_L, false);
+            core.system.input.HandleInput(BUTTON_L, false);
             break;
         }
     }
@@ -259,15 +251,15 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 void MainWindow::mousePressEvent(QMouseEvent* event) {
     event->accept();
 
-    if (core->GetState() == State::Running) {
+    if (core.GetState() == State::Running) {
         int window_width = size().width();
         float scale = screen_height / 384.0;
         int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
         int y = ((event->y() - 22) / scale) - 192;
         
         if ((y >= 0) && (x >= 0) && event->button() == Qt::LeftButton) {
-            core->hw.input.SetTouch(true);
-            core->hw.input.SetPoint(x, y);
+            core.system.input.SetTouch(true);
+            core.system.input.SetPoint(x, y);
         }
     }
 }
@@ -275,15 +267,15 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
 void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
     event->accept();
 
-    if (core->GetState() == State::Running) {
+    if (core.GetState() == State::Running) {
         int window_width = size().width();
         float scale = screen_height / 384.0;
         int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
         int y = ((event->y() - 22) / scale) - 192;
         
         if ((y >= 0) && (x >= 0) && event->button() == Qt::LeftButton) {
-            core->hw.input.SetTouch(false);
-            core->hw.input.SetPoint(x, y);
+            core.system.input.SetTouch(false);
+            core.system.input.SetPoint(x, y);
         }
     }
 }
@@ -291,14 +283,14 @@ void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
 void MainWindow::mouseMoveEvent(QMouseEvent* event) {
     event->accept();
 
-    if (core->GetState() == State::Running) {
+    if (core.GetState() == State::Running) {
         int window_width = size().width();
         float scale = screen_height / 384.0;
         int x = (event->x() - ((window_width - screen_width) / 2)) / scale;
         int y = ((event->y() - 22) / scale) - 192;
         
         if ((y >= 0) && (x >= 0)) {
-            core->hw.input.SetPoint(x, y);
+            core.system.input.SetPoint(x, y);
         }
     }
 }
@@ -309,36 +301,23 @@ void MainWindow::LoadRom() {
     dialog.setDirectory("../roms");
     dialog.setNameFilter(tr("NDS ROMs (*.nds)"));
 
-    core->SetState(State::Idle);
-    audio_interface.SetState(AudioState::Paused);
+    core.SetState(State::Idle);
     render_timer->stop();
 
     if (dialog.exec()) {
         path = dialog.selectedFiles().at(0);
 
-        core->SetRomPath(path.toStdString());
-
         pause_action->setEnabled(true);
         stop_action->setEnabled(true);
         restart_action->setEnabled(true);
         frame_limit_action->setEnabled(true);
-
+        core.BootGame(path.toStdString());
         render_timer->start(1000 / 60);
-        core->SetState(State::Running);
-        core->SetAudioInterface(audio_interface);
-        audio_interface.SetState(AudioState::Playing);
-    } 
+    }
 }
 
 void MainWindow::BootFirmware() {
-    core->SetState(State::Idle);
-
     render_timer->stop();
-
-    path = "";
-    core->SetRomPath(path.toStdString());
-
-    core->SetBootMode(BootMode::Firmware);
 
     // allow emulation to be controlled now
     pause_action->setEnabled(true);
@@ -346,15 +325,10 @@ void MainWindow::BootFirmware() {
     restart_action->setEnabled(true);
     frame_limit_action->setEnabled(true);
 
+    core.BootFirmware();
+
     // start the draw timer so we can update the screen at 60 fps
     render_timer->start(1000 / 60);
-    core->SetState(State::Running);
-    audio_interface.SetState(AudioState::Playing);
-
-    // set boot mode back to direct so that only firmware boot is
-    // applied rn
-    // TODO: revert back to whatever is in the config
-    core->SetBootMode(BootMode::Direct);
 }
 
 void MainWindow::UpdateTitle(float fps) {

@@ -11,6 +11,8 @@ add_library(core
     arm/interpreter/lookup_table.cpp
     
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
+    hw/cartridge/loader_base.h 
+    hw/cartridge/nds_loader.h hw/cartridge/nds_loader.cpp
     hw/cartridge/backup/flash/flash.h hw/cartridge/backup/flash/flash.cpp
     hw/cartridge/backup/eeprom/eeprom.h hw/cartridge/backup/eeprom/eeprom.cpp
     hw/cartridge/backup/no_backup/no_backup.h hw/cartridge/backup/no_backup/no_backup.cpp

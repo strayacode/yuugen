@@ -1,36 +1,20 @@
 #include <core/hw/cartridge/cartridge.h>
 #include <core/core.h>
-#include <core/hw/cartridge/save_database.h>
 
-Cartridge::Cartridge(System& system) : system(system) {
-
-}
-
-Cartridge::~Cartridge() {
-    // only save if there is a backup already
-    if (backup) {
-        backup->SaveBackup();
-    }
-}
+Cartridge::Cartridge(System& system) : system(system) {}
 
 void Cartridge::Reset() {
-    rom.clear();
-
     ROMCTRL = 0;
     AUXSPICNT = 0;
     AUXSPIDATA = 0;
-
     transfer_count = 0;
     transfer_size = 0;
     rom_position = 0;
     command = 0;
-    rom_size = 0;
     seed0 = seed1 = 0;
-    backup_write_count = 0;
-    backup_type = 0;
-    backup_size = 0;
     key1_encryption = false;
     command_type = CartridgeCommandType::Dummy;
+    loader.Reset();
 
     for (int i = 0; i < 3; i++) {
         key1_code[i] = 0;
@@ -38,115 +22,7 @@ void Cartridge::Reset() {
 }
 
 void Cartridge::LoadRom(std::string rom_path) {
-    if (rom_path == "") {
-        // if no rom is given then don't load one
-        // set to 0 backup size, so that no backup exists
-        backup_size = 0;
-        return;
-    }
-
-    std::ifstream file(rom_path, std::ios::binary);
-
-    if (!file) {
-        log_fatal("rom with path %s does not exist!", rom_path.c_str());
-    }
-
-    file.unsetf(std::ios::skipws);
-
-    std::streampos size;
-
-    file.seekg(0, std::ios::end);
-    size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // reserve bytes for our rom vector specified by rom_size
-    rom.reserve(size);
-
-    rom.insert(rom.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
-
-    rom_size = rom.size();
-
-    file.close();
-
-    log_debug("[Cartridge] Rom data loaded");
-    log_debug("[Cartridge] Size: %08lx", rom_size);
-
-    LoadHeaderData();
-
-    DetectBackupType();
-
-    // now we want to do backup stuff
-    std::string save_path = rom_path.replace(rom_path.begin(), rom_path.begin() + 7, "../saves");
-
-    save_path.replace(save_path.find(".nds"), 4, ".sav");
-
-    switch (backup_type) {
-    case FLASH:
-        backup = std::make_unique<FlashBackup>(save_path, backup_size);
-        break;
-    case EEPROM:
-        backup = std::make_unique<EEPROMBackup>(save_path, backup_size);
-        break;
-    case NO_BACKUP:
-        backup = std::make_unique<NoBackup>(save_path, 0);
-        break;
-    default:
-        log_fatal("backup type %d not handled", backup_type);
-    }
-}
-
-void Cartridge::LoadHeaderData() {
-    memcpy(&header.game_title, &rom[0], 12);
-
-    // load the u32 variables in the header struct from the respective areas of the rom
-    memcpy(&header.gamecode, &rom[0x0C], 4);
-    memcpy(&header.arm9_rom_offset, &rom[0x20], 4);
-    memcpy(&header.arm9_entrypoint, &rom[0x24], 4);
-    memcpy(&header.arm9_ram_address, &rom[0x28], 4);
-    memcpy(&header.arm9_size, &rom[0x2C], 4);
-    memcpy(&header.arm7_rom_offset, &rom[0x30], 4);
-    memcpy(&header.arm7_entrypoint, &rom[0x34], 4);
-    memcpy(&header.arm7_ram_address, &rom[0x38], 4);
-    memcpy(&header.arm7_size, &rom[0x3C], 4);
-    memcpy(&header.icon_title_offset, &rom[0x68], 4);
-    log_debug("[ARM9]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm9_rom_offset, header.arm9_entrypoint, header.arm9_ram_address, header.arm9_size);
-    log_debug("[ARM7]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm7_rom_offset, header.arm7_entrypoint, header.arm7_ram_address, header.arm7_size);
-
-    log_debug("[Cartridge] Header data loaded");
-}
-
-void Cartridge::DetectBackupType() {
-    // loop through each entry in the save database
-    for (int i = 0; i < 6776; i++) {
-        if (header.gamecode == save_database[i].gamecode) {
-            // get the save type
-            switch (save_database[i].save_type) {
-            case 0:
-                backup_type = NO_BACKUP;
-                break;
-            case 1:
-                log_fatal("handle eeprom smol");
-                break;
-            case 2: case 3: case 4:
-                backup_type = EEPROM;
-                break;
-            case 5: case 6: case 7:
-                backup_type = FLASH;
-                break;
-            default:
-                log_fatal("handle savetype %02x", save_database[i].save_type);
-            }
-
-            // get the save size
-            backup_size = save_sizes[save_database[i].save_type];
-            return;
-        }
-    }
-
-    // if the game entry is not found in the save database,
-    // then default to flash 512K
-    backup_type = FLASH;
-    backup_size = SIZE_512K;
+    loader.Load(rom_path);
 }
 
 void Cartridge::WriteROMCTRL(u32 data) {
@@ -215,7 +91,8 @@ void Cartridge::StartTransfer() {
 void Cartridge::InterpretEncryptedCommand() {
     InitKeyCode(2, 2);
     command = Decrypt64(command);
-    if (rom_size) {
+    
+    if (loader.GetSize()) {
         switch (command >> 60) {
         case 0x1:
             command_type = CartridgeCommandType::GetSecondID;
@@ -239,7 +116,7 @@ void Cartridge::InterpretEncryptedCommand() {
 }
 
 void Cartridge::InterpretDecryptedCommand() {
-    if (rom_size) {
+    if (loader.GetSize()) {
         if ((command & 0xFF00000000FFFFFF) == 0xB700000000000000) {
             rom_position = (command >> 24) & 0xFFFFFFFF;
             command_type = CartridgeCommandType::ReadData;
@@ -260,7 +137,7 @@ void Cartridge::InterpretDecryptedCommand() {
     }
 }
 
-auto Cartridge::ReadData() -> u32 {
+u32 Cartridge::ReadData() {
     u32 data = 0xFFFFFFFF;
 
     if (!(ROMCTRL & (1 << 23))) {
@@ -269,7 +146,7 @@ auto Cartridge::ReadData() -> u32 {
     }
 
     // only do commands if a rom exists
-    if (rom_size) {
+    if (loader.GetSize()) {
         // check the first command in the command buffer
         switch (command_type) {
         case CartridgeCommandType::Dummy:
@@ -279,12 +156,12 @@ auto Cartridge::ReadData() -> u32 {
                 rom_position = 0x8000 + (rom_position & 0x1FF);
             }
 
-            if ((rom_position + transfer_count) >= rom_size) {
+            if ((rom_position + transfer_count) >= loader.GetSize()) {
                 log_fatal("[Cartridge] Read data command exceeds rom size");
             }
 
             // otherwise read
-            memcpy(&data, &rom[rom_position + transfer_count], 4);
+            memcpy(&data, &loader.rom[rom_position + transfer_count], 4);
             break;
         case CartridgeCommandType::GetFirstID:
         case CartridgeCommandType::GetSecondID:
@@ -293,10 +170,10 @@ auto Cartridge::ReadData() -> u32 {
             break;
         case CartridgeCommandType::ReadHeader:
             // return the cartridge header repeated every 0x1000 bytes
-            memcpy(&data, &rom[transfer_count & 0xFFF], 4);
+            memcpy(&data, &loader.rom[transfer_count & 0xFFF], 4);
             break;
         case CartridgeCommandType::ReadSecureArea:
-            memcpy(&data, &rom[rom_position + transfer_count], 4);
+            memcpy(&data, &loader.rom[rom_position + transfer_count], 4);
             break;
         default:
             log_fatal("handle cartridge command type %d", static_cast<int>(command_type));
@@ -334,26 +211,26 @@ void Cartridge::WriteAUXSPICNT(u16 data) {
 
 void Cartridge::WriteAUXSPIDATA(u8 data) {
     // don't set if no backup exists
-    if (backup_size == 0) {
+    if (loader.GetBackupSize() == 0) {
         return;
     }
 
-    if (backup_write_count == 0) {
+    if (loader.backup_write_count == 0) {
         // interpret a new command
-        backup->ReceiveCommand(data);
+        loader.backup->ReceiveCommand(data);
 
         AUXSPIDATA = 0;
     } else {
         // TODO: make this cleaner later
-        AUXSPIDATA = backup->Transfer(data, backup_write_count);
+        AUXSPIDATA = loader.backup->Transfer(data, loader.backup_write_count);
     }
     
     if (AUXSPICNT & (1 << 6)) {
         // keep selected
-        backup_write_count++;
+        loader.backup_write_count++;
     } else {
         // deselect
-        backup_write_count = 0;
+        loader.backup_write_count = 0;
     }
 }
 
@@ -361,53 +238,53 @@ void Cartridge::ReceiveCommand(u8 command, int command_index) {
     command_buffer[command_index] = command;
 }
 
-auto Cartridge::ReadCommand(int command_index) -> u8 {
+u8 Cartridge::ReadCommand(int command_index) {
     return command_buffer[command_index];
 }
 
 void Cartridge::DirectBoot() {
     // first transfer the cartridge header (this is taken from rom address 0 and loaded into main memory at address 0x27FFE00)
     for (u32 i = 0; i < 0x170; i++) {
-        system.arm9_memory.FastWrite<u8>(0x027FFE00 + i, rom[i]);
+        system.arm9_memory.FastWrite<u8>(0x027FFE00 + i, loader.rom[i]);
     }
 
     // next transfer the arm9 code
-    for (u32 i = 0; i < header.arm9_size; i++) {
-        system.arm9_memory.FastWrite<u8>(header.arm9_ram_address + i, rom[header.arm9_rom_offset + i]);
+    for (u32 i = 0; i < loader.GetARM9Size(); i++) {
+        system.arm9_memory.FastWrite<u8>(loader.GetARM9RAMAddress() + i, loader.rom[loader.GetARM9Offset() + i]);
     }
 
     // finally transfer the arm7 code
-    for (u32 i = 0; i < header.arm7_size; i++) {
-        system.arm7_memory.FastWrite<u8>(header.arm7_ram_address + i, rom[header.arm7_rom_offset + i]);
+    for (u32 i = 0; i < loader.GetARM7Size(); i++) {
+        system.arm7_memory.FastWrite<u8>(loader.GetARM7RAMAddress() + i, loader.rom[loader.GetARM7Offset() + i]);
     }
 
     log_debug("[Cartridge] Data transferred into memory");
 }
 
 void Cartridge::FirmwareBoot() {
-    if (rom_size >= 0x8000) {
+    if (loader.GetSize() >= 0x8000) {
         u64 encry_obj = 0x6A624F7972636E65;
 
-        memcpy(&rom[0x4000], &encry_obj, 8);
+        memcpy(&loader.rom[0x4000], &encry_obj, 8);
 
         InitKeyCode(3, 2);
 
         // encrypt the first 2kb of the secure area
         for (int i = 0; i < 0x800; i += 8) {
             u64 data = 0;
-            memcpy(&data, &rom[0x4000 + i], 8);
+            memcpy(&data, &loader.rom[0x4000 + i], 8);
 
             u64 encrypted_data = Encrypt64(data);
-            memcpy(&rom[0x4000 + i], &encrypted_data, 8);
+            memcpy(&loader.rom[0x4000 + i], &encrypted_data, 8);
         }
 
         // double encrypt the first 8 bytes
         u64 data = 0;
-        memcpy(&data, &rom[0x4000], 8);
+        memcpy(&data, &loader.rom[0x4000], 8);
 
         InitKeyCode(2, 2);
         u64 encrypted_data = Encrypt64(data);
-        memcpy(&rom[0x4000], &encrypted_data, 8);
+        memcpy(&loader.rom[0x4000], &encrypted_data, 8);
 
         log_debug("[Cartridge] First 2kb of secure area encrypted successfully");
     }
@@ -472,9 +349,9 @@ void Cartridge::InitKeyCode(u32 level, u32 modulo) {
         key1_buffer[i] = system.arm7_memory.FastRead<u32>(0x30 + (i * 4));
     }
 
-    key1_code[0] = header.gamecode;
-    key1_code[1] = header.gamecode / 2;
-    key1_code[2] = header.gamecode * 2;
+    key1_code[0] = loader.GetGamecode();
+    key1_code[1] = loader.GetGamecode() / 2;
+    key1_code[2] = loader.GetGamecode() * 2;
 
     if (level >= 1) {
         ApplyKeyCode(modulo);

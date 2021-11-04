@@ -56,22 +56,16 @@ bool HostInterface::Initialise() {
     bottom_texture_area.w = 256 * window_size;
     bottom_texture_area.h = 192 * window_size;
 
-    // initialise audio
-    core.SetAudioInterface(audio_interface);
-
     // if the function has reached this far it has successfully initialised
     return true;
 }
 
 void HostInterface::Run(std::string path) {
-    core.SetRomPath(path);
-    core.SetBootMode(BootMode::Direct);
-    core.SetState(State::Running);
-    audio_interface.SetState(AudioState::Playing);
+    core.BootGame(path);
 
     while (true) {
-        SDL_UpdateTexture(top_texture, nullptr, core.hw.gpu.GetFramebuffer(Screen::Top), sizeof(u32) * 256);
-        SDL_UpdateTexture(bottom_texture, nullptr, core.hw.gpu.GetFramebuffer(Screen::Bottom), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_texture, nullptr, core.system.gpu.GetFramebuffer(Screen::Top), sizeof(u32) * 256);
+        SDL_UpdateTexture(bottom_texture, nullptr, core.system.gpu.GetFramebuffer(Screen::Bottom), sizeof(u32) * 256);
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_area);
@@ -86,34 +80,34 @@ void HostInterface::Run(std::string path) {
                 bool key_pressed = event.type == SDL_KEYDOWN;
                 switch (event.key.keysym.sym) {
                 case SDLK_d:
-                    core.hw.input.HandleInput(BUTTON_A, key_pressed);
+                    core.system.input.HandleInput(BUTTON_A, key_pressed);
                     break;
                 case SDLK_s:
-                    core.hw.input.HandleInput(BUTTON_B, key_pressed);
+                    core.system.input.HandleInput(BUTTON_B, key_pressed);
                     break;
                 case SDLK_RSHIFT:
-                    core.hw.input.HandleInput(BUTTON_SELECT, key_pressed);
+                    core.system.input.HandleInput(BUTTON_SELECT, key_pressed);
                     break;
                 case SDLK_RETURN:
-                    core.hw.input.HandleInput(BUTTON_START, key_pressed);
+                    core.system.input.HandleInput(BUTTON_START, key_pressed);
                     break;
                 case SDLK_RIGHT:
-                    core.hw.input.HandleInput(BUTTON_RIGHT, key_pressed);
+                    core.system.input.HandleInput(BUTTON_RIGHT, key_pressed);
                     break;
                 case SDLK_LEFT:
-                    core.hw.input.HandleInput(BUTTON_LEFT, key_pressed);
+                    core.system.input.HandleInput(BUTTON_LEFT, key_pressed);
                     break;
                 case SDLK_UP:
-                    core.hw.input.HandleInput(BUTTON_UP, key_pressed);
+                    core.system.input.HandleInput(BUTTON_UP, key_pressed);
                     break;
                 case SDLK_DOWN:
-                    core.hw.input.HandleInput(BUTTON_DOWN, key_pressed);
+                    core.system.input.HandleInput(BUTTON_DOWN, key_pressed);
                     break;
                 case SDLK_e:
-                    core.hw.input.HandleInput(BUTTON_R, key_pressed);
+                    core.system.input.HandleInput(BUTTON_R, key_pressed);
                     break;
                 case SDLK_w:
-                    core.hw.input.HandleInput(BUTTON_L, key_pressed);
+                    core.system.input.HandleInput(BUTTON_L, key_pressed);
                     break;
                 }
             } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
@@ -123,8 +117,8 @@ void HostInterface::Run(std::string path) {
                 if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
                     // only do a touchscreen event if it occurs in the bottom screen
                     bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
-                    core.hw.input.SetTouch(button_pressed);
-                    core.hw.input.SetPoint(x, y);
+                    core.system.input.SetTouch(button_pressed);
+                    core.system.input.SetPoint(x, y);
                 }
             }
         }

@@ -2,7 +2,6 @@
 
 #include <QMainWindow>
 #include <core/core.h>
-#include <audio_common/sdl/audio_interface.h>
 #include <string.h>
 #include <memory>
 #include <mutex>
@@ -10,7 +9,7 @@
 
 #include "audio_settings_window.h"
 
-struct MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
 	MainWindow();
@@ -37,7 +36,7 @@ private:
     QAction* restart_action;
     QAction* frame_limit_action;
 
-    std::unique_ptr<Core> core;
+    Core core;
 
     QTimer* render_timer;
 
@@ -47,8 +46,6 @@ private:
     int screen_height;
 
     QString path;
-
-    SDLAudioInterface audio_interface;
 
     AudioSettingsWindow* audio_settings_window = nullptr;
 signals:

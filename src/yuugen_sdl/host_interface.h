@@ -6,13 +6,11 @@
 #include <SDL2/SDL.h>
 #include <common/log.h>
 #include <common/types.h>
-#include <yuugen_common/emu_thread.h>
-#include <audio_common/sdl/audio_interface.h>
 
 class HostInterface {
 public:
     HostInterface();
-    auto Initialise() -> bool;
+    bool Initialise();
     void Run(std::string path);
     void Cleanup();
     void UpdateTitle(float fps);
@@ -31,6 +29,4 @@ private:
     SDL_Event event;
 
     int window_size = 1;
-
-    SDLAudioInterface audio_interface;
 };

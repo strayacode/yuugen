@@ -67,8 +67,8 @@ void System::DirectBoot() {
     arm9_memory.FastWrite<u16>(0x27FFC40, 0x0001); // Boot indicator
 
     cartridge.DirectBoot();
-    cpu_core[0]->DirectBoot(cartridge.header.arm7_entrypoint);
-    cpu_core[1]->DirectBoot(cartridge.header.arm9_entrypoint);    
+    cpu_core[0]->DirectBoot(cartridge.loader.GetARM7Entrypoint());
+    cpu_core[1]->DirectBoot(cartridge.loader.GetARM9Entrypoint());    
     spi.DirectBoot();
 }
 
