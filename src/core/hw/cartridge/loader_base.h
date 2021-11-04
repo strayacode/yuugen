@@ -9,6 +9,10 @@
 
 class LoaderBase {
 public:
+    LoaderBase() {
+        Reset();
+    }
+
     void Reset() {
         rom.clear();
         rom_size = 0;
@@ -46,6 +50,10 @@ public:
 
         LoadHeader();
         LoadBackup();
+    }
+
+    void SetPath(std::string path) {
+        rom_path = path;
     }
 
     // returns a pointer to a certain offset in the rom

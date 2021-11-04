@@ -1,9 +1,21 @@
 #pragma once
 
 #include <QAbstractTableModel>
+#include <QDirIterator>
+#include <QLocale>
+#include <vector>
+#include <common/types.h>
 
 enum class ColumnType {
-    Name = 0,
+    Title = 0,
+    Size = 1,
+    Gamecode = 2,
+};
+
+struct Game {
+    QString path;
+    QFileInfo info;
+    u32 gamecode;
 };
 
 class GamesListModel : public QAbstractTableModel {
@@ -15,8 +27,8 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
 
-    QStringList games_list;
+    std::vector<Game> games_list;
 private:
-    QStringList AppendGamesList(QString path);
+    void AppendGamesList(QString path);
 
 };

@@ -1,16 +1,17 @@
-#include <QDirIterator>
+#include <QByteArray>
 #include "games_list_model.h"
+#include <core/hw/cartridge/nds_loader.h>
 
 GamesListModel::GamesListModel(QObject *parent) : QAbstractTableModel(parent) {
-    games_list.append(AppendGamesList("../roms/"));
+    AppendGamesList("../roms/");
 }
 
-int GamesListModel::rowCount(const QModelIndex & /*parent*/) const {
+int GamesListModel::rowCount(const QModelIndex&) const {
    return games_list.size();
 }
 
-int GamesListModel::columnCount(const QModelIndex & /*parent*/) const {
-    return 1;
+int GamesListModel::columnCount(const QModelIndex&) const {
+    return 3;
 }
 
 QVariant GamesListModel::data(const QModelIndex &index, int role) const {
@@ -18,12 +19,21 @@ QVariant GamesListModel::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
-    QString file = games_list.at(index.row());
-    QFileInfo file_info(file);
+    Game game = games_list[index.row()];
+
+    char gamecode_string[4];
+
+    for (int i = 0; i < 4; i++) {
+        gamecode_string[i] = (game.gamecode >> (i * 8)) & 0xFF;
+    }
 
     switch (static_cast<ColumnType>(index.column())) {
-    case ColumnType::Name:
-        return file_info.fileName();
+    case ColumnType::Title:
+        return game.info.fileName();
+    case ColumnType::Size:
+        return QLocale().formattedDataSize(game.info.size());
+    case ColumnType::Gamecode:
+        return QString(gamecode_string);
     }
 
     return QVariant();
@@ -35,13 +45,17 @@ QVariant GamesListModel::headerData(int section, Qt::Orientation orientation, in
     }
  
     switch (static_cast<ColumnType>(section)) {
-    case ColumnType::Name:
-        return tr("Name");
+    case ColumnType::Title:
+        return tr("Title");
+    case ColumnType::Size:
+        return tr("Size");
+    case ColumnType::Gamecode:
+        return tr("Gamecode");
     }
     return QVariant();
 }
 
-QStringList GamesListModel::AppendGamesList(QString path) {
+void GamesListModel::AppendGamesList(QString path) {
     const QStringList file_types({"*.nds"});
 
     QDirIterator it(path, file_types,
@@ -49,11 +63,16 @@ QStringList GamesListModel::AppendGamesList(QString path) {
     );
 
     QStringList list;
-    while (it.hasNext())
-    {
+    while (it.hasNext()) {
         it.next();
-        list.append(it.filePath());
-    }
 
-    return list;
+        QString path = it.filePath();
+        QFileInfo info(path);
+
+        NDSLoader loader;
+        loader.SetPath(path.toStdString());
+        loader.LoadHeader();
+
+        games_list.push_back(Game{path, info, loader.GetGamecode()});
+    }
 }

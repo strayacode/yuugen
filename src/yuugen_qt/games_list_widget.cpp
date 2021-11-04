@@ -21,10 +21,10 @@ GamesListWidget::GamesListWidget(QWidget* parent) : QWidget(parent) {
 
     auto header = games_list_widget->horizontalHeader();
     header->setMinimumSectionSize(40);
-    header->setSectionResizeMode(static_cast<int>(ColumnType::Name), QHeaderView::Stretch);
+    header->setSectionResizeMode(static_cast<int>(ColumnType::Title), QHeaderView::Stretch);
 
     connect(games_list_widget, &QTableView::doubleClicked, [=](const QModelIndex& index) {
-        QString path = games_list_model->games_list.at(index.row());
+        QString path = games_list_model->games_list[index.row()].path;
         emit GameDoubleClicked(path);
     });
 }

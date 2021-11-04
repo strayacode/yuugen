@@ -13,8 +13,7 @@ MainWindow::MainWindow() :
     render_timer = new QTimer(this);
     connect(render_timer, &QTimer::timeout, this, &MainWindow::RenderScreen);
 
-    // account for menubar
-    setMinimumSize(256, 384 + 22);
+    setMinimumSize(600, 400);
 
     games_list_widget = new GamesListWidget(this);
 
