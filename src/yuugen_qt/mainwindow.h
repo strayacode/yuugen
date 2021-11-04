@@ -1,13 +1,14 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QStackedWidget>
 #include <core/core.h>
 #include <string.h>
 #include <memory>
 #include <mutex>
 #include <functional>
-
 #include "audio_settings_window.h"
+#include "games_list_widget.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -35,6 +36,8 @@ private:
     QAction* stop_action;
     QAction* restart_action;
     QAction* frame_limit_action;
+    QStackedWidget* stack_widget;
+    GamesListWidget* games_list_widget;
 
     Core core;
 

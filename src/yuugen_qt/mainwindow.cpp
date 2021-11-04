@@ -18,6 +18,12 @@ MainWindow::MainWindow() :
     setMinimumSize(256, 384 + 22);
 
     screen_width = screen_height = 0;
+
+    games_list_widget = new GamesListWidget(this);
+    stack_widget = new QStackedWidget;
+
+    stack_widget->addWidget(games_list_widget);
+    setCentralWidget(stack_widget);
 }
 
 void MainWindow::CreateMenubar() {

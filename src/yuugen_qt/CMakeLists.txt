@@ -11,6 +11,7 @@ set(SOURCES
     main.cpp
     mainwindow.cpp
     audio_settings_window.cpp
+    games_list_widget.cpp
 )
 
 find_package(Qt5 COMPONENTS Core Widgets)
