@@ -1,8 +1,10 @@
 #include <QByteArray>
+#include <fstream>
 #include "games_list_model.h"
 #include <core/hw/cartridge/nds_loader.h>
 
 GamesListModel::GamesListModel(QObject *parent) : QAbstractTableModel(parent) {
+    MapTitlesList("../data/dstdb.txt");
     AppendGamesList("../roms/");
 }
 
@@ -21,19 +23,13 @@ QVariant GamesListModel::data(const QModelIndex &index, int role) const {
 
     Game game = games_list[index.row()];
 
-    char gamecode_string[4];
-
-    for (int i = 0; i < 4; i++) {
-        gamecode_string[i] = (game.gamecode >> (i * 8)) & 0xFF;
-    }
-
     switch (static_cast<ColumnType>(index.column())) {
     case ColumnType::Title:
-        return game.info.fileName();
+        return game.title;
     case ColumnType::Size:
         return QLocale().formattedDataSize(game.info.size());
     case ColumnType::Gamecode:
-        return QString(gamecode_string);
+        return game.gamecode_string;
     }
 
     return QVariant();
@@ -73,6 +69,33 @@ void GamesListModel::AppendGamesList(QString path) {
         loader.SetPath(path.toStdString());
         loader.LoadHeader();
 
-        games_list.push_back(Game{path, info, loader.GetGamecode()});
+        char gamecode_string[5];
+
+        for (int i = 0; i < 4; i++) {
+            gamecode_string[i] = (loader.GetGamecode() >> (i * 8)) & 0xFF;
+        }
+
+        QString title;
+
+        if (titles_list.count(std::string(gamecode_string))) {
+            title = QString::fromStdString(titles_list[std::string(gamecode_string)]);
+        } else {
+            title = info.fileName();
+        }
+
+        gamecode_string[4] = '\0';
+        games_list.push_back(Game{path, info, title, QString(gamecode_string)});
+    }
+}
+
+void GamesListModel::MapTitlesList(QString path) {
+    std::ifstream infile(path.toStdString());
+    std::string line;
+    std::string delimiter = " = ";
+    while (std::getline(infile, line)) {
+        std::string gamecode = line.substr(0, line.find(delimiter));
+        std::string title = line.substr(line.find(delimiter));
+        title = title.erase(title.find(delimiter), 3);
+        titles_list[gamecode] = title;
     }
 }

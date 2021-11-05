@@ -4,6 +4,8 @@
 #include <QDirIterator>
 #include <QLocale>
 #include <vector>
+#include <string>
+#include <unordered_map>
 #include <common/types.h>
 
 enum class ColumnType {
@@ -15,7 +17,8 @@ enum class ColumnType {
 struct Game {
     QString path;
     QFileInfo info;
-    u32 gamecode;
+    QString title;
+    QString gamecode_string;
 };
 
 class GamesListModel : public QAbstractTableModel {
@@ -28,7 +31,10 @@ public:
     QVariant headerData(int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
 
     std::vector<Game> games_list;
+
+    // maps a gamecode to a title
+    std::unordered_map<std::string, std::string> titles_list;
 private:
     void AppendGamesList(QString path);
-
+    void MapTitlesList(QString path);
 };
