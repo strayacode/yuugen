@@ -39,8 +39,8 @@ public:
         negative = x1 < x0;
 
         if (negative) {
-            std::swap(x0, x1);
             line.x0--;
+            std::swap(x0, x1);
         }
 
         dx = x1 - x0;

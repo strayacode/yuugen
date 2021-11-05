@@ -41,6 +41,11 @@ void RenderEngine::Render() {
                     slope.Setup(x0, x1, y0, y1);
                     s32 span_start = slope.SpanStart(line);
                     s32 span_end = slope.SpanEnd(line);
+
+                    if (span_end < span_start) {
+                        std::swap(span_start, span_end);
+                    }
+
                     for (int x = span_start; x <= span_end; x++) {
                         if (x >= 0 && x < 256) {
                             framebuffer[(line * 256) + x] = 0xFFFFFFFF;
