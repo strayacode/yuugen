@@ -138,3 +138,7 @@ void System::InitialiseCPUCores(CPUCoreType core_type) {
         log_fatal("handle different cpu core!");
     }
 }
+
+std::string System::GetARMCoreType() {
+    return "Interpreter";
+}

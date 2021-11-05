@@ -10,7 +10,6 @@ GamesListWidget::GamesListWidget(QWidget* parent) : QWidget(parent) {
     games_list_widget->setModel(games_list_model);
     games_list_widget->setShowGrid(false);
     games_list_widget->setFrameStyle(QFrame::NoFrame);
-    games_list_widget->setAlternatingRowColors(true);
     games_list_widget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     games_list_widget->setSelectionBehavior(QAbstractItemView::SelectRows);
     games_list_widget->verticalHeader()->setDefaultSectionSize(40);

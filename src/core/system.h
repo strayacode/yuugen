@@ -32,6 +32,7 @@ public:
     void WriteWRAMCNT(u8 data);
     bool CartridgeAccessRights();
     void InitialiseCPUCores(CPUCoreType core_type);
+    std::string GetARMCoreType();
 
     Cartridge cartridge;
     Scheduler scheduler;
