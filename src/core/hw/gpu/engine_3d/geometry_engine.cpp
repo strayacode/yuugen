@@ -44,6 +44,7 @@ void GeometryEngine::Reset() {
     polygon_type = PolygonType::Triangle;
     matrix_mode = MatrixMode::Projection;
     polygon_ram_size = 0;
+    disp_1dot_depth = 0;
 
     geometry_command_event = gpu->system.scheduler.RegisterEvent("GeometryCommand", [this]() {
         busy = false;

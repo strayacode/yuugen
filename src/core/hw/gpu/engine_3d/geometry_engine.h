@@ -153,4 +153,6 @@ public:
     GPU* gpu;
 
     EventType geometry_command_event;
+
+    u16 disp_1dot_depth;
 };

@@ -237,6 +237,10 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
             return system.POSTFLG9;
         case 0x04000304:
             return system.gpu.POWCNT1;
+        case 0x04000320:
+            return 0;
+        case 0x04000606:
+            return system.gpu.render_engine.vertex_ram_size;
         case 0x04001000:
             return system.gpu.engine_b.DISPCNT & 0xFFFF;
         case 0x04001008:
@@ -884,6 +888,9 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
         case 0x040003B8: case 0x040003B9: case 0x040003BA: case 0x040003BB:
         case 0x040003BC: case 0x040003BD: case 0x040003BE: case 0x040003BF:
             // system.gpu.render_engine.TOON_TABLE[addr - 0x04000380] = data;
+            break;
+        case 0x04000610:
+            system.gpu.geometry_engine.disp_1dot_depth = data;
             break;
         case 0x04001000:
             system.gpu.engine_b.DISPCNT = (system.gpu.engine_b.DISPCNT & ~0xFFFF) | data;
