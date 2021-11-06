@@ -50,6 +50,9 @@ public:
     void WriteBGX(int bg_index, u32 data);
     void WriteBGY(int bg_index, u32 data);
 
+    u16 Get4BPPOBJPixel(u32 obj_base, int number, int x, int y);
+    u16 Get8BPPOBJPixel(u32 obj_base, int number, int x, int y);
+
     u32 framebuffer[256 * 192];
 
     u16 bg_layers[4][256 * 192];

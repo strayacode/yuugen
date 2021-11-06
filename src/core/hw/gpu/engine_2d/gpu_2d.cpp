@@ -240,3 +240,36 @@ void GPU2D::WriteBGY(int bg_index, u32 data) {
     // load the internal register
     internal_y[bg_index - 2] = data;
 }
+
+u16 GPU2D::Get4BPPOBJPixel(u32 obj_base, int number, int x, int y) {
+    u8 indices = gpu->ReadVRAM<u8>(obj_base + (y * 32) + (x / 2));
+    u8 index = (x & 0x1) ? (indices >> 4) : (indices & 0xF);
+    u16 colour;
+
+    if (index == 0) {
+        colour = 0x8000;
+    } else {
+        colour = ReadPaletteRAM<u16>(0x200 + (number * 32) + (index * 2));
+    }
+
+    return colour;
+}
+
+u16 GPU2D::Get8BPPOBJPixel(u32 obj_base, int number, int x, int y) {
+    u8 index = gpu->ReadVRAM<u8>(obj_base + (y * 64) + x);
+    u16 colour;
+
+    if (index == 0) {
+        colour = 0x8000;
+    } else if (DISPCNT & (1 << 31)) {
+        if (engine_id) {
+            colour = gpu->ReadExtPaletteOBJA<u16>((number * 0xFF + index) * 2);
+        } else {
+            colour = gpu->ReadExtPaletteOBJB<u16>((number * 0xFF + index) * 2);
+        }
+    } else {
+        colour = ReadPaletteRAM<u16>(0x200 + (index * 2));
+    }
+
+    return colour;
+}
