@@ -40,11 +40,13 @@ void GPU2D::RenderObjects(u16 line) {
             // each sprite will occupy 64 bytes for each 8x8 tile in it
             // for each 8 that height_difference goes we will move to a new tile
             // we must also add on a multiple of 8 for the specific row in an nx8 tile
+            // in 2d mapping for 8bpp tiles are assumed to be arranged in a matrix of 128x256 pixels
+            int map_width = (DISPCNT & (1 << 4)) ? width : 128;
             if (vertical_flip) {
                 // for vertical flip we must opposite tile row in the sprite, as well as the opposite pixel row in the current tile row
-                obj_base += (7 - (height_difference % 8)) * 8 + (((height - height_difference - 1) / 8) * width) * 8;
+                obj_base += (7 - (height_difference % 8)) * 8 + (((height - height_difference - 1) / 8) * map_width) * 8;
             } else {
-                obj_base += (height_difference % 8) * 8 + ((height_difference / 8) * width) * 8;
+                obj_base += (height_difference % 8) * 8 + ((height_difference / 8) * map_width) * 8;
             }
             
             // draw each pixel in the current row
@@ -66,11 +68,13 @@ void GPU2D::RenderObjects(u16 line) {
             // each sprite will occupy 32 bytes for each 8x8 tile in it
             // for each 8 that height_difference goes we will move to a new tile
             // we must also add on a multiple of 4 for the specific row in an nx8 tile
+            // in 2d mapping for 4bpp tiles are assumed to be arranged in a matrix of 256x256 pixels
+            int map_width = (DISPCNT & (1 << 4)) ? width : 256;
             if (vertical_flip) {
                 // for vertical flip we must opposite tile row in the sprite, as well as the opposite pixel row in the current tile row
-                obj_base += (7 - (height_difference % 8)) * 4 + (((height - height_difference - 1) / 8) * width) * 4;
+                obj_base += (7 - (height_difference % 8)) * 4 + (((height - height_difference - 1) / 8) * map_width) * 4;
             } else {
-                obj_base += (height_difference % 8) * 4 + ((height_difference / 8) * width) * 4;
+                obj_base += (height_difference % 8) * 4 + ((height_difference / 8) * map_width) * 4;
             }
 
             // draw each pixel in the current row
