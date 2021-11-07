@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <common/log.h>
+#include <string.h>
 #include <core/hw/cp15/cp15.h>
 #include <core/core.h>
 
@@ -10,16 +13,14 @@ void CP15::Reset() {
     memset(dtcm, 0, 0x4000);
 
     control_register = 0;
-    itcm_base = 0;
     itcm_size = 0;
     dtcm_base = 0;
     dtcm_size = 0;
-
     dtcm_reg = 0;
     itcm_reg = 0;
 }
 
-auto CP15::Read(u32 cn, u32 cm, u32 cp) -> u32 {
+u32 CP15::Read(u32 cn, u32 cm, u32 cp) {
     switch ((cn << 16) | (cm << 8) | cp) {
     case 0x000001:
         return 0x0F0D2112; // this is the value used on the nds
@@ -53,14 +54,13 @@ auto CP15::Read(u32 cn, u32 cm, u32 cp) -> u32 {
 
 void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
     switch ((cn << 16) | (cm << 8) | cp) {
-    case 0x010000: {
+    case 0x010000:
         control_register = data;
 
         // update the itcm and dtcm memory map, as now flags may have changed
         system.arm9_memory.UpdateMemoryMap(0, itcm_size);
         system.arm9_memory.UpdateMemoryMap(dtcm_base, dtcm_base + dtcm_size);
         break;
-    }
     case 0x020000:
         // pu cachability bits for data/unified protection region
         break;
@@ -81,6 +81,7 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         break;
     case 0x070004:
         system.cpu_core[1]->Halt();
+        break;
     case 0x070500:
         // invalidate entire instruction cache
         break;
@@ -147,7 +148,7 @@ void CP15::Write(u32 cn, u32 cm, u32 cp, u32 data) {
         // now make sure to remap itcm
         system.arm9_memory.UpdateMemoryMap(0, std::max(old_itcm_size, itcm_size));
         
-        log_debug("[CP15]\nItcm Size: 0x%08x\nItcm Base: 0x%08x", itcm_size, itcm_base);
+        log_debug("[CP15]\nItcm Size: 0x%08x\nItcm Base: 0", itcm_size);
         break;
     }
     default:
@@ -163,34 +164,34 @@ void CP15::DirectBoot() {
     Write(9, 1, 1, 0x00000020);
 }
 
-auto CP15::GetITCMSize() -> u32 {
+u32 CP15::GetITCMSize() {
     return itcm_size;
 }
 
-auto CP15::GetDTCMSize() -> u32 {
+u32 CP15::GetDTCMSize() {
     return dtcm_size;
 }
 
-auto CP15::GetDTCMBase() -> u32 {
+u32 CP15::GetDTCMBase() {
     return dtcm_base;
 }
 
-auto CP15::GetITCMWriteEnabled() -> bool {
+bool CP15::GetITCMWriteEnabled() {
     return (control_register & (1 << 18));
 }
 
-auto CP15::GetDTCMWriteEnabled() -> bool {
+bool CP15::GetDTCMWriteEnabled() {
     return (control_register & (1 << 16));
 }
 
-auto CP15::GetITCMReadEnabled() -> bool {
+bool CP15::GetITCMReadEnabled() {
     return !(control_register & (1 << 19)) && (control_register & (1 << 18));
 }
 
-auto CP15::GetDTCMReadEnabled() -> bool {
+bool CP15::GetDTCMReadEnabled() {
     return !(control_register & (1 << 17)) && (control_register & (1 << 16));
 }
 
-auto CP15::GetExceptionBase() -> u32 {
+u32 CP15::GetExceptionBase() {
     return ((control_register & (1 << 13)) ? 0xFFFF0000 : 0x00000000);
 }
