@@ -114,8 +114,11 @@ void GeometryEngine::QueueEntry(Entry entry) {
     } else {
         fifo.push(entry);
 
-        if (fifo.size() == 256) {
-            log_fatal("[GeometryEngine] Handle full fifo");
+        while (fifo.size() >= 256) {
+            // just run commands until the fifo isn't full
+            busy = false;
+            gpu->system.scheduler.CancelEvent(&geometry_command_event);
+            InterpretCommand();
         }
     }
 

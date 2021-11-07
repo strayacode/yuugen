@@ -239,6 +239,8 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
             return system.gpu.POWCNT1;
         case 0x04000320:
             return 0;
+        case 0x04000604:
+            return system.gpu.render_engine.polygon_ram_size;
         case 0x04000606:
             return system.gpu.render_engine.vertex_ram_size;
         case 0x04001000:

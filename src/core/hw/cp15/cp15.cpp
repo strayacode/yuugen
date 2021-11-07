@@ -4,9 +4,7 @@
 #include <core/hw/cp15/cp15.h>
 #include <core/core.h>
 
-CP15::CP15(System& system) : system(system) {
-
-}
+CP15::CP15(System& system) : system(system) {}
 
 void CP15::Reset() {
     memset(itcm, 0, 0x8000);
