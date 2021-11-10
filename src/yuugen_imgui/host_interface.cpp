@@ -88,7 +88,7 @@ void HostInterface::Run() {
 
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
-        glClearColor(1.0f, 0, 0, 1);
+        glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
