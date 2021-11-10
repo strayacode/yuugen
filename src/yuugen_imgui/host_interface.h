@@ -20,7 +20,7 @@ class HostInterface {
 public:
     HostInterface();
 
-    auto Initialise() -> bool;
+    bool Initialise();
     void Run();
     void Shutdown();
     void HandleInput();

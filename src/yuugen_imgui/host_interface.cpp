@@ -8,7 +8,7 @@ HostInterface::HostInterface() :
     
 }
 
-auto HostInterface::Initialise() -> bool {
+bool HostInterface::Initialise() {
     if (SDL_Init(SDL_INIT_VIDEO) > 0) {
         log_warn("error initialising SDL!");
         return false;
@@ -86,11 +86,9 @@ void HostInterface::Run() {
             SchedulerWindow();
         }
 
-        ImGui::ShowDemoWindow();
-
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
-        glClearColor(0.2f, 0.2f, 0.2f, 1);
+        glClearColor(1.0f, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
@@ -259,6 +257,10 @@ void HostInterface::UpdateTitle(float fps) {
             if (ImGui::MenuItem("Toggle Fullscreen", nullptr, fullscreen)) {
                 fullscreen = !fullscreen;
                 SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+            }
+
+            if (ImGui::MenuItem("Set To DS Screen Size")) {
+                SDL_SetWindowSize(window, 270, 384 + 21);
             }
 
             ImGui::EndMenu();
