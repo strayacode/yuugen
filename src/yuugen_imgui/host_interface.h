@@ -53,4 +53,7 @@ public:
     bool gpu_window = false;
     bool gpu_2d_window = false;
     bool scheduler_window = false;
+
+    ImVec2 scaled_dimensions;
+    static constexpr float menubar_height = 21;
 };

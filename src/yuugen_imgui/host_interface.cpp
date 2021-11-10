@@ -18,7 +18,7 @@ auto HostInterface::Initialise() -> bool {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
@@ -86,9 +86,11 @@ void HostInterface::Run() {
             SchedulerWindow();
         }
 
+        ImGui::ShowDemoWindow();
+
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
-        glClearColor(0, 0, 0, 1);
+        glClearColor(0.2f, 0.2f, 0.2f, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
@@ -147,16 +149,17 @@ void HostInterface::HandleInput() {
                 core.system.input.HandleInput(BUTTON_L, key_pressed);
                 break;
             }
-        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
-            int x = event.button.x;
-            int y = event.button.y - 192;
-            
-            if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
-                // only do a touchscreen event if it occurs in the bottom screen
-                bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
-                core.system.input.SetTouch(button_pressed);
-                core.system.input.SetPoint(x, y);
-            }
+        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {\
+            // TODO: handle correctly
+            // int x = event.button.x - window_coordinates.x;
+            // int y = event.button.y - window_coordinates.y;
+
+            // if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
+            //     // only do a touchscreen event if it occurs in the bottom screen
+            //     bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
+            //     core.system.input.SetTouch(button_pressed);
+            //     core.system.input.SetPoint(x, y);
+            // }
         }
     }
 }
@@ -276,7 +279,6 @@ void HostInterface::UpdateTitle(float fps) {
 
 void HostInterface::DrawScreen() {
     glBindTexture(GL_TEXTURE_2D, textures[0]);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -284,27 +286,26 @@ void HostInterface::DrawScreen() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Top));
 
     glBindTexture(GL_TEXTURE_2D, textures[1]);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Bottom));
 
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 0.0f });
-    ImGui::Begin("Screen", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
-    ImVec2 window_size = ImGui::GetContentRegionAvail();
+    int window_width = 0;
+    int window_height = 0;
+    SDL_GetWindowSize(window, &window_width, &window_height);
 
-    const double scale_x = window_size.x / 256;
-    const double scale_y = window_size.y / 192;
+    const double scale_x = (double)window_width / 256;
+    const double scale_y = (double)window_height / 384;
     const double scale = scale_x < scale_y ? scale_x : scale_y;
-    ImVec2 scaled_dimensions = ImVec2(256 * scale, 192 * scale);
 
-    ImGui::Image((void*)(intptr_t)textures[0], scaled_dimensions);
-    ImGui::Image((void*)(intptr_t)textures[1], scaled_dimensions);
+    scaled_dimensions = ImVec2(256 * scale, 192 * scale);
 
-    ImGui::End();
-    ImGui::PopStyleVar();
+    const double center_pos = ((double)window_width - scaled_dimensions.x) / 2;
+    
+    ImGui::GetBackgroundDrawList()->AddImage((void*)(intptr_t)textures[0], ImVec2(center_pos, menubar_height), ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y), ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE);
+    ImGui::GetBackgroundDrawList()->AddImage((void*)(intptr_t)textures[1], ImVec2(center_pos, scaled_dimensions.y), ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2), ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE);
 }
 
 void HostInterface::SetupStyle() {
