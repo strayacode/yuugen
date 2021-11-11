@@ -147,13 +147,14 @@ void HostInterface::HandleInput() {
                 core.system.input.HandleInput(BUTTON_L, key_pressed);
                 break;
             }
-        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
-            int x = ((event.button.x - center_pos) / scaled_dimensions.x) * 256;
-            int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
+        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP || event.type == SDL_MOUSEMOTION) {
+            SDL_MouseMotionEvent* motion_event = reinterpret_cast<SDL_MouseMotionEvent*>(&event);
+            int x = ((motion_event->x - center_pos) / scaled_dimensions.x) * 256;
+            int y = ((motion_event->y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
 
-            if ((x >= 0 && x < 256) && (y >= 0 && y < 192) && event.button.button == SDL_BUTTON_LEFT) {
+            if ((x >= 0 && x < 256) && (y >= 0 && y < 192)) {
                 // only do a touchscreen event if it occurs in the bottom screen
-                bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
+                bool button_pressed = motion_event->state & SDL_BUTTON_LMASK;
                 core.system.input.SetTouch(button_pressed);
                 core.system.input.SetPoint(x, y);
             }
