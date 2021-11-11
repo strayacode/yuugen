@@ -23,9 +23,9 @@ struct Line {
 // a horizontal line on 1 scanline that represents a small part of a full line
 class Slope {
 public:
-    void Setup(s32 x0, s32 x1, s32 y0, s32 y1) {
+    void Setup(s32 x0, s32 y0, s32 x1, s32 y1) {
         // lines should always be rendered from top to bottom
-        if (y1 < y0) {
+        if (y0 > y1) {
             std::swap(x0, x1);
             std::swap(y0, y1);
         }
@@ -98,6 +98,10 @@ public:
     // returns the x coordinate of the end of the span without fractional bits
     s32 SpanEnd(s32 y) {
         return FracSpanEnd(y) >> frac_bits;
+    }
+
+    bool Negative() {
+        return negative;
     }
     
 private:

@@ -34,15 +34,24 @@ void RenderEngine::Render() {
             s32 x1 = next_vertex.x;
             s32 y0 = vertex.y;
             s32 y1 = next_vertex.y;
+
+            if (y0 > y1) {
+                std::swap(x0, x1);
+                std::swap(y0, y1);
+            }
+
+            if (y0 == y1) {
+                y1++;
+            }
             
             for (int line = 0; line < 192; line++) {
-                if ((line >= y0 && line <= y1) || (line >= y1 && line <= y0)) {
+                if ((line >= y0 && line < y1) || (line >= y1 && line < y0)) {
                     Slope slope;
-                    slope.Setup(x0, x1, y0, y1);
+                    slope.Setup(x0, y0, x1, y1);
                     s32 span_start = slope.SpanStart(line);
                     s32 span_end = slope.SpanEnd(line);
 
-                    if (span_end < span_start) {
+                    if (slope.Negative()) {
                         std::swap(span_start, span_end);
                     }
 

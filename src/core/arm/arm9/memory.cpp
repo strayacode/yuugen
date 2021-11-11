@@ -123,6 +123,16 @@ u8 ARM9Memory::ReadByte(u32 addr) {
         default:
             log_fatal("[ARM9] Undefined 8-bit io read %08x", addr);
         }
+    case 0x05:
+        // TODO: change to templated version
+        if ((addr & 0x7FF) < 400) {
+            // this is the first block which is assigned to engine a
+            return system.gpu.engine_a.palette_ram[addr & 0x3FF];
+        } else {
+            // write to engine b's palette ram
+            return system.gpu.engine_b.palette_ram[addr & 0x3FF];
+        }
+        break;
     case 0x06:
         return system.gpu.ReadVRAM<u8>(addr);
     case 0x07:
