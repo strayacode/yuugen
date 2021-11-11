@@ -147,24 +147,24 @@ void HostInterface::HandleInput() {
                 core.system.input.HandleInput(BUTTON_L, key_pressed);
                 break;
             }
-        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {\
-            // TODO: handle correctly
-            // int x = event.button.x - window_coordinates.x;
-            // int y = event.button.y - window_coordinates.y;
+        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+            int x = ((event.button.x - center_pos) / scaled_dimensions.x) * 256;
+            int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
 
-            // if ((y >= 0) && event.button.button == SDL_BUTTON_LEFT) {
-            //     // only do a touchscreen event if it occurs in the bottom screen
-            //     bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
-            //     core.system.input.SetTouch(button_pressed);
-            //     core.system.input.SetPoint(x, y);
-            // }
+            if ((x >= 0 && x < 256) && (y >= 0 && y < 192) && event.button.button == SDL_BUTTON_LEFT) {
+                // only do a touchscreen event if it occurs in the bottom screen
+                bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
+                core.system.input.SetTouch(button_pressed);
+                core.system.input.SetPoint(x, y);
+            }
         }
     }
 }
 
 void HostInterface::UpdateTitle(float fps) {
-    char window_title[40];
-    snprintf(window_title, 40, "yuugen [%0.2f FPS | %0.2f ms]", fps, 1000.0 / fps);
+    char window_title[60];
+    float percent_usage = (fps / 60.0f) * 100;
+    snprintf(window_title, 60, "yuugen | %s | %0.2f FPS | %0.2f%s", core.system.GetARMCoreType().c_str(), fps, percent_usage, "%");
     SDL_SetWindowTitle(window, window_title);
 }
 
@@ -304,7 +304,7 @@ void HostInterface::DrawScreen() {
 
     scaled_dimensions = ImVec2(256 * scale, 192 * scale);
 
-    const double center_pos = ((double)window_width - scaled_dimensions.x) / 2;
+    center_pos = ((double)window_width - scaled_dimensions.x) / 2;
     
     ImGui::GetBackgroundDrawList()->AddImage((void*)(intptr_t)textures[0], ImVec2(center_pos, menubar_height), ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y), ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE);
     ImGui::GetBackgroundDrawList()->AddImage((void*)(intptr_t)textures[1], ImVec2(center_pos, scaled_dimensions.y), ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2), ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE);
