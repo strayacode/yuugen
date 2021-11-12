@@ -20,7 +20,7 @@ public:
     }
 
     // returns the index of the previous vertex
-    int Previous(int current) {
+    int Prev(int current) {
         if (current == 0) {
             return size - 1;
         } else {

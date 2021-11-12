@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/types.h>
+#include <common/vertex.h>
 #include <algorithm>
 
 struct Line {
@@ -63,6 +64,10 @@ public:
         } else {
             dx *= one;
         }
+    }
+
+    void Setup(Vertex v0, Vertex v1) {
+        Setup(v0.x, v0.y, v1.x, v1.y);
     }
 
     // returns the x coordinate of the start of the span with fractional bits

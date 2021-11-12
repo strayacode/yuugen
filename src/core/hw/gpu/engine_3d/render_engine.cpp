@@ -26,42 +26,95 @@ void RenderEngine::Render() {
 }
 
 void RenderEngine::RenderPolygon(Polygon& polygon) {
-    // for each vertex in the polygon we want to draw a line from that vertex to the next vertex
-    for (int j = 0; j < polygon.size; j++) {
-        int next = polygon.Next(j);
+    int start = 0;
+    int end = 0;
 
-        Vertex vertex = NormaliseVertex(polygon.vertices[j]);
-        Vertex next_vertex = NormaliseVertex(polygon.vertices[next]);
+    for (int i = 0; i < polygon.size; i++) {
+        // normalise each vertex and determine the indices of the top left and bottom right vertex
+        polygon.vertices[i] = NormaliseVertex(polygon.vertices[i]);
 
-        s32 x0 = vertex.x;
-        s32 x1 = next_vertex.x;
-        s32 y0 = vertex.y;
-        s32 y1 = next_vertex.y;
-
-        if (y0 > y1) {
-            std::swap(x0, x1);
-            std::swap(y0, y1);
+        if (polygon.vertices[i].y < polygon.vertices[start].y) {
+            start = i;
+        } else if ((polygon.vertices[i].y == polygon.vertices[start].y) && (polygon.vertices[i].x < polygon.vertices[start].x)) {
+            start = i;
         }
 
-        if (y0 == y1) {
-            y1++;
+        if (polygon.vertices[i].y > polygon.vertices[end].y) {
+            end = i;
+        } else if ((polygon.vertices[i].y == polygon.vertices[end].y) && (polygon.vertices[i].x > polygon.vertices[end].x)) {
+            end = i;
         }
-        
-        for (int line = 0; line < 192; line++) {
-            if ((line >= y0 && line < y1) || (line >= y1 && line < y0)) {
-                Slope slope;
-                slope.Setup(x0, y0, x1, y1);
-                s32 span_start = slope.SpanStart(line);
-                s32 span_end = slope.SpanEnd(line);
+    }
 
-                if (slope.Negative()) {
-                    std::swap(span_start, span_end);
+    // both the left and right slope initially start at the top left vertex
+    // TODO: work out winding stuff later
+    int left = start;
+    int right = start;
+    int new_left = polygon.Prev(left);
+    int new_right = polygon.Next(right);
+
+    if (polygon.vertices[left].y == polygon.vertices[new_left].y) {
+        polygon.vertices[new_left].y++;
+    }
+
+    if (polygon.vertices[right].y == polygon.vertices[new_right].y) {
+        polygon.vertices[new_right].y++;
+    }
+
+    Slope left_slope;
+    left_slope.Setup(polygon.vertices[left], polygon.vertices[new_left]);
+    Slope right_slope;
+    right_slope.Setup(polygon.vertices[right], polygon.vertices[new_right]);
+
+    for (int y = 0; y < 192; y++) {
+        // if the current scanline gets to the end of one of the slopes then reconfigure that slope
+        if (polygon.vertices[new_left].y <= y) {
+            left = new_left;
+            new_left = polygon.Prev(left);
+
+            if (polygon.vertices[left].y == polygon.vertices[new_left].y) {
+                polygon.vertices[new_left].y++;
+            }
+
+            left_slope.Setup(polygon.vertices[left], polygon.vertices[new_left]);
+        }
+
+        if (polygon.vertices[new_right].y <= y) {
+            right = new_right;
+            new_right = polygon.Next(right);
+
+            if (polygon.vertices[right].y == polygon.vertices[new_right].y) {
+                polygon.vertices[new_right].y++;
+            }
+
+            right_slope.Setup(polygon.vertices[right], polygon.vertices[new_right]);
+        }
+
+        s32 left_span_start = left_slope.SpanStart(y);
+        s32 left_span_end = left_slope.SpanEnd(y);
+        s32 right_span_start = right_slope.SpanStart(y);
+        s32 right_span_end = right_slope.SpanEnd(y);
+
+        if (left_slope.Negative()) {
+            std::swap(left_span_start, left_span_end);
+        }
+
+        if (right_slope.Negative()) {
+            std::swap(right_span_start, right_span_end);
+        }
+
+        if ((y >= polygon.vertices[left].y && y < polygon.vertices[new_left].y) || (y >= polygon.vertices[new_left].y && y < polygon.vertices[left].y)) {
+            for (int x = left_span_start; x <= left_span_end; x++) {
+                if (x >= 0 && x < 256) {
+                    framebuffer[(y * 256) + x] = 0xFFFFFFFF;
                 }
+            }
+        }
 
-                for (int x = span_start; x <= span_end; x++) {
-                    if (x >= 0 && x < 256) {
-                        framebuffer[(line * 256) + x] = 0xFFFFFFFF;
-                    }
+        if ((y >= polygon.vertices[right].y && y < polygon.vertices[new_right].y) || (y >= polygon.vertices[new_right].y && y < polygon.vertices[right].y)) {
+            for (int x = right_span_start; x <= right_span_end; x++) {
+                if (x >= 0 && x < 256) {
+                    framebuffer[(y * 256) + x] = 0xFFFFFFFF;
                 }
             }
         }
