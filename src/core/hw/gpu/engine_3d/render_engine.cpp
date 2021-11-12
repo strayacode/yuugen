@@ -21,44 +21,46 @@ void RenderEngine::Render() {
     memset(framebuffer, 0, 256 * 192 * sizeof(u32));
 
     for (int i = 0; i < polygon_ram_size; i++) {
-        Polygon polygon = polygon_ram[i];
+        RenderPolygon(polygon_ram[i]);
+    }
+}
 
-        // for each vertex in the polygon we want to draw a line from that vertex to the next vertex
-        for (int j = 0; j < polygon.size; j++) {
-            int next = (j == polygon.size - 1) ? 0 : (j + 1);
+void RenderEngine::RenderPolygon(Polygon& polygon) {
+    // for each vertex in the polygon we want to draw a line from that vertex to the next vertex
+    for (int j = 0; j < polygon.size; j++) {
+        int next = polygon.Next(j);
 
-            Vertex vertex = NormaliseVertex(polygon.vertices[j]);
-            Vertex next_vertex = NormaliseVertex(polygon.vertices[next]);
+        Vertex vertex = NormaliseVertex(polygon.vertices[j]);
+        Vertex next_vertex = NormaliseVertex(polygon.vertices[next]);
 
-            s32 x0 = vertex.x;
-            s32 x1 = next_vertex.x;
-            s32 y0 = vertex.y;
-            s32 y1 = next_vertex.y;
+        s32 x0 = vertex.x;
+        s32 x1 = next_vertex.x;
+        s32 y0 = vertex.y;
+        s32 y1 = next_vertex.y;
 
-            if (y0 > y1) {
-                std::swap(x0, x1);
-                std::swap(y0, y1);
-            }
+        if (y0 > y1) {
+            std::swap(x0, x1);
+            std::swap(y0, y1);
+        }
 
-            if (y0 == y1) {
-                y1++;
-            }
-            
-            for (int line = 0; line < 192; line++) {
-                if ((line >= y0 && line < y1) || (line >= y1 && line < y0)) {
-                    Slope slope;
-                    slope.Setup(x0, y0, x1, y1);
-                    s32 span_start = slope.SpanStart(line);
-                    s32 span_end = slope.SpanEnd(line);
+        if (y0 == y1) {
+            y1++;
+        }
+        
+        for (int line = 0; line < 192; line++) {
+            if ((line >= y0 && line < y1) || (line >= y1 && line < y0)) {
+                Slope slope;
+                slope.Setup(x0, y0, x1, y1);
+                s32 span_start = slope.SpanStart(line);
+                s32 span_end = slope.SpanEnd(line);
 
-                    if (slope.Negative()) {
-                        std::swap(span_start, span_end);
-                    }
+                if (slope.Negative()) {
+                    std::swap(span_start, span_end);
+                }
 
-                    for (int x = span_start; x <= span_end; x++) {
-                        if (x >= 0 && x < 256) {
-                            framebuffer[(line * 256) + x] = 0xFFFFFFFF;
-                        }
+                for (int x = span_start; x <= span_end; x++) {
+                    if (x >= 0 && x < 256) {
+                        framebuffer[(line * 256) + x] = 0xFFFFFFFF;
                     }
                 }
             }

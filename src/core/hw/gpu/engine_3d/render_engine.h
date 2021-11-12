@@ -11,6 +11,7 @@ public:
     RenderEngine(GPU* gpu);
     void Reset();
     void Render();
+    void RenderPolygon(Polygon& polygon);
     Vertex NormaliseVertex(Vertex vertex);
 
     u16 disp3dcnt;
