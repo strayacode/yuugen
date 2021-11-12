@@ -369,6 +369,7 @@ void GeometryEngine::AddVertex() {
 
     current_vertex.w = 1 << 12;
     vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(current_vertex, clip);
+    vertex_ram[vertex_ram_size] = NormaliseVertex(vertex_ram[vertex_ram_size]);
     vertex_ram_size++;
     vertex_count++;
 
@@ -421,4 +422,16 @@ u32 GeometryEngine::ReadVectorMatrix(u32 addr) {
     int y = (addr - 0x04000680) / 3;
 
     return direction.current.field[y][x];
+}
+
+Vertex GeometryEngine::NormaliseVertex(Vertex vertex) {
+    Vertex render_vertex;
+
+    if (vertex.w != 0) {
+        render_vertex.x = (( vertex.x * 128) / vertex.w) + 128;
+        render_vertex.y = ((-vertex.y * 96)  / vertex.w) + 96;
+    }
+
+    render_vertex.colour = vertex.colour;
+    return render_vertex;
 }

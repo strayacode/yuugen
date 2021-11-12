@@ -30,9 +30,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
     int end = 0;
 
     for (int i = 0; i < polygon.size; i++) {
-        // normalise each vertex and determine the indices of the top left and bottom right vertex
-        polygon.vertices[i] = NormaliseVertex(polygon.vertices[i]);
-
+        // determine the indices of the top left and bottom right vertex
         if (polygon.vertices[i].y < polygon.vertices[start].y) {
             start = i;
         } else if ((polygon.vertices[i].y == polygon.vertices[start].y) && (polygon.vertices[i].x < polygon.vertices[start].x)) {
@@ -119,16 +117,4 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             }
         }
     }
-}
-
-Vertex RenderEngine::NormaliseVertex(Vertex vertex) {
-    Vertex render_vertex;
-
-    if (vertex.w != 0) {
-        render_vertex.x = (( vertex.x * 128) / vertex.w) + 128;
-        render_vertex.y = ((-vertex.y * 96)  / vertex.w) + 96;
-    }
-
-    render_vertex.colour = vertex.colour;
-    return render_vertex;
 }

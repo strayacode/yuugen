@@ -117,6 +117,8 @@ public:
     void SetNormalVector();
     void BoxTest();
 
+    Vertex NormaliseVertex(Vertex vertex);
+
     u32 gxstat;
     u32 gxfifo;
     int gxfifo_write_count;
