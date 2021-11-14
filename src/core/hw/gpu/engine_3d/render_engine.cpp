@@ -46,23 +46,44 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
 
     // both the left and right slope initially start at the top left vertex
     // TODO: work out winding stuff later
+    // TODO: clean up code
     int left = start;
     int right = start;
     int new_left = polygon.Prev(left);
     int new_right = polygon.Next(right);
 
-    if (polygon.vertices[left].y == polygon.vertices[new_left].y) {
-        polygon.vertices[new_left].y++;
+    s32 left_x0 = polygon.vertices[left].x;
+    s32 left_x1 = polygon.vertices[new_left].x;
+    s32 left_y0 = polygon.vertices[left].y;
+    s32 left_y1 = polygon.vertices[new_left].y;
+
+    if (left_y0 > left_y1) {
+        std::swap(left_x0, left_x1);
+        std::swap(left_y0, left_y1);
     }
 
-    if (polygon.vertices[right].y == polygon.vertices[new_right].y) {
-        polygon.vertices[new_right].y++;
+    if (left_y0 == left_y1) {
+        left_y1++;
+    }
+
+    s32 right_x0 = polygon.vertices[right].x;
+    s32 right_x1 = polygon.vertices[new_right].x;
+    s32 right_y0 = polygon.vertices[right].y;
+    s32 right_y1 = polygon.vertices[new_right].y;
+
+    if (right_y0 > right_y1) {
+        std::swap(right_x0, right_x1);
+        std::swap(right_y0, right_y1);
+    }
+
+    if (right_y0 == right_y1) {
+        right_y1++;
     }
 
     Slope left_slope;
-    left_slope.Setup(polygon.vertices[left], polygon.vertices[new_left]);
+    left_slope.Setup(left_x0, left_y0, left_x1, left_y1);
     Slope right_slope;
-    right_slope.Setup(polygon.vertices[right], polygon.vertices[new_right]);
+    right_slope.Setup(right_x0, right_y0, right_x1, right_y1);
 
     for (int y = 0; y < 192; y++) {
         // if the current scanline gets to the end of one of the slopes then reconfigure that slope
@@ -70,22 +91,42 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             left = new_left;
             new_left = polygon.Prev(left);
 
-            if (polygon.vertices[left].y == polygon.vertices[new_left].y) {
-                polygon.vertices[new_left].y++;
+            left_x0 = polygon.vertices[left].x;
+            left_x1 = polygon.vertices[new_left].x;
+            left_y0 = polygon.vertices[left].y;
+            left_y1 = polygon.vertices[new_left].y;
+
+            if (left_y0 > left_y1) {
+                std::swap(left_x0, left_x1);
+                std::swap(left_y0, left_y1);
             }
 
-            left_slope.Setup(polygon.vertices[left], polygon.vertices[new_left]);
+            if (left_y0 == left_y1) {
+                left_y1++;
+            }
+
+            left_slope.Setup(left_x0, left_y0, left_x1, left_y1);
         }
 
         if (polygon.vertices[new_right].y <= y) {
             right = new_right;
             new_right = polygon.Next(right);
 
-            if (polygon.vertices[right].y == polygon.vertices[new_right].y) {
-                polygon.vertices[new_right].y++;
+            right_x0 = polygon.vertices[right].x;
+            right_x1 = polygon.vertices[new_right].x;
+            right_y0 = polygon.vertices[right].y;
+            right_y1 = polygon.vertices[new_right].y;
+
+            if (right_y0 > right_y1) {
+                std::swap(right_x0, right_x1);
+                std::swap(right_y0, right_y1);
             }
 
-            right_slope.Setup(polygon.vertices[right], polygon.vertices[new_right]);
+            if (right_y0 == right_y1) {
+                right_y1++;
+            }
+
+            right_slope.Setup(right_x0, right_y0, right_x1, right_y1);
         }
 
         s32 left_span_start = left_slope.SpanStart(y);
@@ -101,7 +142,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             std::swap(right_span_start, right_span_end);
         }
 
-        if ((y >= polygon.vertices[left].y && y < polygon.vertices[new_left].y) || (y >= polygon.vertices[new_left].y && y < polygon.vertices[left].y)) {
+        if ((y >= left_y0 && y < left_y1) || (y >= left_y1 && y < left_y0)) {
             for (int x = left_span_start; x <= left_span_end; x++) {
                 if (x >= 0 && x < 256) {
                     framebuffer[(y * 256) + x] = 0xFFFFFFFF;
@@ -109,7 +150,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             }
         }
 
-        if ((y >= polygon.vertices[right].y && y < polygon.vertices[new_right].y) || (y >= polygon.vertices[new_right].y && y < polygon.vertices[right].y)) {
+        if ((y >= right_y0 && y < right_y1) || (y >= right_y1 && y < right_y0)) {
             for (int x = right_span_start; x <= right_span_end; x++) {
                 if (x >= 0 && x < 256) {
                     framebuffer[(y * 256) + x] = 0xFFFFFFFF;

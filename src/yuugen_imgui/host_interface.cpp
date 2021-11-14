@@ -9,7 +9,7 @@ HostInterface::HostInterface() :
 }
 
 bool HostInterface::Initialise() {
-    if (SDL_Init(SDL_INIT_VIDEO) > 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) > 0) {
         log_warn("error initialising SDL!");
         return false;
     }
@@ -52,6 +52,8 @@ bool HostInterface::Initialise() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+    UpdateControllerList();
+
     return true;
 }
 
@@ -84,6 +86,10 @@ void HostInterface::Run() {
 
         if (scheduler_window) {
             SchedulerWindow();
+        }
+
+        if (input_settings_window) {
+            InputSettingsWindow();
         }
 
         ImGui::Render();
@@ -158,6 +164,8 @@ void HostInterface::HandleInput() {
                 core.system.input.SetTouch(button_pressed);
                 core.system.input.SetPoint(x, y);
             }
+        } else if (event.type == SDL_JOYDEVICEADDED || event.type == SDL_JOYDEVICEREMOVED) {
+            UpdateControllerList();
         }
     }
 }
@@ -262,6 +270,14 @@ void HostInterface::UpdateTitle(float fps) {
 
             if (ImGui::MenuItem("Set To DS Screen Size")) {
                 SDL_SetWindowSize(window, 270, 384 + 21);
+            }
+
+            ImGui::EndMenu();
+        }
+        
+        if (ImGui::BeginMenu("Settings")) {
+            if (ImGui::MenuItem("Input Settings", nullptr, input_settings_window)) { 
+                input_settings_window = !input_settings_window; 
             }
 
             ImGui::EndMenu();
@@ -580,4 +596,25 @@ void HostInterface::SchedulerWindow() {
         ImGui::Text("%s +%ld", event.type->name.c_str(), event.time - core.system.scheduler.GetCurrentTime());
     }
     ImGui::End();
+}
+
+void HostInterface::InputSettingsWindow() {
+    ImGui::Begin("Input Settings");
+    static int current_index = -1;
+    const char* controller_strings[5] = {"a", "b", "c", "d", "e"};
+
+    for (u64 i = 0; i < controller_list.size(); i++) {
+        controller_strings[i] = SDL_GameControllerName(controller_list[i]);
+    }
+
+    ImGui::Combo("Controller List", &current_index, controller_strings, controller_list.size());
+    ImGui::End();
+}
+
+void HostInterface::UpdateControllerList() {
+    controller_list.clear();
+
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        controller_list.push_back(SDL_GameControllerOpen(i));
+    }
 }

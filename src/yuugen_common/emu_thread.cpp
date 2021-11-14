@@ -53,11 +53,11 @@ void EmuThread::Stop() {
     thread.join();
 }
 
-auto EmuThread::IsActive() -> bool {
+bool EmuThread::IsActive() {
     return running;
 }
 
-auto EmuThread::GetFPS() -> int {
+int EmuThread::GetFPS() {
     return frames;
 }
 

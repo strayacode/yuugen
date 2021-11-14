@@ -33,6 +33,10 @@ public:
     void GPUWindow();
     void GPU2DWindow();
     void SchedulerWindow();
+    void InputSettingsWindow();
+
+    // TODO: sort of memory possible leaking
+    void UpdateControllerList();
 
     bool running = true;
     bool fullscreen = false;
@@ -53,8 +57,12 @@ public:
     bool gpu_window = false;
     bool gpu_2d_window = false;
     bool scheduler_window = false;
+    bool input_settings_window = false;
 
     ImVec2 scaled_dimensions;
     static constexpr float menubar_height = 21;
     double center_pos = 0;
+
+    std::vector<SDL_GameController*> controller_list;
+    SDL_GameController* current_controller = nullptr;
 };

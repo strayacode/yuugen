@@ -17,8 +17,8 @@ public:
     void Reset();
     void Run();
     void Stop();
-    auto IsActive() -> bool;
-    auto GetFPS() -> int;
+    bool IsActive();
+    int GetFPS();
     void ToggleFramelimiter();
 
     std::thread thread;

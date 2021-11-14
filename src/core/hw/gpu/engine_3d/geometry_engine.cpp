@@ -327,6 +327,7 @@ auto GeometryEngine::MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> V
     new_vertex.y = ((s64)a.x * b.field[0][1] + (s64)a.y * b.field[1][1] + (s64)a.z * b.field[2][1] + (s64)a.w * b.field[3][1]) >> 12;
     new_vertex.z = ((s64)a.x * b.field[0][2] + (s64)a.y * b.field[1][2] + (s64)a.z * b.field[2][2] + (s64)a.w * b.field[3][2]) >> 12;
     new_vertex.w = ((s64)a.x * b.field[0][3] + (s64)a.y * b.field[1][3] + (s64)a.z * b.field[2][3] + (s64)a.w * b.field[3][3]) >> 12;
+    new_vertex.colour = a.colour;
 
     return new_vertex;
 }
@@ -394,8 +395,6 @@ void GeometryEngine::AddVertex() {
             AddPolygon();
         }
         break;
-    default:
-        log_fatal("handle polygon type %d", static_cast<int>(polygon_type));
     }
 }
 
@@ -433,5 +432,6 @@ Vertex GeometryEngine::NormaliseVertex(Vertex vertex) {
     }
 
     render_vertex.colour = vertex.colour;
+    render_vertex.w = vertex.w;
     return render_vertex;
 }
