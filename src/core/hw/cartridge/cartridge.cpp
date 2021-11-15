@@ -245,7 +245,7 @@ u8 Cartridge::ReadCommand(int command_index) {
 void Cartridge::DirectBoot() {
     // first transfer the cartridge header (this is taken from rom address 0 and loaded into main memory at address 0x27FFE00)
     for (u32 i = 0; i < 0x170; i++) {
-        system.arm9_memory.FastWrite<u8>(0x027FFE00 + i, loader.rom[i]);
+        system.arm9_memory.FastWrite<u8>(0x027FFE00 + i, *loader.GetPointer(i));
     }
 
     // next transfer the arm9 code

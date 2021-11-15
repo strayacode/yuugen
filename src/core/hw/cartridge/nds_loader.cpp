@@ -8,25 +8,6 @@ NDSLoader::~NDSLoader() {
 }
 
 void NDSLoader::LoadHeader() {
-    if (!rom_size) {
-        std::ifstream file(rom_path, std::ios::binary);
-
-        if (!file) {
-            log_fatal("rom with path %s does not exist!", rom_path.c_str());
-        }
-
-        file.unsetf(std::ios::skipws);
-        file.seekg(0, std::ios::end);
-
-        rom_size = file.tellg();
-
-        file.seekg(0, std::ios::beg);
-        rom.reserve(0x100);
-
-        file.read((char*)rom.data(), 0x100);
-        file.close();
-    }
-
     memcpy(&header.game_title, GetPointer(0), 12);
 
     // load the u32 variables in the header struct from the respective areas of the rom
@@ -40,10 +21,10 @@ void NDSLoader::LoadHeader() {
     memcpy(&header.arm7_ram_address, GetPointer(0x38), 4);
     memcpy(&header.arm7_size, GetPointer(0x3C), 4);
     memcpy(&header.icon_title_offset, GetPointer(0x68), 4);
-    // log_debug("[ARM9]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm9_offset, header.arm9_entrypoint, header.arm9_ram_address, header.arm9_size);
-    // log_debug("[ARM7]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm7_offset, header.arm7_entrypoint, header.arm7_ram_address, header.arm7_size);
+    log_debug("[ARM9]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm9_offset, header.arm9_entrypoint, header.arm9_ram_address, header.arm9_size);
+    log_debug("[ARM7]\nOffset: 0x%08x\nEntrypoint: 0x%08x\nRAM Address: 0x%08x\nSize: 0x%08x", header.arm7_offset, header.arm7_entrypoint, header.arm7_ram_address, header.arm7_size);
 
-    // log_debug("[Cartridge] Header data loaded");
+    log_debug("[Cartridge] Header data loaded");
 }
 
 void NDSLoader::LoadBackup() {

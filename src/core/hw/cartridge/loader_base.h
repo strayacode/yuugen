@@ -6,6 +6,7 @@
 #include <string>
 #include <common/types.h>
 #include <common/log.h>
+#include <common/memory_mapped_file.h>
 
 class LoaderBase {
 public:
@@ -14,8 +15,6 @@ public:
     }
 
     void Reset() {
-        rom.clear();
-        rom_size = 0;
         backup_size = 0;
         backup_type = 0;
     }
@@ -28,25 +27,8 @@ public:
 
         rom_path = path;
 
-        std::ifstream file(rom_path, std::ios::binary);
+        memory_mapped_file.Load(rom_path);
 
-        if (!file) {
-            log_fatal("rom with path %s does not exist!", rom_path.c_str());
-        }
-
-        file.unsetf(std::ios::skipws);
-        file.seekg(0, std::ios::end);
-
-        rom_size = file.tellg();
-
-        file.seekg(0, std::ios::beg);
-        rom.reserve(rom_size);
-        rom.insert(rom.begin(), std::istream_iterator<u8>(file), std::istream_iterator<u8>());
-
-        file.close();
-
-        log_debug("rom data loaded");
-        log_debug("Size: %08lx", rom_size);
 
         LoadHeader();
         LoadBackup();
@@ -58,11 +40,11 @@ public:
 
     // returns a pointer to a certain offset in the rom
     u8* GetPointer(u32 offset) {
-        return rom.data() + offset;
+        return memory_mapped_file.GetPointer(offset);
     }
 
     u64 GetSize() {
-        return rom_size;
+        return memory_mapped_file.GetSize();
     }
 
     u32 GetBackupSize() {
@@ -72,9 +54,9 @@ public:
     virtual void LoadHeader() = 0;
     virtual void LoadBackup() = 0;
 // private:
-    std::vector<u8> rom;
-    u64 rom_size;
     u32 backup_type;
     u32 backup_size;
     std::string rom_path;
+
+    MemoryMappedFile memory_mapped_file;
 };
