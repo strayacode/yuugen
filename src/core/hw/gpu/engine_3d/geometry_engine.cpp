@@ -1,7 +1,7 @@
-#include <common/log.h>
-#include <core/hw/gpu/engine_3d/geometry_engine.h>
-#include <core/hw/gpu/gpu.h>
-#include <core/core.h>
+#include "common/log.h"
+#include "core/hw/gpu/engine_3d/geometry_engine.h"
+#include "core/hw/gpu/gpu.h"
+#include "core/core.h"
 
 static constexpr std::array<int, 256> param_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -290,13 +290,13 @@ void GeometryEngine::CheckGXFIFOInterrupt() {
     case 1:
         // trigger interrupt if fifo is less than half full
         if (fifo.size() < 128) {
-            gpu->system.cpu_core[1]->SendInterrupt(21);
+            gpu->system.cpu_core[1].SendInterrupt(InterruptType::GXFIFO);
         }
         break;
     case 2:
         // trigger interrupt if fifo is empty
         if (fifo.size() == 0) {
-            gpu->system.cpu_core[1]->SendInterrupt(21);
+            gpu->system.cpu_core[1].SendInterrupt(InterruptType::GXFIFO);
         }
         break;
     }

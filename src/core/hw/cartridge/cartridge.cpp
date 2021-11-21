@@ -1,5 +1,5 @@
-#include <core/hw/cartridge/cartridge.h>
-#include <core/core.h>
+#include "core/hw/cartridge/cartridge.h"
+#include "core/core.h"
 
 Cartridge::Cartridge(System& system) : system(system) {}
 
@@ -67,8 +67,8 @@ void Cartridge::StartTransfer() {
         // send a transfer ready interrupt if enabled in AUXSPICNT
         // TODO: are we meant to send interrupt to both cpus?
         if (AUXSPICNT & (1 << 14)) {
-            system.cpu_core[0]->SendInterrupt(19);
-            system.cpu_core[1]->SendInterrupt(19);
+            system.cpu_core[0].SendInterrupt(InterruptType::CartridgeTransfer);
+            system.cpu_core[1].SendInterrupt(InterruptType::CartridgeTransfer);
         }
     } else {
         // since we are starting a new transfer transfer_count must start at 0
@@ -190,8 +190,8 @@ u32 Cartridge::ReadData() {
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {
-            system.cpu_core[0]->SendInterrupt(19);
-            system.cpu_core[1]->SendInterrupt(19);
+            system.cpu_core[0].SendInterrupt(InterruptType::CartridgeTransfer);
+            system.cpu_core[1].SendInterrupt(InterruptType::CartridgeTransfer);
         }
     } else {
         // trigger another nds cartridge dma

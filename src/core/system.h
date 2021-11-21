@@ -1,19 +1,21 @@
-#include <core/arm/interpreter/interpreter.h>
-#include <core/arm/arm7/memory.h>
-#include <core/arm/arm9/memory.h>
-#include <core/scheduler/scheduler.h>
-#include <core/hw/cartridge/cartridge.h>
-#include <core/hw/spi/spi.h>
-#include <core/hw/cp15/cp15.h>
-#include <core/hw/gpu/gpu.h>
-#include <core/hw/dma/dma.h>
-#include <core/hw/input/input.h>
-#include <core/hw/ipc/ipc.h>
-#include <core/hw/timers/timers.h>
-#include <core/hw/spu/spu.h>
-#include <core/hw/rtc/rtc.h>
-#include <core/hw/maths_unit/maths_unit.h>
-#include <core/hw/wifi/wifi.h>
+#pragma once
+
+#include "core/arm/cpu_core.h"
+#include "core/arm/arm7/memory.h"
+#include "core/arm/arm9/memory.h"
+#include "core/scheduler/scheduler.h"
+#include "core/hw/cartridge/cartridge.h"
+#include "core/hw/spi/spi.h"
+#include "core/hw/cp15/cp15.h"
+#include "core/hw/gpu/gpu.h"
+#include "core/hw/dma/dma.h"
+#include "core/hw/input/input.h"
+#include "core/hw/ipc/ipc.h"
+#include "core/hw/timers/timers.h"
+#include "core/hw/spu/spu.h"
+#include "core/hw/rtc/rtc.h"
+#include "core/hw/maths_unit/maths_unit.h"
+#include "core/hw/wifi/wifi.h"
 
 enum class CPUCoreType {
     Interpreter,
@@ -31,8 +33,8 @@ public:
     void WriteHALTCNT(u8 data);
     void WriteWRAMCNT(u8 data);
     bool CartridgeAccessRights();
-    void InitialiseCPUCores(CPUCoreType core_type);
-    std::string GetARMCoreType();
+    void SetCPUCoreType(CPUCoreType type);
+    std::string GetCPUCoreType();
 
     Cartridge cartridge;
     Scheduler scheduler;
@@ -52,7 +54,7 @@ public:
     ARM7Memory arm7_memory;
     ARM9Memory arm9_memory;
 
-    std::unique_ptr<CPUBase> cpu_core[2];
+    CPUCore cpu_core[2];
 
     u8 main_memory[0x400000] = {};
     u8 arm7_wram[0x10000] = {};
@@ -69,4 +71,5 @@ public:
     u16 SIOCNT;
 
     std::string rom_path;
+    CPUCoreType core_type;
 };

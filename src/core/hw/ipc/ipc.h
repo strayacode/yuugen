@@ -1,7 +1,7 @@
 #pragma once
 
 #include <queue>
-#include <common/types.h>
+#include "common/types.h"
 
 class System;
 
@@ -12,9 +12,9 @@ public:
 
     void WriteIPCSYNC7(u16 data);
     void WriteIPCSYNC9(u16 data);
-    auto ReadIPCSYNC7() -> u16;
+    u16 ReadIPCSYNC7();
 
-    auto ReadIPCSYNC9() -> u16;
+    u16 ReadIPCSYNC9();
 
     void WriteIPCFIFOCNT7(u16 data);
     void WriteIPCFIFOCNT9(u16 data);
@@ -24,8 +24,8 @@ public:
 
     // if the fifo is read from, we are reading from fiforecv
     // and if the fifo is written to, we are writing to fifosend
-    auto ReadFIFORECV7() -> u32;
-    auto ReadFIFORECV9() -> u32;
+    u32 ReadFIFORECV7();
+    u32 ReadFIFORECV9();
 
     void WriteFIFOSEND7(u32 data);
     void WriteFIFOSEND9(u32 data);

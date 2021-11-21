@@ -1,15 +1,16 @@
-#include <core/system.h>
+#include "core/system.h"
 
 System::System() 
     : cartridge(*this), spi(*this), cp15(*this),
     gpu(*this), dma {DMA(*this, 0), DMA(*this, 1)}, 
     ipc(*this), timers {Timers(*this, 0), Timers(*this, 1)}, 
-    spu(*this), arm7_memory(*this), arm9_memory(*this) {
-    InitialiseCPUCores(CPUCoreType::Interpreter);
+    spu(*this), arm7_memory(*this), arm9_memory(*this),
+    cpu_core {CPUCore(arm7_memory, CPUArch::ARMv4, nullptr), CPUCore(arm9_memory, CPUArch::ARMv5, &cp15)} {
+    SetCPUCoreType(CPUCoreType::Interpreter);
 }
 
 void System::Reset() {
-    InitialiseCPUCores(CPUCoreType::Interpreter);
+    SetCPUCoreType(CPUCoreType::Interpreter);
 
     arm7_memory.Reset();
     arm9_memory.Reset();
@@ -42,8 +43,8 @@ void System::Reset() {
     BIOSPROT = 0;
     SIOCNT = 0;
 
-    cpu_core[0]->Reset();
-    cpu_core[1]->Reset();
+    cpu_core[0].Reset();
+    cpu_core[1].Reset();
 }
 
 void System::DirectBoot() {
@@ -67,14 +68,14 @@ void System::DirectBoot() {
     arm9_memory.FastWrite<u16>(0x27FFC40, 0x0001); // Boot indicator
 
     cartridge.DirectBoot();
-    cpu_core[0]->DirectBoot(cartridge.loader.GetARM7Entrypoint());
-    cpu_core[1]->DirectBoot(cartridge.loader.GetARM9Entrypoint());    
+    cpu_core[0].DirectBoot(cartridge.loader.GetARM7Entrypoint());
+    cpu_core[1].DirectBoot(cartridge.loader.GetARM9Entrypoint());    
     spi.DirectBoot();
 }
 
 void System::FirmwareBoot() {
-    cpu_core[0]->FirmwareBoot();
-    cpu_core[1]->FirmwareBoot();
+    cpu_core[0].FirmwareBoot();
+    cpu_core[1].FirmwareBoot();
     cartridge.FirmwareBoot();
 }
 
@@ -86,8 +87,8 @@ void System::RunFrame() {
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
 
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        cpu_core[1]->Run(2);
-        cpu_core[0]->Run(1);
+        cpu_core[1].RunInterpreter(2);
+        cpu_core[0].RunInterpreter(1);
         
         scheduler.Tick(1);
         scheduler.RunEvents();
@@ -102,7 +103,7 @@ void System::WriteHALTCNT(u8 data) {
     // check bits 6..7 to see what to do
     switch (power_down_mode) {
     case 2:
-        cpu_core[0]->Halt();
+        cpu_core[0].Halt();
         break;
     case 3:
         log_warn("unhandled request for sleep mode");
@@ -130,15 +131,10 @@ bool System::CartridgeAccessRights() {
     }
 }
 
-void System::InitialiseCPUCores(CPUCoreType core_type) {
-    if (core_type == CPUCoreType::Interpreter) {
-        cpu_core[0] = std::make_unique<Interpreter>(arm7_memory, CPUArch::ARMv4, nullptr);
-        cpu_core[1] = std::make_unique<Interpreter>(arm9_memory, CPUArch::ARMv5, &cp15);
-    } else {
-        log_fatal("handle different cpu core!");
-    }
+void System::SetCPUCoreType(CPUCoreType type) {
+    core_type = type;
 }
 
-std::string System::GetARMCoreType() {
+std::string System::GetCPUCoreType() {
     return "Interpreter";
 }

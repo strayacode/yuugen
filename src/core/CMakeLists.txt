@@ -3,13 +3,11 @@ add_library(core
     config.h config.cpp
     system.h system.cpp
 
-    arm/memory_base.h arm/cpu_base.h
-    arm/cpu_registers.h
+    arm/memory_base.h arm/cpu_registers.h
+    arm/cpu_core.h arm/cpu_core.cpp
     arm/arm7/memory.h arm/arm7/memory.cpp
     arm/arm9/memory.h arm/arm9/memory.cpp
-    arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
     arm/interpreter/lookup_table.cpp
-    arm/cached_interpreter/cached_interpreter.h arm/cached_interpreter/cached_interpreter.cpp
     arm/jit_common/block.h
     arm/jit_common/block_cache.h arm/jit_common/block_cache.cpp
     

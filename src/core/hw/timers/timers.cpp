@@ -1,6 +1,6 @@
-#include <common/log.h>
-#include <core/hw/timers/timers.h>
-#include <core/core.h>
+#include "common/log.h"
+#include "core/hw/timers/timers.h"
+#include "core/core.h"
 
 Timers::Timers(System& system, int arch) : system(system), arch(arch) {
     
@@ -58,7 +58,20 @@ void Timers::Overflow(int timer_index) {
     timer[timer_index].counter = timer[timer_index].reload_value;
 
     if (timer[timer_index].control & (1 << 6)) {
-        system.cpu_core[arch]->SendInterrupt(3 + timer_index);
+        switch (timer_index) {
+        case 0:
+            system.cpu_core[arch].SendInterrupt(InterruptType::Timer0);
+            break;
+        case 1:
+            system.cpu_core[arch].SendInterrupt(InterruptType::Timer1);
+            break;
+        case 2:
+            system.cpu_core[arch].SendInterrupt(InterruptType::Timer2);
+            break;
+        case 3:
+            system.cpu_core[arch].SendInterrupt(InterruptType::Timer3);
+            break;
+        }
     }
 
     // reactivate the timer if it's not in count up mode

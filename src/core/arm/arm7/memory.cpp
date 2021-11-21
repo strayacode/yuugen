@@ -159,7 +159,7 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         case 0x04000204:
             return system.EXMEMCNT;
         case 0x04000208:
-            return system.cpu_core[0]->ime & 0x1;
+            return system.cpu_core[0].ime & 0x1;
         case 0x04000300:
             return system.POSTFLG7;
         case 0x04000304:
@@ -243,11 +243,11 @@ u32 ARM7Memory::ReadWord(u32 addr) {
         case 0x040001C0:
             return (system.spi.ReadSPIDATA() << 16) | system.spi.SPICNT;
         case 0x04000208:
-            return system.cpu_core[0]->ime & 0x1;
+            return system.cpu_core[0].ime & 0x1;
         case 0x04000210:
-            return system.cpu_core[0]->ie;
+            return system.cpu_core[0].ie;
         case 0x04000214:
-            return system.cpu_core[0]->irf;
+            return system.cpu_core[0].irf;
         case 0x04004008:
             return 0;
         case 0x04100000:
@@ -311,7 +311,7 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
             system.spi.WriteSPIDATA(data);
             break;
         case 0x04000208:
-            system.cpu_core[0]->ime = data & 0x1;
+            system.cpu_core[0].ime = data & 0x1;
             break;
         case 0x04000300:
             system.POSTFLG7 = data;
@@ -440,7 +440,7 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
             // TODO: implement WIFIWAITCNT
             break;
         case 0x04000208:
-            system.cpu_core[0]->ime = data & 0x1;
+            system.cpu_core[0].ime = data & 0x1;
             break;
         case 0x04000304:
             system.POWCNT2 = data & 0x3;
@@ -591,13 +591,13 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
             // TODO: handle key2 encryption later
             break;
         case 0x04000208:
-            system.cpu_core[0]->ime = data & 0x1;
+            system.cpu_core[0].ime = data & 0x1;
             break;
         case 0x04000210:
-            system.cpu_core[0]->ie = data;
+            system.cpu_core[0].ie = data;
             break;
         case 0x04000214:
-            system.cpu_core[0]->irf &= ~data;
+            system.cpu_core[0].irf &= ~data;
             break;
         case 0x04000308:
             system.BIOSPROT = data;

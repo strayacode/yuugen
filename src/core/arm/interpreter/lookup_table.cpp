@@ -1,5 +1,5 @@
-#include <core/arm/interpreter/interpreter.h>
-#include <common/lut_helpers.h>
+#include "common/lut_helpers.h"
+#include "core/arm/cpu_core.h"
 
 template <u32 instruction>
 static constexpr Instruction GetARMInstruction() {
@@ -16,14 +16,14 @@ static constexpr Instruction GetARMInstruction() {
                 const bool accumulate = (instruction >> 21) & 0x1;
                 switch ((instruction >> 23) & 0x3) {
                 case 0x0: {
-                    return &Interpreter::ARMMultiply<accumulate, set_flags>;
+                    return &CPUCore::ARMMultiply<accumulate, set_flags>;
                 }
                 case 0x1: {
                     const bool sign = instruction & (1 << 22);
-                    return &Interpreter::ARMMultiplyLong<accumulate, set_flags, sign>;
+                    return &CPUCore::ARMMultiplyLong<accumulate, set_flags, sign>;
                 }
                 case 0x2:
-                    return &Interpreter::ARMSingleDataSwap;
+                    return &CPUCore::ARMSingleDataSwap;
                 }
             }
 
@@ -33,50 +33,50 @@ static constexpr Instruction GetARMInstruction() {
             const bool up = (instruction >> 23) & 0x1;
             const bool pre = (instruction >> 24) & 0x1;
 
-            return &Interpreter::ARMHalfwordDataTransfer<load, writeback, immediate, up, pre>;
+            return &CPUCore::ARMHalfwordDataTransfer<load, writeback, immediate, up, pre>;
         } else if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             // miscellaneous instructions
             if ((instruction & 0xF0) == 0) {
-                return &Interpreter::ARMPSRTransfer<(instruction >> 21) & 0x1, (instruction >> 22) & 0x1>;
+                return &CPUCore::ARMPSRTransfer<(instruction >> 21) & 0x1, (instruction >> 22) & 0x1>;
             }
             
             if ((instruction & 0xFF000F0) == 0x1200010) {
-                return &Interpreter::ARMBranchExchange;
+                return &CPUCore::ARMBranchExchange;
             }
             
             if ((instruction & 0xFF000F0) == 0x1600010) {
-                return &Interpreter::ARMCountLeadingZeroes;
+                return &CPUCore::ARMCountLeadingZeroes;
             }
             
             if ((instruction & 0xFF000F0) == 0x1200030) {
-                return &Interpreter::ARMBranchLinkExchangeRegister;
+                return &CPUCore::ARMBranchLinkExchangeRegister;
             }
             
             if ((instruction & 0xF0) == 0x50) {
-                return &Interpreter::ARMSaturatingAddSubtract;
+                return &CPUCore::ARMSaturatingAddSubtract;
             }
             
             if ((instruction & 0x70) == 0x70) {
-                return &Interpreter::ARMBreakpoint;
+                return &CPUCore::ARMBreakpoint;
             }
             
             if ((instruction & 0x90) == 0x80) {
                 switch ((instruction >> 21) & 0xF) {
                 case 0x8:
-                    return &Interpreter::ARMSignedHalfwordMultiply<true>;
+                    return &CPUCore::ARMSignedHalfwordMultiply<true>;
                 case 0x9:
-                    return &Interpreter::ARMSignedHalfwordWordMultiply;
+                    return &CPUCore::ARMSignedHalfwordWordMultiply;
                 case 0xA:
-                    return &Interpreter::ARMSignedHalfwordAccumulateLong;
+                    return &CPUCore::ARMSignedHalfwordAccumulateLong;
                 case 0xB:
-                    return &Interpreter::ARMSignedHalfwordMultiply<false>;
+                    return &CPUCore::ARMSignedHalfwordMultiply<false>;
                 default:
-                    return &Interpreter::ARMSignedHalfwordMultiply<false>;
+                    return &CPUCore::ARMSignedHalfwordMultiply<false>;
                 }
             }
         }
 
-        return &Interpreter::ARMDataProcessing<shift_imm, set_flags>;
+        return &CPUCore::ARMDataProcessing<shift_imm, set_flags>;
     }
     case 0x1: {
         const bool set_flags = instruction & (1 << 20);
@@ -85,13 +85,13 @@ static constexpr Instruction GetARMInstruction() {
 
         if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             if (instruction & (1 << 21)) {
-                return &Interpreter::ARMPSRTransfer<(instruction >> 21) & 0x1, (instruction >> 22) & 0x1>;
+                return &CPUCore::ARMPSRTransfer<(instruction >> 21) & 0x1, (instruction >> 22) & 0x1>;
             }
             
-            return &Interpreter::ARMUndefined;
+            return &CPUCore::ARMUndefined;
         }
 
-        return &Interpreter::ARMDataProcessing<shift_imm, set_flags>;
+        return &CPUCore::ARMDataProcessing<shift_imm, set_flags>;
     }
     case 0x2: case 0x3: {
         const bool load = (instruction >> 20) & 0x1;
@@ -101,7 +101,7 @@ static constexpr Instruction GetARMInstruction() {
         const bool pre = (instruction >> 24) & 0x1;
         const bool shifted_register = (instruction >> 25) & 0x1;
 
-        return &Interpreter::ARMSingleDataTransfer<load, writeback, byte, up, pre, shifted_register>;
+        return &CPUCore::ARMSingleDataTransfer<load, writeback, byte, up, pre, shifted_register>;
     }
     case 0x4: {
         const bool load = (instruction >> 20) & 0x1;
@@ -110,24 +110,24 @@ static constexpr Instruction GetARMInstruction() {
         const bool up = (instruction >> 23) & 0x1;
         const bool pre = (instruction >> 24) & 0x1;
 
-        return &Interpreter::ARMBlockDataTransfer<load, writeback, load_psr, up, pre>;
+        return &CPUCore::ARMBlockDataTransfer<load, writeback, load_psr, up, pre>;
     }
     case 0x5: {
         // b/bl/blx
         const bool link = instruction & (1 << 24);
 
-        return &Interpreter::ARMBranchLinkMaybeExchange<link>;
+        return &CPUCore::ARMBranchLinkMaybeExchange<link>;
     }
     case 0x7:
         if ((instruction & 0x1000010) == 0x10) {
-            return &Interpreter::ARMCoprocessorRegisterTransfer;
+            return &CPUCore::ARMCoprocessorRegisterTransfer;
         } else if ((instruction & 0x1000010) == 0) {
-            return &Interpreter::UnimplementedInstruction;
+            return &CPUCore::UnimplementedInstruction;
         }
 
-        return &Interpreter::ARMSoftwareInterrupt;
+        return &CPUCore::ARMSoftwareInterrupt;
     default:
-        return &Interpreter::UnimplementedInstruction;
+        return &CPUCore::UnimplementedInstruction;
     }
 }
 
@@ -136,77 +136,77 @@ static constexpr Instruction GetThumbInstruction() {
     switch ((instruction >> 13) & 0x7) {
     case 0x0:
         if (((instruction >> 11) & 0x3) == 0x3) {
-            return &Interpreter::ThumbAddSubtract;
+            return &CPUCore::ThumbAddSubtract;
         }
 
-        return &Interpreter::ThumbShiftImmediate;
+        return &CPUCore::ThumbShiftImmediate;
     case 0x1:
-        return &Interpreter::ThumbALUImmediate;
+        return &CPUCore::ThumbALUImmediate;
     case 0x2:
         if (((instruction >> 10) & 0x7) == 0x0) {
-            return &Interpreter::ThumbDataProcessingRegister;
+            return &CPUCore::ThumbDataProcessingRegister;
         } else if (((instruction >> 10) & 0x7) == 0x1) {
             if ((instruction & 0xFF00) == 0x4700) {
                 if (instruction & (1 << 7)) {
-                    return &Interpreter::ThumbBranchLinkExchange;
+                    return &CPUCore::ThumbBranchLinkExchange;
                 }
 
-                return &Interpreter::ThumbBranchExchange;
+                return &CPUCore::ThumbBranchExchange;
             }
 
-            return &Interpreter::ThumbSpecialDataProcesing;
+            return &CPUCore::ThumbSpecialDataProcesing;
         }
 
         if (((instruction >> 12) & 0x1) == 0x1) {
-            return &Interpreter::ThumbLoadStore;
+            return &CPUCore::ThumbLoadStore;
         }
         
-        return &Interpreter::ThumbLoadPC;
+        return &CPUCore::ThumbLoadPC;
     case 0x3:
-        return &Interpreter::ThumbLoadStoreImmediate;
+        return &CPUCore::ThumbLoadStoreImmediate;
     case 0x4:
         if (instruction & (1 << 12)) {
-            return &Interpreter::ThumbLoadStoreSPRelative;
+            return &CPUCore::ThumbLoadStoreSPRelative;
         }
 
-        return &Interpreter::ThumbLoadStoreHalfword;
+        return &CPUCore::ThumbLoadStoreHalfword;
     case 0x5:
         if (instruction & (1 << 12)) {
             // miscellaneous
             if (((instruction >> 8) & 0x1F) == 0x10) {
-                return &Interpreter::ThumbAdjustStackPointer;
+                return &CPUCore::ThumbAdjustStackPointer;
             } else if (((instruction >> 8) & 0x1F) == 0x1E) {
-                return &Interpreter::ThumbSoftwareInterrupt;
+                return &CPUCore::ThumbSoftwareInterrupt;
             }
 
-            return &Interpreter::ThumbPushPop;
+            return &CPUCore::ThumbPushPop;
         }
 
-        return &Interpreter::ThumbAddSPPC;
+        return &CPUCore::ThumbAddSPPC;
     case 0x6:
         if (!(instruction & (1 << 12))) {
-            return &Interpreter::ThumbLoadStoreMultiple;
+            return &CPUCore::ThumbLoadStoreMultiple;
         } else if ((instruction & 0xFF00) == 0xDF00) {
-            return &Interpreter::ThumbSoftwareInterrupt;
+            return &CPUCore::ThumbSoftwareInterrupt;
         }
 
-        return &Interpreter::ThumbBranchConditional;
+        return &CPUCore::ThumbBranchConditional;
     case 0x7:
         if (instruction & (1 << 12)) {
             if (instruction & (1 << 11)) {
-                return &Interpreter::ThumbBranchLinkOffset;
+                return &CPUCore::ThumbBranchLinkOffset;
             }
 
-            return &Interpreter::ThumbBranchLinkSetup;
+            return &CPUCore::ThumbBranchLinkSetup;
         } else {
             if (instruction & (1 << 11)) {
-                return &Interpreter::ThumbBranchLinkExchangeOffset;
+                return &CPUCore::ThumbBranchLinkExchangeOffset;
             }
 
-            return &Interpreter::ThumbBranch;
+            return &CPUCore::ThumbBranch;
         }
     default:
-        return &Interpreter::UnimplementedInstruction;
+        return &CPUCore::UnimplementedInstruction;
     }
 }
 
@@ -230,10 +230,10 @@ static constexpr auto StaticGenerateThumbTable() -> std::array<Instruction, 1024
     return thumb_lut;
 }
 
-void Interpreter::GenerateARMTable() {
+void CPUCore::GenerateARMTable() {
     arm_lut = StaticGenerateARMTable();
 }
 
-void Interpreter::GenerateThumbTable() {
+void CPUCore::GenerateThumbTable() {
     thumb_lut = StaticGenerateThumbTable();
 }

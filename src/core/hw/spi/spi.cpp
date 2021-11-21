@@ -135,7 +135,7 @@ void SPI::Transfer(u8 data) {
 
     // if enabled trigger a transfer finished irq
     if (SPICNT & (1 << 14)) {
-        system.cpu_core[0]->SendInterrupt(23);
+        system.cpu_core[0].SendInterrupt(InterruptType::SPI);
     }
 }
 

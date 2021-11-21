@@ -173,7 +173,7 @@ void HostInterface::HandleInput() {
 void HostInterface::UpdateTitle(float fps) {
     char window_title[60];
     float percent_usage = (fps / 60.0f) * 100;
-    snprintf(window_title, 60, "yuugen | %s | %0.2f FPS | %0.2f%s", core.system.GetARMCoreType().c_str(), fps, percent_usage, "%");
+    snprintf(window_title, 60, "yuugen | %s | %0.2f FPS | %0.2f%s", core.system.GetCPUCoreType().c_str(), fps, percent_usage, "%");
     SDL_SetWindowTitle(window, window_title);
 }
 
@@ -380,16 +380,16 @@ void HostInterface::ARMWindow() {
                     ImGui::TableNextRow();
                     for (int j = 0; j < 4; j++) {
                         ImGui::TableSetColumnIndex(j);
-                        ImGui::Text("r%d: %08x", (i * 4) + j, core.system.cpu_core[0]->regs.r[(i * 4) + j]);
+                        ImGui::Text("r%d: %08x", (i * 4) + j, core.system.cpu_core[0].regs.r[(i * 4) + j]);
                     }
                 }
                 ImGui::EndTable();
             }
 
-            ImGui::Text("cpsr: %08x", core.system.cpu_core[0]->regs.cpsr);
-            ImGui::Text("State: %s", core.system.cpu_core[0]->halted ? "Halted" : "Running");
-            ImGui::Text("T Bit: %s", (!(core.system.cpu_core[0]->regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
-            ImGui::Text("Mode: %02x", core.system.cpu_core[0]->regs.cpsr & 0x1F);
+            ImGui::Text("cpsr: %08x", core.system.cpu_core[0].regs.cpsr);
+            ImGui::Text("State: %s", core.system.cpu_core[0].halted ? "Halted" : "Running");
+            ImGui::Text("T Bit: %s", (!(core.system.cpu_core[0].regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
+            ImGui::Text("Mode: %02x", core.system.cpu_core[0].regs.cpsr & 0x1F);
             
             ImGui::EndTabItem();
         }
@@ -399,16 +399,16 @@ void HostInterface::ARMWindow() {
                     ImGui::TableNextRow();
                     for (int j = 0; j < 4; j++) {
                         ImGui::TableSetColumnIndex(j);
-                        ImGui::Text("r%d: %08x", (i * 4) + j, core.system.cpu_core[1]->regs.r[(i * 4) + j]);
+                        ImGui::Text("r%d: %08x", (i * 4) + j, core.system.cpu_core[1].regs.r[(i * 4) + j]);
                     }
                 }
                 ImGui::EndTable();
             }
 
-            ImGui::Text("cpsr: %08x", core.system.cpu_core[1]->regs.cpsr);
-            ImGui::Text("State: %s", core.system.cpu_core[1]->halted ? "Halted" : "Running");
-            ImGui::Text("T Bit: %s", (!(core.system.cpu_core[1]->regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
-            ImGui::Text("Mode: %02x", core.system.cpu_core[1]->regs.cpsr & 0x1F);
+            ImGui::Text("cpsr: %08x", core.system.cpu_core[1].regs.cpsr);
+            ImGui::Text("State: %s", core.system.cpu_core[1].halted ? "Halted" : "Running");
+            ImGui::Text("T Bit: %s", (!(core.system.cpu_core[1].regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
+            ImGui::Text("Mode: %02x", core.system.cpu_core[1].regs.cpsr & 0x1F);
             
             ImGui::EndTabItem();
         }

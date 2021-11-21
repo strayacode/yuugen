@@ -55,7 +55,20 @@ void DMA::Transfer(int channel_index) {
 
     // request dma irq upon end of word count if enabled 
     if (channel[channel_index].DMACNT & (1 << 30)) {
-        system.cpu_core[arch]->SendInterrupt(8 + channel_index);
+        switch (channel_index) {
+        case 0:
+            system.cpu_core[arch].SendInterrupt(InterruptType::DMA0);
+            break;
+        case 1:
+            system.cpu_core[arch].SendInterrupt(InterruptType::DMA1);
+            break;
+        case 2:
+            system.cpu_core[arch].SendInterrupt(InterruptType::DMA2);
+            break;
+        case 3:
+            system.cpu_core[arch].SendInterrupt(InterruptType::DMA3);
+            break;
+        }
     }
 
     if (channel[channel_index].DMACNT & (1 << 25) && start_timing != 0) {

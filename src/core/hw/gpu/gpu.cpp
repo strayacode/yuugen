@@ -68,11 +68,11 @@ void GPU::RenderScanlineStart() {
     DISPSTAT9 |= (1 << 1);
     
     if (DISPSTAT7 & (1 << 4)) {
-        system.cpu_core[0]->SendInterrupt(1);
+        system.cpu_core[0].SendInterrupt(InterruptType::HBlank);
     }
 
     if (DISPSTAT9 & (1 << 4)) {
-        system.cpu_core[1]->SendInterrupt(1);
+        system.cpu_core[1].SendInterrupt(InterruptType::HBlank);
     }
 
     if (VCOUNT == 215) {
@@ -99,11 +99,11 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT9 |= 1;
 
         if (DISPSTAT7 & (1 << 3)) {
-            system.cpu_core[0]->SendInterrupt(0);
+            system.cpu_core[0].SendInterrupt(InterruptType::VBlank);
         }
 
         if (DISPSTAT9 & (1 << 3)) {
-            system.cpu_core[1]->SendInterrupt(0);
+            system.cpu_core[1].SendInterrupt(InterruptType::VBlank);
         }
 
         system.dma[0].Trigger(1);
@@ -125,7 +125,7 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT7 |= (1 << 2);
 
         if (DISPSTAT7 & (1 << 5)) {
-            system.cpu_core[0]->SendInterrupt(2);
+            system.cpu_core[0].SendInterrupt(InterruptType::VCounter);
         }
 
     } else if (DISPSTAT7 & (1 << 2)) {
@@ -136,7 +136,7 @@ void GPU::RenderScanlineFinish() {
         DISPSTAT9 |= (1 << 2);
 
         if (DISPSTAT9 & (1 << 5)) {
-            system.cpu_core[1]->SendInterrupt(2);
+            system.cpu_core[1].SendInterrupt(InterruptType::VCounter);
         }
 
     } else if (DISPSTAT9 & (1 << 2)) {
