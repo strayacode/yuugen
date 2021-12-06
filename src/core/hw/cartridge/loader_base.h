@@ -4,9 +4,9 @@
 #include <vector>
 #include <iterator>
 #include <string>
-#include <common/types.h>
-#include <common/log.h>
-#include <common/memory_mapped_file.h>
+#include "common/types.h"
+#include "common/log.h"
+#include "common/memory_mapped_file.h"
 
 class LoaderBase {
 public:
@@ -28,7 +28,6 @@ public:
         rom_path = path;
 
         memory_mapped_file.Load(rom_path);
-
 
         LoadHeader();
         LoadBackup();

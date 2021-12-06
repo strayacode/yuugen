@@ -35,7 +35,7 @@ public:
         fd = open(path.c_str(), O_RDONLY, 0);
 
         size = lseek(fd, 0, SEEK_END);
-        buffer = reinterpret_cast<u8*>(mmap(nullptr, size, PROT_READ, MAP_SHARED, fd, 0));
+        buffer = reinterpret_cast<u8*>(mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0));
     }
 
     u8* GetPointer(u32 offset) {
