@@ -4,12 +4,13 @@
 #include <queue>
 #include <array>
 #include <memory>
-#include <common/types.h>
-#include <common/matrix.h>
-#include <common/vertex.h>
-#include <common/polygon.h>
-#include <common/matrix_stack.h>
-#include <core/scheduler/scheduler.h>
+#include <vector>
+#include "common/types.h"
+#include "common/matrix.h"
+#include "common/vertex.h"
+#include "common/polygon.h"
+#include "common/matrix_stack.h"
+#include "core/scheduler/scheduler.h"
 
 struct Entry {
     u8 command = 0;
@@ -48,25 +49,23 @@ enum class PolygonType {
     QuadStrip = 3,
 };
 
-// TODO: add matrix mode enum class
-
 class GPU;
 
 class GeometryEngine {
 public:
     GeometryEngine(GPU* gpu);
     void Reset();
-    auto ReadGXSTAT() -> u32;
+    u32 ReadGXSTAT();
     void WriteGXSTAT(u32 data);
     void WriteGXFIFO(u32 data);
     void QueueCommand(u32 addr, u32 data);
     void QueueEntry(Entry entry);
-    auto DequeueEntry() -> Entry;
+    Entry DequeueEntry();
     void InterpretCommand();
     void CheckGXFIFOInterrupt();
     void UpdateClipMatrix();
     Matrix MultiplyMatrixMatrix(const Matrix& a, const Matrix& b);
-    auto MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex;
+    Vertex MultiplyVertexMatrix(const Vertex& a, const Matrix& b);
     void PrintMatrix(const Matrix& a);
     void PrintVertex(const Vertex& a);
     void DoSwapBuffers();

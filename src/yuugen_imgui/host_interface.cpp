@@ -92,6 +92,8 @@ void HostInterface::Run() {
             InputSettingsWindow();
         }
 
+        // ImGui::ShowDemoWindow();
+
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
         glClearColor(0, 0, 0, 1);
@@ -269,7 +271,7 @@ void HostInterface::UpdateTitle(float fps) {
             }
 
             if (ImGui::MenuItem("Set To DS Screen Size")) {
-                SDL_SetWindowSize(window, 270, 384 + 21);
+                SDL_SetWindowSize(window, 512, 768);
             }
 
             ImGui::EndMenu();
@@ -331,10 +333,10 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().WindowBorderSize = 0.0f;
     ImGui::GetStyle().PopupBorderSize = 0.0f;
     ImGui::GetStyle().ChildBorderSize = 0.0f;
-    ImGui::GetStyle().WindowRounding = 8.0f;
-    ImGui::GetStyle().FrameRounding = 4.0f;
-    ImGui::GetStyle().PopupRounding = 6.0f;
-    ImGui::GetStyle().ChildRounding = 6.0f;
+    ImGui::GetStyle().WindowRounding = 0.0f;
+    ImGui::GetStyle().FrameRounding = 0.0f;
+    ImGui::GetStyle().PopupRounding = 0.0f;
+    ImGui::GetStyle().ChildRounding = 0.0f;
     ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);

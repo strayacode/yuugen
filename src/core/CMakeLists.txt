@@ -8,8 +8,6 @@ add_library(core
     arm/arm7/memory.h arm/arm7/memory.cpp
     arm/arm9/memory.h arm/arm9/memory.cpp
     arm/interpreter/lookup_table.cpp
-    arm/jit_common/block.h
-    arm/jit_common/block_cache.h arm/jit_common/block_cache.cpp
     
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
     hw/cartridge/loader_base.h 

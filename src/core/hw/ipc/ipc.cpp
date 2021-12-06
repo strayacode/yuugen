@@ -167,8 +167,8 @@ u32 IPC::ReadFIFORECV7() {
         // set the error bit as reading had an empty fifo
         IPCFIFOCNT7 |= (1 << 14);
     }
+
     return fifo7recv;
-    
 }
 
 u32 IPC::ReadFIFORECV9() {

@@ -1,13 +1,14 @@
 #pragma once
 
-#include <common/log.h>
-#include <common/types.h>
-#include <core/hw/cartridge/backup/generic_backup.h>
 #include <string>
+#include "common/log.h"
+#include "common/types.h"
+#include "core/hw/cartridge/backup/generic_backup.h"
 
-struct NoBackup : public GenericBackup {
+class NoBackup : public GenericBackup {
+public:
     NoBackup(std::string path, u32 size);
-    auto Transfer(u8 data, u32 write_count) -> u8 override;
+    u8 Transfer(u8 data, u32 write_count) override;
     void ReceiveCommand(u8 data) override;
     void Reset() override;
     void SaveBackup() override;

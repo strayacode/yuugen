@@ -1,3 +1,4 @@
+#include <unordered_map>
 #include "common/log.h"
 #include "core/hw/gpu/engine_3d/geometry_engine.h"
 #include "core/hw/gpu/gpu.h"
@@ -52,7 +53,7 @@ void GeometryEngine::Reset() {
     });
 }
 
-auto GeometryEngine::ReadGXSTAT() -> u32 {
+u32 GeometryEngine::ReadGXSTAT() {
     u32 data = 0;
 
     data |= (fifo.size() << 16);
