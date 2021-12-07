@@ -7,7 +7,7 @@ static constexpr Instruction GetARMInstruction() {
     case 0x0: {
         const bool set_flags = instruction & (1 << 20);
         const u8 opcode = (instruction >> 21) & 0xF;
-        const u8 shift_imm = (instruction >> 25) & 0x1;
+        const u8 immediate = (instruction >> 25) & 0x1;
 
         if ((instruction & 0x90) == 0x90) {
             // multiplies, extra load/stores
@@ -76,12 +76,12 @@ static constexpr Instruction GetARMInstruction() {
             }
         }
 
-        return &CPUCore::ARMDataProcessing<shift_imm, set_flags>;
+        return &CPUCore::ARMDataProcessing<immediate, set_flags>;
     }
     case 0x1: {
         const bool set_flags = instruction & (1 << 20);
         const u8 opcode = (instruction >> 21) & 0xF;
-        const bool shift_imm = (instruction >> 25) & 0x1;
+        const bool immediate = (instruction >> 25) & 0x1;
 
         if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             if (instruction & (1 << 21)) {
@@ -91,7 +91,7 @@ static constexpr Instruction GetARMInstruction() {
             return &CPUCore::ARMUndefined;
         }
 
-        return &CPUCore::ARMDataProcessing<shift_imm, set_flags>;
+        return &CPUCore::ARMDataProcessing<immediate, set_flags>;
     }
     case 0x2: case 0x3: {
         const bool load = (instruction >> 20) & 0x1;

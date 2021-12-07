@@ -412,16 +412,27 @@ void HostInterface::ARMWindow(CPUArch arch) {
 
             if (core.GetState() != State::Idle) {
                 int increment = core.system.cpu_core[index].IsARM() ? 4 : 2;
-                u32 addr = core.system.cpu_core[index].regs.r[15] - ((disassembly_size - 1) / 2) * increment;
-
+                u32 pc = core.system.cpu_core[index].regs.r[15];
+                u32 addr = pc - ((disassembly_size - 1) / 2) * increment;
+                
                 if (core.system.cpu_core[index].IsARM()) {
                     for (int i = 0; i < disassembly_size; i++) {
-                        ImGui::Text("%08x\t%s", addr, DisassembleARMInstruction(core.system.cpu_core[index].ReadWord(addr)).c_str());
+                        if (addr == pc) {
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x\t%s", addr, DisassembleARMInstruction(core.system.cpu_core[index].ReadWord(addr)).c_str());
+                        } else {
+                            ImGui::Text("%08x\t%s", addr, DisassembleARMInstruction(core.system.cpu_core[index].ReadWord(addr)).c_str());
+                        }
+                        
                         addr += increment;
                     }
                 } else {
                     for (int i = 0; i < disassembly_size; i++) {
-                        ImGui::Text("%08x\t%s", addr, DisassembleThumbInstruction(core.system.cpu_core[index].ReadHalf(addr)).c_str());
+                        if (addr == pc) {
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x\t%s", addr, DisassembleThumbInstruction(core.system.cpu_core[index].ReadHalf(addr)).c_str());
+                        } else {
+                            ImGui::Text("%08x\t%s", addr, DisassembleThumbInstruction(core.system.cpu_core[index].ReadHalf(addr)).c_str());
+                        }
+
                         addr += increment;
                     }
                 }

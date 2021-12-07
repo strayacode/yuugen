@@ -7,6 +7,7 @@ add_library(common
     arithmetic.h
     circular_buffer.h
     slope.h memory_mapped_file.h
+    format.h
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

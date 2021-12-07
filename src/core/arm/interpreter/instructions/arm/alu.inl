@@ -1,6 +1,6 @@
 #pragma once
 
-template <bool shift_imm, bool set_flags>
+template <bool immediate, bool set_flags>
 void ARMDataProcessing() {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
@@ -11,11 +11,11 @@ void ARMDataProcessing() {
 
     u8 carry_flag = GetConditionFlag(C_FLAG);
 
-    if constexpr (shift_imm) {
-        u32 immediate = instruction & 0xFF;
+    if constexpr (immediate) {
+        u32 value = instruction & 0xFF;
         u8 shift_amount = ((instruction >> 8) & 0xF) << 1;
 
-        op2 = rotate_right(immediate, shift_amount);
+        op2 = rotate_right(value, shift_amount);
         
         // carry flag is only affected if we have a non-zero shift amount
         if (shift_amount != 0) {
@@ -27,9 +27,9 @@ void ARMDataProcessing() {
         u8 shift_type = (instruction >> 5) & 0x3;
         u8 shift_amount = 0;
 
-        bool immediate = !(instruction & (1 << 4));
+        bool shift_imm = !(instruction & (1 << 4));
 
-        if (immediate) {
+        if (shift_imm) {
             shift_amount = (instruction >> 7) & 0x1F;
         } else {
             u8 rs = (instruction >> 8) & 0xF;
@@ -148,7 +148,7 @@ void ARMDataProcessing() {
     }
 }
 
-auto MOV(u32 op2, u8 set_flags) -> u32 {
+u32 MOV(u32 op2, u8 set_flags) {
     if (set_flags) {
         SetConditionFlag(N_FLAG, op2 >> 31);
         SetConditionFlag(Z_FLAG, op2 == 0);
@@ -157,7 +157,7 @@ auto MOV(u32 op2, u8 set_flags) -> u32 {
     return op2;
 }
 
-auto MVN(u32 op2, u8 set_flags) -> u32 {
+u32 MVN(u32 op2, u8 set_flags) {
     u32 result = ~op2;
 
     if (set_flags) {
