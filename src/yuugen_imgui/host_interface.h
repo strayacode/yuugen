@@ -62,6 +62,8 @@ public:
     bool scheduler_window = false;
     bool input_settings_window = false;
 
+    int disassembly_size = 15;
+
     ImVec2 scaled_dimensions;
     static constexpr float menubar_height = 21;
     double center_pos = 0;

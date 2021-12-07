@@ -1,4 +1,5 @@
 #include "host_interface.h"
+#include "core/arm/disassembler/disassembler.h"
 #include <iostream>
 
 HostInterface::HostInterface() : 
@@ -96,7 +97,7 @@ void HostInterface::Run() {
             InputSettingsWindow();
         }
 
-        // ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
 
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
@@ -382,6 +383,7 @@ void HostInterface::CartridgeWindow() {
 
 void HostInterface::ARMWindow(CPUArch arch) {
     std::string name = arch == CPUArch::ARMv5 ? "ARM9" : "ARM7";
+    int index = arch == CPUArch::ARMv5 ? 1 : 0;
 
     ImGui::Begin(name.c_str());
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
@@ -390,6 +392,41 @@ void HostInterface::ARMWindow(CPUArch arch) {
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Disassembly")) {
+            if (ImGui::Button("+")) {
+                disassembly_size++;
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("-")) {
+                disassembly_size--;
+            }
+
+            ImGui::SameLine();
+
+            if (disassembly_size < 0) {
+                disassembly_size = 0;
+            }
+
+            ImGui::Text("Number of Instructions: %d", disassembly_size);
+
+            if (core.GetState() != State::Idle) {
+                int increment = core.system.cpu_core[index].IsARM() ? 4 : 2;
+                u32 addr = core.system.cpu_core[index].regs.r[15] - ((disassembly_size - 1) / 2) * increment;
+
+                if (core.system.cpu_core[index].IsARM()) {
+                    for (int i = 0; i < disassembly_size; i++) {
+                        ImGui::Text("%08x\t%s", addr, DisassembleARMInstruction(core.system.cpu_core[index].ReadWord(addr)).c_str());
+                        addr += increment;
+                    }
+                } else {
+                    for (int i = 0; i < disassembly_size; i++) {
+                        ImGui::Text("%08x\t%s", addr, DisassembleThumbInstruction(core.system.cpu_core[index].ReadHalf(addr)).c_str());
+                        addr += increment;
+                    }
+                }
+            }
+
             ImGui::EndTabItem();
         }
 
