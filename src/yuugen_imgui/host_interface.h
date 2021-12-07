@@ -29,7 +29,9 @@ public:
     void DrawScreen();
     void SetupStyle();
     void CartridgeWindow();
-    void ARMWindow();
+    
+    // the arch argument specifies whether to render window for arm7 or arm9
+    void ARMWindow(CPUArch arch);
     void GPUWindow();
     void GPU2DWindow();
     void SchedulerWindow();
@@ -53,7 +55,8 @@ public:
     GLuint textures[2];
 
     bool cartridge_window = false;
-    bool arm_window = false;
+    bool arm7_window = false;
+    bool arm9_window = false;
     bool gpu_window = false;
     bool gpu_2d_window = false;
     bool scheduler_window = false;

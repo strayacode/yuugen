@@ -72,8 +72,12 @@ void HostInterface::Run() {
             CartridgeWindow();
         }
 
-        if (arm_window) {
-            ARMWindow();
+        if (arm7_window) {
+            ARMWindow(CPUArch::ARMv4);
+        }
+
+        if (arm9_window) {
+            ARMWindow(CPUArch::ARMv5);
         }
 
         if (gpu_window) {
@@ -245,8 +249,12 @@ void HostInterface::UpdateTitle(float fps) {
                 cartridge_window = !cartridge_window; 
             }
 
-            if (ImGui::MenuItem("ARM", nullptr, arm_window)) { 
-                arm_window = !arm_window; 
+            if (ImGui::MenuItem("ARM7", nullptr, arm7_window)) { 
+                arm7_window = !arm7_window; 
+            }
+
+            if (ImGui::MenuItem("ARM9", nullptr, arm9_window)) { 
+                arm9_window = !arm9_window; 
             }
 
             if (ImGui::MenuItem("GPU", nullptr, gpu_window)) { 
@@ -372,46 +380,16 @@ void HostInterface::CartridgeWindow() {
     ImGui::End();
 }
 
-void HostInterface::ARMWindow() {
-    ImGui::Begin("ARM");
+void HostInterface::ARMWindow(CPUArch arch) {
+    std::string name = arch == CPUArch::ARMv5 ? "ARM9" : "ARM7";
+
+    ImGui::Begin(name.c_str());
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
-        if (ImGui::BeginTabItem("ARM7")) {
-            if (ImGui::BeginTable("registers", 4)) {
-                for (int i = 0; i < 4; i++) {
-                    ImGui::TableNextRow();
-                    for (int j = 0; j < 4; j++) {
-                        ImGui::TableSetColumnIndex(j);
-                        ImGui::Text("r%d: %08x", (i * 4) + j, core.system.cpu_core[0].regs.r[(i * 4) + j]);
-                    }
-                }
-                ImGui::EndTable();
-            }
-
-            ImGui::Text("cpsr: %08x", core.system.cpu_core[0].regs.cpsr);
-            ImGui::Text("State: %s", core.system.cpu_core[0].halted ? "Halted" : "Running");
-            ImGui::Text("T Bit: %s", (!(core.system.cpu_core[0].regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
-            ImGui::Text("Mode: %02x", core.system.cpu_core[0].regs.cpsr & 0x1F);
-            
+        if (ImGui::BeginTabItem("Registers")) {
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("ARM9")) {
-            if (ImGui::BeginTable("registers", 4)) {
-                for (int i = 0; i < 4; i++) {
-                    ImGui::TableNextRow();
-                    for (int j = 0; j < 4; j++) {
-                        ImGui::TableSetColumnIndex(j);
-                        ImGui::Text("r%d: %08x", (i * 4) + j, core.system.cpu_core[1].regs.r[(i * 4) + j]);
-                    }
-                }
-                ImGui::EndTable();
-            }
-
-            ImGui::Text("cpsr: %08x", core.system.cpu_core[1].regs.cpsr);
-            ImGui::Text("State: %s", core.system.cpu_core[1].halted ? "Halted" : "Running");
-            ImGui::Text("T Bit: %s", (!(core.system.cpu_core[1].regs.cpsr & (1 << 5))) ? "ARM" : "Thumb");
-            ImGui::Text("Mode: %02x", core.system.cpu_core[1].regs.cpsr & 0x1F);
-            
+        if (ImGui::BeginTabItem("Disassembly")) {
             ImGui::EndTabItem();
         }
 
