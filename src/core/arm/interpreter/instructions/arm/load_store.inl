@@ -117,7 +117,7 @@ void ARMSingleDataTransfer() {
     }
 }
 
-auto ARMGetShiftedRegisterSingleDataTransfer() -> u32 {
+u32 ARMGetShiftedRegisterSingleDataTransfer() {
     u8 shift_type = (instruction >> 5) & 0x3;
     u8 shift_amount = (instruction >> 7) & 0x1F;
 
