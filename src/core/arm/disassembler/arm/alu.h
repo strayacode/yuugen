@@ -98,3 +98,26 @@ std::string DisassembleARMDataProcessing(u32 instruction) {
         return "";
     }
 }
+
+std::string DisassembleARMMultiply(u32 instruction) {
+    const bool accumulate = (instruction >> 21) & 0x1;
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rn = (instruction >> 12) & 0xF;
+    u8 rd = (instruction >> 16) & 0xF;
+
+    std::string set_flags = (instruction >> 20) & 0x1 ? "s" : "";
+    
+    if (accumulate) {
+        return format("mla%s r%d, r%d, r%d, r%d", set_flags.c_str(), rd, rm, rs, rn);
+    } else {
+        return format("mul%s r%d, r%d, r%d", set_flags.c_str(), rd, rm, rs);
+    }
+}
+
+std::string DisassembleARMCountLeadingZeroes(u32 instruction) {
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+
+    return format("clz r%d, r%d", rd, rm);
+}

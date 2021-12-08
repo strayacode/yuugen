@@ -6,7 +6,7 @@
 #include "core/arm/disassembler/arm/branch.h"
 #include "core/arm/disassembler/arm/load_store.h"
 
-std::string DisassembleARMInstruction(u32 instruction) {
+std::string DisassembleARMInstruction(u32 instruction, u32 pc) {
     const bool set_flags = instruction & (1 << 20);
     const u8 opcode = (instruction >> 21) & 0xF;
 
@@ -17,8 +17,7 @@ std::string DisassembleARMInstruction(u32 instruction) {
             if ((instruction & 0x60) == 0) {
                 switch ((instruction >> 23) & 0x3) {
                 case 0x0:
-                    // return &CPUCore::ARMMultiply<accumulate, set_flags>;
-                    log_fatal("handle");
+                    return DisassembleARMMultiply(instruction);
                 case 0x1:
                     // return &CPUCore::ARMMultiplyLong<accumulate, set_flags, sign>;
                     log_fatal("handle");
@@ -32,23 +31,19 @@ std::string DisassembleARMInstruction(u32 instruction) {
         } else if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             // miscellaneous instructions
             if ((instruction & 0xF0) == 0) {
-                // return &CPUCore::ARMPSRTransfer<(instruction >> 21) & 0x1, (instruction >> 22) & 0x1>;
-                log_fatal("handle");
+                return DisassembleARMStatusTransfer(instruction);
             }
             
             if ((instruction & 0xFF000F0) == 0x1200010) {
-                // return &CPUCore::ARMBranchExchange;
-                log_fatal("handle");
+                return DisassembleARMBranchExchange(instruction);
             }
             
             if ((instruction & 0xFF000F0) == 0x1600010) {
-                // return &CPUCore::ARMCountLeadingZeroes;
-                log_fatal("handle");
+                return DisassembleARMCountLeadingZeroes(instruction);
             }
             
             if ((instruction & 0xFF000F0) == 0x1200030) {
-                // return &CPUCore::ARMBranchLinkExchangeRegister;
-                log_fatal("handle");
+                return DisassembleARMBranchLinkExchangeRegister(instruction);
             }
             
             if ((instruction & 0xF0) == 0x50) {
@@ -86,40 +81,34 @@ std::string DisassembleARMInstruction(u32 instruction) {
     case 0x1:
         if (!set_flags && (opcode >= 0x8) && (opcode <= 0xB)) {
             if (instruction & (1 << 21)) {
-                // return &CPUCore::ARMPSRTransfer<(instruction >> 21) & 0x1, (instruction >> 22) & 0x1>;
-                log_fatal("handle");
+                return DisassembleARMStatusTransfer(instruction);
             }
             
-            // return &CPUCore::ARMUndefined;
-            log_fatal("handle");
+            return "undefined";
         }
 
         return DisassembleARMDataProcessing(instruction);
     case 0x2: case 0x3:
         return DisassembleARMSingleDataTransfer(instruction);
     case 0x4:
-        // return &CPUCore::ARMBlockDataTransfer<load, writeback, load_psr, up, pre>;
-        log_fatal("handle");
+        return DisassembleARMBlockDataTransfer(instruction);
     case 0x5:
-        return DisassembleARMBranchLinkMaybeExchange(instruction);
+        return DisassembleARMBranchLinkMaybeExchange(instruction, pc);
     case 0x7:
         if ((instruction & 0x1000010) == 0x10) {
-            // return &CPUCore::ARMCoprocessorRegisterTransfer;
-            log_fatal("handle");
+            return DisassembleARMCoprocessorRegisterTransfer(instruction);
         } else if ((instruction & 0x1000010) == 0) {
             // return &CPUCore::UnimplementedInstruction;
             log_fatal("handle");
         }
 
-        // return &CPUCore::ARMSoftwareInterrupt;
-        log_fatal("handle");
+        return DisassembleARMSoftwareInterrupt(instruction);
     default:
-        // return &CPUCore::UnimplementedInstruction;
-        log_fatal("handle");
+        return "";
     }
 }
 
-std::string DisassembleThumbInstruction(u16 instruction) {
+std::string DisassembleThumbInstruction(u16 instruction, u32 pc) {
     return "n/a";
 }
 

@@ -46,7 +46,7 @@ void ARMDataProcessing() {
             }
         }
 
-        op2 = ARMGetShiftedRegisterDataProcessing(op2, shift_type, shift_amount, carry_flag, immediate);
+        op2 = ARMGetShiftedRegisterDataProcessing(op2, shift_type, shift_amount, carry_flag, shift_imm);
     }
 
     switch (opcode) {
@@ -298,19 +298,19 @@ u32 AND(u32 op1, u32 op2, u8 set_flags) {
     return result;
 }
 
-u32 ARMGetShiftedRegisterDataProcessing(u32 op2, u8 shift_type, u8 shift_amount, u8& carry_flag, bool immediate) {
+u32 ARMGetShiftedRegisterDataProcessing(u32 op2, u8 shift_type, u8 shift_amount, u8& carry_flag, bool shift_imm) {
     switch (shift_type) {
     case 0x0:
         op2 = LSL(op2, shift_amount, carry_flag);
         break;
     case 0x1:
-        op2 = LSR(op2, shift_amount, carry_flag, immediate);
+        op2 = LSR(op2, shift_amount, carry_flag, shift_imm);
         break;
     case 0x2:
-        op2 = ASR(op2, shift_amount, carry_flag, immediate);
+        op2 = ASR(op2, shift_amount, carry_flag, shift_imm);
         break;
     case 0x3:
-        op2 = ROR(op2, shift_amount, carry_flag, immediate);
+        op2 = ROR(op2, shift_amount, carry_flag, shift_imm);
         break;
     }
 
@@ -342,10 +342,10 @@ u32 LSL(u32 op1, u8 shift_amount, u8& carry_flag) {
     return result;
 }
 
-u32 LSR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) {
+u32 LSR(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm) {
     u32 result = 0;
 
-    if (immediate) {
+    if (shift_imm) {
         if (shift_amount == 0) {
             result = 0;
             carry_flag = op1 >> 31;
@@ -371,11 +371,11 @@ u32 LSR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) {
     return result;
 }
 
-u32 ASR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) {
+u32 ASR(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm) {
     u32 result = 0;
     u8 msb = op1 >> 31;
 
-    if (immediate) {
+    if (shift_imm) {
         if (shift_amount == 0) {
             result = 0xFFFFFFFF * msb;
             carry_flag = msb;
@@ -398,10 +398,10 @@ u32 ASR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) {
     return result;
 }
 
-u32 ROR(u32 op1, u8 shift_amount, u8& carry_flag, bool immediate) {
+u32 ROR(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm) {
     u32 result = 0;
 
-    if (immediate) {
+    if (shift_imm) {
         if (shift_amount == 0) {
             result = (carry_flag << 31) | (op1 >> 1);
             carry_flag = op1 & 0x1;

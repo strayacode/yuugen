@@ -35,8 +35,8 @@ bool HostInterface::Initialise() {
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 15.0f);
+    // ImGuiIO& io = ImGui::GetIO();
+    // io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 15.0f);
     SetupStyle();
 
     // initialise texture stuff
@@ -417,20 +417,22 @@ void HostInterface::ARMWindow(CPUArch arch) {
                 
                 if (core.system.cpu_core[index].IsARM()) {
                     for (int i = 0; i < disassembly_size; i++) {
+                        u32 instruction = core.system.cpu_core[index].ReadWord(addr);
                         if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x\t%s", addr, DisassembleARMInstruction(core.system.cpu_core[index].ReadWord(addr)).c_str());
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x  %08x: %s", addr, instruction, DisassembleARMInstruction(instruction, addr).c_str());
                         } else {
-                            ImGui::Text("%08x\t%s", addr, DisassembleARMInstruction(core.system.cpu_core[index].ReadWord(addr)).c_str());
+                            ImGui::Text("%08x  %08x: %s", addr, instruction, DisassembleARMInstruction(instruction, addr).c_str());
                         }
                         
                         addr += increment;
                     }
                 } else {
                     for (int i = 0; i < disassembly_size; i++) {
+                        u16 instruction = core.system.cpu_core[index].ReadHalf(addr);
                         if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x\t%s", addr, DisassembleThumbInstruction(core.system.cpu_core[index].ReadHalf(addr)).c_str());
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x  %08x: %s", addr, instruction, DisassembleThumbInstruction(instruction, addr).c_str());
                         } else {
-                            ImGui::Text("%08x\t%s", addr, DisassembleThumbInstruction(core.system.cpu_core[index].ReadHalf(addr)).c_str());
+                            ImGui::Text("%08x  %08x: %s", addr, instruction, DisassembleThumbInstruction(instruction, addr).c_str());
                         }
 
                         addr += increment;
