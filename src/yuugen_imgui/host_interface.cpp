@@ -35,8 +35,9 @@ bool HostInterface::Initialise() {
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // ImGuiIO& io = ImGui::GetIO();
-    // io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 15.0f);
+    ImGuiIO& io = ImGui::GetIO();
+    monospace_font = io.Fonts->AddFontFromFileTTF("../data/fonts/FiraMono-Regular.ttf", 13.0f);
+    regular_font = io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 13.0f);
     SetupStyle();
 
     // initialise texture stuff
@@ -96,8 +97,6 @@ void HostInterface::Run() {
         if (input_settings_window) {
             InputSettingsWindow();
         }
-
-        ImGui::ShowDemoWindow();
 
         ImGui::Render();
         glViewport(0, 0, 1280, 720);
@@ -185,6 +184,7 @@ void HostInterface::UpdateTitle(float fps) {
 }
 
  void HostInterface::DrawMenubar() {
+    ImGui::PushFont(regular_font);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
     if (ImGui::BeginMainMenuBar()) {
@@ -305,6 +305,8 @@ void HostInterface::UpdateTitle(float fps) {
         core.BootGame(file_dialog.GetSelected().string());
         file_dialog.ClearSelected();
     }
+
+    ImGui::PopFont();
 }
 
 void HostInterface::DrawScreen() {
@@ -342,7 +344,7 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().WindowBorderSize = 0.0f;
     ImGui::GetStyle().PopupBorderSize = 0.0f;
     ImGui::GetStyle().ChildBorderSize = 0.0f;
-    ImGui::GetStyle().WindowRounding = 0.0f;
+    ImGui::GetStyle().WindowRounding = 5.0f;
     ImGui::GetStyle().FrameRounding = 0.0f;
     ImGui::GetStyle().PopupRounding = 0.0f;
     ImGui::GetStyle().ChildRounding = 0.0f;

@@ -70,4 +70,7 @@ public:
 
     std::vector<SDL_GameController*> controller_list;
     SDL_GameController* current_controller = nullptr;
+
+    ImFont* regular_font = nullptr;
+    ImFont* monospace_font = nullptr;
 };
