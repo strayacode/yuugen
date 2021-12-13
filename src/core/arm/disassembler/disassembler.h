@@ -22,8 +22,7 @@ std::string DisassembleARMInstruction(u32 instruction, u32 pc) {
                     // return &CPUCore::ARMMultiplyLong<accumulate, set_flags, sign>;
                     log_fatal("handle");
                 case 0x2:
-                    // return &CPUCore::ARMSingleDataSwap;
-                    log_fatal("handle");
+                    return DisassembleARMSingleDataSwap(instruction);
                 }
             }
 

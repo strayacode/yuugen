@@ -121,3 +121,12 @@ std::string DisassembleARMCountLeadingZeroes(u32 instruction) {
 
     return format("clz r%d, r%d", rd, rm);
 }
+
+std::string DisassembleARMSingleDataSwap(u32 instruction) {
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+    u8 byte = (instruction >> 22) & 0x1;
+    
+    return format("swp%s r%d, r%d, [r%d]", byte ? "b" : "", rd, rm, rn);
+}

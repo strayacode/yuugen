@@ -46,27 +46,47 @@ std::string DisassembleARMHalfwordDataTransfer(u32 instruction) {
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
     const bool load = (instruction >> 20) & 0x1;
+    const bool writeback = (instruction >> 21) & 0x1;
+    const bool immediate = (instruction >> 22) & 0x1;
+    const bool up = (instruction >> 23) & 0x1;
+    const bool pre = (instruction >> 24) & 0x1;
+
+    std::string address = format(" [r%d%s, ", rn, pre ? "" : "]");
+
+    if (immediate) {
+        address += format("#0x%08x", ((instruction >> 4) & 0xF0) | (instruction & 0xF));
+    } else {
+        address += format("r%d", rm);
+    }
+
+    if (pre) {
+        address += "]";
+    }
+
+    if (writeback) {
+        address += "!";
+    }
 
     switch (opcode) {
     case 0x1:
         if (load) {
-            return "ldrh";
+            return "ldrh" + address;
         } else {
-            return "strh";
+            return "strh" + address;
         }
         break;
     case 0x2:
         if (load) {
-            return "ldrsb";
+            return "ldrsb" + address;
         } else {
-            return "ldrd";
+            return "ldrd" + address;
         }
         break;
     case 0x3:
         if (load) {
-            return "ldrsh";
+            return "ldrsh" + address;
         } else {
-            return "strd";
+            return "strd" + address;
         }
         break;
     default:

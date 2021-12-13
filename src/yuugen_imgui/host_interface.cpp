@@ -421,9 +421,9 @@ void HostInterface::ARMWindow(CPUArch arch) {
                     for (int i = 0; i < disassembly_size; i++) {
                         u32 instruction = core.system.cpu_core[index].ReadWord(addr);
                         if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x  %08x: %s", addr, instruction, DisassembleARMInstruction(instruction, addr).c_str());
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x: %08x %s", addr, instruction, DisassembleARMInstruction(instruction, addr).c_str());
                         } else {
-                            ImGui::Text("%08x  %08x: %s", addr, instruction, DisassembleARMInstruction(instruction, addr).c_str());
+                            ImGui::Text("%08x: %08x %s", addr, instruction, DisassembleARMInstruction(instruction, addr).c_str());
                         }
                         
                         addr += increment;
@@ -432,9 +432,9 @@ void HostInterface::ARMWindow(CPUArch arch) {
                     for (int i = 0; i < disassembly_size; i++) {
                         u16 instruction = core.system.cpu_core[index].ReadHalf(addr);
                         if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x  %08x: %s", addr, instruction, DisassembleThumbInstruction(instruction, addr).c_str());
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x: %08x %s", addr, instruction, DisassembleThumbInstruction(instruction, addr).c_str());
                         } else {
-                            ImGui::Text("%08x  %08x: %s", addr, instruction, DisassembleThumbInstruction(instruction, addr).c_str());
+                            ImGui::Text("%08x: %08x %s", addr, instruction, DisassembleThumbInstruction(instruction, addr).c_str());
                         }
 
                         addr += increment;
