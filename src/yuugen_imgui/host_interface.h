@@ -35,6 +35,7 @@ public:
     void GPUWindow();
     void GPU2DWindow();
     void SchedulerWindow();
+    void DMAWindow();
     void InputSettingsWindow();
 
     // TODO: sort of memory possible leaking
@@ -60,12 +61,14 @@ public:
     bool gpu_window = false;
     bool gpu_2d_window = false;
     bool scheduler_window = false;
+    bool dma_window = false;
     bool input_settings_window = false;
+    bool demo_window = false;
 
     int disassembly_size = 15;
 
     ImVec2 scaled_dimensions;
-    static constexpr float menubar_height = 21;
+    static constexpr float menubar_height = 19;
     double center_pos = 0;
 
     std::vector<SDL_GameController*> controller_list;

@@ -36,8 +36,7 @@ bool HostInterface::Initialise() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     ImGuiIO& io = ImGui::GetIO();
-    monospace_font = io.Fonts->AddFontFromFileTTF("../data/fonts/FiraMono-Regular.ttf", 13.0f);
-    regular_font = io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 13.0f);
+    io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 13.0f);
     SetupStyle();
 
     // initialise texture stuff
@@ -94,8 +93,16 @@ void HostInterface::Run() {
             SchedulerWindow();
         }
 
+        if (dma_window) {
+            DMAWindow();
+        }
+
         if (input_settings_window) {
             InputSettingsWindow();
+        }
+
+        if (demo_window) {
+            ImGui::ShowDemoWindow();
         }
 
         ImGui::Render();
@@ -184,7 +191,6 @@ void HostInterface::UpdateTitle(float fps) {
 }
 
  void HostInterface::DrawMenubar() {
-    ImGui::PushFont(regular_font);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
     if (ImGui::BeginMainMenuBar()) {
@@ -270,6 +276,14 @@ void HostInterface::UpdateTitle(float fps) {
                 scheduler_window = !scheduler_window; 
             }
 
+            if (ImGui::MenuItem("DMA", nullptr, dma_window)) { 
+                dma_window = !dma_window; 
+            }
+
+            if (ImGui::MenuItem("Demo Window", nullptr, demo_window)) { 
+                demo_window = !demo_window; 
+            }
+
             ImGui::EndMenu();
         }
 
@@ -305,8 +319,6 @@ void HostInterface::UpdateTitle(float fps) {
         core.BootGame(file_dialog.GetSelected().string());
         file_dialog.ClearSelected();
     }
-
-    ImGui::PopFont();
 }
 
 void HostInterface::DrawScreen() {
@@ -421,9 +433,17 @@ void HostInterface::ARMWindow(CPUArch arch) {
                     for (int i = 0; i < disassembly_size; i++) {
                         u32 instruction = core.system.cpu_core[index].ReadWord(addr);
                         if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x: %08x %s", addr, instruction, DisassembleARMInstruction(instruction, addr).c_str());
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
+                            ImGui::SameLine(67);
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
+                            ImGui::SameLine(125);
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleARMInstruction(instruction, addr).c_str());
                         } else {
-                            ImGui::Text("%08x: %08x %s", addr, instruction, DisassembleARMInstruction(instruction, addr).c_str());
+                            ImGui::Text("%08X:", addr);
+                            ImGui::SameLine(67);
+                            ImGui::Text("%08X", instruction);
+                            ImGui::SameLine(125);
+                            ImGui::Text("%s", DisassembleARMInstruction(instruction, addr).c_str());
                         }
                         
                         addr += increment;
@@ -432,9 +452,17 @@ void HostInterface::ARMWindow(CPUArch arch) {
                     for (int i = 0; i < disassembly_size; i++) {
                         u16 instruction = core.system.cpu_core[index].ReadHalf(addr);
                         if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08x: %08x %s", addr, instruction, DisassembleThumbInstruction(instruction, addr).c_str());
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
+                            ImGui::SameLine(67);
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
+                            ImGui::SameLine(125);
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleThumbInstruction(instruction, addr).c_str());
                         } else {
-                            ImGui::Text("%08x: %08x %s", addr, instruction, DisassembleThumbInstruction(instruction, addr).c_str());
+                            ImGui::Text("%08X:", addr);
+                            ImGui::SameLine(67);
+                            ImGui::Text("%08X", instruction);
+                            ImGui::SameLine(125);
+                            ImGui::Text("%s", DisassembleThumbInstruction(instruction, addr).c_str());
                         }
 
                         addr += increment;
@@ -627,6 +655,24 @@ void HostInterface::SchedulerWindow() {
     for (Event event : core.system.scheduler.GetEvents()) {
         ImGui::Text("%s +%ld", event.type->name.c_str(), event.time - core.system.scheduler.GetCurrentTime());
     }
+    ImGui::End();
+}
+
+void HostInterface::DMAWindow() {
+    ImGui::Begin("DMA");
+
+    for (int i = 0; i < 4; i++) {
+        ImGui::Text("DMA7 Channel %d", i);
+        ImGui::Text("Source Address: %08x", core.system.dma[0].channel[i].source);
+        ImGui::Text("Destination Address: %08x", core.system.dma[0].channel[i].destination);
+    }
+
+    for (int i = 0; i < 4; i++) {
+        ImGui::Text("DMA9 Channel %d", i);
+        ImGui::Text("Source Address: %08x", core.system.dma[1].channel[i].source);
+        ImGui::Text("Destination Address: %08x", core.system.dma[1].channel[i].destination);
+    }
+
     ImGui::End();
 }
 

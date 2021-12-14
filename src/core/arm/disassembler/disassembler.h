@@ -19,8 +19,7 @@ std::string DisassembleARMInstruction(u32 instruction, u32 pc) {
                 case 0x0:
                     return DisassembleARMMultiply(instruction);
                 case 0x1:
-                    // return &CPUCore::ARMMultiplyLong<accumulate, set_flags, sign>;
-                    log_fatal("handle");
+                    return DisassembleARMMultiplyLong(instruction);
                 case 0x2:
                     return DisassembleARMSingleDataSwap(instruction);
                 }
@@ -46,8 +45,7 @@ std::string DisassembleARMInstruction(u32 instruction, u32 pc) {
             }
             
             if ((instruction & 0xF0) == 0x50) {
-                // return &CPUCore::ARMSaturatingAddSubtract;
-                log_fatal("handle");
+                return DisassembleARMSaturatingAddSubtract(instruction);
             }
             
             if ((instruction & 0x70) == 0x70) {
@@ -56,23 +54,7 @@ std::string DisassembleARMInstruction(u32 instruction, u32 pc) {
             }
             
             if ((instruction & 0x90) == 0x80) {
-                switch ((instruction >> 21) & 0xF) {
-                case 0x8:
-                    // return &CPUCore::ARMSignedHalfwordMultiply<true>;
-                    log_fatal("handle");
-                case 0x9:
-                    // return &CPUCore::ARMSignedHalfwordWordMultiply;
-                    log_fatal("handle");
-                case 0xA:
-                    // return &CPUCore::ARMSignedHalfwordAccumulateLong;
-                    log_fatal("handle");
-                case 0xB:
-                    // return &CPUCore::ARMSignedHalfwordMultiply<false>;
-                    log_fatal("handle");
-                default:
-                    // return &CPUCore::ARMSignedHalfwordMultiply<false>;
-                    log_fatal("handle");
-                }
+                return "signed halfword multiply";
             }
         }
 
@@ -97,8 +79,7 @@ std::string DisassembleARMInstruction(u32 instruction, u32 pc) {
         if ((instruction & 0x1000010) == 0x10) {
             return DisassembleARMCoprocessorRegisterTransfer(instruction);
         } else if ((instruction & 0x1000010) == 0) {
-            // return &CPUCore::UnimplementedInstruction;
-            log_fatal("handle");
+            return "";
         }
 
         return DisassembleARMSoftwareInterrupt(instruction);

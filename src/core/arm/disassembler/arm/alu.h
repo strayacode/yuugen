@@ -115,6 +115,31 @@ std::string DisassembleARMMultiply(u32 instruction) {
     }
 }
 
+std::string DisassembleARMMultiplyLong(u32 instruction) {
+    u8 rm = instruction & 0xF;
+    u8 rs = (instruction >> 8) & 0xF;
+    u8 rdlo = (instruction >> 12) & 0xF;
+    u8 rdhi = (instruction >> 16) & 0xF;
+    u8 opcode = (instruction >> 21) & 0xF;
+
+    std::string set_flags = (instruction >> 20) & 0x1 ? "s" : "";
+
+    switch (opcode) {
+    case 0x2:
+        return format("umaal r%d, r%d, r%d, r%d", rdlo, rdhi, rm, rs);
+    case 0x4:
+        return format("umull%s r%d, r%d, r%d, r%d", set_flags.c_str(), rdlo, rdhi, rm, rs);
+    case 0x5:
+        return format("umlal%s r%d, r%d, r%d, r%d", set_flags.c_str(), rdlo, rdhi, rm, rs);
+    case 0x6:
+        return format("smull%s r%d, r%d, r%d, r%d", set_flags.c_str(), rdlo, rdhi, rm, rs);
+    case 0x7:
+        return format("smlal%s r%d, r%d, r%d, r%d", set_flags.c_str(), rdlo, rdhi, rm, rs);
+    default:
+        log_fatal("handle opcode %d", opcode);
+    }
+}
+
 std::string DisassembleARMCountLeadingZeroes(u32 instruction) {
     u8 rm = instruction & 0xF;
     u8 rd = (instruction >> 12) & 0xF;
@@ -129,4 +154,24 @@ std::string DisassembleARMSingleDataSwap(u32 instruction) {
     u8 byte = (instruction >> 22) & 0x1;
     
     return format("swp%s r%d, r%d, [r%d]", byte ? "b" : "", rd, rm, rn);
+}
+
+std::string DisassembleARMSaturatingAddSubtract(u32 instruction) {
+    u8 rm = instruction & 0xF;
+    u8 rd = (instruction >> 12) & 0xF;
+    u8 rn = (instruction >> 16) & 0xF;
+    u8 opcode = (instruction >> 20) & 0xF;
+
+    switch (opcode) {
+    case 0x0:
+        return format("qadd r%d, r%d, r%d", rd, rm, rn);
+    case 0x2:
+        return format("qsub r%d, r%d, r%d", rd, rm, rn);
+    case 0x4:
+        return format("qdadd r%d, r%d, r%d", rd, rm, rn);
+    case 0x6:
+        return format("qdsub r%d, r%d, r%d", rd, rm, rn);
+    default:
+        log_fatal("handle opcode %d", opcode);
+    }
 }
