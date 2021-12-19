@@ -3,23 +3,21 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <common/log.h>
-
-struct ConfigEntry {
-    std::string field;
-    std::string string_value;
-    int int_value;
-};
+#include "common/log.h"
 
 class Config {
 public:
-    Config();
+    Config(const Config& config) = delete;
 
-    void AddEntry(std::string field, std::string string_value);
-    void AddEntry(std::string field, int int_value);
-    void SetDefaultConfig();
-    void LoadConfig();
-    void SaveConfig();
+    static Config& GetInstance() {
+        return instance;
+    }
 
-    std::vector<ConfigEntry> entries;
+    bool nds = true;
+    bool direct_boot = true;
+
+private:
+    Config() {};
+
+    static Config instance;
 };
