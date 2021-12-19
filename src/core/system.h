@@ -57,7 +57,6 @@ public:
     CPUCore cpu_core[2];
 
     u8 main_memory[0x400000] = {};
-    u8 arm7_wram[0x10000] = {};
     u8 shared_wram[0x8000] = {};
 
     u8 WRAMCNT;

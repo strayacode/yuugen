@@ -8,6 +8,7 @@ ARM7Memory::ARM7Memory(System& system) : system(system) {
 
 void ARM7Memory::Reset() {
     UpdateMemoryMap(0, 0xFFFFFFFF);
+    memset(arm7_wram, 0, 0x10000);
 }
 
 void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
@@ -27,8 +28,8 @@ void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
             if (addr < 0x03800000) {
                 switch (system.WRAMCNT) {
                 case 0:
-                    read_page_table[index] = &system.arm7_wram[addr & 0xFFFF];
-                    write_page_table[index] = &system.arm7_wram[addr & 0xFFFF];
+                    read_page_table[index] = &arm7_wram[addr & 0xFFFF];
+                    write_page_table[index] = &arm7_wram[addr & 0xFFFF];
                     break;
                 case 1:
                     read_page_table[index] = &system.shared_wram[addr & 0x3FFF];
@@ -44,8 +45,8 @@ void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
                     break;
                 }
             } else {
-                read_page_table[index] = &system.arm7_wram[addr & 0xFFFF];
-                write_page_table[index] = &system.arm7_wram[addr & 0xFFFF];
+                read_page_table[index] = &arm7_wram[addr & 0xFFFF];
+                write_page_table[index] = &arm7_wram[addr & 0xFFFF];
             }
             break;
         default:

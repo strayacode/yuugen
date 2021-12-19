@@ -24,4 +24,5 @@ public:
 
     System& system;
     std::array<u8, 0x4000> bios;
+    u8 arm7_wram[0x10000] = {};
 };

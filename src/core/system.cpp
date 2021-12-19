@@ -30,7 +30,6 @@ void System::Reset() {
     wifi.Reset();
 
     memset(main_memory, 0, 0x400000);
-    memset(arm7_wram, 0, 0x10000);
     memset(shared_wram, 0, 0x8000);
 
     WRAMCNT = 0;
