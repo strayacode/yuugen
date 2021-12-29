@@ -1,6 +1,7 @@
 #include <algorithm>
 #include "core/arm/cpu_core.h"
-#include "core/hw/cp15/cp15.h"
+#include "core/nds/cp15/cp15.h"
+#include "core/config.h"
 
 CPUCore::CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15) : memory(memory), arch(arch), cp15(cp15) {
     GenerateARMTable();
@@ -73,23 +74,30 @@ void CPUCore::RunInterpreter(int cycles) {
 }
 
 void CPUCore::DirectBoot(u32 entrypoint) {
-    regs.r[12] = regs.r[14] = regs.r[15] = entrypoint;
-
-    // armv4/armv5 specific
-    if (arch == CPUArch::ARMv4) {
-        regs.r[13] = 0x0380FD80;
-        regs.r_banked[BANK_IRQ][5] = 0x0380FF80;
-        regs.r_banked[BANK_SVC][5] = 0x0380FFC0;
-    } else if (arch == CPUArch::ARMv5) {
-        regs.r[13] = 0x03002F7C;
-        regs.r_banked[BANK_IRQ][5] = 0x03003F80;
-        regs.r_banked[BANK_SVC][5] = 0x03003FC0;
+    if (Config::GetInstance().nds) {
+        regs.r[12] = regs.r[14] = regs.r[15] = entrypoint;
+        
+        // armv4/armv5 specific
+        if (arch == CPUArch::ARMv4) {
+            regs.r[13] = 0x0380FD80;
+            regs.r_banked[BANK_IRQ][5] = 0x0380FF80;
+            regs.r_banked[BANK_SVC][5] = 0x0380FFC0;
+        } else if (arch == CPUArch::ARMv5) {
+            regs.r[13] = 0x03002F7C;
+            regs.r_banked[BANK_IRQ][5] = 0x03003F80;
+            regs.r_banked[BANK_SVC][5] = 0x03003FC0;
+        }
+    } else {
+        regs.r[15] = entrypoint;
+        regs.cpsr = 0x6000001F;
+        regs.r_banked[BANK_SVC][5] = 0x03007FE0;
+        regs.r_banked[BANK_IRQ][5] = 0x03007FA0;
+        regs.r[13] = 0x03007F00;
+        regs.r[15] = 0x08000000;        
     }
 
-    // enter system mode
     regs.cpsr = 0xDF;
     SwitchMode(SYS);
-
     ARMFlushPipeline();
 }
 

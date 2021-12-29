@@ -1,74 +1,32 @@
 #pragma once
 
-#include "core/arm/cpu_core.h"
-#include "core/arm/arm7/memory.h"
-#include "core/arm/arm9/memory.h"
-#include "core/scheduler/scheduler.h"
-#include "core/hw/cartridge/cartridge.h"
-#include "core/hw/spi/spi.h"
-#include "core/hw/cp15/cp15.h"
-#include "core/hw/gpu/gpu.h"
-#include "core/hw/dma/dma.h"
-#include "core/hw/input/input.h"
-#include "core/hw/ipc/ipc.h"
-#include "core/hw/timers/timers.h"
-#include "core/hw/spu/spu.h"
-#include "core/hw/rtc/rtc.h"
-#include "core/hw/maths_unit/maths_unit.h"
-#include "core/hw/wifi/wifi.h"
+#include <string>
+#include "common/types.h"
 
 enum class CPUCoreType {
     Interpreter,
 };
 
+// a base class which has virtual methods that will be overriden by the gba and nds classes
 class System {
 public:
-    System();
+    virtual ~System() = default;
+    virtual std::string GetSystem() = 0;
+    virtual void Reset() = 0;
+    
+    // TODO: use a struct called BootParameters instead when we decide to add more
+    // parameters
+    virtual void Boot(bool direct) = 0;
+    virtual void RunFrame() = 0;
+    virtual const u32* GetFramebuffer(int screen) = 0;
 
-    void Reset();
-    void DirectBoot();
-    void FirmwareBoot();
-    void SetGamePath(std::string path);
-    void RunFrame();
-    void WriteHALTCNT(u8 data);
-    void WriteWRAMCNT(u8 data);
-    bool CartridgeAccessRights();
-    void SetCPUCoreType(CPUCoreType type);
-    std::string GetCPUCoreType();
+    std::string GetGame() {
+        return game_path;
+    }
 
-    Cartridge cartridge;
-    Scheduler scheduler;
-    SPI spi;
-    CP15 cp15;
-    GPU gpu;
-    DMA dma[2];
-    Input input;
-    IPC ipc;
-    Timers timers[2];
-    SPU spu;
-    RTC rtc;
-    MathsUnit maths_unit;
-    Wifi wifi;
+    void SetGamePath(std::string path) {
+        game_path = path;
+    }
 
-    // TODO: combine arm7 and arm9 memory into singular memory class including the shared memory
-    ARM7Memory arm7_memory;
-    ARM9Memory arm9_memory;
-
-    CPUCore cpu_core[2];
-
-    u8 main_memory[0x400000] = {};
-    u8 shared_wram[0x8000] = {};
-
-    u8 WRAMCNT;
-    u8 POWCNT2;
-    u16 RCNT;
-    u8 HALTCNT;
-    u16 EXMEMCNT;
-    u8 POSTFLG7;
-    u8 POSTFLG9;
-    u32 BIOSPROT;
-    u16 SIOCNT;
-
-    std::string rom_path;
-    CPUCoreType core_type;
+    std::string game_path;
 };
