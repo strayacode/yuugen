@@ -151,9 +151,9 @@ u8 ARM9Memory::ReadByte(u32 addr) {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFF;
-    default:
-        log_fatal("handle byte read from %08x", addr);
     }
+
+    return 0;
 }
 
 u16 ARM9Memory::ReadHalf(u32 addr) {
@@ -312,9 +312,6 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFFFF;
-    default:
-        log_fatal("handle half read from %08x", addr);
-        break;
     }
 
     return return_value;
@@ -507,8 +504,6 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         return 0xFFFFFFFF;
     case 0x0A:
         return 0;
-    default:
-        log_fatal("handle word read from %08x", addr);
     }
 
     return return_value;
@@ -650,8 +645,6 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
     case 0x06:
         system.gpu.WriteVRAM<u8>(addr, data);
         break;
-    default:
-        log_fatal("handle byte write from %08x", addr);
     }
 }
 
@@ -1031,8 +1024,6 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
     case 0x08: case 0x09:
         // for now do nothing lol
         break;
-    default:
-        log_fatal("handle half write to %08x", addr);
     }
 }
 
@@ -1446,7 +1437,5 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
     case 0x08: case 0x09:
         // for now do nothing lol
         break;
-    default:
-        log_fatal("handle word write to %08x", addr);
     }
 }
