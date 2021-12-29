@@ -15,3 +15,7 @@ void NDS::Boot(bool direct) {
 void NDS::RunFrame() {
     
 }
+
+const u32* NDS::GetFramebuffer(int screen) {
+
+}

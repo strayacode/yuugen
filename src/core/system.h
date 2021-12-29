@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "common/types.h"
 
 enum class CPUCoreType {
     Interpreter,
@@ -17,6 +18,7 @@ public:
     // parameters
     virtual void Boot(bool direct) = 0;
     virtual void RunFrame() = 0;
+    virtual const u32* GetFramebuffer(int screen) = 0;
 
     std::string GetGame() {
         return game_path;

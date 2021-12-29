@@ -16,4 +16,5 @@ public:
     // parameters
     void Boot(bool direct) override;
     void RunFrame() override;
+    const u32* GetFramebuffer(int screen) override;
 };

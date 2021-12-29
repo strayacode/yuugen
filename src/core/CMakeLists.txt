@@ -6,6 +6,8 @@ add_library(core
     gba/gba.h gba/gba.cpp
     gba/memory/memory.h gba/memory/memory.cpp
     gba/cartridge/cartridge.h gba/cartridge/cartridge.cpp
+    gba/gpu/gpu.h gba/gpu/gpu.cpp
+    gba/gpu/compose.cpp
     
     nds/nds.h nds/nds.cpp
     nds/cp15/cp15.h nds/cp15/cp15.cpp

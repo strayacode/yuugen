@@ -2,11 +2,10 @@
 #include "core/gba/gba.h"
 
 GBAMemory::GBAMemory(GBA& gba) : gba(gba) {
-
+    bios = LoadBios<0x4000>("../bios/gba_bios.bin");
 }
 
 void GBAMemory::Reset() {
-    bios.fill(0);
     iwram.fill(0);
     ewram.fill(0);
     UpdateMemoryMap(0, 0xFFFFFFFF);
@@ -34,6 +33,14 @@ void GBAMemory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
         case 0x03:
             read_page_table[index] = &iwram[addr & 0x7FFF];
             write_page_table[index] = &iwram[addr & 0x7FFF];
+            break;
+        case 0x05:
+            read_page_table[index] = &gba.gpu.palette_ram[addr & 0x3FF];
+            write_page_table[index] = &gba.gpu.palette_ram[addr & 0x3FF];
+            break;
+        case 0x06:
+            read_page_table[index] = &gba.gpu.vram[addr & 0x17FFF];
+            write_page_table[index] = &gba.gpu.vram[addr & 0x17FFF];
             break;
         case 0x08:
             read_page_table[index] = &gba.cartridge.rom[addr - 0x08000000];
@@ -79,8 +86,8 @@ u32 GBAMemory::ReadWord(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
-        // case 0x04000004:
-        //     return (core.gpu.vcount << 16) | (core.gpu.dispstat);
+        case 0x04000004:
+            return (gba.gpu.vcount << 16) | (gba.gpu.dispstat);
         default:
             log_fatal("[ARM7] Undefined 32-bit io read %08x", addr);
         }
@@ -102,9 +109,9 @@ void GBAMemory::WriteHalf(u32 addr, u16 data) {
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
-        // case 0x04000000:
-        //     core.gpu.dispcnt = data;
-        //     break;
+        case 0x04000000:
+            gba.gpu.dispcnt = data;
+            break;
         default:
             log_fatal("[ARM7] Undefined 16-bit io write %08x = %08x", addr, data);
         }

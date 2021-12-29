@@ -17,7 +17,7 @@ bool HostInterface::Initialise() {
 
     window_size = 2;
 
-    window = SDL_CreateWindow("yuugen", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 256 * window_size, 384 * window_size, window_flags);
+    window = SDL_CreateWindow("yuugen", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 240, 160, window_flags);
 
     if (window == NULL) {
         log_warn("error initialising SDL_Window!");
@@ -33,7 +33,7 @@ bool HostInterface::Initialise() {
     }
 
     // create the top and bottom textures
-    top_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 256, 192);
+    top_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 240, 160);
     bottom_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 256, 192);
 
     if (top_texture == NULL) {
@@ -64,12 +64,12 @@ void HostInterface::Run(std::string path) {
     core.BootGame(path);
 
     while (true) {
-        // SDL_UpdateTexture(top_texture, nullptr, core.system.gpu.GetFramebuffer(Screen::Top), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_texture, nullptr, core.system->GetFramebuffer(0), sizeof(u32) * 240);
         // SDL_UpdateTexture(bottom_texture, nullptr, core.system.gpu.GetFramebuffer(Screen::Bottom), sizeof(u32) * 256);
 
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_area);
-        SDL_RenderCopy(renderer, bottom_texture, nullptr, &bottom_texture_area);
+        SDL_RenderCopy(renderer, top_texture, nullptr, nullptr);
+        // SDL_RenderCopy(renderer, bottom_texture, nullptr, &bottom_texture_area);
         SDL_RenderPresent(renderer);
 
         while (SDL_PollEvent(&event) != 0) {

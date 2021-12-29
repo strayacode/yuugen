@@ -1,12 +1,13 @@
 #include "core/gba/gba.h"
 
-GBA::GBA() : memory(*this), cpu_core(memory, CPUArch::ARMv4, nullptr) {}
+GBA::GBA() : memory(*this), cpu_core(memory, CPUArch::ARMv4, nullptr), gpu(*this) {}
 
 void GBA::Reset() {
+    cartridge.Reset();
     cartridge.LoadRom(game_path);
     scheduler.Reset();
     memory.Reset();
-    cartridge.Reset();
+    gpu.Reset();
     cpu_core.Reset();
 }
 
@@ -26,4 +27,8 @@ void GBA::RunFrame() {
         scheduler.Tick(1);
         scheduler.RunEvents();
     }
+}
+
+const u32* GBA::GetFramebuffer(int screen) {
+    return gpu.GetFramebuffer(screen);
 }
