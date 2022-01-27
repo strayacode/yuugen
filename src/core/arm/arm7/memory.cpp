@@ -99,9 +99,9 @@ u8 ARM7Memory::ReadByte(u32 addr) {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFF;
+    default:
+        log_fatal("[ARM7] Undefined 8-bit read %08x", addr);
     }
-
-    return 0;
 }
 
 u16 ARM7Memory::ReadHalf(u32 addr) {
@@ -209,6 +209,8 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFFFF;
+    default:
+        log_fatal("[ARM7] Undefined 16-bit io read %08x", addr);
     }
 
     return return_value;
@@ -259,6 +261,8 @@ u32 ARM7Memory::ReadWord(u32 addr) {
         break;
     case 0x06:
         return system.gpu.ReadARM7<u32>(addr);
+    default:
+        log_fatal("handle %08x", addr);
     }
 
     return return_value;
@@ -337,6 +341,8 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
     case 0x06:
         system.gpu.WriteARM7<u8>(addr, data);
         break;
+    default:
+        log_fatal("[ARM7] Undefined 8-bit write %08x = %08x", addr, data);
     }
 }
 
@@ -499,6 +505,8 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
             log_fatal("[ARM7] Undefined 16-bit io write %08x = %08x", addr, data);
         }
         break;
+    default:
+        log_fatal("[ARM7] Undefined 16-bit write %08x = %08x", addr, data);
     }
 }
 
@@ -580,8 +588,7 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
         case 0x040001A4:
             system.cartridge.WriteROMCTRL(data);
             break;
-        case 0x040001B0: 
-        case 0x040001B4:
+        case 0x040001B0: case 0x040001B4:
             // TODO: handle key2 encryption later
             break;
         case 0x04000208:
@@ -612,5 +619,7 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
     case 0x08: case 0x09:
         // for now do nothing lol
         break;
+    default:
+        log_fatal("[ARM7] Undefined 32-bit write %08x = %08x", addr, data);
     }
 }

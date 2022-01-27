@@ -3,12 +3,11 @@
 #include <functional>
 #include <string>
 #include <memory>
-#include "yuugen_common/emu_thread.h"
-#include "audio_common/audio_interface.h"
-#include "audio_common/sdl/audio_interface.h"
-#include "core/system.h"
-#include "core/gba/gba.h"
-#include "core/nds/nds.h"
+#include <yuugen_common/emu_thread.h>
+#include <audio_common/audio_interface.h>
+#include <audio_common/sdl/audio_interface.h>
+#include <core/config.h>
+#include <core/system.h>
 
 enum class BootMode {
     Direct,
@@ -30,6 +29,7 @@ public:
     void Reset();
     void Stop();
     void Shutdown();
+
     void RunFrame();
     void SetBootMode(BootMode new_mode);
     BootMode GetBootMode();
@@ -39,9 +39,9 @@ public:
     void BootFirmware();
     void ToggleFramelimiter();
     void SetGamePath(std::string path);
-    void DetectSystemType(std::string path);
-    
-    std::unique_ptr<System> system;
+
+    System system;
+    Config config;
     std::shared_ptr<AudioInterface> audio_interface;
     
 private:

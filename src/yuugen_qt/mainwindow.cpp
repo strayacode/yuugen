@@ -228,7 +228,7 @@ void MainWindow::BootFirmware() {
 void MainWindow::UpdateTitle(float fps) {
     float percent_usage = (fps / 60.0f) * 100;
 
-    QString title = "yuugen | " + QString::fromStdString(core.system.GetARMCoreType()) + " | " + QString::number(fps, 'f', 2) + " FPS | " + QString::number(percent_usage, 'f', 2) + "%";
+    QString title = "yuugen | " + QString::fromStdString(core.system.GetCPUCoreType()) + " | " + QString::number(fps, 'f', 2) + " FPS | " + QString::number(percent_usage, 'f', 2) + "%";
     this->setWindowTitle(title);
 }
 

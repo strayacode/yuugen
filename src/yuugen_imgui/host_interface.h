@@ -38,9 +38,6 @@ public:
     void DMAWindow();
     void InputSettingsWindow();
 
-    // TODO: sort of memory possible leaking
-    void UpdateControllerList();
-
     bool running = true;
     bool fullscreen = false;
 
@@ -70,9 +67,6 @@ public:
     ImVec2 scaled_dimensions;
     static constexpr float menubar_height = 19;
     double center_pos = 0;
-
-    std::vector<SDL_GameController*> controller_list;
-    SDL_GameController* current_controller = nullptr;
 
     ImFont* regular_font = nullptr;
     ImFont* monospace_font = nullptr;

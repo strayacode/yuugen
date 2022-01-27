@@ -16,7 +16,7 @@ void Scheduler::ResetCurrentTime() {
 }
 
 void Scheduler::RunEvents() {
-    while (events.size() > 0 && events[0].time <= GetCurrentTime()) {
+    while (events[0].time <= GetCurrentTime() && events.size() > 0) {
         events[0].type->callback();
         events.erase(events.begin());
     }

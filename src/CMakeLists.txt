@@ -1,6 +1,6 @@
-set(FRONTEND_SDL ON)
+set(FRONTEND_SDL OFF)
 set(FRONTEND_QT OFF)
-set(FRONTEND_IMGUI OFF)
+set(FRONTEND_IMGUI ON)
 
 add_subdirectory(common)
 add_subdirectory(core)

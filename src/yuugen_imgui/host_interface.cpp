@@ -42,18 +42,16 @@ bool HostInterface::Initialise() {
     // initialise texture stuff
     glGenTextures(2, &textures[0]);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glBindTexture(GL_TEXTURE_2D, textures[1]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    UpdateControllerList();
 
     return true;
 }
@@ -166,19 +164,16 @@ void HostInterface::HandleInput() {
                 core.system.input.HandleInput(BUTTON_L, key_pressed);
                 break;
             }
-        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP || event.type == SDL_MOUSEMOTION) {
-            SDL_MouseMotionEvent* motion_event = reinterpret_cast<SDL_MouseMotionEvent*>(&event);
-            int x = ((motion_event->x - center_pos) / scaled_dimensions.x) * 256;
-            int y = ((motion_event->y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
+        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+            int x = ((event.button.x - center_pos) / scaled_dimensions.x) * 256;
+            int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
 
-            if ((x >= 0 && x < 256) && (y >= 0 && y < 192)) {
+            if ((x >= 0 && x < 256) && (y >= 0 && y < 192) && event.button.button == SDL_BUTTON_LEFT) {
                 // only do a touchscreen event if it occurs in the bottom screen
-                bool button_pressed = motion_event->state & SDL_BUTTON_LMASK;
+                bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
                 core.system.input.SetTouch(button_pressed);
                 core.system.input.SetPoint(x, y);
             }
-        } else if (event.type == SDL_JOYDEVICEADDED || event.type == SDL_JOYDEVICEREMOVED) {
-            UpdateControllerList();
         }
     }
 }
@@ -323,15 +318,15 @@ void HostInterface::UpdateTitle(float fps) {
 
 void HostInterface::DrawScreen() {
     glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Top));
 
     glBindTexture(GL_TEXTURE_2D, textures[1]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Bottom));
@@ -678,21 +673,5 @@ void HostInterface::DMAWindow() {
 
 void HostInterface::InputSettingsWindow() {
     ImGui::Begin("Input Settings");
-    static int current_index = -1;
-    const char* controller_strings[5] = {"a", "b", "c", "d", "e"};
-
-    for (u64 i = 0; i < controller_list.size(); i++) {
-        controller_strings[i] = SDL_GameControllerName(controller_list[i]);
-    }
-
-    ImGui::Combo("Controller List", &current_index, controller_strings, controller_list.size());
     ImGui::End();
-}
-
-void HostInterface::UpdateControllerList() {
-    controller_list.clear();
-
-    for (int i = 0; i < SDL_NumJoysticks(); i++) {
-        controller_list.push_back(SDL_GameControllerOpen(i));
-    }
 }
