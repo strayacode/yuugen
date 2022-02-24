@@ -1,10 +1,9 @@
 #include <algorithm>
 #include "core/arm/cpu_core.h"
 #include "core/hw/cp15/cp15.h"
+#include "core/arm/disassembler/disassembler.h"
 
 CPUCore::CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15) : memory(memory), arch(arch), cp15(cp15) {
-    GenerateARMTable();
-    GenerateThumbTable();
     GenerateConditionTable();
 }
 
@@ -59,15 +58,15 @@ void CPUCore::RunInterpreter(int cycles) {
         }
 
         if (IsARM()) {
-            u32 index = ((instruction >> 16) & 0xFF0) | ((instruction >> 4) & 0xF);
+            Instruction inst = decoder.decode_arm(instruction);
             if (ConditionEvaluate(instruction >> 28)) {
-                (this->*arm_lut[index])();
+                (this->*inst)();
             } else {
                 regs.r[15] += 4;
             }
         } else {
-            u32 index = instruction >> 6;
-            (this->*thumb_lut[index])();
+            Instruction inst = decoder.decode_thumb(instruction);
+            (this->*inst)();
         }
     }
 }
@@ -378,9 +377,6 @@ void CPUCore::HandleInterrupt() {
     regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x18;
     
     ARMFlushPipeline();
-
-    // slight edgecase because the new instruction doesn't get loaded yet when an interrupt is handled
-    instruction = pipeline[0];
 }
 
 void CPUCore::ARMCoprocessorRegisterTransfer() {
@@ -446,6 +442,6 @@ void CPUCore::ARMUndefinedException() {
     ARMFlushPipeline();
 }
 
-void CPUCore::UnimplementedInstruction() {
-    log_fatal("[Interpreter] Instruction %08x is unimplemented at r15 = %08x", instruction, regs.r[15]);
+void CPUCore::unknown_instruction() {
+    log_fatal("[Interpreter] Instruction (%08x) is unimplemented at r15 = %08x", instruction, regs.r[15]);
 }

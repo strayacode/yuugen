@@ -4,6 +4,7 @@
 #include "common/arithmetic.h"
 #include "core/arm/cpu_registers.h"
 #include "core/arm/memory_base.h"
+#include "core/arm/Decoder/Decoder.h"
 
 enum class CPUArch {
     ARMv4 = 0,
@@ -116,9 +117,7 @@ public:
     void ThumbSoftwareInterrupt();
     void ARMUndefinedException();
     void ARMCoprocessorRegisterTransfer();
-    void GenerateARMTable();
-    void GenerateThumbTable();
-    void UnimplementedInstruction();
+    void unknown_instruction();
 
     #include "interpreter/instructions/arm/alu.inl"
     #include "interpreter/instructions/arm/branch.inl"
@@ -159,4 +158,6 @@ public:
     u32 pipeline[2];
 
     CP15* cp15;
+
+    Decoder<CPUCore, Instruction> decoder;
 };

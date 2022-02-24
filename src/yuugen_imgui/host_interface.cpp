@@ -1,5 +1,5 @@
 #include "host_interface.h"
-#include "core/arm/disassembler/disassembler.h"
+// #include "core/arm/disassembler/disassembler.h"
 #include <iostream>
 
 HostInterface::HostInterface() : 
@@ -432,13 +432,13 @@ void HostInterface::ARMWindow(CPUArch arch) {
                             ImGui::SameLine(67);
                             ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
                             ImGui::SameLine(125);
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleARMInstruction(instruction, addr).c_str());
+                            // ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleARMInstruction(instruction, addr).c_str());
                         } else {
                             ImGui::Text("%08X:", addr);
                             ImGui::SameLine(67);
                             ImGui::Text("%08X", instruction);
                             ImGui::SameLine(125);
-                            ImGui::Text("%s", DisassembleARMInstruction(instruction, addr).c_str());
+                            // ImGui::Text("%s", DisassembleARMInstruction(instruction, addr).c_str());
                         }
                         
                         addr += increment;
@@ -451,13 +451,13 @@ void HostInterface::ARMWindow(CPUArch arch) {
                             ImGui::SameLine(67);
                             ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
                             ImGui::SameLine(125);
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleThumbInstruction(instruction, addr).c_str());
+                            // ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleThumbInstruction(instruction, addr).c_str());
                         } else {
                             ImGui::Text("%08X:", addr);
                             ImGui::SameLine(67);
                             ImGui::Text("%08X", instruction);
                             ImGui::SameLine(125);
-                            ImGui::Text("%s", DisassembleThumbInstruction(instruction, addr).c_str());
+                            // ImGui::Text("%s", DisassembleThumbInstruction(instruction, addr).c_str());
                         }
 
                         addr += increment;

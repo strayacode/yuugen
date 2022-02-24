@@ -1,7 +1,8 @@
 #pragma once
 
-template <bool immediate, bool set_flags>
 void ARMDataProcessing() {
+    const bool set_flags = instruction & (1 << 20);
+    const bool immediate = (instruction >> 25) & 0x1;
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
     u8 opcode = (instruction >> 21) & 0xF;
@@ -11,7 +12,7 @@ void ARMDataProcessing() {
 
     u8 carry_flag = GetConditionFlag(C_FLAG);
 
-    if constexpr (immediate) {
+    if (immediate) {
         u32 value = instruction & 0xFF;
         u8 shift_amount = ((instruction >> 8) & 0xF) << 1;
 
@@ -52,13 +53,13 @@ void ARMDataProcessing() {
     switch (opcode) {
     case 0x0:
         regs.r[rd] = AND(op1, op2, set_flags);
-        if constexpr (set_flags) {
+        if (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
     case 0x1:
         regs.r[rd] = EOR(op1, op2, set_flags);
-        if constexpr (set_flags) {
+        if (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
@@ -96,26 +97,26 @@ void ARMDataProcessing() {
         break;
     case 0xC:
         regs.r[rd] = ORR(op1, op2, set_flags);
-        if constexpr (set_flags) {
+        if (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
     case 0xD:
         regs.r[rd] = MOV(op2, set_flags);
-        if constexpr (set_flags) {
+        if (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         
         break;
     case 0xE:
         regs.r[rd] = BIC(op1, op2, set_flags);
-        if constexpr (set_flags) {
+        if (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
     case 0xF:
         regs.r[rd] = MVN(op2, set_flags);
-        if constexpr (set_flags) {
+        if (set_flags) {
             SetConditionFlag(C_FLAG, carry_flag);
         }
         break;
@@ -124,7 +125,7 @@ void ARMDataProcessing() {
     }
 
     if (rd == 15) {
-        if constexpr (set_flags) {
+        if (set_flags) {
             // store the current spsr in cpsr only if in privileged mode
             if (PrivilegedMode()) {
                 u32 current_spsr = GetCurrentSPSR();
@@ -424,15 +425,16 @@ u32 ROR(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm) {
     return result;
 }
 
-template <bool accumulate, bool set_flags>
 void ARMMultiply() {
+    const bool set_flags = (instruction >> 20) & 0x1;
+    const bool accumulate = (instruction >> 21) & 0x1;
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;
     u8 rn = (instruction >> 12) & 0xF;
     u8 rd = (instruction >> 16) & 0xF;
     u32 result = regs.r[rm] * regs.r[rs];
 
-    if constexpr (accumulate) {
+    if (accumulate) {
         result += regs.r[rn];
     }
 
@@ -446,8 +448,10 @@ void ARMMultiply() {
     regs.r[15] += 4;
 }
 
-template <bool accumulate, bool set_flags, bool sign>
 void ARMMultiplyLong() {
+    const bool set_flags = (instruction >> 20) & 0x1;
+    const bool accumulate = (instruction >> 21) & 0x1;
+    const bool sign = (instruction >> 22) & 0x1;
     u8 rm = instruction & 0xF;
     u8 rs = (instruction >> 8) & 0xF;
     u8 rdlo = (instruction >> 12) & 0xF;
@@ -455,19 +459,19 @@ void ARMMultiplyLong() {
 
     s64 result = 0;
 
-    if constexpr (sign) {
+    if (sign) {
         result = (s64)(s32)(regs.r[rm]) * (s64)(s32)(regs.r[rs]);
     } else {
         u64 temp_result = (u64)regs.r[rm] * (u64)regs.r[rs];
         result = (s64)temp_result;
     }
 
-    if constexpr (accumulate) {
+    if (accumulate) {
         s64 temp_result = ((u64)regs.r[rdhi] << 32) | ((u64)regs.r[rdlo]);
         result += temp_result;
     }
 
-    if constexpr (set_flags) {
+    if (set_flags) {
         SetConditionFlag(N_FLAG, result >> 63);
         SetConditionFlag(Z_FLAG, result == 0);
     }
@@ -677,7 +681,7 @@ void ARMSignedHalfwordMultiply() {
 
     u32 result = result1 * result2;
 
-    if constexpr (accumulate) {
+    if (accumulate) {
         u32 operand = regs.r[op3];
 
         regs.r[op4] = result + operand;

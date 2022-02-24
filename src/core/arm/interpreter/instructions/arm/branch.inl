@@ -1,19 +1,18 @@
 #pragma once
 
-template <bool link>
 void ARMBranchLinkMaybeExchange() {
     if ((instruction & 0xF0000000) != 0xF0000000) {
-        ARMBranchLink<link>();
+        ARMBranchLink();
     } else {
         ARMBranchLinkExchange();
     }
 }
 
-template <bool link>
 void ARMBranchLink() {
+    const bool link = (instruction >> 24) & 0x1;
     u32 offset = ((instruction & (1 << 23)) ? 0xFC000000 : 0) | ((instruction & 0xFFFFFF) << 2);
     
-    if constexpr (link) {
+    if (link) {
         // store the address of the instruction after the current instruction in the link register
         regs.r[14] = regs.r[15] - 4;
     }
