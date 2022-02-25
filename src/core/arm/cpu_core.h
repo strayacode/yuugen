@@ -4,7 +4,7 @@
 #include "common/arithmetic.h"
 #include "core/arm/cpu_registers.h"
 #include "core/arm/memory_base.h"
-#include "core/arm/Decoder/Decoder.h"
+#include "core/arm/decoder/decoder.h"
 
 enum class CPUArch {
     ARMv4 = 0,
@@ -152,12 +152,7 @@ public:
     // so for each type of condition code we have 2^4 possibilities
     std::array<std::array<bool, 16>, 16> condition_table;
 
-    std::array<Instruction, 1024> thumb_lut;
-    std::array<Instruction, 4096> arm_lut;
-
     u32 pipeline[2];
 
     CP15* cp15;
-
-    Decoder<CPUCore, Instruction> decoder;
 };

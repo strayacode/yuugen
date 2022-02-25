@@ -3,6 +3,8 @@
 #include "core/hw/cp15/cp15.h"
 #include "core/arm/disassembler/disassembler.h"
 
+static Decoder<CPUCore> decoder;
+
 CPUCore::CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15) : memory(memory), arch(arch), cp15(cp15) {
     GenerateConditionTable();
 }
