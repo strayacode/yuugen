@@ -27,9 +27,6 @@ public:
         arm_lut.fill(&D::unknown_instruction);
         thumb_lut.fill(&D::unknown_instruction);
 
-        // instructions to add:
-        // enhance dsp multiplies
-        // breakpoint
         register_arm("101xxxxxxxxx", &D::ARMBranchLinkMaybeExchange);
         register_arm("000100100001", &D::ARMBranchExchange);
         register_arm("000101100001", &D::ARMCountLeadingZeroes);
@@ -45,6 +42,10 @@ public:
         register_arm("00xxxxxxxxxx", &D::ARMDataProcessing);
         register_arm("1110xxxxxxx1", &D::ARMCoprocessorRegisterTransfer);
         register_arm("1111xxxxxxxx", &D::ARMSoftwareInterrupt);
+        register_arm("000101001xx0", &D::ARMSignedHalfwordAccumulateLong);
+        register_arm("000100101xx0", &D::ARMSignedHalfwordWordMultiply);
+        register_arm("00010xx01xx0", &D::ARMSignedHalfwordMultiply);
+        register_arm("000100100111", &D::ARMBreakpoint);
         
         std::stable_sort(arm_list.begin(), arm_list.end(), [](InstructionInfo a, InstructionInfo b) {
             return bit_count(a.mask) > bit_count(b.mask);
@@ -80,6 +81,7 @@ public:
         register_thumb("1100xxxxxx", &D::ThumbLoadStoreMultiple);
         register_thumb("011xxxxxxx", &D::ThumbLoadStoreImmediate);
         register_thumb("1010xxxxxx", &D::ThumbAddSPPC);
+        register_thumb("10110000xx", &D::ThumbAdjustStackPointer);
         
         std::stable_sort(thumb_list.begin(), thumb_list.end(), [](InstructionInfo a, InstructionInfo b) {
             return bit_count(a.mask) > bit_count(b.mask);

@@ -646,7 +646,6 @@ void ARMSaturatingAddSubtract() {
     regs.r[15] += 4;
 }
 
-template <bool accumulate>
 void ARMSignedHalfwordMultiply() {
     if (arch == CPUArch::ARMv4) {
         return;
@@ -656,6 +655,7 @@ void ARMSignedHalfwordMultiply() {
         log_fatal("handle");
     }
 
+    bool accumulate = ((instruction >> 21) & 0x3) == 0;
     u8 op1 = instruction & 0xF;
     u8 op2 = (instruction >> 8) & 0xF;
     u8 op3 = (instruction >> 12) & 0xF;

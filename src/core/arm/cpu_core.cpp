@@ -42,8 +42,12 @@ void CPUCore::RunInterpreter(int cycles) {
             return;
         }
 
-        // stepping the pipeline must happen before an instruction is executed incase the instruction is a branch which would flush and then step the pipeline (not correct)
-        instruction = pipeline[0]; // store the current executing instruction 
+        if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
+            HandleInterrupt();
+        }
+
+        // store the current executing instruction
+        instruction = pipeline[0];
         
         // shift the pipeline
         pipeline[0] = pipeline[1];
@@ -53,10 +57,6 @@ void CPUCore::RunInterpreter(int cycles) {
             pipeline[1] = ReadWord(regs.r[15]);
         } else {
             pipeline[1] = ReadHalf(regs.r[15]);
-        }
-
-        if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
-            HandleInterrupt();
         }
 
         if (IsARM()) {
