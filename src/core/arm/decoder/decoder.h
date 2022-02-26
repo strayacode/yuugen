@@ -27,14 +27,7 @@ public:
         arm_lut.fill(&D::unknown_instruction);
         thumb_lut.fill(&D::unknown_instruction);
 
-        FillARMTable();
-    }
-
-    void FillARMTable() {
         // instructions to add:
-        // software interrupt
-        // coprocessor transfer
-        // block data transfer
         // enhance dsp multiplies
         // breakpoint
         register_arm("101xxxxxxxxx", &D::ARMBranchLinkMaybeExchange);
@@ -47,17 +40,55 @@ public:
         register_arm("00001xxx1001", &D::ARMMultiplyLong);
         register_arm("00x10xx0xxxx", &D::ARMPSRTransfer);
         register_arm("000xxxxx1xx1", &D::ARMHalfwordDataTransfer);
+        register_arm("100xxxxxxxxx", &D::ARMBlockDataTransfer);
         register_arm("01xxxxxxxxxx", &D::ARMSingleDataTransfer);
         register_arm("00xxxxxxxxxx", &D::ARMDataProcessing);
+        register_arm("1110xxxxxxx1", &D::ARMCoprocessorRegisterTransfer);
+        register_arm("1111xxxxxxxx", &D::ARMSoftwareInterrupt);
         
-        std::stable_sort(instruction_info_list.begin(), instruction_info_list.end(), [](InstructionInfo a, InstructionInfo b) {
+        std::stable_sort(arm_list.begin(), arm_list.end(), [](InstructionInfo a, InstructionInfo b) {
             return bit_count(a.mask) > bit_count(b.mask);
         });
 
         for (u64 i = 0; i < arm_lut.size(); i++) {
-            for (InstructionInfo info : instruction_info_list) {
+            for (InstructionInfo info : arm_list) {
                 if ((i & info.mask) == info.value) {
                     arm_lut[i] = info.callback;
+                    break;
+                }
+            }
+        }
+
+        register_thumb("001xxxxxxx", &D::ThumbALUImmediate);
+        register_thumb("11111xxxxx", &D::ThumbBranchLinkOffset);
+        register_thumb("11110xxxxx", &D::ThumbBranchLinkSetup);
+        register_thumb("11101xxxxx", &D::ThumbBranchLinkExchangeOffset);
+        register_thumb("11100xxxxx", &D::ThumbBranch);
+        register_thumb("1011x10xxx", &D::ThumbPushPop);
+        register_thumb("010000xxxx", &D::ThumbDataProcessingRegister);
+        register_thumb("010001xxxx", &D::ThumbSpecialDataProcesing);
+        register_thumb("010001111x", &D::ThumbBranchLinkExchange);
+        register_thumb("010001110x", &D::ThumbBranchExchange);
+        register_thumb("0101xxxxxx", &D::ThumbLoadStore);
+        register_thumb("01001xxxxx", &D::ThumbLoadPC);
+        register_thumb("1001xxxxxx", &D::ThumbLoadStoreSPRelative);
+        register_thumb("1000xxxxxx", &D::ThumbLoadStoreHalfword);
+        register_thumb("00011xxxxx", &D::ThumbAddSubtract);
+        register_thumb("000xxxxxxx", &D::ThumbShiftImmediate);
+        register_thumb("11011111xx", &D::ThumbSoftwareInterrupt);
+        register_thumb("1101xxxxxx", &D::ThumbBranchConditional);
+        register_thumb("1100xxxxxx", &D::ThumbLoadStoreMultiple);
+        register_thumb("011xxxxxxx", &D::ThumbLoadStoreImmediate);
+        register_thumb("1010xxxxxx", &D::ThumbAddSPPC);
+        
+        std::stable_sort(thumb_list.begin(), thumb_list.end(), [](InstructionInfo a, InstructionInfo b) {
+            return bit_count(a.mask) > bit_count(b.mask);
+        });
+
+        for (u64 i = 0; i < thumb_lut.size(); i++) {
+            for (InstructionInfo info : thumb_list) {
+                if ((i & info.mask) == info.value) {
+                    thumb_lut[i] = info.callback;
                     break;
                 }
             }
@@ -78,18 +109,14 @@ public:
         u32 mask = create_pattern_mask<u32>(pattern);
         u32 value = create_pattern_value<u32>(pattern);
 
-        instruction_info_list.push_back({callback, mask, value});
+        arm_list.push_back({callback, mask, value});
     }
 
     void register_thumb(std::string pattern, Callback callback) {
         u16 mask = create_pattern_mask<u16>(pattern);
         u16 value = create_pattern_value<u16>(pattern);
 
-        for (u64 i = 0; i < thumb_lut.size(); i++) {
-            if ((i & mask) == value) {
-                thumb_lut[i] = callback;
-            }
-        }
+        thumb_list.push_back({callback, mask, value});
     }
 
     template <typename T>
@@ -136,7 +163,8 @@ public:
     }
 
 private:
-    std::vector<InstructionInfo> instruction_info_list;
+    std::vector<InstructionInfo> arm_list;
+    std::vector<InstructionInfo> thumb_list;
     std::array<Callback, 1024> thumb_lut;
     std::array<Callback, 4096> arm_lut;
 };

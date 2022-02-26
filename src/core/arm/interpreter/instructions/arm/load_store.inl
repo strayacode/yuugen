@@ -260,8 +260,12 @@ void ARMHalfwordDataTransfer() {
     }
 }
 
-template <bool load, bool writeback, bool load_psr, bool up, bool pre>
 void ARMBlockDataTransfer() {
+    const bool load = (instruction >> 20) & 0x1;
+    const bool writeback = (instruction >> 21) & 0x1;
+    const bool load_psr = (instruction >> 22) & 0x1;
+    const bool up = (instruction >> 23) & 0x1;
+    const bool pre = (instruction >> 24) & 0x1;
     u8 rn = (instruction >> 16) & 0xF;
     u8 r15_in_rlist = (instruction >> 15) & 0x1;
     u32 address = regs.r[rn];
