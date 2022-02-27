@@ -30,6 +30,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
     int end = 0;
 
     for (int i = 0; i < polygon.size; i++) {
+        // printf("vertex %d (%d, %d) has colour %08x\n", i, x, y, polygon.vertices[i].colour.to_u16());
         // determine the indices of the top left and bottom right vertex
         if (polygon.vertices[i].y < polygon.vertices[start].y) {
             start = i;
@@ -145,7 +146,14 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         if ((y >= left_y0 && y < left_y1) || (y >= left_y1 && y < left_y0)) {
             for (int x = left_span_start; x <= left_span_end; x++) {
                 if (x >= 0 && x < 256) {
-                    framebuffer[(y * 256) + x] = 0xFFFFFFFF;
+                    Colour colour = interpolate_colour(
+                        polygon.vertices[left].colour,
+                        polygon.vertices[new_left].colour,
+                        y - left_y0,
+                        left_y1 - left_y0
+                    );
+
+                    framebuffer[(y * 256) + x] = colour.to_u16();
                 }
             }
         }
@@ -153,9 +161,37 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         if ((y >= right_y0 && y < right_y1) || (y >= right_y1 && y < right_y0)) {
             for (int x = right_span_start; x <= right_span_end; x++) {
                 if (x >= 0 && x < 256) {
-                    framebuffer[(y * 256) + x] = 0xFFFFFFFF;
+                    Colour colour = interpolate_colour(
+                        polygon.vertices[right].colour,
+                        polygon.vertices[new_right].colour,
+                        y - right_y0,
+                        right_y1 - right_y0
+                    );
+
+                    printf("c1 %08x c2 %08x interpolated %08x %d %d\n",
+                        polygon.vertices[right].colour.to_u32(),
+                        polygon.vertices[new_right].colour.to_u32(),
+                        colour.to_u32(),
+                        y - right_y0,
+                        right_y1 - right_y0
+                    );
+                    
+                    framebuffer[(y * 256) + x] = colour.to_u16();
                 }
             }
         }
     }
+}
+
+Colour RenderEngine::interpolate_colour(Colour c1, Colour c2, u32 a, u32 p) {
+    Colour c3;
+    c3.r = lerp(c1.r, c2.r, a, p);
+    c3.g = lerp(c1.g, c2.g, a, p);
+    c3.b = lerp(c1.b, c2.b, a, p);
+
+    return c3;
+}
+
+u32 RenderEngine::lerp(u32 u1, u32 u2, u32 a, u32 p) {
+    return u1 + (u2 - u1) * a / p;
 }

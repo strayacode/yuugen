@@ -13,6 +13,8 @@ public:
     void Render();
     void RenderPolygon(Polygon& polygon);
     Vertex NormaliseVertex(Vertex vertex);
+    Colour interpolate_colour(Colour c1, Colour c2, u32 a, u32 p);
+    u32 lerp(u32 u1, u32 u2, u32 a, u32 p);
 
     u16 disp3dcnt;
     u32 clear_colour;

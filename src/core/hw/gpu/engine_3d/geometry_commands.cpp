@@ -336,10 +336,8 @@ void GeometryEngine::EndVertexList() {
 void GeometryEngine::SetVertexColour() {
     u32 parameter = DequeueEntry().parameter & 0x7FFF;
     Colour colour;
-    colour.b = parameter & 0x1F;
-    colour.g = (parameter >> 5) & 0x1F;
-    colour.r = (parameter >> 10) & 0x1F;
-
+    
+    colour.from_u16(parameter);
     current_vertex.colour = colour;
 }
 
