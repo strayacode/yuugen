@@ -30,7 +30,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
     int end = 0;
 
     for (int i = 0; i < polygon.size; i++) {
-        // printf("vertex %d (%d, %d) has colour %08x\n", i, x, y, polygon.vertices[i].colour.to_u16());
+        printf("vertex %d %d\n", i, polygon.vertices[i].w);
         // determine the indices of the top left and bottom right vertex
         if (polygon.vertices[i].y < polygon.vertices[start].y) {
             start = i;
@@ -45,41 +45,42 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         }
     }
 
-    // both the left and right slope initially start at the top left vertex
-    // TODO: work out winding stuff later
     // TODO: clean up code
     int left = start;
     int right = start;
     int new_left = polygon.Prev(left);
     int new_right = polygon.Next(right);
 
+    // the colour for each slope which gets interpolated for each scanline
+    Colour c[2];
+
     s32 left_x0 = polygon.vertices[left].x;
     s32 left_x1 = polygon.vertices[new_left].x;
     s32 left_y0 = polygon.vertices[left].y;
     s32 left_y1 = polygon.vertices[new_left].y;
 
-    if (left_y0 > left_y1) {
-        std::swap(left_x0, left_x1);
-        std::swap(left_y0, left_y1);
-    }
+    // if (left_y0 > left_y1) {
+    //     std::swap(left_x0, left_x1);
+    //     std::swap(left_y0, left_y1);
+    // }
 
-    if (left_y0 == left_y1) {
-        left_y1++;
-    }
+    // if (left_y0 == left_y1) {
+    //     left_y1++;
+    // }
 
     s32 right_x0 = polygon.vertices[right].x;
     s32 right_x1 = polygon.vertices[new_right].x;
     s32 right_y0 = polygon.vertices[right].y;
     s32 right_y1 = polygon.vertices[new_right].y;
 
-    if (right_y0 > right_y1) {
-        std::swap(right_x0, right_x1);
-        std::swap(right_y0, right_y1);
-    }
+    // if (right_y0 > right_y1) {
+    //     std::swap(right_x0, right_x1);
+    //     std::swap(right_y0, right_y1);
+    // }
 
-    if (right_y0 == right_y1) {
-        right_y1++;
-    }
+    // if (right_y0 == right_y1) {
+    //     right_y1++;
+    // }
 
     Slope left_slope;
     left_slope.Setup(left_x0, left_y0, left_x1, left_y1);
@@ -97,14 +98,14 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             left_y0 = polygon.vertices[left].y;
             left_y1 = polygon.vertices[new_left].y;
 
-            if (left_y0 > left_y1) {
-                std::swap(left_x0, left_x1);
-                std::swap(left_y0, left_y1);
-            }
+            // if (left_y0 > left_y1) {
+            //     std::swap(left_x0, left_x1);
+            //     std::swap(left_y0, left_y1);
+            // }
 
-            if (left_y0 == left_y1) {
-                left_y1++;
-            }
+            // if (left_y0 == left_y1) {
+            //     left_y1++;
+            // }
 
             left_slope.Setup(left_x0, left_y0, left_x1, left_y1);
         }
@@ -118,17 +119,32 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             right_y0 = polygon.vertices[right].y;
             right_y1 = polygon.vertices[new_right].y;
 
-            if (right_y0 > right_y1) {
-                std::swap(right_x0, right_x1);
-                std::swap(right_y0, right_y1);
-            }
+            // if (right_y0 > right_y1) {
+            //     std::swap(right_x0, right_x1);
+            //     std::swap(right_y0, right_y1);
+            // }
 
-            if (right_y0 == right_y1) {
-                right_y1++;
-            }
+            // if (right_y0 == right_y1) {
+            //     right_y1++;
+            // }
 
             right_slope.Setup(right_x0, right_y0, right_x1, right_y1);
         }
+
+        // interpolate slope colours according to y coordinate
+        c[0] = interpolate_colour(
+            polygon.vertices[left].colour,
+            polygon.vertices[new_left].colour,
+            y - left_y0,
+            left_y1 - left_y0
+        );
+
+        c[1] = interpolate_colour(
+            polygon.vertices[right].colour,
+            polygon.vertices[new_right].colour,
+            y - right_y0,
+            right_y1 - right_y0
+        );
 
         s32 left_span_start = left_slope.SpanStart(y);
         s32 left_span_end = left_slope.SpanEnd(y);
@@ -143,31 +159,20 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             std::swap(right_span_start, right_span_end);
         }
 
-        if ((y >= left_y0 && y < left_y1) || (y >= left_y1 && y < left_y0)) {
-            for (int x = left_span_start; x <= left_span_end; x++) {
-                if (x >= 0 && x < 256) {
-                    Colour colour = interpolate_colour(
-                        polygon.vertices[left].colour,
-                        polygon.vertices[new_left].colour,
-                        y - left_y0,
-                        left_y1 - left_y0
-                    );
-
-                    framebuffer[(y * 256) + x] = colour.to_u16();
-                }
-            }
+        if (left_span_start > right_span_end) {
+            std::swap(left_span_start, right_span_end);
         }
 
-        if ((y >= right_y0 && y < right_y1) || (y >= right_y1 && y < right_y0)) {
-            for (int x = right_span_start; x <= right_span_end; x++) {
+        if ((y >= left_y0 && y < left_y1) && (y >= right_y0 && y < right_y1)) {
+            for (int x = left_span_start; x <= right_span_end; x++) {
                 if (x >= 0 && x < 256) {
                     Colour colour = interpolate_colour(
-                        polygon.vertices[right].colour,
-                        polygon.vertices[new_right].colour,
-                        y - right_y0,
-                        right_y1 - right_y0
+                        c[0],
+                        c[1],
+                        x - left_span_start,
+                        right_span_end - left_span_start
                     );
-                    
+
                     framebuffer[(y * 256) + x] = colour.to_u16();
                 }
             }

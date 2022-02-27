@@ -1,8 +1,8 @@
 #pragma once
 
-#include <common/types.h>
-#include <common/vertex.h>
-#include <common/polygon.h>
+#include "common/types.h"
+#include "common/vertex.h"
+#include "common/polygon.h"
 
 class GPU;
 
@@ -37,4 +37,9 @@ public:
     u32 framebuffer[256 * 192];
 
     GPU* gpu;
+
+    struct Span {
+        s32 x;
+        Colour c;
+    };
 };
