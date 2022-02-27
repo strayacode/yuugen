@@ -167,14 +167,6 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
                         y - right_y0,
                         right_y1 - right_y0
                     );
-
-                    printf("c1 %08x c2 %08x interpolated %08x %d %d\n",
-                        polygon.vertices[right].colour.to_u32(),
-                        polygon.vertices[new_right].colour.to_u32(),
-                        colour.to_u32(),
-                        y - right_y0,
-                        right_y1 - right_y0
-                    );
                     
                     framebuffer[(y * 256) + x] = colour.to_u16();
                 }
@@ -193,5 +185,7 @@ Colour RenderEngine::interpolate_colour(Colour c1, Colour c2, u32 a, u32 p) {
 }
 
 u32 RenderEngine::lerp(u32 u1, u32 u2, u32 a, u32 p) {
-    return u1 + (u2 - u1) * a / p;
+    float t = float(a) / float(p);
+
+    return u1 * (1 - t) + u2 * t;
 }
