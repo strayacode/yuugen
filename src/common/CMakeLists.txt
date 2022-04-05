@@ -3,7 +3,8 @@ add_library(common
     memory_helpers.h matrix.h
     matrix_stack.h
     polygon.h vertex.h
-    log_file.h lut_helpers.h
+    log_file.h log_file.cpp
+    lut_helpers.h
     arithmetic.h
     circular_buffer.h
     slope.h memory_mapped_file.h

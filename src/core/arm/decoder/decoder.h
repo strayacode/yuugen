@@ -7,6 +7,7 @@
 #include <assert.h>
 #include "common/types.h"
 #include "common/arithmetic.h"
+#include "common/log.h"
 
 // general idea:
 // . have an arm lut and thumb where each item contains function pointer to the function we want to call
@@ -35,8 +36,8 @@ public:
         register_arm("000000xx1001", &D::ARMMultiply);
         register_arm("00010xx00101", &D::ARMSaturatingAddSubtract);
         register_arm("00001xxx1001", &D::ARMMultiplyLong);
-        register_arm("00x10xx0xxxx", &D::ARMPSRTransfer);
         register_arm("000xxxxx1xx1", &D::ARMHalfwordDataTransfer);
+        register_arm("00x10xx0xxxx", &D::ARMPSRTransfer);
         register_arm("100xxxxxxxxx", &D::ARMBlockDataTransfer);
         register_arm("01xxxxxxxxxx", &D::ARMSingleDataTransfer);
         register_arm("00xxxxxxxxxx", &D::ARMDataProcessing);
@@ -110,7 +111,7 @@ public:
     void register_arm(std::string pattern, Callback callback) {
         u32 mask = create_pattern_mask<u32>(pattern);
         u32 value = create_pattern_value<u32>(pattern);
-
+        
         arm_list.push_back({callback, mask, value});
     }
 

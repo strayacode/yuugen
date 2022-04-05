@@ -61,6 +61,7 @@ void CPUCore::RunInterpreter(int cycles) {
 
         if (IsARM()) {
             Instruction inst = decoder.decode_arm(instruction);
+
             if (ConditionEvaluate(instruction >> 28)) {
                 (this->*inst)();
             } else {
@@ -446,4 +447,12 @@ void CPUCore::ARMUndefinedException() {
 
 void CPUCore::unknown_instruction() {
     log_fatal("[Interpreter] Instruction (%08x) is unimplemented at r15 = %08x", instruction, regs.r[15]);
+}
+
+void CPUCore::log_cpu_state() {
+    for (int i = 0; i < 16; i++) {
+        LogFile::Get().Log("%08x ", regs.r[i]);
+    }
+
+    LogFile::Get().Log("%08x\n", instruction);
 }

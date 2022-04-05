@@ -391,86 +391,86 @@ void HostInterface::CartridgeWindow() {
 }
 
 void HostInterface::ARMWindow(CPUArch arch) {
-    std::string name = arch == CPUArch::ARMv5 ? "ARM9" : "ARM7";
-    int index = arch == CPUArch::ARMv5 ? 1 : 0;
+    // std::string name = arch == CPUArch::ARMv5 ? "ARM9" : "ARM7";
+    // int index = arch == CPUArch::ARMv5 ? 1 : 0;
 
-    ImGui::Begin(name.c_str());
-    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-    if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
-        if (ImGui::BeginTabItem("Registers")) {
-            ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("Disassembly")) {
-            if (ImGui::Button("+")) {
-                disassembly_size++;
-            }
+    // ImGui::Begin(name.c_str());
+    // ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+    // if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
+    //     if (ImGui::BeginTabItem("Registers")) {
+    //         ImGui::EndTabItem();
+    //     }
+    //     if (ImGui::BeginTabItem("Disassembly")) {
+    //         if (ImGui::Button("+")) {
+    //             disassembly_size++;
+    //         }
 
-            ImGui::SameLine();
+    //         ImGui::SameLine();
 
-            if (ImGui::Button("-")) {
-                disassembly_size--;
-            }
+    //         if (ImGui::Button("-")) {
+    //             disassembly_size--;
+    //         }
 
-            ImGui::SameLine();
+    //         ImGui::SameLine();
 
-            if (disassembly_size < 0) {
-                disassembly_size = 0;
-            }
+    //         if (disassembly_size < 0) {
+    //             disassembly_size = 0;
+    //         }
 
-            ImGui::Text("Number of Instructions: %d", disassembly_size);
+    //         ImGui::Text("Number of Instructions: %d", disassembly_size);
 
-            if (core.GetState() != State::Idle) {
-                int increment = core.system.cpu_core[index].IsARM() ? 4 : 2;
-                u32 pc = core.system.cpu_core[index].regs.r[15];
-                u32 addr = pc - ((disassembly_size - 1) / 2) * increment;
+    //         if (core.GetState() != State::Idle) {
+    //             int increment = core.system.cpu_core[index].IsARM() ? 4 : 2;
+    //             u32 pc = core.system.cpu_core[index].regs.r[15];
+    //             u32 addr = pc - ((disassembly_size - 1) / 2) * increment;
                 
-                if (core.system.cpu_core[index].IsARM()) {
-                    for (int i = 0; i < disassembly_size; i++) {
-                        u32 instruction = core.system.cpu_core[index].ReadWord(addr);
-                        if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
-                            ImGui::SameLine(67);
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
-                            ImGui::SameLine(125);
-                            // ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleARMInstruction(instruction, addr).c_str());
-                        } else {
-                            ImGui::Text("%08X:", addr);
-                            ImGui::SameLine(67);
-                            ImGui::Text("%08X", instruction);
-                            ImGui::SameLine(125);
-                            // ImGui::Text("%s", DisassembleARMInstruction(instruction, addr).c_str());
-                        }
+    //             if (core.system.cpu_core[index].IsARM()) {
+    //                 for (int i = 0; i < disassembly_size; i++) {
+    //                     u32 instruction = core.system.cpu_core[index].ReadWord(addr);
+    //                     if (addr == pc) {
+    //                         ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
+    //                         ImGui::SameLine(67);
+    //                         ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
+    //                         ImGui::SameLine(125);
+    //                         // ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleARMInstruction(instruction, addr).c_str());
+    //                     } else {
+    //                         ImGui::Text("%08X:", addr);
+    //                         ImGui::SameLine(67);
+    //                         ImGui::Text("%08X", instruction);
+    //                         ImGui::SameLine(125);
+    //                         // ImGui::Text("%s", DisassembleARMInstruction(instruction, addr).c_str());
+    //                     }
                         
-                        addr += increment;
-                    }
-                } else {
-                    for (int i = 0; i < disassembly_size; i++) {
-                        u16 instruction = core.system.cpu_core[index].ReadHalf(addr);
-                        if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
-                            ImGui::SameLine(67);
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
-                            ImGui::SameLine(125);
-                            // ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleThumbInstruction(instruction, addr).c_str());
-                        } else {
-                            ImGui::Text("%08X:", addr);
-                            ImGui::SameLine(67);
-                            ImGui::Text("%08X", instruction);
-                            ImGui::SameLine(125);
-                            // ImGui::Text("%s", DisassembleThumbInstruction(instruction, addr).c_str());
-                        }
+    //                     addr += increment;
+    //                 }
+    //             } else {
+    //                 for (int i = 0; i < disassembly_size; i++) {
+    //                     u16 instruction = core.system.cpu_core[index].ReadHalf(addr);
+    //                     if (addr == pc) {
+    //                         ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
+    //                         ImGui::SameLine(67);
+    //                         ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
+    //                         ImGui::SameLine(125);
+    //                         // ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", DisassembleThumbInstruction(instruction, addr).c_str());
+    //                     } else {
+    //                         ImGui::Text("%08X:", addr);
+    //                         ImGui::SameLine(67);
+    //                         ImGui::Text("%08X", instruction);
+    //                         ImGui::SameLine(125);
+    //                         // ImGui::Text("%s", DisassembleThumbInstruction(instruction, addr).c_str());
+    //                     }
 
-                        addr += increment;
-                    }
-                }
-            }
+    //                     addr += increment;
+    //                 }
+    //             }
+    //         }
 
-            ImGui::EndTabItem();
-        }
+    //         ImGui::EndTabItem();
+    //     }
 
-        ImGui::EndTabBar();
-    }
-    ImGui::End();
+    //     ImGui::EndTabBar();
+    // }
+    // ImGui::End();
 }
 
 void HostInterface::GPU2DWindow() {

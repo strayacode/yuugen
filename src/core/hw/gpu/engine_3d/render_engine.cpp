@@ -30,7 +30,6 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
     int end = 0;
 
     for (int i = 0; i < polygon.size; i++) {
-        printf("vertex %d %d\n", i, polygon.vertices[i].w);
         // determine the indices of the top left and bottom right vertex
         if (polygon.vertices[i].y < polygon.vertices[start].y) {
             start = i;
@@ -59,28 +58,28 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
     s32 left_y0 = polygon.vertices[left].y;
     s32 left_y1 = polygon.vertices[new_left].y;
 
-    // if (left_y0 > left_y1) {
-    //     std::swap(left_x0, left_x1);
-    //     std::swap(left_y0, left_y1);
-    // }
+    if (left_y0 > left_y1) {
+        std::swap(left_x0, left_x1);
+        std::swap(left_y0, left_y1);
+    }
 
-    // if (left_y0 == left_y1) {
-    //     left_y1++;
-    // }
+    if (left_y0 == left_y1) {
+        left_y1++;
+    }
 
     s32 right_x0 = polygon.vertices[right].x;
     s32 right_x1 = polygon.vertices[new_right].x;
     s32 right_y0 = polygon.vertices[right].y;
     s32 right_y1 = polygon.vertices[new_right].y;
 
-    // if (right_y0 > right_y1) {
-    //     std::swap(right_x0, right_x1);
-    //     std::swap(right_y0, right_y1);
-    // }
+    if (right_y0 > right_y1) {
+        std::swap(right_x0, right_x1);
+        std::swap(right_y0, right_y1);
+    }
 
-    // if (right_y0 == right_y1) {
-    //     right_y1++;
-    // }
+    if (right_y0 == right_y1) {
+        right_y1++;
+    }
 
     Slope left_slope;
     left_slope.Setup(left_x0, left_y0, left_x1, left_y1);
@@ -98,14 +97,14 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             left_y0 = polygon.vertices[left].y;
             left_y1 = polygon.vertices[new_left].y;
 
-            // if (left_y0 > left_y1) {
-            //     std::swap(left_x0, left_x1);
-            //     std::swap(left_y0, left_y1);
-            // }
+            if (left_y0 > left_y1) {
+                std::swap(left_x0, left_x1);
+                std::swap(left_y0, left_y1);
+            }
 
-            // if (left_y0 == left_y1) {
-            //     left_y1++;
-            // }
+            if (left_y0 == left_y1) {
+                left_y1++;
+            }
 
             left_slope.Setup(left_x0, left_y0, left_x1, left_y1);
         }
@@ -119,14 +118,14 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             right_y0 = polygon.vertices[right].y;
             right_y1 = polygon.vertices[new_right].y;
 
-            // if (right_y0 > right_y1) {
-            //     std::swap(right_x0, right_x1);
-            //     std::swap(right_y0, right_y1);
-            // }
+            if (right_y0 > right_y1) {
+                std::swap(right_x0, right_x1);
+                std::swap(right_y0, right_y1);
+            }
 
-            // if (right_y0 == right_y1) {
-            //     right_y1++;
-            // }
+            if (right_y0 == right_y1) {
+                right_y1++;
+            }
 
             right_slope.Setup(right_x0, right_y0, right_x1, right_y1);
         }

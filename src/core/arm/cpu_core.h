@@ -2,6 +2,7 @@
 
 #include <array>
 #include "common/arithmetic.h"
+#include "common/log_file.h"
 #include "core/arm/cpu_registers.h"
 #include "core/arm/memory_base.h"
 #include "core/arm/decoder/decoder.h"
@@ -134,6 +135,8 @@ public:
     void WriteByte(u32 addr, u8 data);
     void WriteHalf(u32 addr, u16 data);
     void WriteWord(u32 addr, u32 data);
+
+    void log_cpu_state();
 
     CPURegisters regs;
 
