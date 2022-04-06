@@ -7,10 +7,9 @@
 #include <assert.h>
 #include "common/types.h"
 #include "common/arithmetic.h"
-#include "common/log.h"
 
 // general idea:
-// . have an arm lut and thumb where each item contains function pointer to the function we want to call
+// . have an arm and thumb lut where each item contains function pointer to the function we want to call
 // . use a template which corresponds to a class of the functions we want to call
 // . there are 2 cases where in one case the class that is provided as the template parameter (e.g. ARMDisassembler) will be calling the returned
 // function pointer, in which case the method doesn't need to be static. but otherwise if we are planning to call a class's member function pointer from elsewhere

@@ -1,6 +1,7 @@
-#include <common/slope.h>
-#include <core/hw/gpu/engine_3d/render_engine.h>
-#include <core/hw/gpu/gpu.h>
+#include "common/slope.h"
+#include "core/hw/gpu/engine_3d/render_engine.h"
+#include "core/hw/gpu/engine_3d/Interpolator.h"
+#include "core/hw/gpu/gpu.h"
 
 RenderEngine::RenderEngine(GPU* gpu) : gpu(gpu) {}
 
@@ -28,6 +29,8 @@ void RenderEngine::Render() {
 void RenderEngine::RenderPolygon(Polygon& polygon) {
     int start = 0;
     int end = 0;
+    Interpolator<9> slope_interpolator;
+    Interpolator<8> scanline_interpolator;
 
     for (int i = 0; i < polygon.size; i++) {
         // determine the indices of the top left and bottom right vertex
@@ -47,11 +50,14 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
     // TODO: clean up code
     int left = start;
     int right = start;
-    int new_left = polygon.Prev(left);
-    int new_right = polygon.Next(right);
+    int new_left = polygon.Next(left);
+    int new_right = polygon.Prev(right);
 
     // the colour for each slope which gets interpolated for each scanline
     Colour c[2];
+
+    // w values that get interpolated along slopes
+    s32 w[2];
 
     s32 left_x0 = polygon.vertices[left].x;
     s32 left_x1 = polygon.vertices[new_left].x;
@@ -90,7 +96,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         // if the current scanline gets to the end of one of the slopes then reconfigure that slope
         if (polygon.vertices[new_left].y <= y) {
             left = new_left;
-            new_left = polygon.Prev(left);
+            new_left = polygon.Next(left);
 
             left_x0 = polygon.vertices[left].x;
             left_x1 = polygon.vertices[new_left].x;
@@ -111,7 +117,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
 
         if (polygon.vertices[new_right].y <= y) {
             right = new_right;
-            new_right = polygon.Next(right);
+            new_right = polygon.Prev(right);
 
             right_x0 = polygon.vertices[right].x;
             right_x1 = polygon.vertices[new_right].x;
@@ -129,6 +135,51 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
 
             right_slope.Setup(right_x0, right_y0, right_x1, right_y1);
         }
+
+        // TODO: should we use x coordinates for x major slopes?
+        w[0] = slope_interpolator.interpolate_linear(
+            polygon.vertices[left].w,
+            polygon.vertices[new_left].w,
+            y,
+            left_y0,
+            left_y1
+        );
+
+        // log_debug("%d %d %d %d %d %d", polygon.vertices[left].w,
+        //     polygon.vertices[new_left].w,
+        //     y,
+        //     left_y0,
+        //     left_y1,
+        //     w[0]
+        // );
+
+        w[1] = slope_interpolator.interpolate_linear(
+            polygon.vertices[right].w,
+            polygon.vertices[new_right].w,
+            y,
+            right_y0,
+            right_y1
+        );
+
+        // c[0] = slope_interpolator.interpolate_colour(
+        //     polygon.vertices[left].colour,
+        //     polygon.vertices[new_left].colour,
+        //     y,
+        //     left_y0,
+        //     left_y1,
+        //     polygon.vertices[left].w,
+        //     polygon.vertices[new_left].w
+        // );
+
+        // c[1] = slope_interpolator.interpolate_colour(
+        //     polygon.vertices[right].colour,
+        //     polygon.vertices[new_right].colour,
+        //     y,
+        //     right_y0,
+        //     right_y1,
+        //     polygon.vertices[right].w,
+        //     polygon.vertices[new_right].w
+        // );
 
         // interpolate slope colours according to y coordinate
         c[0] = interpolate_colour(
@@ -171,6 +222,16 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
                         x - left_span_start,
                         right_span_end - left_span_start
                     );
+
+                    // Colour colour = scanline_interpolator.interpolate_colour(
+                    //     c[0],
+                    //     c[1],
+                    //     x,
+                    //     left_span_start,
+                    //     right_span_end,
+                    //     w[0],
+                    //     w[1]
+                    // );
 
                     framebuffer[(y * 256) + x] = colour.to_u16();
                 }

@@ -41,5 +41,6 @@ public:
     struct Span {
         s32 x;
         Colour c;
+        s32 w;
     };
 };

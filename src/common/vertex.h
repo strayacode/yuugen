@@ -16,17 +16,17 @@ public:
         u8 new_b = (b * 255) / 31;
         u8 new_g = (g * 255) / 31;
         u8 new_r = (r * 255) / 31;
-        return (new_r << 16) | (new_g << 8) | new_b;
+        return (new_b << 16) | (new_g << 8) | new_r;
     }
 
     u16 to_u16() {
-        return (r << 10) | (g << 5) | b;
+        return (b << 10) | (g << 5) | r;
     }
 
     void from_u16(u16 colour) {
-        b = colour & 0x1F;
+        r = colour & 0x1F;
         g = (colour >> 5) & 0x1F;
-        r = (colour >> 10) & 0x1F;
+        b = (colour >> 10) & 0x1F;
     }
 
     u8 r;
