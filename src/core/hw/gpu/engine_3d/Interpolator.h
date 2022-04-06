@@ -35,9 +35,9 @@ public:
 
     Colour interpolate_colour(Colour c1, Colour c2, u32 x, u32 x0, u32 x1, u32 w0, u32 w1) {
         Colour c3;
-        c3.r = interpolate_colour_component(c1.r, c2.r, x, x0, x1, w0, w1);
-        c3.g = interpolate_colour_component(c1.g, c2.g, x, x0, x1, w0, w1);
-        c3.b = interpolate_colour_component(c1.b, c2.b, x, x0, x1, w0, w1);
+        c3.r = interpolate_linear(c1.r, c2.r, x, x0, x1);
+        c3.g = interpolate_linear(c1.g, c2.g, x, x0, x1);
+        c3.b = interpolate_linear(c1.b, c2.b, x, x0, x1);
 
         return c3;
     }

@@ -94,7 +94,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
 
     for (int y = 0; y < 192; y++) {
         // if the current scanline gets to the end of one of the slopes then reconfigure that slope
-        if (polygon.vertices[new_left].y <= y) {
+        if (polygon.vertices[new_left].y <= y && new_left != end) {
             left = new_left;
             new_left = polygon.Next(left);
 
@@ -115,7 +115,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             left_slope.Setup(left_x0, left_y0, left_x1, left_y1);
         }
 
-        if (polygon.vertices[new_right].y <= y) {
+        if (polygon.vertices[new_right].y <= y && new_right != end) {
             right = new_right;
             new_right = polygon.Prev(right);
 
@@ -196,6 +196,8 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             right_y1 - right_y0
         );
 
+        // log_debug("%08x %08x %08x %d %d %d %d %d", polygon.vertices[right].colour.to_u32(), polygon.vertices[new_right].colour.to_u32(), c[1].to_u32(), right_y0, y, right_y1, right_x0, right_x1);
+
         s32 left_span_start = left_slope.SpanStart(y);
         s32 left_span_end = left_slope.SpanEnd(y);
         s32 right_span_start = right_slope.SpanStart(y);
@@ -216,22 +218,22 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         if ((y >= left_y0 && y < left_y1) && (y >= right_y0 && y < right_y1)) {
             for (int x = left_span_start; x <= right_span_end; x++) {
                 if (x >= 0 && x < 256) {
-                    Colour colour = interpolate_colour(
-                        c[0],
-                        c[1],
-                        x - left_span_start,
-                        right_span_end - left_span_start
-                    );
-
-                    // Colour colour = scanline_interpolator.interpolate_colour(
+                    // Colour colour = interpolate_colour(
                     //     c[0],
                     //     c[1],
-                    //     x,
-                    //     left_span_start,
-                    //     right_span_end,
-                    //     w[0],
-                    //     w[1]
+                    //     x - left_span_start,
+                    //     right_span_end - left_span_start
                     // );
+
+                    Colour colour = scanline_interpolator.interpolate_colour(
+                        c[0],
+                        c[1],
+                        x,
+                        left_span_start,
+                        right_span_end,
+                        0,
+                        0
+                    );
 
                     framebuffer[(y * 256) + x] = colour.to_u16();
                 }
