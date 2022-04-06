@@ -145,14 +145,6 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             left_y1
         );
 
-        // log_debug("%d %d %d %d %d %d", polygon.vertices[left].w,
-        //     polygon.vertices[new_left].w,
-        //     y,
-        //     left_y0,
-        //     left_y1,
-        //     w[0]
-        // );
-
         w[1] = slope_interpolator.interpolate_linear(
             polygon.vertices[right].w,
             polygon.vertices[new_right].w,
@@ -196,8 +188,6 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             right_y1 - right_y0
         );
 
-        // log_debug("%08x %08x %08x %d %d %d %d %d", polygon.vertices[right].colour.to_u32(), polygon.vertices[new_right].colour.to_u32(), c[1].to_u32(), right_y0, y, right_y1, right_x0, right_x1);
-
         s32 left_span_start = left_slope.SpanStart(y);
         s32 left_span_end = left_slope.SpanEnd(y);
         s32 right_span_start = right_slope.SpanStart(y);
@@ -213,18 +203,12 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
 
         if (left_span_start > right_span_end) {
             std::swap(left_span_start, right_span_end);
+            std::swap(c[0], c[1]);
         }
 
         if ((y >= left_y0 && y < left_y1) && (y >= right_y0 && y < right_y1)) {
             for (int x = left_span_start; x <= right_span_end; x++) {
                 if (x >= 0 && x < 256) {
-                    // Colour colour = interpolate_colour(
-                    //     c[0],
-                    //     c[1],
-                    //     x - left_span_start,
-                    //     right_span_end - left_span_start
-                    // );
-
                     Colour colour = scanline_interpolator.interpolate_colour(
                         c[0],
                         c[1],
