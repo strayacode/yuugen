@@ -1,6 +1,6 @@
 #pragma once
 
-void ARMPSRTransfer() {
+void arm_psr_transfer() {
     const bool opcode = (instruction >> 21) & 0x1;
     const bool spsr = (instruction >> 22) & 0x1;
     u8 rm = instruction & 0xF;
@@ -58,7 +58,7 @@ void ARMPSRTransfer() {
     regs.r[15] += 4;
 }
 
-void ARMSingleDataTransfer() {
+void arm_single_data_transfer() {
     const bool load = (instruction >> 20) & 0x1;
     const bool writeback = (instruction >> 21) & 0x1;
     const bool byte = (instruction >> 22) & 0x1;
@@ -168,7 +168,7 @@ u32 ARMGetShiftedRegisterSingleDataTransfer() {
     return op2;
 }
 
-void ARMHalfwordDataTransfer() {
+void arm_halfword_data_transfer() {
     const bool load = (instruction >> 20) & 0x1;
     const bool writeback = (instruction >> 21) & 0x1;
     const bool immediate = (instruction >> 22) & 0x1;
@@ -260,7 +260,7 @@ void ARMHalfwordDataTransfer() {
     }
 }
 
-void ARMBlockDataTransfer() {
+void arm_block_data_transfer() {
     const bool load = (instruction >> 20) & 0x1;
     const bool writeback = (instruction >> 21) & 0x1;
     const bool load_psr = (instruction >> 22) & 0x1;

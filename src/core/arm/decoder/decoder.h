@@ -27,25 +27,25 @@ public:
         arm_lut.fill(&D::unknown_instruction);
         thumb_lut.fill(&D::unknown_instruction);
 
-        register_arm("101xxxxxxxxx", &D::ARMBranchLinkMaybeExchange);
-        register_arm("000100100001", &D::ARMBranchExchange);
-        register_arm("000101100001", &D::ARMCountLeadingZeroes);
-        register_arm("000100100011", &D::ARMBranchLinkExchangeRegister);
-        register_arm("00010x001001", &D::ARMSingleDataSwap);
-        register_arm("000000xx1001", &D::ARMMultiply);
-        register_arm("00010xx00101", &D::ARMSaturatingAddSubtract);
-        register_arm("00001xxx1001", &D::ARMMultiplyLong);
-        register_arm("000xxxxx1xx1", &D::ARMHalfwordDataTransfer);
-        register_arm("00x10xx0xxxx", &D::ARMPSRTransfer);
-        register_arm("100xxxxxxxxx", &D::ARMBlockDataTransfer);
-        register_arm("01xxxxxxxxxx", &D::ARMSingleDataTransfer);
-        register_arm("00xxxxxxxxxx", &D::ARMDataProcessing);
-        register_arm("1110xxxxxxx1", &D::ARMCoprocessorRegisterTransfer);
-        register_arm("1111xxxxxxxx", &D::ARMSoftwareInterrupt);
-        register_arm("000101001xx0", &D::ARMSignedHalfwordAccumulateLong);
-        register_arm("000100101xx0", &D::ARMSignedHalfwordWordMultiply);
-        register_arm("00010xx01xx0", &D::ARMSignedHalfwordMultiply);
-        register_arm("000100100111", &D::ARMBreakpoint);
+        register_arm("101xxxxxxxxx", &D::arm_branch_link_maybe_exchange);
+        register_arm("000100100001", &D::arm_branch_exchange);
+        register_arm("000101100001", &D::arm_count_leading_zeroes);
+        register_arm("000100100011", &D::arm_branch_link_exchange_register);
+        register_arm("00010x001001", &D::arm_single_data_swap);
+        register_arm("000000xx1001", &D::arm_multiply);
+        register_arm("00010xx00101", &D::arm_saturating_add_subtract);
+        register_arm("00001xxx1001", &D::arm_multiply_long);
+        register_arm("000xxxxx1xx1", &D::arm_halfword_data_transfer);
+        register_arm("00x10xx0xxxx", &D::arm_psr_transfer);
+        register_arm("100xxxxxxxxx", &D::arm_block_data_transfer);
+        register_arm("01xxxxxxxxxx", &D::arm_single_data_transfer);
+        register_arm("00xxxxxxxxxx", &D::arm_data_processing);
+        register_arm("1110xxxxxxx1", &D::arm_coprocessor_register_transfer);
+        register_arm("1111xxxxxxxx", &D::arm_software_interrupt);
+        register_arm("000101001xx0", &D::arm_signed_halfword_accumulate_long);
+        register_arm("000100101xx0", &D::arm_signed_halfword_word_multiply);
+        register_arm("00010xx01xx0", &D::arm_signed_halfword_multiply);
+        register_arm("000100100111", &D::arm_breakpoint);
         
         std::stable_sort(arm_list.begin(), arm_list.end(), [](InstructionInfo a, InstructionInfo b) {
             return bit_count(a.mask) > bit_count(b.mask);

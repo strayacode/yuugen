@@ -1,14 +1,14 @@
 #pragma once
 
-void ARMBranchLinkMaybeExchange() {
+void arm_branch_link_maybe_exchange() {
     if ((instruction & 0xF0000000) != 0xF0000000) {
-        ARMBranchLink();
+        arm_branch_link();
     } else {
-        ARMBranchLinkExchange();
+        arm_branch_link_exchange();
     }
 }
 
-void ARMBranchLink() {
+void arm_branch_link() {
     const bool link = (instruction >> 24) & 0x1;
     u32 offset = ((instruction & (1 << 23)) ? 0xFC000000 : 0) | ((instruction & 0xFFFFFF) << 2);
     
@@ -23,7 +23,7 @@ void ARMBranchLink() {
     ARMFlushPipeline();
 }
 
-void ARMBranchExchange() {
+void arm_branch_exchange() {
     u8 rm = instruction & 0xF;
     if (regs.r[rm] & 0x1) {
         // set bit 5 of cpsr to switch to thumb state
@@ -37,7 +37,7 @@ void ARMBranchExchange() {
     }
 }
 
-void ARMBranchLinkExchange() {
+void arm_branch_link_exchange() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -50,7 +50,7 @@ void ARMBranchLinkExchange() {
     ThumbFlushPipeline();
 }
 
-void ARMBranchLinkExchangeRegister() {
+void arm_branch_link_exchange_register() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -68,10 +68,10 @@ void ARMBranchLinkExchangeRegister() {
     }
 }
 
-void ARMBreakpoint() {
+void arm_breakpoint() {
     log_fatal("handle bkpt");
 }
 
-void ARMUndefined() {
+void arm_undefined() {
     log_fatal("handle undefined");
 }

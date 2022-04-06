@@ -382,7 +382,7 @@ void CPUCore::HandleInterrupt() {
     ARMFlushPipeline();
 }
 
-void CPUCore::ARMCoprocessorRegisterTransfer() {
+void CPUCore::arm_coprocessor_register_transfer() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -405,7 +405,7 @@ void CPUCore::ARMCoprocessorRegisterTransfer() {
     regs.r[15] += 4;
 }
 
-void CPUCore::ARMSoftwareInterrupt() {
+void CPUCore::arm_software_interrupt() {
     regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
     SwitchMode(SVC);

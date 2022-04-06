@@ -114,10 +114,10 @@ public:
     bool IsARM();
     void SwitchMode(u8 new_mode);
     void HandleInterrupt();
-    void ARMSoftwareInterrupt();
+    void arm_software_interrupt();
     void ThumbSoftwareInterrupt();
     void ARMUndefinedException();
-    void ARMCoprocessorRegisterTransfer();
+    void arm_coprocessor_register_transfer();
     void unknown_instruction();
 
     #include "interpreter/instructions/arm/alu.inl"

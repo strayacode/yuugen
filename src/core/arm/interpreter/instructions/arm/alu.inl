@@ -1,6 +1,6 @@
 #pragma once
 
-void ARMDataProcessing() {
+void arm_data_processing() {
     const bool set_flags = instruction & (1 << 20);
     const bool immediate = (instruction >> 25) & 0x1;
     u8 rd = (instruction >> 12) & 0xF;
@@ -425,7 +425,7 @@ u32 ROR(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm) {
     return result;
 }
 
-void ARMMultiply() {
+void arm_multiply() {
     const bool set_flags = (instruction >> 20) & 0x1;
     const bool accumulate = (instruction >> 21) & 0x1;
     u8 rm = instruction & 0xF;
@@ -448,7 +448,7 @@ void ARMMultiply() {
     regs.r[15] += 4;
 }
 
-void ARMMultiplyLong() {
+void arm_multiply_long() {
     const bool set_flags = (instruction >> 20) & 0x1;
     const bool accumulate = (instruction >> 21) & 0x1;
     const bool sign = (instruction >> 22) & 0x1;
@@ -482,7 +482,7 @@ void ARMMultiplyLong() {
     regs.r[15] += 4;
 }
 
-void ARMSingleDataSwap() {
+void arm_single_data_swap() {
     u8 rm = instruction & 0xF;
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
@@ -514,7 +514,7 @@ void ARMSingleDataSwap() {
     regs.r[15] += 4;
 }
 
-void ARMCountLeadingZeroes() {
+void arm_count_leading_zeroes() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -535,7 +535,7 @@ void ARMCountLeadingZeroes() {
     regs.r[15] += 4;
 }
 
-void ARMSaturatingAddSubtract() {
+void arm_saturating_add_subtract() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -646,7 +646,7 @@ void ARMSaturatingAddSubtract() {
     regs.r[15] += 4;
 }
 
-void ARMSignedHalfwordMultiply() {
+void arm_signed_halfword_multiply() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -696,7 +696,7 @@ void ARMSignedHalfwordMultiply() {
     regs.r[15] += 4;
 }
 
-void ARMSignedHalfwordWordMultiply() {
+void arm_signed_halfword_word_multiply() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -732,7 +732,7 @@ void ARMSignedHalfwordWordMultiply() {
     regs.r[15] += 4;
 }
 
-void ARMSignedHalfwordAccumulateLong() {
+void arm_signed_halfword_accumulate_long() {
     if (arch == CPUArch::ARMv4) {
         return;
     }

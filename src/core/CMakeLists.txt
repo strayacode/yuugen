@@ -7,7 +7,6 @@ add_library(core
     arm/cpu_core.h arm/cpu_core.cpp
     arm/arm7/memory.h arm/arm7/memory.cpp
     arm/arm9/memory.h arm/arm9/memory.cpp
-    arm/disassembler/disassembler.h
     arm/decoder/decoder.h
     
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
