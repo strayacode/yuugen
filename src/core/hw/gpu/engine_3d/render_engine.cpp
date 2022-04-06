@@ -153,39 +153,24 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             right_y1
         );
 
-        // c[0] = slope_interpolator.interpolate_colour(
-        //     polygon.vertices[left].colour,
-        //     polygon.vertices[new_left].colour,
-        //     y,
-        //     left_y0,
-        //     left_y1,
-        //     polygon.vertices[left].w,
-        //     polygon.vertices[new_left].w
-        // );
-
-        // c[1] = slope_interpolator.interpolate_colour(
-        //     polygon.vertices[right].colour,
-        //     polygon.vertices[new_right].colour,
-        //     y,
-        //     right_y0,
-        //     right_y1,
-        //     polygon.vertices[right].w,
-        //     polygon.vertices[new_right].w
-        // );
-
-        // interpolate slope colours according to y coordinate
-        c[0] = interpolate_colour(
+        c[0] = slope_interpolator.interpolate_colour(
             polygon.vertices[left].colour,
             polygon.vertices[new_left].colour,
-            y - left_y0,
-            left_y1 - left_y0
+            y,
+            left_y0,
+            left_y1,
+            0,
+            0
         );
 
-        c[1] = interpolate_colour(
+        c[1] = slope_interpolator.interpolate_colour(
             polygon.vertices[right].colour,
             polygon.vertices[new_right].colour,
-            y - right_y0,
-            right_y1 - right_y0
+            y,
+            right_y0,
+            right_y1,
+            0,
+            0
         );
 
         s32 left_span_start = left_slope.SpanStart(y);
@@ -224,19 +209,4 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             }
         }
     }
-}
-
-Colour RenderEngine::interpolate_colour(Colour c1, Colour c2, u32 a, u32 p) {
-    Colour c3;
-    c3.r = lerp(c1.r, c2.r, a, p);
-    c3.g = lerp(c1.g, c2.g, a, p);
-    c3.b = lerp(c1.b, c2.b, a, p);
-
-    return c3;
-}
-
-u32 RenderEngine::lerp(u32 u1, u32 u2, u32 a, u32 p) {
-    float t = float(a) / float(p);
-
-    return u1 * (1 - t) + u2 * t;
 }
