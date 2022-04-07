@@ -418,7 +418,7 @@ void CPUCore::arm_software_interrupt() {
     ARMFlushPipeline();
 }
 
-void CPUCore::ThumbSoftwareInterrupt() {
+void CPUCore::thumb_software_interrupt() {
     regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
     SwitchMode(SVC);

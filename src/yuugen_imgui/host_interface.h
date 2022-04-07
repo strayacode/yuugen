@@ -6,7 +6,7 @@
 #include "common/types.h"
 #include "common/log.h"
 #include "core/core.h"
-// #include "core/arm/Disassembler/Disassembler.h"
+#include "core/arm/Disassembler/Disassembler.h"
 #include <memory>
 #include <vector>
 #include <array>
@@ -72,5 +72,5 @@ public:
     ImFont* regular_font = nullptr;
     ImFont* monospace_font = nullptr;
 
-    // Disassembler disassembler;
+    Disassembler disassembler;
 };

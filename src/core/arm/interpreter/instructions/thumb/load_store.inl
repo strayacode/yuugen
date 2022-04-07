@@ -1,6 +1,6 @@
 #pragma once
 
-void ThumbLoadPC() {
+void thumb_load_pc() {
     u32 immediate = (instruction & 0xFF) << 2;
     u8 rd = (instruction >> 8) & 0x7;
 
@@ -11,7 +11,7 @@ void ThumbLoadPC() {
     regs.r[15] += 2;
 }
 
-void ThumbLoadStore() {
+void thumb_load_store() {
     u8 rd = instruction & 0x7;
     u8 rn = (instruction >> 3) & 0x7;
     u8 rm = (instruction >> 6) & 0x7;
@@ -62,7 +62,7 @@ void ThumbLoadStore() {
     regs.r[15] += 2;
 }
 
-void ThumbLoadStoreImmediate() {
+void thumb_load_store_immediate() {
     u8 rd = instruction & 0x7;
     u8 rn = (instruction >> 3) & 0x7;
     u32 immediate = (instruction >> 6) & 0x1F;
@@ -87,7 +87,7 @@ void ThumbLoadStoreImmediate() {
     regs.r[15] += 2;
 }
 
-void ThumbPushPop() {
+void thumb_push_pop() {
     bool pclr = (instruction >> 8) & 0x1;
     bool pop = (instruction >> 11) & 0x1;
 
@@ -148,7 +148,7 @@ void ThumbPushPop() {
     }
 }
 
-void ThumbLoadStoreSPRelative() {
+void thumb_load_store_sp_relative() {
     u32 immediate = instruction & 0xFF;
     u8 rd = (instruction >> 8) & 0x7;
 
@@ -165,7 +165,7 @@ void ThumbLoadStoreSPRelative() {
     regs.r[15] += 2;
 }
 
-void ThumbLoadStoreHalfword() {
+void thumb_load_store_halfword() {
     u8 rd = instruction & 0x7;
     u8 rn = (instruction >> 3) & 0x7;
     u32 immediate = (instruction >> 6) & 0x1F;
@@ -182,7 +182,7 @@ void ThumbLoadStoreHalfword() {
     regs.r[15] += 2;
 }
 
-void ThumbLoadStoreMultiple() {
+void thumb_load_store_multiple() {
     u8 rn = (instruction >> 8) & 0x7;
     u32 address = regs.r[rn];
 

@@ -1,6 +1,6 @@
 #pragma once
 
-void ThumbAddSubtract() {
+void thumb_add_subtract() {
     u8 rn = (instruction >> 6) & 0x7;
     u8 rs = (instruction >> 3) & 0x7;
     u8 rd = instruction & 0x7;
@@ -20,7 +20,7 @@ void ThumbAddSubtract() {
     regs.r[15] += 2;
 }
 
-void ThumbShiftImmediate() {
+void thumb_shift_immediate() {
     u8 rd = instruction & 0x7;
     u8 rs = (instruction >> 3) & 0x7;
 
@@ -69,7 +69,7 @@ void ThumbShiftImmediate() {
     regs.r[15] += 2;
 }
 
-void ThumbALUImmediate() {
+void thumb_alu_immediate() {
     u8 immediate = instruction & 0xFF;
     u8 rd = (instruction >> 8) & 0x7;
     u8 opcode = (instruction >> 11) & 0x3;
@@ -96,7 +96,7 @@ void ThumbALUImmediate() {
     regs.r[15] += 2;
 }
 
-void ThumbDataProcessingRegister() {
+void thumb_data_processing_register() {
     u8 rd = instruction & 0x7;
     u8 rs = (instruction >> 3) & 0x7;
 
@@ -175,7 +175,7 @@ void ThumbDataProcessingRegister() {
     regs.r[15] += 2;
 }
 
-void ThumbSpecialDataProcesing() {
+void thumb_special_data_processing() {
     u8 rd = ((instruction & (1 << 7)) >> 4) | (instruction & 0x7);
     u8 rs = (instruction >> 3) & 0xF;
 
@@ -209,7 +209,7 @@ void ThumbSpecialDataProcesing() {
     }
 }
 
-void ThumbAdjustStackPointer() {
+void thumb_adjust_stack_pointer() {
     u32 immediate = (instruction & 0x7F) << 2;
 
     // need to check bit 7 to check if we subtract or add from sp
@@ -218,7 +218,7 @@ void ThumbAdjustStackPointer() {
     regs.r[15] += 2;
 }
 
-void ThumbAddSPPC() {
+void thumb_add_sp_pc() {
     u32 immediate = (instruction & 0xFF) << 2;
     u8 rd = (instruction >> 8) & 0x7;
     bool sp = instruction & (1 << 11);

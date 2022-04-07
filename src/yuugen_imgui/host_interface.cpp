@@ -431,13 +431,13 @@ void HostInterface::ARMWindow(CPUArch arch) {
                             ImGui::SameLine(67);
                             ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
                             ImGui::SameLine(125);
-                            // ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", disassembler.disassemble_arm(instruction, addr).c_str());
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", disassembler.disassemble_arm(instruction).c_str());
                         } else {
                             ImGui::Text("%08X:", addr);
                             ImGui::SameLine(67);
                             ImGui::Text("%08X", instruction);
                             ImGui::SameLine(125);
-                            // ImGui::Text("%s", disassembler.disassemble_arm(instruction, addr).c_str());
+                            ImGui::Text("%s", disassembler.disassemble_arm(instruction).c_str());
                         }
                         
                         addr += increment;
@@ -450,13 +450,13 @@ void HostInterface::ARMWindow(CPUArch arch) {
                             ImGui::SameLine(67);
                             ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
                             ImGui::SameLine(125);
-                            // ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", disassembler.disassemble_thumb(instruction, addr).c_str());
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", disassembler.disassemble_thumb(instruction).c_str());
                         } else {
                             ImGui::Text("%08X:", addr);
                             ImGui::SameLine(67);
                             ImGui::Text("%08X", instruction);
                             ImGui::SameLine(125);
-                            // ImGui::Text("%s", disassembler.disassemble_thumb(instruction, addr).c_str());
+                            ImGui::Text("%s", disassembler.disassemble_thumb(instruction).c_str());
                         }
 
                         addr += increment;

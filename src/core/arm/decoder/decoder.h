@@ -60,28 +60,28 @@ public:
             }
         }
 
-        register_thumb("001xxxxxxx", &D::ThumbALUImmediate);
-        register_thumb("11111xxxxx", &D::ThumbBranchLinkOffset);
-        register_thumb("11110xxxxx", &D::ThumbBranchLinkSetup);
-        register_thumb("11101xxxxx", &D::ThumbBranchLinkExchangeOffset);
-        register_thumb("11100xxxxx", &D::ThumbBranch);
-        register_thumb("1011x10xxx", &D::ThumbPushPop);
-        register_thumb("010000xxxx", &D::ThumbDataProcessingRegister);
-        register_thumb("010001xxxx", &D::ThumbSpecialDataProcesing);
-        register_thumb("010001111x", &D::ThumbBranchLinkExchange);
-        register_thumb("010001110x", &D::ThumbBranchExchange);
-        register_thumb("0101xxxxxx", &D::ThumbLoadStore);
-        register_thumb("01001xxxxx", &D::ThumbLoadPC);
-        register_thumb("1001xxxxxx", &D::ThumbLoadStoreSPRelative);
-        register_thumb("1000xxxxxx", &D::ThumbLoadStoreHalfword);
-        register_thumb("00011xxxxx", &D::ThumbAddSubtract);
-        register_thumb("000xxxxxxx", &D::ThumbShiftImmediate);
-        register_thumb("11011111xx", &D::ThumbSoftwareInterrupt);
-        register_thumb("1101xxxxxx", &D::ThumbBranchConditional);
-        register_thumb("1100xxxxxx", &D::ThumbLoadStoreMultiple);
-        register_thumb("011xxxxxxx", &D::ThumbLoadStoreImmediate);
-        register_thumb("1010xxxxxx", &D::ThumbAddSPPC);
-        register_thumb("10110000xx", &D::ThumbAdjustStackPointer);
+        register_thumb("001xxxxxxx", &D::thumb_alu_immediate);
+        register_thumb("11111xxxxx", &D::thumb_branch_link_offset);
+        register_thumb("11110xxxxx", &D::thumb_branch_link_setup);
+        register_thumb("11101xxxxx", &D::thumb_branch_link_exchange_offset);
+        register_thumb("11100xxxxx", &D::thumb_branch);
+        register_thumb("1011x10xxx", &D::thumb_push_pop);
+        register_thumb("010000xxxx", &D::thumb_data_processing_register);
+        register_thumb("010001xxxx", &D::thumb_special_data_processing);
+        register_thumb("010001111x", &D::thumb_branch_link_exchange);
+        register_thumb("010001110x", &D::thumb_branch_exchange);
+        register_thumb("0101xxxxxx", &D::thumb_load_store);
+        register_thumb("01001xxxxx", &D::thumb_load_pc);
+        register_thumb("1001xxxxxx", &D::thumb_load_store_sp_relative);
+        register_thumb("1000xxxxxx", &D::thumb_load_store_halfword);
+        register_thumb("00011xxxxx", &D::thumb_add_subtract);
+        register_thumb("000xxxxxxx", &D::thumb_shift_immediate);
+        register_thumb("11011111xx", &D::thumb_software_interrupt);
+        register_thumb("1101xxxxxx", &D::thumb_branch_conditional);
+        register_thumb("1100xxxxxx", &D::thumb_load_store_multiple);
+        register_thumb("011xxxxxxx", &D::thumb_load_store_immediate);
+        register_thumb("1010xxxxxx", &D::thumb_add_sp_pc);
+        register_thumb("10110000xx", &D::thumb_adjust_stack_pointer);
         
         std::stable_sort(thumb_list.begin(), thumb_list.end(), [](InstructionInfo a, InstructionInfo b) {
             return bit_count(a.mask) > bit_count(b.mask);

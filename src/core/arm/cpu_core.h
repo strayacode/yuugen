@@ -115,7 +115,7 @@ public:
     void SwitchMode(u8 new_mode);
     void HandleInterrupt();
     void arm_software_interrupt();
-    void ThumbSoftwareInterrupt();
+    void thumb_software_interrupt();
     void ARMUndefinedException();
     void arm_coprocessor_register_transfer();
     void unknown_instruction();

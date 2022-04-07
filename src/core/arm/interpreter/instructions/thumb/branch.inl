@@ -1,6 +1,6 @@
 #pragma once
 
-void ThumbBranchExchange() {
+void thumb_branch_exchange() {
     u8 rm = (instruction >> 3) & 0xF;
     if (regs.r[rm] & 0x1) {
         // just load rm into r15 normally in thumb
@@ -15,7 +15,7 @@ void ThumbBranchExchange() {
     }
 }
 
-void ThumbBranchLinkExchange() {
+void thumb_branch_link_exchange() {
     if (arch == CPUArch::ARMv4) {
         return;
     }
@@ -34,14 +34,14 @@ void ThumbBranchLinkExchange() {
     }
 }
 
-void ThumbBranchLinkSetup() {
+void thumb_branch_link_setup() {
     u32 immediate = ((instruction & (1 << 10)) ? 0xFFFFF000 : 0) | ((instruction & 0x7FF) << 1);
 
     regs.r[14] = regs.r[15] + (immediate << 11);
     regs.r[15] += 2;
 }
 
-void ThumbBranchLinkOffset() {
+void thumb_branch_link_offset() {
     u32 offset = (instruction & 0x7FF) << 1;
     u32 next_instruction_address = regs.r[15] - 1;
 
@@ -50,7 +50,7 @@ void ThumbBranchLinkOffset() {
     ThumbFlushPipeline();
 }
 
-void ThumbBranchLinkExchangeOffset() {
+void thumb_branch_link_exchange_offset() {
     // arm9 specific instruction
     if (arch == CPUArch::ARMv4) {
         return;
@@ -68,14 +68,14 @@ void ThumbBranchLinkExchangeOffset() {
     ARMFlushPipeline();
 }
 
-void ThumbBranch() {
+void thumb_branch() {
     u32 offset = ((instruction & (1 << 10)) ? 0xFFFFF000 : 0) | ((instruction & 0x7FF) << 1);
     
     regs.r[15] += offset;
     ThumbFlushPipeline();
 }
 
-void ThumbBranchConditional() {
+void thumb_branch_conditional() {
     u8 condition = (instruction >> 8) & 0xF;
 
     if (ConditionEvaluate(condition)) {
