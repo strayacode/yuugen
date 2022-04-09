@@ -39,9 +39,9 @@ public:
 
     Colour interpolate_colour(Colour c1, Colour c2, u32 x, u32 x0, u32 x1, u32 w0, u32 w1) {
         Colour c3;
-        c3.r = interpolate(c1.r, c2.r, x, x0, x1, 8192, 8192);
-        c3.g = interpolate(c1.g, c2.g, x, x0, x1, 8192, 8192);
-        c3.b = interpolate(c1.b, c2.b, x, x0, x1, 8192, 8192);
+        c3.r = interpolate(c1.r, c2.r, x, x0, x1, w0, w1);
+        c3.g = interpolate(c1.g, c2.g, x, x0, x1, w0, w1);
+        c3.b = interpolate(c1.b, c2.b, x, x0, x1, w0, w1);
 
         return c3;
     }
@@ -72,5 +72,6 @@ public:
             return w0 == w1 && (w0 & 0x7F) == 0 && (w1 & 0x7F) == 0;
         }
     }
+    
 private:
 };

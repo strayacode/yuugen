@@ -137,20 +137,24 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         }
 
         // TODO: should we use x coordinates for x major slopes?
-        w[0] = slope_interpolator.interpolate_linear(
+        w[0] = slope_interpolator.interpolate(
             polygon.vertices[left].w,
             polygon.vertices[new_left].w,
             y,
             left_y0,
-            left_y1
+            left_y1,
+            polygon.vertices[left].w,
+            polygon.vertices[new_left].w
         );
 
-        w[1] = slope_interpolator.interpolate_linear(
+        w[1] = slope_interpolator.interpolate(
             polygon.vertices[right].w,
             polygon.vertices[new_right].w,
             y,
             right_y0,
-            right_y1
+            right_y1,
+            polygon.vertices[right].w,
+            polygon.vertices[new_right].w
         );
 
         c[0] = slope_interpolator.interpolate_colour(
@@ -189,6 +193,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         if (left_span_start > right_span_end) {
             std::swap(left_span_start, right_span_end);
             std::swap(c[0], c[1]);
+            std::swap(w[0], w[1]);
         }
 
         if ((y >= left_y0 && y < left_y1) && (y >= right_y0 && y < right_y1)) {
@@ -200,8 +205,8 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
                         x,
                         left_span_start,
                         right_span_end,
-                        0,
-                        0
+                        w[0],
+                        w[1]
                     );
 
                     framebuffer[(y * 256) + x] = colour.to_u16();
