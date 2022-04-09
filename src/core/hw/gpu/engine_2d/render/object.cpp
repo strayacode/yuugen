@@ -57,7 +57,7 @@ void GPU2D::RenderObjects(u16 line) {
                     continue;
                 }
 
-                u16 colour = gpu->ReadVRAM<u16>(obj_base + ((height_difference * map_width) + j) * 2);
+                u16 colour = gpu->read_vram<u16>(obj_base + ((height_difference * map_width) + j) * 2);
 
                 if (colour & 0x8000) {
                     if (priority < obj_layer[(256 * line) + layer_offset].priority) {

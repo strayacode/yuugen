@@ -38,7 +38,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                 screen_addr += 0x800;
             }
 
-            u16 tile_info = gpu->ReadVRAM<u16>(screen_addr);
+            u16 tile_info = gpu->read_vram<u16>(screen_addr);
 
             // now we need to decode what the tile info means
             u32 tile_number = tile_info & 0x3FF;
@@ -53,7 +53,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             for (int j = 0; j < 8; j++) {
                 u32 byte_offset = character_addr + j;
 
-                u8 palette_index = gpu->ReadVRAM<u8>(byte_offset);
+                u8 palette_index = gpu->read_vram<u8>(byte_offset);
 
                 u16 colour;
 
@@ -87,7 +87,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                 screen_addr += 0x800;
             }
 
-            u16 tile_info = gpu->ReadVRAM<u16>(screen_addr);
+            u16 tile_info = gpu->read_vram<u16>(screen_addr);
 
             // now we need to decode what the tile info means
             u32 tile_number = tile_info & 0x3FF;
@@ -99,7 +99,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
             u32 character_addr = character_base + (tile_number * 32);
 
             u32 tile_offset = character_addr + (vertical_flip ? ((7 - y % 8) * 4) : ((y % 8) * 4));
-            u32 palette_indices = gpu->ReadVRAM<u32>(tile_offset);
+            u32 palette_indices = gpu->read_vram<u32>(tile_offset);
 
             for (int j = 0; j < 8; j++) {
                 u16 colour = (palette_indices & 0xF) == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>((palette_number * 32) + (palette_indices & 0xF) * 2);

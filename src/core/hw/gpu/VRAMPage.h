@@ -1,6 +1,7 @@
 #pragma once
 
-#include <common/log.h>
+#include "common/log.h"
+#include "common/types.h"
 
 class VRAMPage {
 public:

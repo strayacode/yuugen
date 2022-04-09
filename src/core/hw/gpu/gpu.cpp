@@ -6,15 +6,15 @@ GPU::GPU(System& system) : system(system), engine_a(this, 1), engine_b(this , 0)
 }
 
 void GPU::Reset() {
-    memset(bank_a, 0, 0x20000);
-    memset(bank_b, 0, 0x20000);
-    memset(bank_c, 0, 0x20000);
-    memset(bank_d, 0, 0x20000);
-    memset(bank_e, 0, 0x10000);
-    memset(bank_f, 0, 0x4000);
-    memset(bank_g, 0, 0x4000);
-    memset(bank_h, 0, 0x8000);
-    memset(bank_i, 0, 0x4000);
+    bank_a.fill(0);
+    bank_b.fill(0);
+    bank_c.fill(0);
+    bank_d.fill(0);
+    bank_e.fill(0);
+    bank_f.fill(0);
+    bank_g.fill(0);
+    bank_h.fill(0);
+    bank_i.fill(0);
 
     POWCNT1 = 0;
     VCOUNT = 0;
@@ -178,28 +178,23 @@ auto GPU::GetVRAMCNTEnabled(u8 vramcnt) -> bool {
 
 void GPU::MapVRAM() {
     // reset all the vram pages
-    VRAMMappingReset();
+    reset_vram_mapping();
 
     // we will map vram blocks in increments of 4kb
     if (GetVRAMCNTEnabled(VRAMCNT_A)) {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_A);
         switch (GetVRAMCNTMST(VRAMCNT_A)) {
         case 0:
-            for (int i = 0; i < 32; i++) {
-                lcdc[i].AddBank(&bank_a[i * 0x1000]);
-            }
+            lcdc.map(bank_a.data(), 0, 32);
             break;
         case 1:
-            for (int i = 0; i < 32; i++) {
-                bga[(ofs * 0x20) + i].AddBank(&bank_a[i * 0x1000]);
-            }
+            bga.map(bank_a.data(), ofs * 32, 32);
             break;
         case 2:
-            for (int i = 0; i < 32; i++) {
-                obja[((ofs & 0x1) * 0x20) + i].AddBank(&bank_a[i * 0x1000]);
-            }
+            obja.map(bank_a.data(), (ofs & 0x1) * 32, 32);
             break;
         case 3:
+            texture_data.map(bank_a.data(), ofs * 32, 32);
             break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_A));
@@ -210,21 +205,16 @@ void GPU::MapVRAM() {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_B);
         switch (GetVRAMCNTMST(VRAMCNT_B)) {
         case 0:
-            for (int i = 0; i < 32; i++) {
-                lcdc[i + 0x20].AddBank(&bank_b[i * 0x1000]);
-            }
+            lcdc.map(bank_b.data(), 32, 32);
             break;
         case 1:
-            for (int i = 0; i < 32; i++) {
-                bga[(ofs * 0x20) + i].AddBank(&bank_b[i * 0x1000]);
-            }
+            bga.map(bank_b.data(), ofs * 32, 32);
             break;
         case 2:
-            for (int i = 0; i < 32; i++) {
-                obja[((ofs & 0x1) * 0x20) + i].AddBank(&bank_b[i * 0x1000]);
-            }
+            obja.map(bank_b.data(), (ofs & 0x1) * 32, 32);
             break;
         case 3:
+            // handle texture data later
             break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_B));
@@ -235,27 +225,19 @@ void GPU::MapVRAM() {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_C);
         switch (GetVRAMCNTMST(VRAMCNT_C)) {
         case 0:
-            for (int i = 0; i < 32; i++) {
-                lcdc[i + 0x40].AddBank(&bank_c[i * 0x1000]);
-            }
+            lcdc.map(bank_c.data(), 0x40, 32);
             break;
         case 1:
-            for (int i = 0; i < 32; i++) {
-                bga[(ofs * 0x20) + i].AddBank(&bank_c[i * 0x1000]);
-            }
+            bga.map(bank_c.data(), ofs * 32, 32);
             break;
         case 2:
-        //     for (int i = 0; i < 32; i++) {
-        //         arm7_vram[(ofs & 0x1) * 0x20 + i].AddBank(&bank_c[i * 0x1000]);
-        //     }
+            arm7_vram.map(bank_c.data(), (ofs & 0x1) * 32, 32);
             break;
         case 3:
-            // handle texture later
+            // handle texture data later
             break;
         case 4:
-            for (int i = 0; i < 32; i++) {
-                bgb[i].AddBank(&bank_c[i * 0x1000]);
-            }
+            bgb.map(bank_c.data(), 0, 32);
             break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_C));
@@ -266,27 +248,19 @@ void GPU::MapVRAM() {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_D);
         switch (GetVRAMCNTMST(VRAMCNT_D)) {
         case 0:
-            for (int i = 0; i < 32; i++) {
-                lcdc[i + 0x60].AddBank(&bank_d[i * 0x1000]);
-            }
+            lcdc.map(bank_d.data(), 0x60, 32);
             break;
         case 1:
-            for (int i = 0; i < 32; i++) {
-                bga[(ofs * 0x20) + i].AddBank(&bank_d[i * 0x1000]);
-            }
+            bga.map(bank_d.data(), ofs * 32, 32);
             break;
         case 2:
-            // for (int i = 0; i < 32; i++) {
-            //     arm7_vram[(ofs & 0x1) * 0x20 + i].AddBank(&bank_d[i * 0x1000]);
-            // }
+            arm7_vram.map(bank_d.data(), (ofs & 0x1) * 32, 32);
             break;
         case 3:
             // handle texture later
             break;
         case 4:
-            for (int i = 0; i < 32; i++) {
-                objb[i].AddBank(&bank_d[i * 0x1000]);
-            }
+            objb.map(bank_d.data(), 0, 32);
             break;
         default:
             log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_D));
@@ -297,22 +271,16 @@ void GPU::MapVRAM() {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_E);
         switch (GetVRAMCNTMST(VRAMCNT_E)) {
         case 0:
-            for (int i = 0; i < 16; i++) {
-                lcdc[i + 0x80].AddBank(&bank_e[i * 0x1000]);
-            }
+            lcdc.map(bank_e.data(), 0x80, 16);
             break;
         case 1:
-            for (int i = 0; i < 16; i++) {
-                bga[i].AddBank(&bank_e[i * 0x1000]);
-            }
+            bga.map(bank_e.data(), 0, 16);
             break;
         case 2:
-            for (int i = 0; i < 16; i++) {
-                obja[i].AddBank(&bank_e[i * 1000]);
-            }
+            obja.map(bank_e.data(), 0, 16);
             break;
         case 3:
-            // handle texture later
+            // handle texture palette later
             break;
         case 4:
             // handle extpal later
@@ -326,19 +294,13 @@ void GPU::MapVRAM() {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_F);
         switch (GetVRAMCNTMST(VRAMCNT_F)) {
         case 0:
-            for (int i = 0; i < 4; i++) {
-                lcdc[i + 0x90].AddBank(&bank_f[i * 0x1000]);
-            }
+            lcdc.map(bank_f.data(), 0x90, 4);
             break;
         case 1:
-            for (int i = 0; i < 4; i++) {
-                bga[(ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10 + i].AddBank(&bank_f[i * 0x1000]);
-            }
+            bga.map(bank_f.data(), (ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10, 4);
             break;
         case 2:
-            for (int i = 0; i < 4; i++) {
-                obja[(ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10 + i].AddBank(&bank_f[i * 0x1000]);
-            }
+            obja.map(bank_f.data(), (ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10, 4);
             break;
         case 3:
             break;
@@ -357,19 +319,13 @@ void GPU::MapVRAM() {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_G);
         switch (GetVRAMCNTMST(VRAMCNT_G)) {
         case 0:
-            for (int i = 0; i < 4; i++) {
-                lcdc[i + 0x94].AddBank(&bank_g[i * 0x1000]);
-            }
+            lcdc.map(bank_g.data(), 0x94, 4);
             break;
         case 1:
-            for (int i = 0; i < 4; i++) {
-                bga[(ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10 + i].AddBank(&bank_g[i * 0x1000]);
-            }
+            bga.map(bank_g.data(), (ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10, 4);
             break;
         case 2:
-            for (int i = 0; i < 4; i++) {
-                obja[(ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10 + i].AddBank(&bank_g[i * 0x1000]);
-            }
+            obja.map(bank_g.data(), (ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10, 4);
             break;
         case 3:
             break;
@@ -388,14 +344,10 @@ void GPU::MapVRAM() {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_H);
         switch (GetVRAMCNTMST(VRAMCNT_H)) {
         case 0:
-            for (int i = 0; i < 8; i++) {
-                lcdc[i + 0x98].AddBank(&bank_h[i * 0x1000]);
-            }
+            lcdc.map(bank_h.data(), 0x98, 8);
             break;
         case 1:
-            for (int i = 0; i < 8; i++) {
-                bgb[i].AddBank(&bank_h[i * 0x1000]);
-            }
+            bgb.map(bank_h.data(), 0, 8);
             break;
         case 2:
             // handle extpal later
@@ -409,19 +361,13 @@ void GPU::MapVRAM() {
         u8 ofs = GetVRAMCNTOffset(VRAMCNT_I);
         switch (GetVRAMCNTMST(VRAMCNT_I)) {
         case 0:
-            for (int i = 0; i < 4; i++) {
-                lcdc[i + 0xA0].AddBank(&bank_i[i * 0x1000]);
-            }
+            lcdc.map(bank_i.data(), 0xA0, 4);
             break;
         case 1:
-            for (int i = 0; i < 4; i++) {
-                bgb[i + 0x8].AddBank(&bank_i[i * 0x1000]);
-            }
+            bgb.map(bank_i.data(), 0x8, 4);
             break;
         case 2:
-            for (int i = 0; i < 4; i++) {
-                objb[i].AddBank(&bank_i[i * 0x1000]);
-            }
+            objb.map(bank_i.data(), 0, 4);
             break;
         case 3:
             // obj extended palette
@@ -433,106 +379,61 @@ void GPU::MapVRAM() {
     }
 }
 
-void GPU::VRAMMappingReset() {
-    for (int i = 0; i < 0xA4; i++) {
-        lcdc[i].Reset();
-    }
-
-    for (int i = 0; i < 0x80; i++) {
-        bga[i].Reset();
-    }
-
-    for (int i = 0; i < 0x40; i++) {
-        obja[i].Reset();
-    }
-
-    for (int i = 0; i < 0x20; i++) {
-        bgb[i].Reset();
-    }
-
-    for (int i = 0; i < 0x20; i++) {
-        objb[i].Reset();
-    }
-
-    for (int i = 0; i < 0x20; i++) {
-        arm7_vram[i].Reset();
-    }
+void GPU::reset_vram_mapping() {
+    lcdc.reset();
+    bga.reset();
+    obja.reset();
+    bgb.reset();
+    objb.reset();
+    arm7_vram.reset();
+    texture_data.reset();
 }
 
-template auto GPU::ReadVRAM(u32 addr) -> u8;
-template auto GPU::ReadVRAM(u32 addr) -> u16;
-template auto GPU::ReadVRAM(u32 addr) -> u32;
+template u8 GPU::read_vram(u32 addr);
+template u16 GPU::read_vram(u32 addr);
+template u32 GPU::read_vram(u32 addr);
 template <typename T>
-auto GPU::ReadVRAM(u32 addr) -> T {
+T GPU::read_vram(u32 addr) {
     u8 region = (addr >> 20) & 0xF;
-
-    u32 offset = addr - (region * 0x100000) - 0x06000000;
-
-    int page_index = offset >> 12;
-
-    VRAMPage* page = nullptr;
 
     switch (region) {
     case 0x0: case 0x1:
-        page = &bga[page_index];
-        break;
+        return bga.read<T>(addr);
     case 0x2: case 0x3:
-        page = &bgb[page_index];
-        break;
+        return bgb.read<T>(addr);
     case 0x4: case 0x5:
-        page = &obja[page_index];
-        break;
+        return obja.read<T>(addr);
     case 0x6: case 0x7:
-        page = &objb[page_index];
-        break;
+        return objb.read<T>(addr);
     default:
-        page = &lcdc[page_index];
-        break;
+        return lcdc.read<T>(addr);
     }
-
-    if (page == nullptr) {
-        log_fatal("handle");
-    }
-
-    return page->Read<T>(addr);
 }
 
-template void GPU::WriteVRAM(u32 addr, u8 data);
-template void GPU::WriteVRAM(u32 addr, u16 data);
-template void GPU::WriteVRAM(u32 addr, u32 data);
+template void GPU::write_vram(u32 addr, u8 data);
+template void GPU::write_vram(u32 addr, u16 data);
+template void GPU::write_vram(u32 addr, u32 data);
 template <typename T>
-void GPU::WriteVRAM(u32 addr, T data) {
+void GPU::write_vram(u32 addr, T data) {
     u8 region = (addr >> 20) & 0xF;
-
-    u32 offset = addr - (region * 0x100000) - 0x06000000;
-
-    int page_index = offset >> 12;
-
-    VRAMPage* page = nullptr;
 
     switch (region) {
     case 0x0: case 0x1:
-        page = &bga[page_index];
+        bga.write<T>(addr, data);
         break;
     case 0x2: case 0x3:
-        page = &bgb[page_index];
+        bgb.write<T>(addr, data);
         break;
     case 0x4: case 0x5:
-        page = &obja[page_index];
+        obja.write<T>(addr, data);
         break;
     case 0x6: case 0x7:
-        page = &objb[page_index];
+        objb.write<T>(addr, data);
         break;
     default:
-        page = &lcdc[page_index];
+        lcdc.write<T>(addr, data);
         break;
     }
-
-    if (page == nullptr) {
-        log_fatal("handle");
-    }
-
-    page->Write<T>(addr, data);
 }
 
 template auto GPU::ReadExtPaletteBGA(u32 addr) -> u8;

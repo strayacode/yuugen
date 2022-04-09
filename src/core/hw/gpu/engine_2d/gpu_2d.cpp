@@ -242,7 +242,7 @@ void GPU2D::WriteBGY(int bg_index, u32 data) {
 }
 
 u16 GPU2D::Get4BPPOBJPixel(u32 obj_base, int number, int x, int y) {
-    u8 indices = gpu->ReadVRAM<u8>(obj_base + (y * 32) + (x / 2));
+    u8 indices = gpu->read_vram<u8>(obj_base + (y * 32) + (x / 2));
     u8 index = (x & 0x1) ? (indices >> 4) : (indices & 0xF);
     u16 colour;
 
@@ -256,7 +256,7 @@ u16 GPU2D::Get4BPPOBJPixel(u32 obj_base, int number, int x, int y) {
 }
 
 u16 GPU2D::Get8BPPOBJPixel(u32 obj_base, int number, int x, int y) {
-    u8 index = gpu->ReadVRAM<u8>(obj_base + (y * 64) + x);
+    u8 index = gpu->read_vram<u8>(obj_base + (y * 64) + x);
     u16 colour;
 
     if (index == 0) {

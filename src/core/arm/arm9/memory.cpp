@@ -134,7 +134,7 @@ u8 ARM9Memory::ReadByte(u32 addr) {
         }
         break;
     case 0x06:
-        return system.gpu.ReadVRAM<u8>(addr);
+        return system.gpu.read_vram<u8>(addr);
     case 0x07:
         if ((addr & 0x7FF) < 0x400) {
             return system.gpu.engine_a.ReadOAM<u8>(addr);
@@ -293,7 +293,7 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
         }
         break;
     case 0x06:
-        return system.gpu.ReadVRAM<u16>(addr);
+        return system.gpu.read_vram<u16>(addr);
     case 0x07:
         if ((addr & 0x7FF) < 0x400) {
             // this is the first block of oam which is 1kb and is assigned to engine a
@@ -488,7 +488,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
 
         break;
     case 0x06:
-        return system.gpu.ReadVRAM<u32>(addr);
+        return system.gpu.read_vram<u32>(addr);
     case 0x07:
         if ((addr & 0x7FF) < 0x400) {
             return_value = system.gpu.engine_a.ReadOAM<u32>(addr);
@@ -648,7 +648,7 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
 
         break;
     case 0x06:
-        system.gpu.WriteVRAM<u8>(addr, data);
+        system.gpu.write_vram<u8>(addr, data);
         break;
     default:
         log_fatal("handle byte write from %08x", addr);
@@ -1016,7 +1016,7 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
 
         break;
     case 0x06:
-        system.gpu.WriteVRAM<u16>(addr, data);
+        system.gpu.write_vram<u16>(addr, data);
         break;
     case 0x07:
         if ((addr & 0x7FF) < 0x400) {
@@ -1431,7 +1431,7 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
 
         break;
     case 0x06:
-        system.gpu.WriteVRAM<u32>(addr, data);
+        system.gpu.write_vram<u32>(addr, data);
         break;
     case 0x07:
         if ((addr & 0x7FF) < 0x400) {
