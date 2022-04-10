@@ -9,6 +9,8 @@ add_library(common
     circular_buffer.h
     slope.h memory_mapped_file.h
     format.h
+    FileSystem.h FileSystem.cpp
+    GamesList.h GamesList.cpp
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

@@ -5,6 +5,7 @@
 #include <string>
 #include "common/types.h"
 #include "common/log.h"
+#include "common/GamesList.h"
 #include "core/core.h"
 #include "core/arm/Disassembler/Disassembler.h"
 #include <memory>
@@ -93,4 +94,6 @@ private:
     };
 
     WindowType window_type = WindowType::GamesList;
+
+    Common::GamesList games_list;
 };

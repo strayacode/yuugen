@@ -6,5 +6,5 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -std=c++17 -lstdc++ -O3")
+set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -std=c++17 -lstdc++ -Ofast")
 add_subdirectory(src)

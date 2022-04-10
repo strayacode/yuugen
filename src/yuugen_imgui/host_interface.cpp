@@ -1,5 +1,4 @@
 #include "host_interface.h"
-#include <iostream>
 
 HostInterface::HostInterface() : 
     core([this](float fps) {
@@ -53,6 +52,8 @@ bool HostInterface::initialise() {
 
     SDL_GetWindowSize(window, &window_width, &window_height);
 
+    games_list.initialise();
+
     return true;
 }
 
@@ -79,8 +80,12 @@ void HostInterface::HandleInput() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         ImGui_ImplSDL2_ProcessEvent(&event);
+        
         if (event.type == SDL_QUIT) {
             running = false;
+        } else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            window_width = event.window.data1;
+            window_height = event.window.data2;
         } else if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
             bool key_pressed = event.type == SDL_KEYDOWN;
             switch (event.key.keysym.sym) {
@@ -291,8 +296,6 @@ void HostInterface::render_screen() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Bottom));
 
-    SDL_GetWindowSize(window, &window_width, &window_height);
-
     const double scale_x = (double)window_width / 256;
     const double scale_y = (double)window_height / 384;
     const double scale = scale_x < scale_y ? scale_x : scale_y;
@@ -355,9 +358,7 @@ void HostInterface::ARMWindow(CPUArch arch) {
     std::string name = arch == CPUArch::ARMv5 ? "ARM9" : "ARM7";
     int index = arch == CPUArch::ARMv5 ? 1 : 0;
 
-    begin_fullscreen_window(name.c_str());
-
-    // ImGui::Begin(name.c_str());
+    ImGui::Begin(name.c_str());
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
         if (ImGui::BeginTabItem("Registers")) {
@@ -434,7 +435,7 @@ void HostInterface::ARMWindow(CPUArch arch) {
         ImGui::EndTabBar();
     }
     
-    end_fullscreen_window();
+    ImGui::End();
 }
 
 void HostInterface::GPU2DWindow() {
@@ -730,26 +731,30 @@ void HostInterface::render_games_list_window() {
         | ImGuiTableFlags_BordersOuterV
         | ImGuiTableFlags_SizingStretchProp;
 
-    static int selected = 0;
+    int min_row_height = 20;
 
-    if (ImGui::BeginTable("table_advanced", 6, flags)) {
+    if (ImGui::BeginTable("table_advanced", 2, flags)) {
         ImGui::TableSetupColumn("Title");
+        ImGui::TableSetupColumn("Size");
         ImGui::TableHeadersRow();
 
-        for (int row = 0; row < 70; row++)
-        {
-            ImGui::TableNextRow(ImGuiTableRowFlags_None);
-            ImGui::TableSetColumnIndex(0);
-            ImGui::PushID(row);
-            if (ImGui::Selectable("test", false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap)) {
-                if (selected != row) {
-                    log_debug("selected %d", row);
-                }
+        for (int row = 0; row < games_list.get_num_entries(); row++) {
+            Common::GamesList::Entry entry = games_list.get_entry(row);
 
-                selected = row;
-                
+            ImGui::TableNextRow(ImGuiTableRowFlags_None);
+            ImGui::PushID(row);
+            ImGui::TableSetColumnIndex(0);
+            ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 0.5f));
+
+            if (ImGui::Selectable(entry.file_name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, 30.0f))) {
+                window_type = WindowType::Game;
+                core.BootGame(entry.path.c_str());
             }
 
+            ImGui::PopStyleVar();
+
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%s", entry.size.c_str());
             ImGui::PopID();
         }
         
