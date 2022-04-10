@@ -14,6 +14,7 @@ public:
     struct Entry {
         std::string path;
         std::string file_name;
+        std::string region;
         std::string size;
     };
 

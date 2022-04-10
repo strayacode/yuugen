@@ -11,6 +11,7 @@ add_library(common
     format.h
     FileSystem.h FileSystem.cpp
     GamesList.h GamesList.cpp
+    Memory.h
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

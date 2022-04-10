@@ -725,16 +725,16 @@ void HostInterface::render_games_list_window() {
     begin_fullscreen_window("Games List");
     
     static ImGuiTableFlags flags =
-        ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable
-        | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
+        ImGuiTableFlags_Resizable
         | ImGuiTableFlags_RowBg
         | ImGuiTableFlags_BordersOuterV
         | ImGuiTableFlags_SizingStretchProp;
 
     float min_row_height = 20.0f;
 
-    if (ImGui::BeginTable("table_advanced", 2, flags)) {
+    if (ImGui::BeginTable("table_advanced", 3, flags)) {
         ImGui::TableSetupColumn("Title");
+        ImGui::TableSetupColumn("Region");
         ImGui::TableSetupColumn("Size");
         ImGui::TableHeadersRow();
 
@@ -743,8 +743,8 @@ void HostInterface::render_games_list_window() {
 
             ImGui::TableNextRow(ImGuiTableRowFlags_None);
             ImGui::PushID(row);
-            ImGui::TableSetColumnIndex(0);
             ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 0.5f));
+            ImGui::TableSetColumnIndex(0);
 
             if (ImGui::Selectable(entry.file_name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
                 window_type = WindowType::Game;
@@ -752,7 +752,14 @@ void HostInterface::render_games_list_window() {
             }
 
             ImGui::TableSetColumnIndex(1);
-            
+
+            if (ImGui::Selectable(entry.region.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
+                window_type = WindowType::Game;
+                core.BootGame(entry.path.c_str());
+            }
+
+            ImGui::TableSetColumnIndex(2);
+
             if (ImGui::Selectable(entry.size.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
                 window_type = WindowType::Game;
                 core.BootGame(entry.path.c_str());
