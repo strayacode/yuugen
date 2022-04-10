@@ -21,13 +21,12 @@ class HostInterface {
 public:
     HostInterface();
 
-    bool Initialise();
+    bool initialise();
     void Run();
     void Shutdown();
     void HandleInput();
     void UpdateTitle(float fps);
     void DrawMenubar();
-    void DrawScreen();
     void SetupStyle();
     void CartridgeWindow();
     
@@ -83,11 +82,14 @@ public:
 
 private:
     void render_games_list_window();
+    void render_screen();
+    void reset_title();
 
     Disassembler disassembler;
 
     enum class WindowType {
         GamesList,
+        Game,
     };
 
     WindowType window_type = WindowType::GamesList;

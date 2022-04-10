@@ -8,7 +8,7 @@ HostInterface::HostInterface() :
     
 }
 
-bool HostInterface::Initialise() {
+bool HostInterface::initialise() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) > 0) {
         log_warn("error initialising SDL!");
         return false;
@@ -18,7 +18,6 @@ bool HostInterface::Initialise() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
@@ -51,6 +50,8 @@ bool HostInterface::Initialise() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    SDL_GetWindowSize(window, &window_width, &window_height);
 
     return true;
 }
@@ -131,6 +132,7 @@ void HostInterface::HandleInput() {
 void HostInterface::UpdateTitle(float fps) {
     char window_title[60];
     float percent_usage = (fps / 60.0f) * 100;
+    
     snprintf(window_title, 60, "yuugen | %s | %0.2f FPS | %0.2f%s", core.system.GetCPUCoreType().c_str(), fps, percent_usage, "%");
     SDL_SetWindowTitle(window, window_title);
 }
@@ -145,7 +147,14 @@ void HostInterface::UpdateTitle(float fps) {
             }
 
             if (ImGui::MenuItem("Boot Firmware")) {
+                window_type = WindowType::Game;
                 core.BootFirmware();
+            }
+
+            if (ImGui::MenuItem("Power Off")) {
+                window_type = WindowType::GamesList;
+                reset_title();
+                core.SetState(State::Idle);
             }
 
             if (ImGui::MenuItem("Quit")) {
@@ -261,12 +270,13 @@ void HostInterface::UpdateTitle(float fps) {
 
     file_dialog.Display();
     if (file_dialog.HasSelected()) {
+        window_type = WindowType::Game;
         core.BootGame(file_dialog.GetSelected().string());
         file_dialog.ClearSelected();
     }
 }
 
-void HostInterface::DrawScreen() {
+void HostInterface::render_screen() {
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -637,12 +647,12 @@ void HostInterface::render() {
 
     DrawMenubar();
 
-    // TODO: only draw screen when we aren't in a fullscreen window (to reduce amount of rendering)
-    DrawScreen();
-
     switch (window_type) {
     case WindowType::GamesList:
         render_games_list_window();
+        break;
+    case WindowType::Game:
+        render_screen();
         break;
     }
 
@@ -747,4 +757,8 @@ void HostInterface::render_games_list_window() {
     }
     
     end_fullscreen_window();
+}
+
+void HostInterface::reset_title() {
+    SDL_SetWindowTitle(window, "yuugen");
 }
