@@ -41,9 +41,6 @@ public:
 
     void render();
 
-    void begin_fullscreen_window(const char *name, float padding = 0.0f);
-    void end_fullscreen_window();
-
     bool running = true;
     bool fullscreen = false;
 
@@ -82,6 +79,9 @@ public:
     
 
 private:
+    void begin_fullscreen_window(const char *name, float padding = 0.0f);
+    void end_fullscreen_window();
+    
     void render_games_list_window();
     void render_screen();
     void reset_title();

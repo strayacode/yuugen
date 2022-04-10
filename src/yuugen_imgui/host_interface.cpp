@@ -731,7 +731,7 @@ void HostInterface::render_games_list_window() {
         | ImGuiTableFlags_BordersOuterV
         | ImGuiTableFlags_SizingStretchProp;
 
-    int min_row_height = 20;
+    float min_row_height = 20.0f;
 
     if (ImGui::BeginTable("table_advanced", 2, flags)) {
         ImGui::TableSetupColumn("Title");
@@ -746,15 +746,19 @@ void HostInterface::render_games_list_window() {
             ImGui::TableSetColumnIndex(0);
             ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 0.5f));
 
-            if (ImGui::Selectable(entry.file_name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, 30.0f))) {
+            if (ImGui::Selectable(entry.file_name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
                 window_type = WindowType::Game;
                 core.BootGame(entry.path.c_str());
             }
 
-            ImGui::PopStyleVar();
-
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%s", entry.size.c_str());
+            
+            if (ImGui::Selectable(entry.size.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
+                window_type = WindowType::Game;
+                core.BootGame(entry.path.c_str());
+            }
+            
+            ImGui::PopStyleVar();
             ImGui::PopID();
         }
         
