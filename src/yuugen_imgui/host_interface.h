@@ -39,6 +39,11 @@ public:
     void DMAWindow();
     void InputSettingsWindow();
 
+    void render();
+
+    void begin_fullscreen_window(const char *name, float padding = 0.0f);
+    void end_fullscreen_window();
+
     bool running = true;
     bool fullscreen = false;
 
@@ -68,9 +73,22 @@ public:
     ImVec2 scaled_dimensions;
     static constexpr float menubar_height = 19;
     double center_pos = 0;
+    int window_width = 0;
+    int window_height = 0;
 
     ImFont* regular_font = nullptr;
     ImFont* monospace_font = nullptr;
 
+    
+
+private:
+    void render_games_list_window();
+
     Disassembler disassembler;
+
+    enum class WindowType {
+        GamesList,
+    };
+
+    WindowType window_type = WindowType::GamesList;
 };

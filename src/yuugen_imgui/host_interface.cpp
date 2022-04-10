@@ -58,56 +58,7 @@ bool HostInterface::Initialise() {
 void HostInterface::Run() {
     while (running) {
         HandleInput();
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
-
-        DrawMenubar();
-        DrawScreen();
-
-        if (cartridge_window) {
-            CartridgeWindow();
-        }
-
-        if (arm7_window) {
-            ARMWindow(CPUArch::ARMv4);
-        }
-
-        if (arm9_window) {
-            ARMWindow(CPUArch::ARMv5);
-        }
-
-        if (gpu_window) {
-            GPUWindow();
-        }
-
-        if (gpu_2d_window) {
-            GPU2DWindow();
-        }
-
-        if (scheduler_window) {
-            SchedulerWindow();
-        }
-
-        if (dma_window) {
-            DMAWindow();
-        }
-
-        if (input_settings_window) {
-            InputSettingsWindow();
-        }
-
-        if (demo_window) {
-            ImGui::ShowDemoWindow();
-        }
-
-        ImGui::Render();
-        glViewport(0, 0, 1280, 720);
-        glClearColor(0, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        SDL_GL_SwapWindow(window);
+        render();
     }
 }
 
@@ -330,8 +281,6 @@ void HostInterface::DrawScreen() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Bottom));
 
-    int window_width = 0;
-    int window_height = 0;
     SDL_GetWindowSize(window, &window_width, &window_height);
 
     const double scale_x = (double)window_width / 256;
@@ -354,6 +303,8 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().FrameRounding = 0.0f;
     ImGui::GetStyle().PopupRounding = 0.0f;
     ImGui::GetStyle().ChildRounding = 0.0f;
+    ImGui::GetStyle().ScrollbarSize = 10.0f;
+    ImGui::GetStyle().ScrollbarRounding = 12.0f;
     ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
@@ -371,6 +322,7 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().Colors[ImGuiCol_FrameBg] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 void HostInterface::CartridgeWindow() {
@@ -393,7 +345,9 @@ void HostInterface::ARMWindow(CPUArch arch) {
     std::string name = arch == CPUArch::ARMv5 ? "ARM9" : "ARM7";
     int index = arch == CPUArch::ARMv5 ? 1 : 0;
 
-    ImGui::Begin(name.c_str());
+    begin_fullscreen_window(name.c_str());
+
+    // ImGui::Begin(name.c_str());
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
         if (ImGui::BeginTabItem("Registers")) {
@@ -469,7 +423,8 @@ void HostInterface::ARMWindow(CPUArch arch) {
 
         ImGui::EndTabBar();
     }
-    ImGui::End();
+    
+    end_fullscreen_window();
 }
 
 void HostInterface::GPU2DWindow() {
@@ -673,4 +628,123 @@ void HostInterface::DMAWindow() {
 void HostInterface::InputSettingsWindow() {
     ImGui::Begin("Input Settings");
     ImGui::End();
+}
+
+void HostInterface::render() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
+    DrawMenubar();
+
+    // TODO: only draw screen when we aren't in a fullscreen window (to reduce amount of rendering)
+    DrawScreen();
+
+    switch (window_type) {
+    case WindowType::GamesList:
+        render_games_list_window();
+        break;
+    }
+
+    if (cartridge_window) {
+        CartridgeWindow();
+    }
+
+    if (arm7_window) {
+        ARMWindow(CPUArch::ARMv4);
+    }
+
+    if (arm9_window) {
+        ARMWindow(CPUArch::ARMv5);
+    }
+
+    if (gpu_window) {
+        GPUWindow();
+    }
+
+    if (gpu_2d_window) {
+        GPU2DWindow();
+    }
+
+    if (scheduler_window) {
+        SchedulerWindow();
+    }
+
+    if (dma_window) {
+        DMAWindow();
+    }
+
+    if (input_settings_window) {
+        InputSettingsWindow();
+    }
+
+    if (demo_window) {
+        ImGui::ShowDemoWindow();
+    }
+
+    ImGui::Render();
+    glViewport(0, 0, 1280, 720);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(window);
+}
+
+void HostInterface::begin_fullscreen_window(const char *name, float padding) {
+    ImGui::SetNextWindowPos(ImVec2(0, menubar_height));
+    ImGui::SetNextWindowSize(ImVec2(window_width, window_height - menubar_height));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding, padding));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+    ImGui::Begin(
+        name,
+        nullptr,
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoBringToFrontOnFocus
+    );
+}
+
+void HostInterface::end_fullscreen_window() {
+    ImGui::End();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
+}
+
+void HostInterface::render_games_list_window() {
+    begin_fullscreen_window("Games List");
+    
+    static ImGuiTableFlags flags =
+        ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable
+        | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
+        | ImGuiTableFlags_RowBg
+        | ImGuiTableFlags_BordersOuterV
+        | ImGuiTableFlags_SizingStretchProp;
+
+    static int selected = 0;
+
+    if (ImGui::BeginTable("table_advanced", 6, flags)) {
+        ImGui::TableSetupColumn("Title");
+        ImGui::TableHeadersRow();
+
+        for (int row = 0; row < 70; row++)
+        {
+            ImGui::TableNextRow(ImGuiTableRowFlags_None);
+            ImGui::TableSetColumnIndex(0);
+            ImGui::PushID(row);
+            if (ImGui::Selectable("test", false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap)) {
+                if (selected != row) {
+                    log_debug("selected %d", row);
+                }
+
+                selected = row;
+                
+            }
+
+            ImGui::PopID();
+        }
+        
+        ImGui::EndTable();
+    }
+    
+    end_fullscreen_window();
 }

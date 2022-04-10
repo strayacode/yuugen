@@ -193,7 +193,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         if (left_span_start > right_span_end) {
             std::swap(left_span_start, right_span_end);
             std::swap(c[0], c[1]);
-            std::swap(w[0], w[1]);
+            // std::swap(w[0], w[1]);
         }
 
         if ((y >= left_y0 && y < left_y1) && (y >= right_y0 && y < right_y1)) {
