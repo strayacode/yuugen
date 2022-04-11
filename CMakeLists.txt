@@ -6,5 +6,23 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -std=c++17 -lstdc++ -Ofast")
+
+add_compile_options(
+    -Wall
+    -Wextra
+    -Wcast-qual
+    -pedantic
+    -pedantic-errors
+    -Wno-missing-braces
+)
+
+if(NOT CMAKE_BUILD_TYPE)
+    message(STATUS "No build type specified, defaulting to Release")
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_definitions(-D_DEBUG)
+endif()
+
 add_subdirectory(src)

@@ -1,3 +1,4 @@
+#include <cassert>
 #include <common/log.h>
 #include <core/arm/arm9/memory.h>
 #include <core/core.h>
@@ -1250,6 +1251,9 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
         case 0x04000280:
             system.maths_unit.DIVCNT = data;
             system.maths_unit.StartDivision();
+            // assert here so we know which programs are broken when using this
+            assert(true);
+            break;
         case 0x04000290:
             // write to lower 32 bits of DIV_NUMER, starting a division
             system.maths_unit.DIV_NUMER = (system.maths_unit.DIV_NUMER & ~0xFFFFFFFF) | data;
