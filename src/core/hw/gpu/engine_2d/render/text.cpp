@@ -68,7 +68,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
                     colour = palette_index == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>(palette_index * 2);
                 }
 
-                u16 offset = tile - (x % 8) + (horizontal_flip ? (7 - j) : j);
+                int offset = tile - (x % 8) + (horizontal_flip ? (7 - j) : j);
 
                 if (offset >= 0 && offset <= 0xFF) {
                     bg_layers[bg_index][(256 * line) + offset] = colour;
@@ -103,7 +103,7 @@ void GPU2D::RenderText(int bg_index, u16 line) {
 
             for (int j = 0; j < 8; j++) {
                 u16 colour = (palette_indices & 0xF) == 0 ? COLOUR_TRANSPARENT : ReadPaletteRAM<u16>((palette_number * 32) + (palette_indices & 0xF) * 2);
-                u16 offset = tile - (x % 8) + (horizontal_flip ? (7 - j) : j);
+                int offset = tile - (x % 8) + (horizontal_flip ? (7 - j) : j);
 
                 if (offset >= 0 && offset <= 0xFF) {
                     bg_layers[bg_index][(256 * line) + offset] = colour;

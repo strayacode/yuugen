@@ -40,8 +40,8 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
         u16 size = 128 << screen_size;
         for (int pixel = 0; pixel < 256; pixel++) {
             // get rotscal coords
-            u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
-            u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
+            int coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
+            int coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
 
             if (BGCNT[bg_index] & (1 << 13)) {
                 coord_x %= size;
@@ -78,8 +78,8 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
     } else if ((BGCNT[bg_index] & (1 << 7)) && (BGCNT[bg_index] & (1 << 2))) {
         // direct colour bitmap
         for (int pixel = 0; pixel < 256; pixel++) {
-            u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
-            u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
+            int coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
+            int coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
 
             // don't draw the pixel if the x and y coordinates are not inside the dimensions of the bitmap
             if (coord_x < 0 || coord_x >= size_x || coord_y < 0 || coord_y >= size_y) {
@@ -94,8 +94,8 @@ void GPU2D::RenderExtended(int bg_index, u16 line) {
     } else {
         // 256 colour bitmap
         for (int pixel = 0; pixel < 256; pixel++) {
-            u32 coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
-            u32 coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
+            int coord_x = (internal_x[bg_index - 2] + BGPA[bg_index - 2] * pixel) >> 8;
+            int coord_y = (internal_y[bg_index - 2] + BGPC[bg_index - 2] * pixel) >> 8;
 
             // don't draw the pixel if the x and y coordinates are not inside the dimensions of the bitmap
             if (coord_x < 0 || coord_x >= size_x || coord_y < 0 || coord_y >= size_y) {

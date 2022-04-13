@@ -14,6 +14,7 @@ struct OBJPixel {
 
 class GPU;
 
+// TODO: check 2d rendering code
 class GPU2D {
 public:
     GPU2D(GPU* gpu, int engine_id);

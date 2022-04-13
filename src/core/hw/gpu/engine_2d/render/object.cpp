@@ -22,7 +22,7 @@ void GPU2D::RenderObjects(u16 line) {
         u8 horizontal_flip = (attribute[1] >> 12) & 0x1;
         u8 vertical_flip = (attribute[1] >> 13) & 0x1;
         u8 priority = (attribute[2] >> 10) & 0x3;
-        u16 height_difference = line - y;
+        int height_difference = line - y;
 
         if (height_difference < 0 || height_difference >= height) {
             // then don't render the object and move onto the next one
@@ -51,7 +51,7 @@ void GPU2D::RenderObjects(u16 line) {
             }
 
             for (int j = 0; j < width; j++) {
-                u16 layer_offset = x + j;
+                int layer_offset = x + j;
 
                 if (layer_offset < 0 || layer_offset >= 256) {
                     continue;

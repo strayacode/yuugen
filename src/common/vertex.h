@@ -29,9 +29,9 @@ public:
         b = (colour >> 10) & 0x1F;
     }
 
-    u8 r;
-    u8 g;
-    u8 b;
+    u8 r = 0;
+    u8 g = 0;
+    u8 b = 0;
 };
 
 class Vertex {
