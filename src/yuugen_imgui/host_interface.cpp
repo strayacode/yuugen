@@ -732,9 +732,10 @@ void HostInterface::render_games_list_window() {
 
     float min_row_height = 20.0f;
 
-    if (ImGui::BeginTable("table_advanced", 3, flags)) {
+    if (ImGui::BeginTable("table_advanced", 4, flags)) {
         ImGui::TableSetupColumn("Title");
         ImGui::TableSetupColumn("Region");
+        ImGui::TableSetupColumn("Gamecode");
         ImGui::TableSetupColumn("Size");
         ImGui::TableHeadersRow();
 
@@ -759,6 +760,13 @@ void HostInterface::render_games_list_window() {
             }
 
             ImGui::TableSetColumnIndex(2);
+
+            if (ImGui::Selectable(entry.game_code.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
+                window_type = WindowType::Game;
+                core.BootGame(entry.path.c_str());
+            }
+
+            ImGui::TableSetColumnIndex(3);
 
             if (ImGui::Selectable(entry.size.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
                 window_type = WindowType::Game;

@@ -8,6 +8,8 @@
 namespace Common {
 
 void GamesList::initialise() {
+    load_titles_database("../data/dstdb.txt");
+
     // TODO: add cache file
     std::vector<std::string> paths = FileSystem::scan_directory("../roms", ".nds");
 
@@ -20,7 +22,6 @@ void GamesList::create_entry(const std::string& path) {
     Entry entry;
 
     entry.path = path;
-    entry.file_name = std::filesystem::path(path).stem();
 
     std::ifstream file(path, std::ios::binary);
 
@@ -33,6 +34,18 @@ void GamesList::create_entry(const std::string& path) {
     
     file.seekg(0, std::ios::beg);
     file.read(reinterpret_cast<char*>(info), 0x40);
+
+    u32 game_code = Common::read<u32>(info, 0x0C);
+
+    for (int i = 0; i < 4; i++) {
+        entry.game_code += (game_code >> (i * 8)) & 0xFF;
+    }
+
+    if (titles_map.count(std::string(entry.game_code))) {
+        entry.file_name = titles_map[entry.game_code];
+    } else {
+        entry.file_name = std::filesystem::path(path).stem();
+    }
 
     switch (info[0xF]) {
     case 'E':
@@ -55,6 +68,19 @@ void GamesList::create_entry(const std::string& path) {
     file.close();
 
     entries.push_back(entry);
+}
+
+void GamesList::load_titles_database(std::string path) {
+    std::ifstream file(path);
+    std::string line;
+    std::string delimiter = " = ";
+
+    while (std::getline(file, line)) {
+        std::string gamecode = line.substr(0, line.find(delimiter));
+        std::string title = line.substr(line.find(delimiter));
+        title = title.erase(title.find(delimiter), 3);
+        titles_map[gamecode] = title;
+    }
 }
 
 }

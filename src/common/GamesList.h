@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace Common {
 
@@ -16,6 +17,7 @@ public:
         std::string file_name;
         std::string region;
         std::string size;
+        std::string game_code;
     };
 
     using EntryList = std::vector<Entry>;
@@ -26,8 +28,12 @@ public:
 
 private:
     void create_entry(const std::string& path);
+    void load_titles_database(std::string path);
 
     EntryList entries;
+
+    // maps a gamecode to a title
+    std::unordered_map<std::string, std::string> titles_map;
 };
 
 }
