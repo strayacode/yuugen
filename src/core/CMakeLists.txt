@@ -9,7 +9,7 @@ add_library(core
     arm/arm9/memory.h arm/arm9/memory.cpp
     arm/Disassembler/Disassembler.h arm/Disassembler/Disassembler.cpp
     arm/Disassembler/arm.cpp arm/Disassembler/thumb.cpp
-    arm/decoder/decoder.h
+    arm/Decoder/Decoder.h
     
     hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
     hw/cartridge/loader_base.h 

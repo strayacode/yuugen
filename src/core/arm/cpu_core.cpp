@@ -1,7 +1,6 @@
 #include <algorithm>
 #include "core/arm/cpu_core.h"
 #include "core/hw/cp15/cp15.h"
-#include "core/arm/disassembler/disassembler.h"
 
 static Decoder<CPUCore> decoder;
 

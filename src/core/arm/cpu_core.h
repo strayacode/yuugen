@@ -5,7 +5,7 @@
 #include "common/log_file.h"
 #include "core/arm/cpu_registers.h"
 #include "core/arm/memory_base.h"
-#include "core/arm/decoder/decoder.h"
+#include "core/arm/Decoder/Decoder.h"
 
 enum class CPUArch {
     ARMv4 = 0,
