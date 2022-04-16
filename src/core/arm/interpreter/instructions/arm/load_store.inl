@@ -265,11 +265,53 @@ void arm_block_data_transfer() {
     const bool writeback = (instruction >> 21) & 0x1;
     const bool load_psr = (instruction >> 22) & 0x1;
     const bool up = (instruction >> 23) & 0x1;
-    const bool pre = (instruction >> 24) & 0x1;
+    bool pre = (instruction >> 24) & 0x1;
     u8 rn = (instruction >> 16) & 0xF;
     u8 r15_in_rlist = (instruction >> 15) & 0x1;
     u32 address = regs.r[rn];
     u8 old_mode = regs.cpsr & 0x1F;
+    u16 rlist = instruction & 0xFFFF;
+    int first = 0;
+    int bytes = 0;
+    u32 new_base = 0;
+
+    if (rlist != 0) {
+        for (int i = 15; i >= 0; i--) {
+            if (rlist & (1 << i)) {
+                first = i;
+                bytes += 4;
+            }
+        }
+    } else {
+        // handle empty rlist
+        bytes = 0x40;
+
+        if (arch == CPUArch::ARMv4) {
+            // only r15 gets transferred
+            rlist = 1 << 15;
+            r15_in_rlist = true;
+        }
+    }
+
+    if (up) {
+        new_base = address + bytes;
+    } else {
+        pre = !pre;
+        address -= bytes;
+        new_base = address;
+    }
+
+    // increment r15 before doing transfer because if r15 in rlist and stm is used,
+    // the value written is the address of the stm instruction + 12
+    regs.r[15] += 4;
+
+    // stm armv4: store old base if rb is first in rlist, otherwise store new base
+    // stm armv5: always store old base
+    if (writeback && !load) {
+        if ((arch == CPUArch::ARMv4) && (first != rn)) {
+            regs.r[rn] = new_base;
+        }
+    }
 
     // make sure to only do user bank transfer if r15 is not in rlist or instruction is not ldm
     // ~(A and B) = ~A or ~B
@@ -279,74 +321,42 @@ void arm_block_data_transfer() {
         SwitchMode(USR);
     }
 
-    // u32 old_base = regs.r[rn];
-
-    if (up) {
-        if (pre) {
-            for (int i = 0; i < 16; i++) {
-                if (instruction & (1 << i)) {
-                    address += 4;
-                    if (load) {
-                        regs.r[i] = ReadWord(address);
-                    } else {
-                        WriteWord(address, regs.r[i]);
-                    }
-                }
-            }
-        } else {
-            for (int i = 0; i < 16; i++) {
-                if (instruction & (1 << i)) {
-                    if (load) {
-                        regs.r[i] = ReadWord(address);
-
-                    } else {
-                        WriteWord(address, regs.r[i]);
-                    }
-                    address += 4;
-                }
-            }
+    // registers are transferred in order from lowest to highest
+    for (int i = first; i < 16; i++) {
+        if (!(rlist & (1 << i))) {
+            continue;
         }
-        
-    } else {
+
         if (pre) {
-            for (int i = 15; i >= 0; i--) {
-                if (instruction & (1 << i)) {
-                    address -= 4;
-                    if (load) {
-                        regs.r[i] = ReadWord(address);
-                    } else {
-                        WriteWord(address, regs.r[i]);
-                    }
-                }
-            }
-        } else {
-            for (int i = 15; i >= 0; i--) {
-                if (instruction & (1 << i)) {
-                    if (load) {
-                        regs.r[i] = ReadWord(address);
-                    } else {
-                        WriteWord(address, regs.r[i]);
-                    }
-                    address -= 4;
-                }
-            }
+            address += 4;
         }
+
+        if (load) {
+            regs.r[i] = ReadWord(address);
+        } else {
+            WriteWord(address, regs.r[i]);
+        }
+
+        if (!pre) {
+            address += 4;
+        } 
     }
 
-    // TODO: handle writeback edgecases correctly
     if (writeback) {
+        // ldm armv4: writeback if rb is not in rlist
+        // ldm armv5: writeback if rb is only register or not the last register in rlist
         if (load) {
             if (arch == CPUArch::ARMv5) {
-                if (((instruction & 0xFFFF) == (unsigned int)(1 << rn)) || !(((instruction & 0xFFFF) >> rn) == 1)) {
-                    regs.r[rn] = address;
+                if ((rlist == (1 << rn)) || !((rlist >> rn) == 1)) {
+                    regs.r[rn] = new_base;
                 }
             } else {
-                if (!(instruction & (unsigned int)(1 << rn))) {
-                    regs.r[rn] = address;
+                if (!(rlist & (1 << rn))) {
+                    regs.r[rn] = new_base;
                 }
             }
         } else {
-            regs.r[rn] = address;
+            regs.r[rn] = new_base;
         }
     } 
 
@@ -354,7 +364,7 @@ void arm_block_data_transfer() {
         // switch back to old mode at the end if user bank transfer
         SwitchMode(old_mode);
 
-        if (r15_in_rlist) {
+        if (load && r15_in_rlist) {
             log_fatal("handle");
             // if (load_psr) {
             //     // cpsr = spsr_<current_mode>
@@ -378,7 +388,5 @@ void arm_block_data_transfer() {
         } else {
             ARMFlushPipeline();
         }
-    } else {
-        regs.r[15] += 4;
     }
 }
