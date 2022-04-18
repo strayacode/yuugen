@@ -429,7 +429,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         case 0x04000214:
             return system.cpu_core[1].irf;
         case 0x04000240:
-            return ((system.gpu.VRAMCNT_D << 24) | (system.gpu.VRAMCNT_C << 16) | (system.gpu.VRAMCNT_B << 8) | (system.gpu.VRAMCNT_A));
+            return ((system.gpu.vramcnt_d << 24) | (system.gpu.vramcnt_c << 16) | (system.gpu.vramcnt_b << 8) | (system.gpu.vramcnt_a));
         case 0x04000280:
             return system.maths_unit.DIVCNT;
         case 0x04000290:
@@ -562,15 +562,15 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
             system.cpu_core[1].ime = data & 0x1;
             break;
         case 0x04000240:
-            system.gpu.VRAMCNT_A = data;
-            system.gpu.MapVRAM();
+            system.gpu.vramcnt_a = data;
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000241:
-            system.gpu.VRAMCNT_B = data;
-            system.gpu.MapVRAM();
+            system.gpu.vramcnt_b = data;
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000242:
-            system.gpu.VRAMCNT_C = data;
+            system.gpu.vramcnt_c = data;
             // if vramcnt_c has an mst of 2 and is now enabled,
             // then set bit 0 of VRAMSTAT (vram bank c allocated to the arm7)
             if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
@@ -581,10 +581,10 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
                 system.gpu.VRAMSTAT &= ~1;
             }
 
-            system.gpu.MapVRAM();
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000243:
-            system.gpu.VRAMCNT_D = data;
+            system.gpu.vramcnt_d = data;
             // if vramcnt_d has an mst of 2 and is now enabled,
             // then set bit 0 of VRAMSTAT (vram bank d allocated to the arm7)
             if ((data & (1 << 7)) && ((data & 0x7) == 2)) {
@@ -595,30 +595,30 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
                 system.gpu.VRAMSTAT &= ~(1 << 1);
             }
 
-            system.gpu.MapVRAM();
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000244:
-            system.gpu.VRAMCNT_E = data;
-            system.gpu.MapVRAM();
+            system.gpu.vramcnt_e = data;
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000245:
-            system.gpu.VRAMCNT_F = data;
-            system.gpu.MapVRAM();
+            system.gpu.vramcnt_f = data;
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000246:
-            system.gpu.VRAMCNT_G = data;
-            system.gpu.MapVRAM();
+            system.gpu.vramcnt_g = data;
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000247:
             system.WriteWRAMCNT(data);
             break;
         case 0x04000248:
-            system.gpu.VRAMCNT_H = data;
-            system.gpu.MapVRAM();
+            system.gpu.vramcnt_h = data;
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000249:
-            system.gpu.VRAMCNT_I = data;
-            system.gpu.MapVRAM();
+            system.gpu.vramcnt_i = data;
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000300:
             system.POSTFLG9 = data;
@@ -837,10 +837,10 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             system.cpu_core[1].ime = data & 0x1;
             break;
         case 0x04000248:
-            system.gpu.VRAMCNT_H = data & 0xFF;
-            system.gpu.VRAMCNT_I = data >> 8;
+            system.gpu.vramcnt_h = data & 0xFF;
+            system.gpu.vramcnt_i = data >> 8;
 
-            system.gpu.MapVRAM();
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000280:
             system.maths_unit.DIVCNT = data;
@@ -1232,21 +1232,21 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             system.cpu_core[1].irf &= ~data;
             break;
         case 0x04000240:
-            system.gpu.VRAMCNT_A = data & 0xFF;
-            system.gpu.VRAMCNT_B = (data >> 8) & 0xFF;
-            system.gpu.VRAMCNT_C = (data >> 16) & 0xFF;
-            system.gpu.VRAMCNT_D = (data >> 24) & 0xFF;
+            system.gpu.vramcnt_a = data & 0xFF;
+            system.gpu.vramcnt_b = (data >> 8) & 0xFF;
+            system.gpu.vramcnt_c = (data >> 16) & 0xFF;
+            system.gpu.vramcnt_d = (data >> 24) & 0xFF;
 
-            system.gpu.MapVRAM();
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000244:
             // sets vramcnt_e, vramcnt_f, vramcnt_g and wramcnt
-            system.gpu.VRAMCNT_E = data & 0xFF;
-            system.gpu.VRAMCNT_F = (data >> 8) & 0xFF;
-            system.gpu.VRAMCNT_G = (data >> 16) & 0xFF;
+            system.gpu.vramcnt_e = data & 0xFF;
+            system.gpu.vramcnt_f = (data >> 8) & 0xFF;
+            system.gpu.vramcnt_g = (data >> 16) & 0xFF;
             system.WriteWRAMCNT((data >> 24) & 0xFF);
 
-            system.gpu.MapVRAM();
+            system.gpu.update_vram_mapping();
             break;
         case 0x04000280:
             system.maths_unit.DIVCNT = data;

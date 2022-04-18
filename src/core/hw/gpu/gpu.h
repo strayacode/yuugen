@@ -25,10 +25,6 @@ public:
     auto GetFramebuffer(Screen screen) -> const u32*;
     void Reset();
 
-    auto GetVRAMCNTMST(u8 vramcnt) -> int;
-    auto GetVRAMCNTOffset(u8 vramcnt) -> int;
-    auto GetVRAMCNTEnabled(u8 vramcnt) -> bool; 
-
     void WriteDISPSTAT7(u16 data);
     void WriteDISPSTAT9(u16 data);
 
@@ -59,21 +55,20 @@ public:
     void RenderScanlineStart();
     void RenderScanlineFinish();
 
-    void MapVRAM();
-
+    void update_vram_mapping();
     void reset_vram_mapping();
 
     u16 POWCNT1;
     
-    u8 VRAMCNT_A;
-    u8 VRAMCNT_B;
-    u8 VRAMCNT_C;
-    u8 VRAMCNT_D;
-    u8 VRAMCNT_E;
-    u8 VRAMCNT_F;
-    u8 VRAMCNT_G;
-    u8 VRAMCNT_H;
-    u8 VRAMCNT_I;
+    u8 vramcnt_a;
+    u8 vramcnt_b;
+    u8 vramcnt_c;
+    u8 vramcnt_d;
+    u8 vramcnt_e;
+    u8 vramcnt_f;
+    u8 vramcnt_g;
+    u8 vramcnt_h;
+    u8 vramcnt_i;
 
     u8 VRAMSTAT;
 
@@ -91,14 +86,6 @@ public:
     std::array<u8, 0x8000> bank_h;
     std::array<u8, 0x4000> bank_i;
 
-    VRAMRegion<656> lcdc;
-    VRAMRegion<512> bga;
-    VRAMRegion<256> obja;
-    VRAMRegion<128> bgb;
-    VRAMRegion<128> objb;
-    VRAMRegion<128> arm7_vram;
-    VRAMRegion<128> texture_data;
-
     GPU2D engine_a, engine_b;
 
     RenderEngine render_engine;
@@ -110,4 +97,18 @@ public:
 
     EventType scanline_start_event;
     EventType scanline_finish_event;
+
+private:
+    int get_bank_mst(u8 vramcnt);
+    int get_bank_offset(u8 vramcnt);
+    bool get_bank_enabled(u8 vramcnt);
+
+    VRAMRegion<656> lcdc;
+    VRAMRegion<512> bga;
+    VRAMRegion<256> obja;
+    VRAMRegion<128> bgb;
+    VRAMRegion<128> objb;
+    VRAMRegion<128> arm7_vram;
+    VRAMRegion<128> texture_data;
+    VRAMRegion<96> texture_palette;
 };

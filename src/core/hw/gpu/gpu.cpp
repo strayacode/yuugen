@@ -18,15 +18,15 @@ void GPU::Reset() {
 
     POWCNT1 = 0;
     VCOUNT = 0;
-    VRAMCNT_A = 0;
-    VRAMCNT_B = 0;
-    VRAMCNT_C = 0;
-    VRAMCNT_D = 0;
-    VRAMCNT_E = 0;
-    VRAMCNT_F = 0;
-    VRAMCNT_G = 0;
-    VRAMCNT_H = 0;
-    VRAMCNT_I = 0;
+    vramcnt_a = 0;
+    vramcnt_b = 0;
+    vramcnt_c = 0;
+    vramcnt_d = 0;
+    vramcnt_e = 0;
+    vramcnt_f = 0;
+    vramcnt_g = 0;
+    vramcnt_h = 0;
+    vramcnt_i = 0;
 
     VRAMSTAT = 0;
 
@@ -52,7 +52,7 @@ void GPU::Reset() {
 
     system.scheduler.AddEvent(1606, &scanline_start_event);
 
-    MapVRAM();
+    update_vram_mapping();
 }
 
 void GPU::RenderScanlineStart() {
@@ -164,26 +164,26 @@ auto GPU::GetFramebuffer(Screen screen) -> const u32* {
     }
 }
 
-auto GPU::GetVRAMCNTMST(u8 vramcnt) -> int {
+int GPU::get_bank_mst(u8 vramcnt) {
     return vramcnt & 0x7;
 }
 
-auto GPU::GetVRAMCNTOffset(u8 vramcnt) -> int {
+int GPU::get_bank_offset(u8 vramcnt) {
     return (vramcnt >> 3) & 0x3;
 }
 
-auto GPU::GetVRAMCNTEnabled(u8 vramcnt) -> bool {
+bool GPU::get_bank_enabled(u8 vramcnt) {
     return (vramcnt & (1 << 7));
 }
 
-void GPU::MapVRAM() {
+void GPU::update_vram_mapping() {
     // reset all the vram pages
     reset_vram_mapping();
 
     // we will map vram blocks in increments of 4kb
-    if (GetVRAMCNTEnabled(VRAMCNT_A)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_A);
-        switch (GetVRAMCNTMST(VRAMCNT_A)) {
+    if (get_bank_enabled(vramcnt_a)) {
+        u8 ofs = get_bank_offset(vramcnt_a);
+        switch (get_bank_mst(vramcnt_a)) {
         case 0:
             lcdc.map(bank_a.data(), 0, 32);
             break;
@@ -197,13 +197,13 @@ void GPU::MapVRAM() {
             texture_data.map(bank_a.data(), ofs * 32, 32);
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_A));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_a));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_B)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_B);
-        switch (GetVRAMCNTMST(VRAMCNT_B)) {
+    if (get_bank_enabled(vramcnt_b)) {
+        u8 ofs = get_bank_offset(vramcnt_b);
+        switch (get_bank_mst(vramcnt_b)) {
         case 0:
             lcdc.map(bank_b.data(), 32, 32);
             break;
@@ -214,16 +214,16 @@ void GPU::MapVRAM() {
             obja.map(bank_b.data(), (ofs & 0x1) * 32, 32);
             break;
         case 3:
-            // handle texture data later
+            texture_data.map(bank_b.data(), ofs * 32, 32);
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_B));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_b));
         }
     }
     
-    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_C);
-        switch (GetVRAMCNTMST(VRAMCNT_C)) {
+    if (get_bank_enabled(vramcnt_c)) {
+        u8 ofs = get_bank_offset(vramcnt_c);
+        switch (get_bank_mst(vramcnt_c)) {
         case 0:
             lcdc.map(bank_c.data(), 0x40, 32);
             break;
@@ -234,19 +234,19 @@ void GPU::MapVRAM() {
             arm7_vram.map(bank_c.data(), (ofs & 0x1) * 32, 32);
             break;
         case 3:
-            // handle texture data later
+            texture_data.map(bank_c.data(), ofs * 32, 32);
             break;
         case 4:
             bgb.map(bank_c.data(), 0, 32);
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_C));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_c));
         }
     }
     
-    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_D);
-        switch (GetVRAMCNTMST(VRAMCNT_D)) {
+    if (get_bank_enabled(vramcnt_d)) {
+        u8 ofs = get_bank_offset(vramcnt_d);
+        switch (get_bank_mst(vramcnt_d)) {
         case 0:
             lcdc.map(bank_d.data(), 0x60, 32);
             break;
@@ -257,19 +257,19 @@ void GPU::MapVRAM() {
             arm7_vram.map(bank_d.data(), (ofs & 0x1) * 32, 32);
             break;
         case 3:
-            // handle texture later
+            texture_data.map(bank_d.data(), ofs * 32, 32);
             break;
         case 4:
             objb.map(bank_d.data(), 0, 32);
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_D));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_d));
         }
     }
     
-    if (GetVRAMCNTEnabled(VRAMCNT_E)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_E);
-        switch (GetVRAMCNTMST(VRAMCNT_E)) {
+    if (get_bank_enabled(vramcnt_e)) {
+        u8 ofs = get_bank_offset(vramcnt_e);
+        switch (get_bank_mst(vramcnt_e)) {
         case 0:
             lcdc.map(bank_e.data(), 0x80, 16);
             break;
@@ -280,19 +280,19 @@ void GPU::MapVRAM() {
             obja.map(bank_e.data(), 0, 16);
             break;
         case 3:
-            // handle texture palette later
+            texture_palette.map(bank_e.data(), 0, 16);
             break;
         case 4:
             // handle extpal later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_E));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_e));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_F);
-        switch (GetVRAMCNTMST(VRAMCNT_F)) {
+    if (get_bank_enabled(vramcnt_f)) {
+        u8 ofs = get_bank_offset(vramcnt_f);
+        switch (get_bank_mst(vramcnt_f)) {
         case 0:
             lcdc.map(bank_f.data(), 0x90, 4);
             break;
@@ -303,6 +303,7 @@ void GPU::MapVRAM() {
             obja.map(bank_f.data(), (ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10, 4);
             break;
         case 3:
+            texture_palette.map(bank_f.data(), ((ofs & 0x1) + ((ofs >> 1) & 0x1) * 0x4) * 16, 4);
             break;
         case 4:
             // handle ext palette later
@@ -311,13 +312,13 @@ void GPU::MapVRAM() {
             // obj ext palette handle later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_F));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_f));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_G);
-        switch (GetVRAMCNTMST(VRAMCNT_G)) {
+    if (get_bank_enabled(vramcnt_g)) {
+        u8 ofs = get_bank_offset(vramcnt_g);
+        switch (get_bank_mst(vramcnt_g)) {
         case 0:
             lcdc.map(bank_g.data(), 0x94, 4);
             break;
@@ -328,6 +329,7 @@ void GPU::MapVRAM() {
             obja.map(bank_g.data(), (ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10, 4);
             break;
         case 3:
+            texture_palette.map(bank_g.data(), ((ofs & 0x1) + ((ofs >> 1) & 0x1) * 0x4) * 16, 4);
             break;
         case 4:
             // handle extended palette later
@@ -336,13 +338,13 @@ void GPU::MapVRAM() {
             // handle extended palette later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_G));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_g));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_H)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_H);
-        switch (GetVRAMCNTMST(VRAMCNT_H)) {
+    if (get_bank_enabled(vramcnt_h)) {
+        u8 ofs = get_bank_offset(vramcnt_h);
+        switch (get_bank_mst(vramcnt_h)) {
         case 0:
             lcdc.map(bank_h.data(), 0x98, 8);
             break;
@@ -353,13 +355,13 @@ void GPU::MapVRAM() {
             // handle extpal later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_H));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_h));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
-        u8 ofs = GetVRAMCNTOffset(VRAMCNT_I);
-        switch (GetVRAMCNTMST(VRAMCNT_I)) {
+    if (get_bank_enabled(vramcnt_i)) {
+        u8 ofs = get_bank_offset(vramcnt_i);
+        switch (get_bank_mst(vramcnt_i)) {
         case 0:
             lcdc.map(bank_i.data(), 0xA0, 4);
             break;
@@ -374,7 +376,7 @@ void GPU::MapVRAM() {
             // handle later
             break;
         default:
-            log_fatal("handle mst %d", GetVRAMCNTMST(VRAMCNT_I));
+            log_fatal("handle mst %d", get_bank_mst(vramcnt_i));
         }
     }
 }
@@ -443,26 +445,26 @@ template <typename T>
 auto GPU::ReadExtPaletteBGA(u32 addr) -> T {
     T return_value = 0;
 
-    if (GetVRAMCNTEnabled(VRAMCNT_E)) {
+    if (get_bank_enabled(vramcnt_e)) {
         // only lower 32kb are used
         // vram bank e can then hold all 4 8kb slots
-        if (in_range(0, 0x8000) && (GetVRAMCNTMST(VRAMCNT_E) == 4)) {
+        if (in_range(0, 0x8000) && (get_bank_mst(vramcnt_e) == 4)) {
             memcpy(&return_value, &bank_e[addr & 0xFFFF], sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
+    if (get_bank_enabled(vramcnt_f)) {
         // we will either access slots 0-1 or 2-3 depending on ofs
-        u32 offset = GetVRAMCNTOffset(VRAMCNT_F) & 0x1 ? 0x4000 : 0;
-        if (in_range(offset, 0x4000) && (GetVRAMCNTMST(VRAMCNT_F) == 4)) {
+        u32 offset = get_bank_offset(vramcnt_f) & 0x1 ? 0x4000 : 0;
+        if (in_range(offset, 0x4000) && (get_bank_mst(vramcnt_f) == 4)) {
             memcpy(&return_value, &bank_f[addr & 0x3FFF], sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+    if (get_bank_enabled(vramcnt_g)) {
         // we will either access slots 0-1 or 2-3 depending on ofs
-        u32 offset = GetVRAMCNTOffset(VRAMCNT_G) & 0x1 ? 0x4000 : 0;
-        if (in_range(offset, 0x4000) && (GetVRAMCNTMST(VRAMCNT_G) == 4)) {
+        u32 offset = get_bank_offset(vramcnt_g) & 0x1 ? 0x4000 : 0;
+        if (in_range(offset, 0x4000) && (get_bank_mst(vramcnt_g) == 4)) {
             memcpy(&return_value, &bank_g[addr & 0x3FFF], sizeof(T));
         }
     }
@@ -477,9 +479,9 @@ template <typename T>
 auto GPU::ReadExtPaletteBGB(u32 addr) -> T {
     T return_value = 0;
 
-    if (GetVRAMCNTEnabled(VRAMCNT_H)) {
+    if (get_bank_enabled(vramcnt_h)) {
         // vram bank h can cover all slots 0-3
-        if (in_range(0, 0x8000) && (GetVRAMCNTMST(VRAMCNT_H) == 2)) {
+        if (in_range(0, 0x8000) && (get_bank_mst(vramcnt_h) == 2)) {
             memcpy(&return_value, &bank_h[addr & 0x7FFF], sizeof(T));
         }
     }
@@ -495,15 +497,15 @@ auto GPU::ReadExtPaletteOBJA(u32 addr) -> T {
     T return_value = 0;
 
     // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
-    if (GetVRAMCNTEnabled(VRAMCNT_F)) {
-        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_F) == 5)) {
+    if (get_bank_enabled(vramcnt_f)) {
+        if (in_range(0, 0x2000) && (get_bank_mst(vramcnt_f) == 5)) {
             memcpy(&return_value, &bank_f[addr & 0x1FFF], sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_G)) {
+    if (get_bank_enabled(vramcnt_g)) {
         // we will either access slots 0-1 or 2-3 depending on ofs
-        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_G) == 5)) {
+        if (in_range(0, 0x2000) && (get_bank_mst(vramcnt_g) == 5)) {
             memcpy(&return_value, &bank_g[addr & 0x1FFF], sizeof(T));
         }
     }
@@ -519,8 +521,8 @@ auto GPU::ReadExtPaletteOBJB(u32 addr) -> T {
     T return_value = 0;
 
     // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
-    if (GetVRAMCNTEnabled(VRAMCNT_I)) {
-        if (in_range(0, 0x2000) && (GetVRAMCNTMST(VRAMCNT_I) == 3)) {
+    if (get_bank_enabled(vramcnt_i)) {
+        if (in_range(0, 0x2000) && (get_bank_mst(vramcnt_i) == 3)) {
             memcpy(&return_value, &bank_i[addr & 0x1FFF], sizeof(T));
         }
     }
@@ -534,14 +536,14 @@ template auto GPU::ReadARM7(u32 addr) -> u32;
 template <typename T>
 auto GPU::ReadARM7(u32 addr) -> T {
     T return_value = 0;
-    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
+    if (get_bank_enabled(vramcnt_c)) {
+        if (in_range(0x06000000 + (get_bank_offset(vramcnt_c) * 0x20000), 0x20000) && (get_bank_mst(vramcnt_c) == 2)) {
             memcpy(&return_value, &bank_c[addr & 0x1FFFF], sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
+    if (get_bank_enabled(vramcnt_d)) {
+        if (in_range(0x06000000 + (get_bank_offset(vramcnt_d) * 0x20000), 0x20000) && (get_bank_mst(vramcnt_d) == 2)) {
             memcpy(&return_value, &bank_d[addr & 0x1FFFF], sizeof(T));
         }
     }
@@ -554,14 +556,14 @@ template void GPU::WriteARM7(u32 addr, u16 data);
 template void GPU::WriteARM7(u32 addr, u32 data);
 template <typename T>
 void GPU::WriteARM7(u32 addr, T data) {
-    if (GetVRAMCNTEnabled(VRAMCNT_C)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_C) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_C) == 2)) {
+    if (get_bank_enabled(vramcnt_c)) {
+        if (in_range(0x06000000 + (get_bank_offset(vramcnt_c) * 0x20000), 0x20000) && (get_bank_mst(vramcnt_c) == 2)) {
             memcpy(&bank_c[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
 
-    if (GetVRAMCNTEnabled(VRAMCNT_D)) {
-        if (in_range(0x06000000 + (GetVRAMCNTOffset(VRAMCNT_D) * 0x20000), 0x20000) && (GetVRAMCNTMST(VRAMCNT_D) == 2)) {
+    if (get_bank_enabled(vramcnt_d)) {
+        if (in_range(0x06000000 + (get_bank_offset(vramcnt_d) * 0x20000), 0x20000) && (get_bank_mst(vramcnt_d) == 2)) {
             memcpy(&bank_d[addr & 0x1FFFF], &data, sizeof(T));
         }
     }
