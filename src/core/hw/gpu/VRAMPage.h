@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "common/log.h"
 #include "common/types.h"
 
@@ -10,22 +11,18 @@ public:
     }
 
     void Reset() {
-        for (int i = 0; i < 8; i++) {
-            banks[i] = nullptr;
-        }
-
-        bank_count = 0;
+        banks.clear();
     }
 
     void AddBank(u8* pointer) {
-        banks[bank_count++] = pointer; 
+        banks.push_back(pointer);
     }
 
     template <typename T>
     T Read(u32 addr) {
         T data = 0;
 
-        for (int i = 0; i < bank_count; i++) {
+        for (int i = 0; i < banks.size(); i++) {
             T bank_data = 0;
             memcpy(&bank_data, &banks[i][addr & 0xFFF], sizeof(T));
 
@@ -37,11 +34,10 @@ public:
 
     template <typename T>
     void Write(u32 addr, T data) {
-        for (int i = 0; i < bank_count; i++) {
+        for (int i = 0; i < banks.size(); i++) {
             memcpy(&banks[i][addr & 0xFFF], &data, sizeof(T));
         }
     }
 
-    std::array<u8*, 8> banks;
-    int bank_count;
+    std::vector<u8*> banks;
 };
