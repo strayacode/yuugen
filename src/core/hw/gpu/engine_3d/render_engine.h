@@ -41,4 +41,7 @@ public:
         Colour c;
         s32 w;
     };
+
+private:
+    u32 sample_texture(s32 s, s32 t);
 };

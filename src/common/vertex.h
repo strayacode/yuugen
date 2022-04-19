@@ -42,6 +42,8 @@ public:
         z = 0;
         w = 0;
         colour = {0, 0, 0};
+        s = 0;
+        t = 0;
     }
 
     s32 x;
@@ -49,4 +51,11 @@ public:
     s32 z;
     s32 w;
     Colour colour;
+
+    // texture coordinates
+    // these are signed 16 bit numbers with a 4 bit fractional
+    // part and an 11 bit integer part
+    // e.g. 1.0 = 1 << 4
+    s16 s;
+    s16 t;
 };

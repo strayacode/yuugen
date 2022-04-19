@@ -32,6 +32,7 @@ add_library(core
     hw/gpu/engine_3d/geometry_engine.h hw/gpu/engine_3d/geometry_engine.cpp
     hw/gpu/engine_3d/geometry_commands.cpp
     hw/gpu/engine_3d/Interpolator.h
+    hw/gpu/engine_3d/TextureSampler.cpp
 
     hw/dma/dma.h hw/dma/dma.cpp
     hw/input/input.h hw/input/input.cpp

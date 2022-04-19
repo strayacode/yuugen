@@ -59,6 +59,10 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
     // w values that get interpolated along slopes
     s32 w[2];
 
+    // texture coordinates that get interpolated along slopes
+    s16 s[2];
+    s16 t[2];
+
     s32 left_x0 = polygon.vertices[left].x;
     s32 left_x1 = polygon.vertices[new_left].x;
     s32 left_y0 = polygon.vertices[left].y;
@@ -137,6 +141,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         }
 
         // TODO: should we use x coordinates for x major slopes?
+        // TODO: make this cleaner
         w[0] = slope_interpolator.interpolate(
             polygon.vertices[left].w,
             polygon.vertices[new_left].w,
@@ -177,6 +182,46 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
             0
         );
 
+        s[0] = slope_interpolator.interpolate(
+            polygon.vertices[left].s,
+            polygon.vertices[new_left].s,
+            y,
+            left_y0,
+            left_y1,
+            polygon.vertices[left].w,
+            polygon.vertices[new_left].w
+        );
+
+        s[1] = slope_interpolator.interpolate(
+            polygon.vertices[right].s,
+            polygon.vertices[new_right].s,
+            y,
+            right_y0,
+            right_y1,
+            polygon.vertices[right].w,
+            polygon.vertices[new_right].w
+        );
+
+        t[0] = slope_interpolator.interpolate(
+            polygon.vertices[left].t,
+            polygon.vertices[new_left].t,
+            y,
+            left_y0,
+            left_y1,
+            polygon.vertices[left].w,
+            polygon.vertices[new_left].w
+        );
+
+        t[1] = slope_interpolator.interpolate(
+            polygon.vertices[right].t,
+            polygon.vertices[new_right].t,
+            y,
+            right_y0,
+            right_y1,
+            polygon.vertices[right].w,
+            polygon.vertices[new_right].w
+        );
+
         s32 left_span_start = left_slope.SpanStart(y);
         s32 left_span_end = left_slope.SpanEnd(y);
         s32 right_span_start = right_slope.SpanStart(y);
@@ -198,17 +243,43 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
 
         if ((y >= left_y0 && y < left_y1) && (y >= right_y0 && y < right_y1)) {
             for (int x = left_span_start; x <= right_span_end; x++) {
-                if (x >= 0 && x < 256) {
-                    Colour colour = scanline_interpolator.interpolate_colour(
-                        c[0],
-                        c[1],
-                        x,
-                        left_span_start,
-                        right_span_end,
-                        w[0],
-                        w[1]
-                    );
+                if (x < 0 || x > 255) continue;
 
+                Colour colour = scanline_interpolator.interpolate_colour(
+                    c[0],
+                    c[1],
+                    x,
+                    left_span_start,
+                    right_span_end,
+                    w[0],
+                    w[1]
+                );
+
+                s16 texcoord[2];
+
+                texcoord[0] = scanline_interpolator.interpolate(
+                    s[0],
+                    s[1],
+                    x,
+                    left_span_start,
+                    right_span_end,
+                    w[0],
+                    w[1]
+                );
+
+                texcoord[1] = scanline_interpolator.interpolate(
+                    t[0],
+                    t[1],
+                    x,
+                    left_span_start,
+                    right_span_end,
+                    w[0],
+                    w[1]
+                );
+
+                if (disp3dcnt & 0x1) {
+                    framebuffer[(y * 256) + x] = sample_texture(texcoord[0], texcoord[1]);
+                } else {
                     framebuffer[(y * 256) + x] = colour.to_u16();
                 }
             }

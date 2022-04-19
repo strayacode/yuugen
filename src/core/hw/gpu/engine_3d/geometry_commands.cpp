@@ -395,8 +395,10 @@ void GeometryEngine::SetLightColour() {
 }
 
 void GeometryEngine::SetTextureCoordinates() {
-    // handle later
-    DequeueEntry();
+    u32 parameter = DequeueEntry().parameter;
+
+    current_vertex.s = static_cast<s16>(parameter & 0xFFFF);
+    current_vertex.t = static_cast<s16>(parameter >> 16);
 }
 
 void GeometryEngine::SetRelativeVertexCoordinates() {
