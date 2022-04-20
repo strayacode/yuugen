@@ -29,7 +29,7 @@ Colour RenderEngine::sample_texture(int s, int t, u32 parameters) {
 
     switch (format) {
     case 7:
-        return Colour::from_u16(gpu->texture_data.read<u16>(0x06000000 + address + offset));
+        return Colour::from_u16(gpu->texture_data.read<u16>(0x06000000 + address + offset * 2));
     default:
         log_fatal("RenderEngine: handle texture format %d", format);
     }
