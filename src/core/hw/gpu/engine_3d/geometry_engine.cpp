@@ -51,6 +51,8 @@ void GeometryEngine::Reset() {
         busy = false;
         InterpretCommand();
     });
+
+    texture_parameters = 0;
 }
 
 u32 GeometryEngine::ReadGXSTAT() {
@@ -323,12 +325,11 @@ Matrix GeometryEngine::MultiplyMatrixMatrix(const Matrix& a, const Matrix& b) {
 }
 
 auto GeometryEngine::MultiplyVertexMatrix(const Vertex& a, const Matrix& b) -> Vertex {
-    Vertex new_vertex;
+    Vertex new_vertex = a;
     new_vertex.x = ((s64)a.x * b.field[0][0] + (s64)a.y * b.field[1][0] + (s64)a.z * b.field[2][0] + (s64)a.w * b.field[3][0]) >> 12;
     new_vertex.y = ((s64)a.x * b.field[0][1] + (s64)a.y * b.field[1][1] + (s64)a.z * b.field[2][1] + (s64)a.w * b.field[3][1]) >> 12;
     new_vertex.z = ((s64)a.x * b.field[0][2] + (s64)a.y * b.field[1][2] + (s64)a.z * b.field[2][2] + (s64)a.w * b.field[3][2]) >> 12;
     new_vertex.w = ((s64)a.x * b.field[0][3] + (s64)a.y * b.field[1][3] + (s64)a.z * b.field[2][3] + (s64)a.w * b.field[3][3]) >> 12;
-    new_vertex.colour = a.colour;
 
     return new_vertex;
 }
@@ -407,6 +408,7 @@ void GeometryEngine::AddPolygon() {
     int size = 3 + (static_cast<int>(polygon_type) & 0x1);
     current_polygon.size = size;
     current_polygon.vertices = &vertex_ram[vertex_ram_size - size];
+    current_polygon.texture_parameters = texture_parameters;
     polygon_ram[polygon_ram_size++] = current_polygon;
 }
 
@@ -425,14 +427,12 @@ u32 GeometryEngine::ReadVectorMatrix(u32 addr) {
 }
 
 Vertex GeometryEngine::NormaliseVertex(Vertex vertex) {
-    Vertex render_vertex;
+    Vertex render_vertex = vertex;
 
     if (vertex.w != 0) {
         render_vertex.x = (( vertex.x * 128) / vertex.w) + 128;
         render_vertex.y = ((-vertex.y * 96)  / vertex.w) + 96;
     }
 
-    render_vertex.colour = vertex.colour;
-    render_vertex.w = vertex.w;
     return render_vertex;
 }

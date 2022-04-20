@@ -22,7 +22,7 @@ public:
 
         T data = 0;
 
-        for (int i = 0; i < pages[page_index].banks.size(); i++) {
+        for (u64 i = 0; i < pages[page_index].banks.size(); i++) {
             T bank_data = 0;
             memcpy(&bank_data, &pages[page_index].banks[i][addr & 0xFFF], sizeof(T));
 
@@ -38,7 +38,7 @@ public:
         u32 offset = addr - (region * 0x100000) - 0x06000000;
         int page_index = offset >> 12;
 
-        for (int i = 0; i < pages[page_index].banks.size(); i++) {
+        for (u64 i = 0; i < pages[page_index].banks.size(); i++) {
             memcpy(&pages[page_index].banks[i][addr & 0xFFF], &data, sizeof(T));
         }
     }

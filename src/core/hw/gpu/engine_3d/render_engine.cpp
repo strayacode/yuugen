@@ -1,4 +1,3 @@
-#include "common/slope.h"
 #include "core/hw/gpu/engine_3d/render_engine.h"
 #include "core/hw/gpu/engine_3d/Interpolator.h"
 #include "core/hw/gpu/gpu.h"
@@ -238,6 +237,8 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
         if (left_span_start > right_span_end) {
             std::swap(left_span_start, right_span_end);
             std::swap(c[0], c[1]);
+            std::swap(s[0], s[1]);
+            std::swap(t[0], t[1]);
             // std::swap(w[0], w[1]);
         }
 
@@ -278,7 +279,7 @@ void RenderEngine::RenderPolygon(Polygon& polygon) {
                 );
 
                 if (disp3dcnt & 0x1) {
-                    framebuffer[(y * 256) + x] = sample_texture(texcoord[0], texcoord[1]);
+                    framebuffer[(y * 256) + x] = sample_texture(texcoord[0] >> 4, texcoord[1] >> 4, polygon.texture_parameters).to_u16();
                 } else {
                     framebuffer[(y * 256) + x] = colour.to_u16();
                 }

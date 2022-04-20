@@ -169,7 +169,8 @@ void GeometryEngine::SwapBuffers() {
 }
 
 void GeometryEngine::SetTextureParameters() {
-    DequeueEntry();
+    u32 parameter = DequeueEntry().parameter;
+    texture_parameters = parameter;
 }
 
 void GeometryEngine::SetPolygonAttributes() {
@@ -335,10 +336,8 @@ void GeometryEngine::EndVertexList() {
 
 void GeometryEngine::SetVertexColour() {
     u32 parameter = DequeueEntry().parameter & 0x7FFF;
-    Colour colour;
     
-    colour.from_u16(parameter);
-    current_vertex.colour = colour;
+    current_vertex.colour = Colour::from_u16(parameter);
 }
 
 void GeometryEngine::AddVertex16() {

@@ -6,10 +6,7 @@
 #include <memory>
 #include <vector>
 #include "common/types.h"
-#include "common/matrix.h"
-#include "common/vertex.h"
-#include "common/polygon.h"
-#include "common/matrix_stack.h"
+#include "common/GPUTypes.h"
 #include "core/scheduler/scheduler.h"
 
 struct Entry {
@@ -156,4 +153,5 @@ public:
     EventType geometry_command_event;
 
     u16 disp_1dot_depth;
+    u32 texture_parameters;
 };

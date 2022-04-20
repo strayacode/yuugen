@@ -98,6 +98,9 @@ public:
     EventType scanline_start_event;
     EventType scanline_finish_event;
 
+    VRAMRegion<128> texture_data;
+    VRAMRegion<96> texture_palette;
+
 private:
     int get_bank_mst(u8 vramcnt);
     int get_bank_offset(u8 vramcnt);
@@ -109,6 +112,4 @@ private:
     VRAMRegion<128> bgb;
     VRAMRegion<128> objb;
     VRAMRegion<128> arm7_vram;
-    VRAMRegion<128> texture_data;
-    VRAMRegion<96> texture_palette;
 };

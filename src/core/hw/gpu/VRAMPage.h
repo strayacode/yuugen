@@ -22,7 +22,7 @@ public:
     T Read(u32 addr) {
         T data = 0;
 
-        for (int i = 0; i < banks.size(); i++) {
+        for (u64 i = 0; i < banks.size(); i++) {
             T bank_data = 0;
             memcpy(&bank_data, &banks[i][addr & 0xFFF], sizeof(T));
 
@@ -34,7 +34,7 @@ public:
 
     template <typename T>
     void Write(u32 addr, T data) {
-        for (int i = 0; i < banks.size(); i++) {
+        for (u64 i = 0; i < banks.size(); i++) {
             memcpy(&banks[i][addr & 0xFFF], &data, sizeof(T));
         }
     }

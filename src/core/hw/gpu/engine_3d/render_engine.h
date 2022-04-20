@@ -1,8 +1,7 @@
 #pragma once
 
 #include "common/types.h"
-#include "common/vertex.h"
-#include "common/polygon.h"
+#include "common/GPUTypes.h"
 
 class GPU;
 
@@ -43,5 +42,5 @@ public:
     };
 
 private:
-    u32 sample_texture(s32 s, s32 t);
+    Colour sample_texture(int s, int t, u32 parameters);
 };
