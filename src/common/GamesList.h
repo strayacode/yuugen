@@ -14,7 +14,10 @@ public:
 
     struct Entry {
         std::string path;
+
+        // TODO: change this to title
         std::string file_name;
+        
         std::string region;
         std::string size;
         std::string game_code;

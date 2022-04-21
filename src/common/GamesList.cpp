@@ -1,6 +1,8 @@
 #include <fstream>
+#include <algorithm>
 #include "common/GamesList.h"
 #include "common/FileSystem.h"
+#include "common/StringHelpers.h"
 #include "common/Memory.h"
 #include "common/log.h"
 #include "common/types.h"
@@ -16,6 +18,13 @@ void GamesList::initialise() {
     for (const std::string& path : paths) {
         create_entry(path);
     }
+
+    // sort entries alphabetically by file name
+    std::sort(entries.begin(), entries.end(), [](Entry a, Entry b) {
+        int result = Common::to_lower(a.file_name).compare(Common::to_lower(b.file_name));
+
+        return result < 0;
+    });
 }
 
 void GamesList::create_entry(const std::string& path) {
