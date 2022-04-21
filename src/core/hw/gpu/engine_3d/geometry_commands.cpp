@@ -170,7 +170,7 @@ void GeometryEngine::SwapBuffers() {
 
 void GeometryEngine::SetTextureParameters() {
     u32 parameter = DequeueEntry().parameter;
-    texture_parameters = parameter;
+    texture_attributes.parameters = parameter;
 }
 
 void GeometryEngine::SetPolygonAttributes() {
@@ -369,8 +369,8 @@ void GeometryEngine::SetShininess() {
 }
 
 void GeometryEngine::SetTexturePaletteAddress() {
-    // handle later
-    DequeueEntry();
+    u32 parameter = DequeueEntry().parameter;
+    texture_attributes.palette_base = parameter & 0x1FFF;
 }
 
 void GeometryEngine::SetLightVector() {

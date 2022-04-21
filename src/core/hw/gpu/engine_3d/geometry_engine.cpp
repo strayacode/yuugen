@@ -52,7 +52,8 @@ void GeometryEngine::Reset() {
         InterpretCommand();
     });
 
-    texture_parameters = 0;
+    texture_attributes.parameters = 0;
+    texture_attributes.palette_base = 0;
 }
 
 u32 GeometryEngine::ReadGXSTAT() {
@@ -408,7 +409,7 @@ void GeometryEngine::AddPolygon() {
     int size = 3 + (static_cast<int>(polygon_type) & 0x1);
     current_polygon.size = size;
     current_polygon.vertices = &vertex_ram[vertex_ram_size - size];
-    current_polygon.texture_parameters = texture_parameters;
+    current_polygon.texture_attributes = texture_attributes;
     polygon_ram[polygon_ram_size++] = current_polygon;
 }
 

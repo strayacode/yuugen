@@ -153,5 +153,7 @@ public:
     EventType geometry_command_event;
 
     u16 disp_1dot_depth;
-    u32 texture_parameters;
+
+    // texture attributes per polygon
+    TextureAttributes texture_attributes;
 };

@@ -42,5 +42,5 @@ public:
     };
 
 private:
-    Colour sample_texture(int s, int t, u32 parameters);
+    Colour sample_texture(int s, int t, TextureAttributes attributes);
 };

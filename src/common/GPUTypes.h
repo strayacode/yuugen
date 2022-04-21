@@ -94,6 +94,11 @@ public:
     s16 t;
 };
 
+struct TextureAttributes {
+    u32 parameters = 0;
+    u32 palette_base = 0;
+};
+
 class Polygon {
 public:
     // returns the index of the next vertex
@@ -115,7 +120,7 @@ public:
     }
 
     Vertex* vertices = nullptr;
-    u32 texture_parameters = 0;
+    TextureAttributes texture_attributes;
     int size = 0;
 };
 

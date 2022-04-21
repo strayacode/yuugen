@@ -268,7 +268,6 @@ void GPU::update_vram_mapping() {
     }
     
     if (get_bank_enabled(vramcnt_e)) {
-        u8 ofs = get_bank_offset(vramcnt_e);
         switch (get_bank_mst(vramcnt_e)) {
         case 0:
             lcdc.map(bank_e.data(), 0x80, 16);
@@ -343,7 +342,6 @@ void GPU::update_vram_mapping() {
     }
 
     if (get_bank_enabled(vramcnt_h)) {
-        u8 ofs = get_bank_offset(vramcnt_h);
         switch (get_bank_mst(vramcnt_h)) {
         case 0:
             lcdc.map(bank_h.data(), 0x98, 8);
@@ -360,7 +358,6 @@ void GPU::update_vram_mapping() {
     }
 
     if (get_bank_enabled(vramcnt_i)) {
-        u8 ofs = get_bank_offset(vramcnt_i);
         switch (get_bank_mst(vramcnt_i)) {
         case 0:
             lcdc.map(bank_i.data(), 0xA0, 4);
