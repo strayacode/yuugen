@@ -7,7 +7,6 @@
 #include "Core/hw/cartridge/cartridge.h"
 #include "Core/hw/spi/spi.h"
 #include "Core/hw/cp15/cp15.h"
-#include "Core/hw/gpu/gpu.h"
 #include "Core/hw/dma/dma.h"
 #include "Core/hw/input/input.h"
 #include "Core/hw/ipc/ipc.h"
@@ -16,6 +15,7 @@
 #include "Core/hw/rtc/rtc.h"
 #include "Core/hw/maths_unit/maths_unit.h"
 #include "Core/hw/wifi/wifi.h"
+#include "VideoCommon/GPU.h"
 
 enum class CPUCoreType {
     Interpreter,
@@ -40,7 +40,6 @@ public:
     Scheduler scheduler;
     SPI spi;
     CP15 cp15;
-    GPU gpu;
     DMA dma[2];
     Input input;
     IPC ipc;
@@ -49,6 +48,7 @@ public:
     RTC rtc;
     MathsUnit maths_unit;
     Wifi wifi;
+    GPU gpu;
 
     // TODO: combine arm7 and arm9 memory into singular memory class including the shared memory
     ARM7Memory arm7_memory;

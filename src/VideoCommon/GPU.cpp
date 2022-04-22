@@ -1,5 +1,20 @@
 #include "Common/Log.h"
 #include "VideoCommon/GPU.h"
+#include "Core/system.h"
+
+void GPU(System& system) : system(system) {
+    scanline_start_event = system.scheduler.RegisterEvent("Scanline Start", [this]() {
+        render_scanline_start();
+        system.scheduler.AddEvent(524, &scanline_end_event);
+    });
+
+    scanline_end_event = system.scheduler.RegisterEvent("Scanline End", [this]() {
+        render_scanline_end();
+        system.scheduler.AddEvent(1606, &scanline_start_event);
+    });
+
+    system.scheduler.AddEvent(1606, &scanline_start_event);
+}
 
 void GPU::reset() {
     powcnt1 = 0;
@@ -23,4 +38,12 @@ const u32* GPU::get_framebuffer(Screen screen) {
     } else {
         return renderer_2d[1]->get_framebuffer()
     }
+}
+
+void GPU::render_scanline_start() {
+
+}
+
+void GPU::render_scanline_end() {
+
 }

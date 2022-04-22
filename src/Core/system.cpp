@@ -2,9 +2,9 @@
 
 System::System() 
     : cartridge(*this), spi(*this), cp15(*this),
-    gpu(*this), dma {DMA(*this, 0), DMA(*this, 1)}, 
+    dma {DMA(*this, 0), DMA(*this, 1)}, 
     ipc(*this), timers {Timers(*this, 0), Timers(*this, 1)}, 
-    spu(*this), arm7_memory(*this), arm9_memory(*this),
+    spu(*this), gpu(*this), arm7_memory(*this), arm9_memory(*this),
     cpu_core {CPUCore(arm7_memory, CPUArch::ARMv4, nullptr), CPUCore(arm9_memory, CPUArch::ARMv5, &cp15)} {
     SetCPUCoreType(CPUCoreType::Interpreter);
 }
@@ -17,7 +17,7 @@ void System::Reset() {
     scheduler.Reset();
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
-    gpu.Reset();
+    gpu.reset();
     dma[0].Reset();
     dma[1].Reset();
     timers[0].Reset();

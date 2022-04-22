@@ -15,4 +15,4 @@ find_package(GLEW REQUIRED)
 
 set_target_properties(videocommon PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(videocommon PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/.." ${GLEW_INCLUDE_DIRS})
-target_link_libraries(videocommon common OpenGL::GL GLEW::GLEW)
+target_link_libraries(videocommon core common OpenGL::GL GLEW::GLEW)
