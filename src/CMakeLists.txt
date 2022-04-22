@@ -2,7 +2,7 @@ set(FRONTEND_SDL OFF)
 set(FRONTEND_QT OFF)
 set(FRONTEND_IMGUI ON)
 
-add_subdirectory(common)
+add_subdirectory(Common)
 add_subdirectory(core)
 add_subdirectory(yuugen_common)
 add_subdirectory(audio_common)

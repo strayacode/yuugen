@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/types.h>
-#include <common/log.h>
+#include "Common/Types.h"
+#include "Common/Log.h"
 #include <core/hw/cartridge/nds_loader.h>
 #include <string.h>
 #include <string>

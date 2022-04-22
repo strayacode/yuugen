@@ -1,6 +1,6 @@
 #include <cmath>
-#include "common/FileSystem.h"
-#include "common/format.h"
+#include "Common/FileSystem.h"
+#include "Common/format.h"
 
 namespace FileSystem {
 

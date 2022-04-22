@@ -1,8 +1,8 @@
 #pragma once
 
-#include <common/types.h>
-#include <common/log.h>
-#include <common/memory_helpers.h>
+#include "Common/Types.h"
+#include "Common/Log.h"
+#include "Common/memory_helpers.h"
 #include <string.h>
 
 #define COLOUR_TRANSPARENT 0x8000

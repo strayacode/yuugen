@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string.h>
-#include "common/types.h"
+#include "Common/Types.h"
 
 namespace Common {
 

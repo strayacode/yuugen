@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/log.h>
-#include <common/types.h>
+#include "Common/Log.h"
+#include "Common/Types.h"
 #include <core/hw/cartridge/backup/generic_backup.h>
 #include <vector>
 #include <fstream>

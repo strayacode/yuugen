@@ -1,9 +1,9 @@
 #pragma once
 
 #include <core/arm/memory_base.h>
-#include <common/memory_helpers.h>
-#include <common/types.h>
-#include <common/log.h>
+#include "Common/memory_helpers.h"
+#include "Common/Types.h"
+#include "Common/Log.h"
 
 class System;
 

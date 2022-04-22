@@ -1,8 +1,8 @@
 #pragma once
 
 #include <algorithm>
-#include "common/types.h"
-#include "common/log.h"
+#include "Common/Types.h"
+#include "Common/Log.h"
 
 class Matrix {
 public:

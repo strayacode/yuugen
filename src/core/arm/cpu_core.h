@@ -1,8 +1,8 @@
 #pragma once
 
 #include <array>
-#include "common/arithmetic.h"
-#include "common/log_file.h"
+#include "Common/arithmetic.h"
+#include "Common/log_file.h"
 #include "core/arm/cpu_registers.h"
 #include "core/arm/memory_base.h"
 #include "core/arm/Decoder/Decoder.h"

@@ -1,5 +1,5 @@
 #include <unordered_map>
-#include "common/log.h"
+#include "Common/Log.h"
 #include "core/hw/gpu/engine_3d/geometry_engine.h"
 #include "core/hw/gpu/gpu.h"
 #include "core/core.h"

@@ -2,7 +2,7 @@
 
 #include <QWidget>
 #include <QPaintEvent>
-#include <common/log.h>
+#include "Common/Log.h"
 
 class Core;
 

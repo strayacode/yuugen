@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <cctype>
-#include "common/StringHelpers.h"
+#include "Common/StringHelpers.h"
 
 namespace Common {
 

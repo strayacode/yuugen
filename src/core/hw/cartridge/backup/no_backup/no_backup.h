@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-#include "common/log.h"
-#include "common/types.h"
+#include "Common/Log.h"
+#include "Common/Types.h"
 #include "core/hw/cartridge/backup/generic_backup.h"
 
 class NoBackup : public GenericBackup {

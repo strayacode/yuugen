@@ -1,6 +1,6 @@
 #include <algorithm>
-#include "common/log.h"
-#include "common/types.h"
+#include "Common/Log.h"
+#include "Common/Types.h"
 #include "core/hw/gpu/engine_3d/render_engine.h"
 #include "core/hw/gpu/gpu.h"
 

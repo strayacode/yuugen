@@ -1,7 +1,7 @@
-#include "common/types.h"
-#include "common/format.h"
-#include "common/arithmetic.h"
-#include "common/log.h"
+#include "Common/Types.h"
+#include "Common/format.h"
+#include "Common/arithmetic.h"
+#include "Common/Log.h"
 #include "core/arm/Disassembler/Disassembler.h"
 
 std::string Disassembler::arm_branch_link_maybe_exchange(u32 instruction) {

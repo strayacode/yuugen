@@ -1,4 +1,4 @@
-#include "common/log.h"
+#include "Common/Log.h"
 #include "core/hw/ipc/ipc.h"
 #include "core/core.h"
 

@@ -5,8 +5,8 @@
 #include <array>
 #include <memory>
 #include <vector>
-#include "common/types.h"
-#include "common/GPUTypes.h"
+#include "Common/Types.h"
+#include "Common/GPUTypes.h"
 #include "core/scheduler/scheduler.h"
 
 struct Entry {

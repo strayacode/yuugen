@@ -1,5 +1,5 @@
 #include <algorithm>
-#include <common/log.h>
+#include "Common/Log.h"
 #include <string.h>
 #include <core/hw/cp15/cp15.h>
 #include <core/core.h>

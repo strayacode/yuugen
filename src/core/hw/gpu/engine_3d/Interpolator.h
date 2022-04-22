@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/GPUTypes.h"
+#include "Common/GPUTypes.h"
 
 // an interpolate which does perspective correct and linear interpolation
 // for colour and texture coordinates

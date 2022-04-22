@@ -1,5 +1,5 @@
 #include <ctime>
-#include <common/log.h>
+#include "Common/Log.h"
 #include <core/hw/rtc/rtc.h>
 
 void RTC::Reset() {

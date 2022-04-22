@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "common/log.h"
-#include "common/types.h"
+#include "Common/Log.h"
+#include "Common/Types.h"
 
 class VRAMPage {
 public:

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/types.h>
+#include "Common/Types.h"
 
 struct GenericBackup {
     virtual auto Transfer(u8 data, u32 write_count) -> u8 = 0;

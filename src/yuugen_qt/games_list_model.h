@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include <common/types.h>
+#include "Common/Types.h"
 
 enum class ColumnType {
     Title = 0,

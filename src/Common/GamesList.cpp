@@ -1,11 +1,11 @@
 #include <fstream>
 #include <algorithm>
-#include "common/GamesList.h"
-#include "common/FileSystem.h"
-#include "common/StringHelpers.h"
-#include "common/Memory.h"
-#include "common/log.h"
-#include "common/types.h"
+#include "Common/GamesList.h"
+#include "Common/FileSystem.h"
+#include "Common/StringHelpers.h"
+#include "Common/Memory.h"
+#include "Common/Log.h"
+#include "Common/Types.h"
 
 namespace Common {
 

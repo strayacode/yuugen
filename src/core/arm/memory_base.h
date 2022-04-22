@@ -5,8 +5,8 @@
 #include <fstream>
 #include <string.h>
 #include <assert.h>
-#include <common/types.h>
-#include <common/log.h>
+#include "Common/Types.h"
+#include "Common/Log.h"
 
 // this is a base class
 // which is used by the arm7

@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <common/log.h>
+#include "Common/Log.h"
 
 struct ConfigEntry {
     std::string field;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/types.h"
-#include "common/GPUTypes.h"
+#include "Common/Types.h"
+#include "Common/GPUTypes.h"
 
 class GPU;
 
@@ -32,6 +32,7 @@ public:
     int polygon_ram_size;
 
     u32 framebuffer[256 * 192];
+    u32 depth_buffer[256 * 192];
 
     GPU* gpu;
 

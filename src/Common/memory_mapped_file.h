@@ -9,8 +9,8 @@
 #endif
 
 #include <string>
-#include <common/log.h>
-#include <common/types.h>
+#include "Common/Log.h"
+#include "Common/Types.h"
 
 // a class which provides functionality to have a file memory mapped.
 // this allows the kernel to only read data from a file when it's required,

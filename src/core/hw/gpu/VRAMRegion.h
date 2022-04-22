@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include "common/types.h"
+#include "Common/Types.h"
 #include "core/hw/gpu/VRAMPage.h"
 
 // size template gets specified as number of kbs

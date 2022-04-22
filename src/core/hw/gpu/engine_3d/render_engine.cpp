@@ -13,12 +13,14 @@ void RenderEngine::Reset() {
     fog_colour = 0;
     fog_offset = 0;
     alpha_test_ref = 0;
-    memset(framebuffer, 0, 256 * 192 * sizeof(u32));
     polygon_ram_size = 0;
 }
 
 void RenderEngine::Render() {
-    memset(framebuffer, 0, 256 * 192 * sizeof(u32));
+    for (int i = 0; i < 256 * 192; i++) {
+        framebuffer[i] = 0;
+        depth_buffer[i] = 0;
+    }
 
     for (int i = 0; i < polygon_ram_size; i++) {
         RenderPolygon(polygon_ram[i]);

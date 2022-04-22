@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <vector>
 #include <assert.h>
-#include "common/types.h"
-#include "common/arithmetic.h"
+#include "Common/Types.h"
+#include "Common/arithmetic.h"
 
 // general idea:
 // . have an arm and thumb lut where each item contains function pointer to the function we want to call

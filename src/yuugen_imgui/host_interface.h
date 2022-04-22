@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include "common/types.h"
-#include "common/log.h"
-#include "common/GamesList.h"
+#include "Common/Types.h"
+#include "Common/Log.h"
+#include "Common/GamesList.h"
 #include "core/core.h"
 #include "core/arm/Disassembler/Disassembler.h"
 #include <memory>

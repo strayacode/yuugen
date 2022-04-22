@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string.h>
-#include <common/log.h>
-#include <common/types.h>
+#include "Common/Log.h"
+#include "Common/Types.h"
 #include <functional>
 #include <core/scheduler/scheduler.h>
 

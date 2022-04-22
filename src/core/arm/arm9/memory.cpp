@@ -1,5 +1,5 @@
 #include <cassert>
-#include <common/log.h>
+#include "Common/Log.h"
 #include <core/arm/arm9/memory.h>
 #include <core/core.h>
 

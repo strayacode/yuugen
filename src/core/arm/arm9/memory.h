@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/memory_helpers.h>
-#include <common/types.h>
+#include "Common/memory_helpers.h"
+#include "Common/Types.h"
 #include <core/arm/memory_base.h>
 
 class System;
