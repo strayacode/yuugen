@@ -9,4 +9,4 @@ public:
 
 private:
     std::array<u32, 256 * 192> framebuffer;
-}
+};

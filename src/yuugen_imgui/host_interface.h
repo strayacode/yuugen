@@ -6,6 +6,7 @@
 #include "Common/Types.h"
 #include "Common/Log.h"
 #include "Common/GamesList.h"
+#include "VideoCommon/GLWindow.h"
 #include "Core/core.h"
 #include "Core/arm/Disassembler/Disassembler.h"
 #include <memory>
@@ -76,14 +77,12 @@ public:
     ImFont* regular_font = nullptr;
     ImFont* monospace_font = nullptr;
 
-    
-
 private:
     void begin_fullscreen_window(const char *name, float padding = 0.0f);
     void end_fullscreen_window();
     
     void render_games_list_window();
-    void render_screen();
+    void render_screens();
     void reset_title();
 
     Disassembler disassembler;
@@ -96,4 +95,7 @@ private:
     WindowType window_type = WindowType::GamesList;
 
     Common::GamesList games_list;
+
+    GLWindow top_screen;
+    GLWindow bottom_screen;
 };

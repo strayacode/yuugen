@@ -5,8 +5,8 @@
 
 class Renderer2D {
 public:
-    virtual void render_scanline() = 0;
+    virtual void render_scanline(int line) = 0;
 
 private:
     std::array<u32, 256 * 192> framebuffer;
-}
+};

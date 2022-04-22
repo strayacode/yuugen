@@ -35,23 +35,10 @@ bool HostInterface::initialise() {
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 13.0f);
     SetupStyle();
-
-    // initialise texture stuff
-    glGenTextures(2, &textures[0]);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
     SDL_GetWindowSize(window, &window_width, &window_height);
 
+    top_screen.initialise(256, 192);
+    bottom_screen.initialise(256, 192);
     games_list.initialise();
 
     return true;
@@ -65,7 +52,8 @@ void HostInterface::Run() {
 }
 
 void HostInterface::Shutdown() {
-    glDeleteTextures(2, &textures[0]);
+    top_screen.destroy();
+    bottom_screen.destroy();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
@@ -281,20 +269,9 @@ void HostInterface::UpdateTitle(float fps) {
     }
 }
 
-void HostInterface::render_screen() {
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Top));
-
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_BGRA, GL_UNSIGNED_BYTE, core.system.gpu.GetFramebuffer(Screen::Bottom));
+void HostInterface::render_screens() {
+    top_screen.render(core.system.gpu.GetFramebuffer(Screen::Top));
+    bottom_screen.render(core.system.gpu.GetFramebuffer(Screen::Bottom));
 
     const double scale_x = (double)window_width / 256;
     const double scale_y = (double)window_height / 384;
@@ -304,8 +281,23 @@ void HostInterface::render_screen() {
 
     center_pos = ((double)window_width - scaled_dimensions.x) / 2;
     
-    ImGui::GetBackgroundDrawList()->AddImage((void*)(intptr_t)textures[0], ImVec2(center_pos, menubar_height), ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y), ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE);
-    ImGui::GetBackgroundDrawList()->AddImage((void*)(intptr_t)textures[1], ImVec2(center_pos, scaled_dimensions.y), ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2), ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE);
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)top_screen.get_texture(),
+        ImVec2(center_pos, menubar_height),
+        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
+    
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)bottom_screen.get_texture(),
+        ImVec2(center_pos, scaled_dimensions.y),
+        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
 }
 
 void HostInterface::SetupStyle() {
@@ -653,7 +645,7 @@ void HostInterface::render() {
         render_games_list_window();
         break;
     case WindowType::Game:
-        render_screen();
+        render_screens();
         break;
     }
 
