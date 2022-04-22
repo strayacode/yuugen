@@ -6,8 +6,8 @@
 #include "Common/Types.h"
 #include "Common/Log.h"
 #include "Common/GamesList.h"
-#include "core/core.h"
-#include "core/arm/Disassembler/Disassembler.h"
+#include "Core/core.h"
+#include "Core/arm/Disassembler/Disassembler.h"
 #include <memory>
 #include <vector>
 #include <array>

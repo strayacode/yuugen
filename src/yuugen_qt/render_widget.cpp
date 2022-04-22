@@ -1,6 +1,6 @@
 #include <QPainter>
 #include "render_widget.h"
-#include <core/core.h>
+#include "Core/core.h>
 
 RenderWidget::RenderWidget(QWidget* parent, Core& core) : QWidget(parent), core(core) {
     top_image = QImage(256, 192, QImage::Format_RGB32);

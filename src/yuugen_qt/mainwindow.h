@@ -2,7 +2,7 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
-#include <core/core.h>
+#include "Core/core.h>
 #include <string.h>
 #include <memory>
 #include <mutex>

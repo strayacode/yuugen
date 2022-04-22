@@ -1,7 +1,7 @@
 #include <QByteArray>
 #include <fstream>
 #include "games_list_model.h"
-#include <core/hw/cartridge/nds_loader.h>
+#include "Core/hw/cartridge/nds_loader.h>
 
 GamesListModel::GamesListModel(QObject *parent) : QAbstractTableModel(parent) {
     MapTitlesList("../data/dstdb.txt");

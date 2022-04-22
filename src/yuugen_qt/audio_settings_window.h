@@ -2,7 +2,7 @@
 
 #include <QDialog>
 #include <QSlider>
-#include <core/config.h>
+#include "Core/config.h>
 
 class QCheckBox;
 
