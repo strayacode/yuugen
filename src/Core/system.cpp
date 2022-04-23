@@ -11,6 +11,7 @@ System::System()
 
 void System::Reset() {
     SetCPUCoreType(CPUCoreType::Interpreter);
+    gpu.create_renderers(RendererType::Software);
 
     arm7_memory.Reset();
     arm9_memory.Reset();
@@ -32,7 +33,7 @@ void System::Reset() {
     memset(main_memory, 0, 0x400000);
     memset(shared_wram, 0, 0x8000);
 
-    WRAMCNT = 0;
+    wramcnt = 0;
     POWCNT2 = 0;
     RCNT = 0;
     HALTCNT = 0;
@@ -51,7 +52,7 @@ void System::DirectBoot() {
 
     RCNT = 0x8000;
 
-    arm9_memory.FastWrite<u8>(0x4000247, 0x03); // WRAMCNT
+    arm9_memory.FastWrite<u8>(0x4000247, 0x03); // wramcnt
     arm9_memory.FastWrite<u8>(0x4000300, 0x01); // POSTFLG (ARM9)
     arm7_memory.FastWrite<u8>(0x4000300, 0x01); // POSTFLG (ARM7)
     arm9_memory.FastWrite<u16>(0x4000304, 0x0001); // POWCNT1
@@ -113,8 +114,8 @@ void System::WriteHALTCNT(u8 data) {
     }
 }
 
-void System::WriteWRAMCNT(u8 data) {
-    WRAMCNT = data & 0x3;
+void System::write_wramcnt(u8 data) {
+    wramcnt = data & 0x3;
 
     // now we must update the memory map for the shared wram space specifically
     arm7_memory.UpdateMemoryMap(0x03000000, 0x04000000);

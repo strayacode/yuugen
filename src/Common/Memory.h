@@ -19,4 +19,8 @@ void write(void* data, int offset, T value) {
     memcpy((u8*)data + offset, &value, sizeof(T));
 }
 
+inline bool in_range(u32 start, u32 end, u32 addr) {
+    return addr >= start && addr < end;
+}
+
 }

@@ -2,7 +2,8 @@ add_library(videocommon
     GPU.h GPU.cpp
     GLWindow.h GLWindow.cpp
     GPUState.h
-    Renderer2D.h Renderer3D.h
+    Renderer2D.h Renderer2D.cpp
+    Renderer3D.h Renderer3D.cpp
     VRAMPage.h VRAMRegion.h
 )
 
@@ -13,6 +14,5 @@ endif(POLICY CMP0072)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 
-set_target_properties(videocommon PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(videocommon PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/.." ${GLEW_INCLUDE_DIRS})
-target_link_libraries(videocommon core common OpenGL::GL GLEW::GLEW)
+target_link_libraries(videocommon core common videobackends2d videobackends3d OpenGL::GL GLEW::GLEW)

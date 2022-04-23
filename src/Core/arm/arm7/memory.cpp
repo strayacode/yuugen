@@ -1,6 +1,6 @@
+#include "Common/Memory.h"
 #include "Core/core.h"
 #include "Core/arm/arm7/memory.h"
-
 
 ARM7Memory::ARM7Memory(System& system) : system(system) {
     bios = LoadBios<0x4000>("../bios/bios7.bin");
@@ -26,7 +26,7 @@ void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
             break;
         case 0x03:
             if (addr < 0x03800000) {
-                switch (system.WRAMCNT) {
+                switch (system.wramcnt) {
                 case 0:
                     read_page_table[index] = &arm7_wram[addr & 0xFFFF];
                     write_page_table[index] = &arm7_wram[addr & 0xFFFF];
@@ -59,15 +59,6 @@ void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
 }
 
 u8 ARM7Memory::ReadByte(u32 addr) {
-    if (in_range(0x04000400, 0x100)) {
-        return system.spu.ReadByte(addr);
-    }
-
-    if (in_range(0x04800000, 0x100000)) {
-        // TODO: implement wifi regs correctly
-        return 0;
-    }
-
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
@@ -75,10 +66,8 @@ u8 ARM7Memory::ReadByte(u32 addr) {
             return system.rtc.ReadRTC();
         case 0x040001C2:
             return system.spi.ReadSPIDATA();
-        case 0x04000240:
-            return system.gpu.VRAMSTAT;
         case 0x04000241:
-            return system.WRAMCNT;
+            return system.wramcnt;
         case 0x04000300:
             return system.POSTFLG7;
         case 0x04000501:
@@ -107,18 +96,9 @@ u8 ARM7Memory::ReadByte(u32 addr) {
 u16 ARM7Memory::ReadHalf(u32 addr) {
     u16 return_value = 0;
 
-    if (in_range(0x04800000, 0x100000)) {
-        // TODO: implement wifi regs correctly
-        return 0;
-    }
-
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
-        case 0x04000004:
-            return system.gpu.DISPSTAT7;
-        case 0x04000006:
-            return system.gpu.VCOUNT;
         case 0x040000BA:
             return system.dma[0].ReadDMACNT_H(0);
         case 0x040000C6:
@@ -198,9 +178,6 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         default:
             log_fatal("[ARM7] Undefined 16-bit io read %08x", addr);
         }
-    case 0x06:
-        return_value = system.gpu.ReadARM7<u16>(addr);
-        break;
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -217,22 +194,11 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
 }
 
 u32 ARM7Memory::ReadWord(u32 addr) {
-    if (in_range(0x04000400, 0x100)) {
-        return system.spu.ReadWord(addr);
-    }
-
-    if (in_range(0x04800000, 0x100000)) {
-        // TODO: implement wifi regs correctly
-        return 0;
-    }
-
     u32 return_value = 0;
 
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
-        case 0x04000004:
-            return system.gpu.VCOUNT;
         case 0x040000B8:
             return system.dma[0].ReadDMACNT(0);
         case 0x040000DC:
@@ -259,8 +225,6 @@ u32 ARM7Memory::ReadWord(u32 addr) {
             log_fatal("[ARM7] Undefined 32-bit io read %08x", addr);
         }
         break;
-    case 0x06:
-        return system.gpu.ReadARM7<u32>(addr);
     default:
         log_fatal("handle %08x", addr);
     }
@@ -269,17 +233,6 @@ u32 ARM7Memory::ReadWord(u32 addr) {
 }
 
 void ARM7Memory::WriteByte(u32 addr, u8 data) {
-    if (in_range(0x04000400, 0x100)) {
-        // write to an spu channel
-        system.spu.WriteByte(addr, data);
-        return;
-    }
-
-    if (in_range(0x04800000, 0x100000)) {
-        // TODO: implement wifi regs correctly
-        return;
-    }
-
     switch (addr >> 24) {
     case 0x00:
         // ignore all bios writes
@@ -338,35 +291,18 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
             log_fatal("[ARM7] Undefined 8-bit io write %08x = %08x", addr, data);
         }
         break;
-    case 0x06:
-        system.gpu.WriteARM7<u8>(addr, data);
-        break;
     default:
         log_fatal("[ARM7] Undefined 8-bit write %08x = %08x", addr, data);
     }
 }
 
 void ARM7Memory::WriteHalf(u32 addr, u16 data) {
-    if (in_range(0x04000400, 0x100)) {
-        // write to an spu channel
-        system.spu.WriteHalf(addr, data);
-        return;
-    }
-
-    if (in_range(0x04800000, 0x100000)) {
-        // TODO: implement wifi regs correctly
-        return;
-    }
-
     switch (addr >> 24) {
     case 0x00:
         // ignore all bios writes
         break;
     case 0x04:
         switch (addr) {
-        case 0x04000004:
-            system.gpu.WriteDISPSTAT7(data);
-            break;
         case 0x040000BA:
             system.dma[0].WriteDMACNT_H(0, data);
             break;
@@ -511,17 +447,6 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
 }
 
 void ARM7Memory::WriteWord(u32 addr, u32 data) {
-    if (in_range(0x04000400, 0x100)) {
-        // write to an spu channel
-        system.spu.WriteWord(addr, data);
-        return;
-    }
-
-    if (in_range(0x04800000, 0x100000)) {
-        // TODO: implement wifi regs correctly
-        return;
-    }
-
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
@@ -612,9 +537,6 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
         default:
             log_warn("[ARM7] Undefined 32-bit io write %08x = %08x", addr, data);
         }
-        break;
-    case 0x06:
-        system.gpu.WriteARM7<u32>(addr, data);
         break;
     case 0x08: case 0x09:
         // for now do nothing lol

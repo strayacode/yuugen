@@ -4,7 +4,6 @@
 #include <array>
 #include "Common/Log.h"
 #include "Common/Types.h"
-#include "Common/memory_helpers.h"
 #include "Core/hw/gpu/engine_2d/gpu_2d.h"
 #include "Core/hw/gpu/engine_3d/render_engine.h"
 #include "Core/hw/gpu/engine_3d/geometry_engine.h"

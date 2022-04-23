@@ -31,7 +31,7 @@ public:
     void SetGamePath(std::string path);
     void RunFrame();
     void WriteHALTCNT(u8 data);
-    void WriteWRAMCNT(u8 data);
+    void write_wramcnt(u8 data);
     bool CartridgeAccessRights();
     void SetCPUCoreType(CPUCoreType type);
     std::string GetCPUCoreType();
@@ -59,7 +59,7 @@ public:
     u8 main_memory[0x400000] = {};
     u8 shared_wram[0x8000] = {};
 
-    u8 WRAMCNT;
+    u8 wramcnt;
     u8 POWCNT2;
     u16 RCNT;
     u8 HALTCNT;

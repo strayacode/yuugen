@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string.h>
 #include "Common/Log.h"
 #include "Common/Types.h"
 

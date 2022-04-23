@@ -34,8 +34,6 @@ public:
     
     // the arch argument specifies whether to render window for arm7 or arm9
     void ARMWindow(CPUArch arch);
-    void GPUWindow();
-    void GPU2DWindow();
     void SchedulerWindow();
     void DMAWindow();
     void InputSettingsWindow();
@@ -59,8 +57,6 @@ public:
     bool cartridge_window = false;
     bool arm7_window = false;
     bool arm9_window = false;
-    bool gpu_window = false;
-    bool gpu_2d_window = false;
     bool scheduler_window = false;
     bool dma_window = false;
     bool input_settings_window = false;

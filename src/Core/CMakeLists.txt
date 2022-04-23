@@ -21,18 +21,6 @@ add_library(core
     hw/spi/spi.h hw/spi/spi.cpp
     scheduler/scheduler.h scheduler/scheduler.cpp
     hw/cp15/cp15.h hw/cp15/cp15.cpp
-    hw/gpu/gpu.h hw/gpu/gpu.cpp
-    hw/gpu/VRAMPage.h hw/gpu/VRAMRegion.h
-    hw/gpu/engine_2d/gpu_2d.h hw/gpu/engine_2d/gpu_2d.cpp
-    hw/gpu/engine_2d/render/text.cpp hw/gpu/engine_2d/render/extended.cpp
-    hw/gpu/engine_2d/compose.cpp hw/gpu/engine_2d/render/object.cpp
-    hw/gpu/engine_2d/render/affine.cpp hw/gpu/engine_2d/render/large.cpp
-    
-    hw/gpu/engine_3d/render_engine.h hw/gpu/engine_3d/render_engine.cpp
-    hw/gpu/engine_3d/geometry_engine.h hw/gpu/engine_3d/geometry_engine.cpp
-    hw/gpu/engine_3d/geometry_commands.cpp
-    hw/gpu/engine_3d/Interpolator.h
-    hw/gpu/engine_3d/TextureSampler.cpp
 
     hw/dma/dma.h hw/dma/dma.cpp
     hw/input/input.h hw/input/input.cpp
@@ -45,4 +33,4 @@ add_library(core
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC common yuugen_common audio_common)
+target_link_libraries(core PUBLIC common videocommon yuugen_common audio_common)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <string.h>
 #include "Common/Types.h"
 #include "VideoCommon/VRAMPage.h"
 
