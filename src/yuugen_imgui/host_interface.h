@@ -104,4 +104,5 @@ private:
     // settings
     // TODO: should be in a singleton settings class
     bool fullscreen_on_game_launch = false;
+    bool hide_cursor = false;
 };
