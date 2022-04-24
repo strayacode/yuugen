@@ -117,7 +117,7 @@ void Renderer2D::write_half(u32 addr, u16 data) {
 
     switch (addr) {
     case 0x00:
-        dispcnt = (data & ~0xFFFF) | data;
+        dispcnt = (dispcnt & ~0xFFFF) | data;
         break;
     case 0x08:
         bgcnt[0] = data;

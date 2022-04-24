@@ -32,7 +32,9 @@ void SoftwareRenderer2D::render_graphics_display(int line) {
     u8 bg_mode = dispcnt & 0x7;
 
     if (dispcnt & (1 << 8)) {
-        if (bg_mode != 6) {
+        if ((dispcnt & (1 << 3)) || (bg_mode == 6)) {
+
+        } else {
             render_text(0, line);
         }
     }

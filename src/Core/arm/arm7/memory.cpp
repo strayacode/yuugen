@@ -248,20 +248,20 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
     switch (addr >> 24) {
     case 0x00:
         // ignore all bios writes
-        break;
+        return;
     case 0x04:
         switch (addr) {
         case 0x04000138:
             system.rtc.WriteRTC(data);
-            break;
+            return;
         case 0x040001A0:
             // write to the low byte of AUXSPICNT
             system.cartridge.AUXSPICNT = (system.cartridge.AUXSPICNT & ~0xFF) | (data & 0xFF);
-            break;
+            return;
         case 0x040001A1:
             // write to the high byte of AUXSPICNT
             system.cartridge.AUXSPICNT = (system.cartridge.AUXSPICNT & 0xFF) | (data << 8);
-            break;
+            return;
         case 0x040001A8:
         case 0x040001A9:
         case 0x040001AA:
@@ -272,40 +272,44 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
         case 0x040001AF:
             // recieve a cartridge command and store in the buffer
             system.cartridge.ReceiveCommand(data, addr - 0x040001A8);
-            break;
+            return;
         case 0x040001C2:
             system.spi.WriteSPIDATA(data);
-            break;
+            return;
         case 0x04000208:
             system.cpu_core[0].ime = data & 0x1;
-            break;
+            return;
         case 0x04000300:
             system.POSTFLG7 = data;
-            break;
+            return;
         case 0x04000301:
             system.WriteHALTCNT(data);
-            break;
+            return;
         case 0x04000500:
             // write to lower byte of SOUNDCNT
             system.spu.soundcnt = (system.spu.soundcnt & ~0xFF) | (data & 0xFF);
-            break;
+            return;
         case 0x04000501:
             // write to upper byte of SOUNDCNT
             system.spu.soundcnt = (system.spu.soundcnt & 0xFF) | (data << 8);
-            break;
+            return;
         case 0x04000508:
             system.spu.SNDCAPCNT[0] = data;
-            break;
+            return;
         case 0x04000509:
             system.spu.SNDCAPCNT[1] = data;
-            break;
-        default:
-            log_fatal("[ARM7] Undefined 8-bit io write %08x = %08x", addr, data);
+            return;
         }
+
         break;
-    default:
-        log_fatal("[ARM7] Undefined 8-bit write %08x = %08x", addr, data);
     }
+
+    if (Common::in_range(0x04000400, 0x04000500, addr)) {
+        system.spu.WriteByte(addr, data);
+        return;
+    }
+
+    log_warn("ARM7: handle byte write %08x = %02x", addr, data);
 }
 
 void ARM7Memory::WriteHalf(u32 addr, u16 data) {
@@ -420,6 +424,11 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
         break;
     }
 
+    if (Common::in_range(0x04000400, 0x04000500, addr)) {
+        system.spu.WriteHalf(addr, data);
+        return;
+    }
+
     if (Common::in_range(0x04800000, 0x04900000, addr)) {
         // TODO: implement wifi regs correctly
         return;
@@ -434,96 +443,100 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
         switch (addr) {
         case 0x040000B0:
             system.dma[0].channel[0].source = data;
-            break;
+            return;
         case 0x040000B4:
             system.dma[0].channel[0].destination = data;
-            break;
+            return;
         case 0x040000B8:
             system.dma[0].WriteDMACNT(0, data);
-            break;
+            return;
         case 0x040000BC:
             system.dma[0].channel[1].source = data;
-            break;
+            return;
         case 0x040000C0:
             system.dma[0].channel[1].destination = data;
-            break;
+            return;
         case 0x040000C4:
             system.dma[0].WriteDMACNT(1, data);
-            break;
+            return;
         case 0x040000C8:
             system.dma[0].channel[2].source = data;
-            break;
+            return;
         case 0x040000CC:
             system.dma[0].channel[2].destination = data;
-            break;
+            return;
         case 0x040000D0:
             system.dma[0].WriteDMACNT(2, data);
-            break;
+            return;
         case 0x040000D4:
             system.dma[0].channel[3].source = data;
-            break;
+            return;
         case 0x040000D8:
             system.dma[0].channel[3].destination = data;
-            break;
+            return;
         case 0x040000DC:
             system.dma[0].WriteDMACNT(3, data);
-            break;
+            return;
         case 0x04000100:
             system.timers[0].WriteTMCNT_L(0, data);
             system.timers[0].WriteTMCNT_H(0, data);
-            break;
+            return;
         case 0x04000104:
             system.timers[0].WriteTMCNT_L(1, data);
             system.timers[0].WriteTMCNT_H(1, data);
-            break;
+            return;
         case 0x04000108:
             system.timers[0].WriteTMCNT_L(2, data);
             system.timers[0].WriteTMCNT_H(2, data);
-            break;
+            return;
         case 0x04000120:
             // debug SIODATA32
-            break;
+            return;
         case 0x04000128:
             // debug SIOCNT but it doesn't matter
-            break;
+            return;
         case 0x04000180:
             system.ipc.WriteIPCSYNC7(data);
-            break;
+            return;
         case 0x04000188:
             system.ipc.WriteFIFOSEND7(data);
-            break;
+            return;
         case 0x040001A4:
             system.cartridge.WriteROMCTRL(data);
-            break;
+            return;
         case 0x040001B0: case 0x040001B4:
             // TODO: handle key2 encryption later
-            break;
+            return;
         case 0x04000208:
             system.cpu_core[0].ime = data & 0x1;
-            break;
+            return;
         case 0x04000210:
             system.cpu_core[0].ie = data;
-            break;
+            return;
         case 0x04000214:
             system.cpu_core[0].irf &= ~data;
-            break;
+            return;
         case 0x04000308:
             system.BIOSPROT = data;
-            break;
+            return;
         case 0x04000510:
             system.spu.SNDCAPDAD[0] = data;
-            break;
+            return;
         case 0x04000518:
             system.spu.SNDCAPDAD[1] = data;
-            break;
-        default:
-            log_warn("[ARM7] Undefined 32-bit io write %08x = %08x", addr, data);
+            return;
         }
+
         break;
     case 0x08: case 0x09:
         // for now do nothing lol
         break;
-    default:
-        log_fatal("[ARM7] Undefined 32-bit write %08x = %08x", addr, data);
     }
+
+    if (Common::in_range(0x04000400, 0x04000500, addr)) {
+        system.spu.WriteWord(addr, data);
+        return;
+    }
+
+    log_warn("ARM7: handle word write %08x = %08x", addr, data);
 }

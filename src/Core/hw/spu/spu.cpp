@@ -95,6 +95,10 @@ void SPU::WriteHalf(u32 addr, u16 data) {
         // write to SOUNDPNT
         channel[channel_index].soundpnt = data;
         break;
+    case REG_SOUNDLEN:
+        // write to SOUNDLEN
+        channel[channel_index].soundlen = data;
+        break;
     default:
         log_fatal("part of sound channel %02x not handled yet", addr & 0xF);
     }

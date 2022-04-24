@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-option(LTO_OPTIMISATIONS "Link time optimisations" OFF)
+option(LTO "Link time optimisations" OFF)
 
 add_compile_options(
     -Wall
@@ -26,7 +26,7 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-D_DEBUG)
 endif()
 
-if(LTO_OPTIMISATIONS)
+if(LTO)
     add_compile_options(-flto)
 endif()
 

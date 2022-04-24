@@ -1,4 +1,5 @@
 #include "Common/Memory.h"
+#include "Common/Log.h"
 #include "VideoCommon/GPU.h"
 #include "VideoBackends2D/Software/SoftwareRenderer2D.h"
 
