@@ -591,6 +591,7 @@ void HostInterface::render_settings_window() {
     ImGui::Text("Video Settings");
     ImGui::Checkbox("Fullscreen on Game Launch", &Settings::Get().fullscreen_on_game_launch);
     ImGui::Checkbox("Hide Cursor in Game", &Settings::Get().hide_cursor);
+    ImGui::Checkbox("Do 2D Rendering on Separate Thread", &Settings::Get().threaded_2d);
     ImGui::Separator();
     end_fullscreen_window();
 }
