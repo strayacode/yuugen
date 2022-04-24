@@ -45,11 +45,13 @@ void Core::SetState(State new_state) {
 
         audio_interface->SetState(AudioState::Playing);
         emu_thread.Start();
+        system.gpu.render_thread_start();
         break;
     case State::Paused:
     case State::Idle:
         audio_interface->SetState(AudioState::Paused);
         emu_thread.Stop();
+        system.gpu.render_thread_stop();
         break;
     }
 

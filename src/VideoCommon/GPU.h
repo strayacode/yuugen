@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <thread>
 #include "Common/Types.h"
 #include "VideoCommon/Renderer2D.h"
 #include "VideoCommon/Renderer3D.h"
@@ -21,6 +22,7 @@ class System;
 class GPU {
 public:
     GPU(System& system);
+    ~GPU();
     void reset();
 
     void create_renderers(RendererType type);
@@ -63,6 +65,9 @@ public:
     const VRAMRegion<96>& get_texture_palette() { return texture_palette; }
     u8* get_palette_ram() { return palette_ram.data(); }
     u8* get_oam() { return oam.data(); }
+
+    void render_thread_start();
+    void render_thread_stop();
 
     std::unique_ptr<Renderer2D> renderer_2d[2];
     std::unique_ptr<Renderer3D> renderer_3d;
@@ -111,6 +116,9 @@ private:
 
     std::array<u8, 0x800> palette_ram = {};
     std::array<u8, 0x800> oam = {};
+
+    std::thread render_thread;
+    bool render_thread_running = false;
 
     System& system;
 };

@@ -7,6 +7,10 @@
 
 GPU::GPU(System& system) : system(system) {}
 
+GPU::~GPU() {
+    render_thread_stop();
+}
+
 void GPU::reset() {
     powcnt1 = 0;
     vcount = 0;
@@ -42,6 +46,7 @@ void GPU::reset() {
     system.scheduler.AddEvent(1606, &scanline_start_event);
 
     reset_vram_mapping();
+    render_thread_start();
 }
 
 void GPU::create_renderers(RendererType type) {
@@ -507,4 +512,26 @@ int GPU::get_bank_offset(u8 vramcnt) {
 
 bool GPU::get_bank_enabled(u8 vramcnt) {
     return (vramcnt & (1 << 7));
+}
+
+void GPU::render_thread_start() {
+    render_thread_stop();
+
+    render_thread_running = true;
+
+    render_thread = std::thread{[this]() {
+        while (render_thread_running) {
+            
+        }
+    }};
+}
+
+void GPU::render_thread_stop() {
+    if (!render_thread_running) {
+        return;
+    }
+
+    render_thread_running = false;
+
+    render_thread.join();
 }
