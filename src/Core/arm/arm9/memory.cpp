@@ -145,26 +145,25 @@ u8 ARM9Memory::ReadByte(u32 addr) {
 }
 
 u16 ARM9Memory::ReadHalf(u32 addr) {
-    u16 return_value = 0;
-
     switch (addr >> 24) {
     case 0x03:
         switch (system.wramcnt) {
         case 0:
-            memcpy(&return_value, &system.shared_wram[addr & 0x7FFF], 2);
-            break;
+            return Common::read<u16>(&system.shared_wram[addr & 0x7FFF], 0);
         case 1:
-            memcpy(&return_value, &system.shared_wram[(addr & 0x3FFF) + 0x4000], 2);
-            break;
+            return Common::read<u16>(&system.shared_wram[(addr & 0x3FFF) + 0x4000], 0);
         case 2:
-            memcpy(&return_value, &system.shared_wram[addr & 0x3FFF], 2);
-            break;
+            return Common::read<u16>(&system.shared_wram[addr & 0x3FFF], 0);
         case 3:
             return 0;
         }
         break;
     case 0x04:
         switch (addr) {
+        case 0x04000004:
+            return system.gpu.dispstat[1];
+        case 0x04000006:
+            return system.gpu.vcount;
         case 0x040000BA:
             return system.dma[1].ReadDMACNT_H(0);
         case 0x040000C6:
@@ -203,15 +202,17 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
             return system.maths_unit.SQRTCNT;
         case 0x04000300:
             return system.POSTFLG9;
+        case 0x04000304:
+            return system.gpu.powcnt1;
         case 0x04000320:
             return 0;
         case 0x04004004:
             return 0;
         case 0x04004010:
             return 0;
-        default:
-            log_fatal("[ARM9] Undefined 16-bit io read %08x", addr);
         }
+
+        break;
     case 0x05:
         return Common::read<u16>(system.gpu.get_palette_ram(), addr & 0x7FF);
     case 0x06:
@@ -231,24 +232,29 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
         break;
     }
 
-    return return_value;
+    if (Common::in_range(0x04000000, 0x04000060, addr)) {
+        return system.gpu.renderer_2d[0]->read_half(addr);
+    }
+
+    if (Common::in_range(0x04001000, 0x04001060, addr)) {
+        return system.gpu.renderer_2d[1]->read_half(addr);
+    }
+
+    log_warn("ARM9: handle half read %08x", addr);
+
+    return 0;
 }
 
 u32 ARM9Memory::ReadWord(u32 addr) {
-    u32 return_value = 0;
-
     switch (addr >> 24) {
     case 0x03:
         switch (system.wramcnt) {
         case 0:
-            memcpy(&return_value, &system.shared_wram[addr & 0x7FFF], 4);
-            break;
+            return Common::read<u32>(&system.shared_wram[addr & 0x7FFF], 0);
         case 1:
-            memcpy(&return_value, &system.shared_wram[(addr & 0x3FFF) + 0x4000], 4);
-            break;
+            return Common::read<u32>(&system.shared_wram[(addr & 0x3FFF) + 0x4000], 0);
         case 2:
-            memcpy(&return_value, &system.shared_wram[addr & 0x3FFF], 4);
-            break;
+            return Common::read<u32>(&system.shared_wram[addr & 0x3FFF], 0);
         case 3:
             return 0;
         }
@@ -299,6 +305,8 @@ u32 ARM9Memory::ReadWord(u32 addr) {
             return system.cpu_core[1].ie;
         case 0x04000214:
             return system.cpu_core[1].irf;
+        case 0x04000240:
+            return ((system.gpu.vramcnt[3] << 24) | (system.gpu.vramcnt[2] << 16) | (system.gpu.vramcnt[1] << 8) | (system.gpu.vramcnt[0]));
         case 0x04000280:
             return system.maths_unit.DIVCNT;
         case 0x04000290:
@@ -331,9 +339,9 @@ u32 ARM9Memory::ReadWord(u32 addr) {
             return system.ipc.ReadFIFORECV9();
         case 0x04100010:
             return system.cartridge.ReadData();
-        default:
-            log_fatal("[ARM9] Undefined 32-bit io read %08x", addr);
         }
+
+        break;
     case 0x05:
         return Common::read<u32>(system.gpu.get_palette_ram(), addr & 0x7FF);
     case 0x06:
@@ -350,11 +358,19 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         return 0xFFFFFFFF;
     case 0x0A:
         return 0;
-    default:
-        log_fatal("handle word read from %08x", addr);
     }
 
-    return return_value;
+    if (Common::in_range(0x04000000, 0x04000060, addr)) {
+        return system.gpu.renderer_2d[0]->read_word(addr);
+    }
+
+    if (Common::in_range(0x04001000, 0x04001060, addr)) {
+        return system.gpu.renderer_2d[1]->read_word(addr);
+    }
+
+    log_warn("ARM9: handle word read %08x", addr);
+
+    return 0;
 }
 
 void ARM9Memory::WriteByte(u32 addr, u8 data) {
@@ -379,8 +395,35 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
         case 0x04000208:
             system.cpu_core[1].ime = data & 0x1;
             return;
+        case 0x04000240:
+            system.gpu.update_vram_mapping(GPU::Bank::A, data);
+            return;
+        case 0x04000241:
+            system.gpu.update_vram_mapping(GPU::Bank::B, data);
+            return;
+        case 0x04000242:
+            system.gpu.update_vram_mapping(GPU::Bank::C, data);
+            return;
+        case 0x04000243:
+            system.gpu.update_vram_mapping(GPU::Bank::D, data);
+            return;
+        case 0x04000244:
+            system.gpu.update_vram_mapping(GPU::Bank::E, data);
+            return;
+        case 0x04000245:
+            system.gpu.update_vram_mapping(GPU::Bank::F, data);
+            return;
+        case 0x04000246:
+            system.gpu.update_vram_mapping(GPU::Bank::G, data);
+            return;
         case 0x04000247:
             system.write_wramcnt(data);
+            return;
+        case 0x04000248:
+            system.gpu.update_vram_mapping(GPU::Bank::H, data);
+            return;
+        case 0x04000249:
+            system.gpu.update_vram_mapping(GPU::Bank::I, data);
             return;
         case 0x04000300:
             system.POSTFLG9 = data;
@@ -389,7 +432,8 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
             log_warn("ARM9: undefined byte write %08x = %02x", addr, data);
             return;
         }
-        return;
+        
+        break;
     case 0x05:
         Common::write<u8>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
         return;
@@ -405,120 +449,153 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
     if (Common::in_range(0x04001000, 0x04001060, addr)) {
         log_fatal("handle engine b write");
     }
+
+    log_warn("ARM9: handle byte write %08x = %02x", addr, data);
 }
 
 void ARM9Memory::WriteHalf(u32 addr, u16 data) {
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
+        case 0x04000004:
+            system.gpu.dispstat[1] = data;
+            return;
+        case 0x0400006C:
+            system.gpu.renderer_2d[0]->master_bright = data;
+            return;
         case 0x040000B8:
             system.dma[1].WriteDMACNT_L(0, data);
-            break;
+            return;
         case 0x040000BA:
             system.dma[1].WriteDMACNT_H(0, data);
-            break;
+            return;
         case 0x040000C4:
             system.dma[1].WriteDMACNT_L(1, data);
-            break;
+            return;
         case 0x040000C6:
             system.dma[1].WriteDMACNT_H(1, data);
-            break;
+            return;
         case 0x040000D0:
             system.dma[1].WriteDMACNT_L(2, data);
-            break;
+            return;
         case 0x040000D2:
             system.dma[1].WriteDMACNT_H(2, data);
-            break;
+            return;
         case 0x040000DC:
             system.dma[1].WriteDMACNT_L(3, data);
-            break;
+            return;
         case 0x040000DE:
             system.dma[1].WriteDMACNT_H(3, data);
-            break;
+            return;
         case 0x04000100:
             system.timers[1].WriteTMCNT_L(0, data);
-            break;
+            return;
         case 0x04000102:
             system.timers[1].WriteTMCNT_H(0, data);
-            break;
+            return;
         case 0x04000104:
             system.timers[1].WriteTMCNT_L(1, data);
-            break;
+            return;
         case 0x04000106:
             system.timers[1].WriteTMCNT_H(1, data);
-            break;
+            return;
         case 0x04000108:
             system.timers[1].WriteTMCNT_L(2, data);
-            break;
+            return;
         case 0x0400010A:
             system.timers[1].WriteTMCNT_H(2, data);
-            break;
+            return;
         case 0x0400010C:
             system.timers[1].WriteTMCNT_L(3, data);
-            break;
+            return;
         case 0x0400010E:
             system.timers[1].WriteTMCNT_H(3, data);
-            break;
+            return;
         case 0x04000130:
             system.input.KEYINPUT = data;
-            break;
+            return;
         case 0x04000180:
             system.ipc.WriteIPCSYNC9(data);
-            break;
+            return;
         case 0x04000184:
             system.ipc.WriteIPCFIFOCNT9(data);
-            break;
+            return;
         case 0x040001A0:
             system.cartridge.WriteAUXSPICNT(data);
-            break;
+            return;
         case 0x040001A2:
             system.cartridge.WriteAUXSPIDATA(data);
-            break;
+            return;
         case 0x04000204:
             system.EXMEMCNT = data;
-            break;
+            return;
         case 0x04000208:
             system.cpu_core[1].ime = data & 0x1;
-            break;
+            return;
+        case 0x04000248:
+            system.gpu.update_vram_mapping(GPU::Bank::H, data & 0xFF);
+            system.gpu.update_vram_mapping(GPU::Bank::I, data >> 8);
+            return;
         case 0x04000280:
             system.maths_unit.DIVCNT = data;
             system.maths_unit.StartDivision();
-            break;
+            return;
         case 0x040002B0:
             system.maths_unit.SQRTCNT = data;
             system.maths_unit.StartSquareRoot();
-            break;
+            return;
         case 0x04000300:
             system.POSTFLG9 = data;
-            break;
+            return;
         case 0x04000304:
             system.gpu.powcnt1 = data;
-            break;
-        default:
-            log_fatal("[ARM9] Undefined 16-bit io write %08x = %04x", addr, data);
+            return;
+        case 0x0400106C:
+            system.gpu.renderer_2d[1]->master_bright = data;
+            return;
         }
         break;
     case 0x05:
         Common::write<u16>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
-        break;
+        return;
     case 0x06:
         system.gpu.write_vram<u16>(addr, data);
-        break;
+        return;
     case 0x07:
         Common::write<u16>(system.gpu.get_oam(), addr & 0x7FF, data);
-        break;
+        return;
     case 0x08: case 0x09:
         // for now do nothing lol
-        break;
-    default:
-        log_fatal("handle half write to %08x", addr);
+        return;
     }
+
+    if (Common::in_range(0x04000000, 0x04000060, addr)) {
+        system.gpu.renderer_2d[0]->write_half(addr, data);
+        return;
+    }
+
+    if (Common::in_range(0x04001000, 0x04001060, addr)) {
+        system.gpu.renderer_2d[1]->write_half(addr, data);
+        return;
+    }
+
+    log_warn("ARM9: handle half write %08x = %04x", addr, data);
 }
 
 void ARM9Memory::WriteWord(u32 addr, u32 data) {
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
+        case 0x04000004:
+            system.gpu.dispstat[1] = data & 0xFFFF;
+            system.gpu.vcount = data >> 16;
+            return;
+        case 0x04000060:
+            system.gpu.renderer_3d->disp3dcnt = data;
+            return;
+        case 0x04000064:
+            system.gpu.dispcapcnt = data;
+            return;
         case 0x040000B0:
             system.dma[1].channel[0].source = data;
             return;
@@ -601,6 +678,12 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
         case 0x04000214:
             system.cpu_core[1].irf &= ~data;
             return;
+        case 0x04000240:
+            system.gpu.update_vram_mapping(GPU::Bank::A, data & 0xFF);
+            system.gpu.update_vram_mapping(GPU::Bank::B, (data >> 8) & 0xFF);
+            system.gpu.update_vram_mapping(GPU::Bank::C, (data >> 16) & 0xFF);
+            system.gpu.update_vram_mapping(GPU::Bank::D, (data >> 24) & 0xFF);
+            return;
         case 0x04000280:
             system.maths_unit.DIVCNT = data;
             system.maths_unit.StartDivision();
@@ -646,8 +729,14 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
         case 0x04000304:
             system.gpu.powcnt1 = data;
             return;
+        case 0x04001004: case 0x04001060: case 0x04001064: case 0x04001068:
+            return;
+        case 0x0400106C:
+            system.gpu.renderer_2d[1]->master_bright = data;
+            return;
         }
-        return;
+        
+        break;
     case 0x05:
         Common::write<u32>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
         return;
@@ -664,6 +753,11 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
         system.gpu.renderer_2d[0]->write_word(addr, data);
+        return;
+    }
+
+    if (Common::in_range(0x04001000, 0x04001060, addr)) {
+        system.gpu.renderer_2d[1]->write_word(addr, data);
         return;
     }
 

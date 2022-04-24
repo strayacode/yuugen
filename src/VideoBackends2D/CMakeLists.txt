@@ -1,5 +1,8 @@
 add_library(videobackends2d
     Software/SoftwareRenderer2D.h Software/SoftwareRenderer2D.cpp
+    Software/Composer.cpp
+    Software/Text.cpp Software/Extended.cpp
+    Software/Object.cpp
 )
 
 set_target_properties(videobackends2d PROPERTIES LINKER_LANGUAGE CXX)

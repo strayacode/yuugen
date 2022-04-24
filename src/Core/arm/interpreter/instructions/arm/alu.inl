@@ -486,11 +486,8 @@ void arm_single_data_swap() {
     u8 rm = instruction & 0xF;
     u8 rd = (instruction >> 12) & 0xF;
     u8 rn = (instruction >> 16) & 0xF;
-
     u8 byte = (instruction >> 22) & 0x1;
-    
     u32 address = regs.r[rn];
-
     u32 data = 0;
 
     if (byte) {
@@ -521,17 +518,15 @@ void arm_count_leading_zeroes() {
 
     u8 rm = instruction & 0xF;
     u8 rd = (instruction >> 12) & 0xF;
-
     u32 data = regs.r[rm];
-
     u32 count = 0;
+
     while (data != 0) {
         data >>= 1;
         count++;
     }
 
     regs.r[rd] = 32 - count;
-
     regs.r[15] += 4;
 }
 

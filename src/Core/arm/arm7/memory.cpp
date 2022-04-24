@@ -77,9 +77,9 @@ u8 ARM7Memory::ReadByte(u32 addr) {
             return system.spu.SNDCAPCNT[0];
         case 0x04000509:
             return system.spu.SNDCAPCNT[1];
-        default:
-            log_fatal("[ARM7] Undefined 8-bit io read %08x", addr);
         }
+
+        break;
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -88,17 +88,23 @@ u8 ARM7Memory::ReadByte(u32 addr) {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFF;
-    default:
-        log_fatal("[ARM7] Undefined 8-bit read %08x", addr);
     }
+
+    if (Common::in_range(0x04000400, 0x04000500, addr)) {
+        return system.spu.ReadByte(addr);
+    }
+
+    log_warn("ARM7: handle byte read %08x", addr);
+
+    return 0;
 }
 
 u16 ARM7Memory::ReadHalf(u32 addr) {
-    u16 return_value = 0;
-
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
+        case 0x04000004:
+            return system.gpu.dispstat[0];
         case 0x040000BA:
             return system.dma[0].ReadDMACNT_H(0);
         case 0x040000C6:
@@ -175,9 +181,9 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
             return system.wifi.W_RXBUF_END;
         case 0x04808056:
             return system.wifi.W_RXBUF_WR_ADDR;
-        default:
-            log_fatal("[ARM7] Undefined 16-bit io read %08x", addr);
         }
+
+        break;
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -186,16 +192,19 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         }
         // otherwise return openbus (0xFFFFFFFF)
         return 0xFFFF;
-    default:
-        log_fatal("[ARM7] Undefined 16-bit io read %08x", addr);
     }
 
-    return return_value;
+    if (Common::in_range(0x04800000, 0x04900000, addr)) {
+        // TODO: implement wifi regs correctly
+        return 0;
+    }
+
+    log_warn("ARM7: handle half read %08x", addr);
+
+    return 0;
 }
 
 u32 ARM7Memory::ReadWord(u32 addr) {
-    u32 return_value = 0;
-
     switch (addr >> 24) {
     case 0x04:
         switch (addr) {
@@ -221,15 +230,18 @@ u32 ARM7Memory::ReadWord(u32 addr) {
             return system.ipc.ReadFIFORECV7();
         case 0x04100010:
             return system.cartridge.ReadData();
-        default:
-            log_fatal("[ARM7] Undefined 32-bit io read %08x", addr);
         }
+
         break;
-    default:
-        log_fatal("handle %08x", addr);
     }
 
-    return return_value;
+    if (Common::in_range(0x04000400, 0x04000500, addr)) {
+        return system.spu.ReadWord(addr);
+    }
+
+    log_warn("ARM7: handle word read %08x", addr);
+
+    return 0;
 }
 
 void ARM7Memory::WriteByte(u32 addr, u8 data) {
@@ -303,147 +315,117 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
         break;
     case 0x04:
         switch (addr) {
+        case 0x04000004:
+            system.gpu.dispstat[0] = data;
+            return;
         case 0x040000BA:
             system.dma[0].WriteDMACNT_H(0, data);
-            break;
+            return;
         case 0x040000C6:
             system.dma[0].WriteDMACNT_H(1, data);
-            break;
+            return;
         case 0x040000D2:
             system.dma[0].WriteDMACNT_H(2, data);
-            break;
+            return;
         case 0x040000DE:
             system.dma[0].WriteDMACNT_H(3, data);
-            break;
+            return;
         case 0x04000100:
             system.timers[0].WriteTMCNT_L(0, data);
-            break;
+            return;
         case 0x04000102:
             system.timers[0].WriteTMCNT_H(0, data);
-            break;
+            return;
         case 0x04000104:
             system.timers[0].WriteTMCNT_L(1, data);
-            break;
+            return;
         case 0x04000106:
             system.timers[0].WriteTMCNT_H(1, data);
-            break;
+            return;
         case 0x04000108:
             system.timers[0].WriteTMCNT_L(2, data);
-            break;
+            return;
         case 0x0400010A:
             system.timers[0].WriteTMCNT_H(2, data);
-            break;
+            return;
         case 0x0400010C:
             system.timers[0].WriteTMCNT_L(3, data);
-            break;
+            return;
         case 0x0400010E:
             system.timers[0].WriteTMCNT_H(3, data);
-            break;
+            return;
         case 0x04000128:
             // debug SIOCNT
             system.SIOCNT = data;
-            break;
+            return;
         case 0x04000134:
             system.RCNT = data;
-            break;
+            return;
         case 0x04000138:
             system.rtc.WriteRTC(data);
-            break;
+            return;
         case 0x04000180:
             system.ipc.WriteIPCSYNC7(data);
-            break;
+            return;
         case 0x04000184:
             system.ipc.WriteIPCFIFOCNT7(data);
-            break;
+            return;
         case 0x040001A0:
             system.cartridge.WriteAUXSPICNT(data);
-            break;
+            return;
         case 0x040001A2:
             system.cartridge.WriteAUXSPIDATA(data);
-            break;
+            return;
         case 0x040001B8: case 0x040001BA:
             // TODO: handle key2 encryption later
-            break;
+            return;
         case 0x040001C0:
             system.spi.WriteSPICNT(data);
-            break;
+            return;
         case 0x040001C2:
             system.spi.WriteSPIDATA(data);
-            break;
+            return;
         case 0x04000204:
             system.EXMEMCNT = data;
-            break;
+            return;
         case 0x04000206:
             // TODO: implement WIFIWAITCNT
-            break;
+            return;
         case 0x04000208:
             system.cpu_core[0].ime = data & 0x1;
-            break;
+            return;
         case 0x04000304:
             system.POWCNT2 = data & 0x3;
-            break;
+            return;
         case 0x04000500:
             system.spu.soundcnt = data;
-            break;
+            return;
         case 0x04000504:
             system.spu.soundbias = data & 0x3FF;
-            break;
+            return;
         case 0x04000508:
             system.spu.SNDCAPCNT[0] = data & 0xFF;
             system.spu.SNDCAPCNT[1] = data >> 8;
-            break;
+            return;
         case 0x04000514:
             system.spu.SNDCAPLEN[0] = data;
-            break;
+            return;
         case 0x0400051C:
             system.spu.SNDCAPLEN[1] = data;
-            break;
+            return;
         case 0x04001080:
             // this address seems to just be for debugging for the ds lite so not useful for us
-            break;
-        case 0x04808006:
-            system.wifi.W_MODE_WEP = data;
-            break;
-        case 0x04808018:
-            system.wifi.W_MACADDR_0 = data;
-            break;
-        case 0x0480801A:
-            system.wifi.W_MACADDR_1 = data;
-            break;
-        case 0x0480801C:
-            system.wifi.W_MACADDR_2 = data;
-            break;
-        case 0x04808020:
-            system.wifi.W_BSSID_0 = data;
-            break;
-        case 0x04808022:
-            system.wifi.W_BSSID_1 = data;
-            break;
-        case 0x04808024:
-            system.wifi.W_BSSID_2 = data;
-            break;
-        case 0x0480802A:
-            system.wifi.W_AID_FULL = data;
-            break;
-        case 0x04808050:
-            system.wifi.W_RXBUF_BEGIN = data;
-            break;
-        case 0x04808052:
-            system.wifi.W_RXBUF_END = data;
-            break;
-        case 0x04808056:
-            system.wifi.W_RXBUF_WR_ADDR = data;
-            break;
-        case 0x048080AE:
-            system.wifi.W_TXREQ_SET = data;
-            break;
-        default:
-            log_fatal("[ARM7] Undefined 16-bit io write %08x = %08x", addr, data);
+            return;
         }
         break;
-    default:
-        log_fatal("[ARM7] Undefined 16-bit write %08x = %08x", addr, data);
     }
+
+    if (Common::in_range(0x04800000, 0x04900000, addr)) {
+        // TODO: implement wifi regs correctly
+        return;
+    }
+
+    log_warn("ARM7: handle half write %08x = %04x", addr, data);
 }
 
 void ARM7Memory::WriteWord(u32 addr, u32 data) {

@@ -28,9 +28,32 @@ public:
 
     // mmio
     u32 dispcnt = 0;
-
-private:
+    std::array<u16, 4> bgcnt = {};
+    std::array<u16, 4> bghofs = {};
+    std::array<u16, 4> bgvofs = {};
+    std::array<u16, 2> bgpa = {};
+    std::array<u16, 2> bgpb = {};
+    std::array<u16, 2> bgpc = {};
+    std::array<u16, 2> bgpd = {};
+    std::array<u32, 2> bgx = {};
+    std::array<u32, 2> bgy = {};
+    std::array<u32, 2> internal_x = {};
+    std::array<u32, 2> internal_y = {};
+    std::array<u16, 2> winh = {};
+    std::array<u16, 2> winv = {};
+    u16 winin = 0;
+    u16 winout = 0;
+    u32 mosaic = 0;
+    u16 bldcnt = 0;
+    u16 bldalpha = 0;
+    u32 bldy = 0;
+    u16 master_bright = 0;
+    
     std::array<u32, 256 * 192> framebuffer = {};
+    std::array<std::array<u16, 256 * 192>, 4> bg_layers = {};
+    std::array<u8, 256 * 192> obj_priority = {};
+    std::array<u16, 256 * 192> obj_colour = {};
+
     u8* palette_ram = nullptr;
     u8* oam = nullptr;
     u32 vram_addr = 0;

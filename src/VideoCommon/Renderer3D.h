@@ -5,6 +5,7 @@
 
 class Renderer3D {
 public:
+    void reset();
     virtual void render() = 0;
     const u32* get_framebuffer() { return framebuffer.data(); }
 
@@ -15,6 +16,9 @@ public:
     void write_byte(u32 addr, u8 data);
     void write_half(u32 addr, u16 data);
     void write_word(u32 addr, u32 data);
+
+    // mmio
+    u16 disp3dcnt = 0;
 
 private:
     std::array<u32, 256 * 192> framebuffer;

@@ -23,18 +23,22 @@ public:
     GPU(System& system);
     void reset();
 
-    u8 read_byte(u32 addr);
-    u16 read_half(u32 addr);
-    u32 read_word(u32 addr);
-
-    void write_byte(u32 addr, u8 data);
-    void write_half(u32 addr, u16 data);
-    void write_word(u32 addr, u32 data);
-
     void create_renderers(RendererType type);
     const u32* get_framebuffer(Screen screen);
 
-    void update_vram_mapping();
+    enum class Bank {
+        A,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+        I,
+    };
+
+    void update_vram_mapping(Bank bank, u8 data);
     void reset_vram_mapping();
 
     template <typename T>
@@ -42,6 +46,12 @@ public:
 
     template <typename T>
     void write_vram(u32 addr, T data);
+
+    template <typename T>
+    T read_ext_palette_bga(u32 addr);
+
+    template <typename T>
+    T read_ext_palette_bgb(u32 addr);
 
     const VRAMRegion<128>& get_texture_data() { return texture_data; }
     const VRAMRegion<96>& get_texture_palette() { return texture_palette; }
@@ -53,19 +63,25 @@ public:
 
     // shared mmio
     u16 powcnt1 = 0;
-    u8 vramcnt_a = 0;
-    u8 vramcnt_b = 0;
-    u8 vramcnt_c = 0;
-    u8 vramcnt_d = 0;
-    u8 vramcnt_e = 0;
-    u8 vramcnt_f = 0;
-    u8 vramcnt_g = 0;
-    u8 vramcnt_h = 0;
-    u8 vramcnt_i = 0;
+    u16 vcount = 0;
+    std::array<u16, 2> dispstat = {};
+    std::array<u8, 9> vramcnt = {};
+    u32 dispcapcnt = 0;
     
     // 2d engine mmio
 
     // 3d engine mmio
+
+    // state required by the renderers
+    std::array<u8, 0x20000> bank_a = {};
+    std::array<u8, 0x20000> bank_b = {};
+    std::array<u8, 0x20000> bank_c = {};
+    std::array<u8, 0x20000> bank_d = {};
+    std::array<u8, 0x10000> bank_e = {};
+    std::array<u8, 0x4000> bank_f = {};
+    std::array<u8, 0x4000> bank_g = {};
+    std::array<u8, 0x8000> bank_h = {};
+    std::array<u8, 0x4000> bank_i = {};
 
 private:
     void render_scanline_start();
@@ -86,16 +102,6 @@ private:
     VRAMRegion<128> arm7_vram;
     VRAMRegion<128> texture_data;
     VRAMRegion<96> texture_palette;
-
-    std::array<u8, 0x20000> bank_a = {};
-    std::array<u8, 0x20000> bank_b = {};
-    std::array<u8, 0x20000> bank_c = {};
-    std::array<u8, 0x20000> bank_d = {};
-    std::array<u8, 0x10000> bank_e = {};
-    std::array<u8, 0x4000> bank_f = {};
-    std::array<u8, 0x4000> bank_g = {};
-    std::array<u8, 0x8000> bank_h = {};
-    std::array<u8, 0x4000> bank_i = {};
 
     std::array<u8, 0x800> palette_ram = {};
     std::array<u8, 0x800> oam = {};
