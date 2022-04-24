@@ -388,6 +388,43 @@ T GPU::read_ext_palette_bgb(u32 addr) {
     return 0;
 }
 
+template u8 GPU::read_ext_palette_obja(u32 addr);
+template u16 GPU::read_ext_palette_obja(u32 addr);
+template u32 GPU::read_ext_palette_obja(u32 addr);
+template <typename T>
+T GPU::read_ext_palette_obja(u32 addr) {
+    // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
+    if (get_bank_enabled(vramcnt[5])) {
+        if (Common::in_range(0, 0x2000, addr) && (get_bank_mst(vramcnt[5]) == 5)) {
+            return Common::read<T>(&bank_f[addr & 0x1FFF], 0);
+        }
+    }
+
+    if (get_bank_enabled(vramcnt[6])) {
+        // we will either access slots 0-1 or 2-3 depending on ofs
+        if (Common::in_range(0, 0x2000, addr) && (get_bank_mst(vramcnt[6]) == 5)) {
+            return Common::read<T>(&bank_g[addr & 0x1FFF], 0);
+        }
+    }
+
+    return 0;
+}
+
+template u8 GPU::read_ext_palette_objb(u32 addr);
+template u16 GPU::read_ext_palette_objb(u32 addr);
+template u32 GPU::read_ext_palette_objb(u32 addr);
+template <typename T>
+T GPU::read_ext_palette_objb(u32 addr) {
+    // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
+    if (get_bank_enabled(vramcnt[8])) {
+        if (Common::in_range(0, 0x2000, addr) && (get_bank_mst(vramcnt[8]) == 3)) {
+            return Common::read<T>(&bank_i[addr & 0x1FFF], 0);
+        }
+    }
+
+    return 0;
+}
+
 void GPU::render_scanline_start() {
     if (vcount < 192) {
         renderer_2d[0]->render_scanline(vcount);

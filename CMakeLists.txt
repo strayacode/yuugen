@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-option(LTO "Link time optimisations" OFF)
+set(LTO OFF)
 
 add_compile_options(
     -Wall
@@ -15,6 +15,7 @@ add_compile_options(
     -pedantic
     -pedantic-errors
     -Wno-missing-braces
+    -no-pie
 )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -26,7 +27,13 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-D_DEBUG)
 endif()
 
+if(CMAKE_BUILD_TYPE MATCHES "Release")
+    message(STATUS "Using -Ofast")
+    add_compile_options(-Ofast)
+endif()
+
 if(LTO)
+    message(STATUS "Using link time optimisations")
     add_compile_options(-flto)
 endif()
 

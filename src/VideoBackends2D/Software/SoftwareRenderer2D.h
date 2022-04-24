@@ -25,5 +25,8 @@ private:
         framebuffer[(256 * y) + x] = colour;
     }
 
+    u16 decode_obj_pixel_4bpp(u32 base, int number, int x, int y);
+    u16 decode_obj_pixel_8bpp(u32 base, int number, int x, int y);
+
     static constexpr int dimensions[3][4][2] = {{{8, 8}, {16, 16}, {32, 32}, {64, 64}}, {{16, 8}, {32, 8}, {32, 16}, {64, 32}}, {{8, 16}, {8, 32}, {16, 32}, {32, 64}}};
 };

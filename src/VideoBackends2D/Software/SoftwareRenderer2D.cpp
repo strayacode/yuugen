@@ -7,6 +7,23 @@
 SoftwareRenderer2D::SoftwareRenderer2D(GPU& gpu, Engine engine) : Renderer2D(gpu, engine) {}
 
 void SoftwareRenderer2D::render_scanline(int line) {
+    for (int i = 0; i < 4; i++) {
+        bg_layers[i].fill(0);
+    }
+
+    for (int i = 0; i < 256; i++) {
+        obj_priority[(256 * line) + i] = 4;
+        obj_colour[(256 * line) + i] = 0x8000;
+    }
+
+    // reload the internal registers
+    if (line == 0) {
+        internal_x[0] = bgx[0];
+        internal_y[0] = bgy[0];
+        internal_x[1] = bgx[1];
+        internal_y[1] = bgy[1];
+    }
+
     switch ((dispcnt >> 16) & 0x3) {
     case 0:
         render_blank_screen(line);

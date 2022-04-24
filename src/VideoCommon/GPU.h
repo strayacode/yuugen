@@ -53,6 +53,12 @@ public:
     template <typename T>
     T read_ext_palette_bgb(u32 addr);
 
+    template <typename T>
+    T read_ext_palette_obja(u32 addr);
+
+    template <typename T>
+    T read_ext_palette_objb(u32 addr);
+
     const VRAMRegion<128>& get_texture_data() { return texture_data; }
     const VRAMRegion<96>& get_texture_palette() { return texture_palette; }
     u8* get_palette_ram() { return palette_ram.data(); }

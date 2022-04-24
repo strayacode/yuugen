@@ -3,6 +3,7 @@ add_library(videobackends2d
     Software/Composer.cpp
     Software/Text.cpp Software/Extended.cpp
     Software/Object.cpp
+    Software/TileDecoder.cpp
 )
 
 set_target_properties(videobackends2d PROPERTIES LINKER_LANGUAGE CXX)
