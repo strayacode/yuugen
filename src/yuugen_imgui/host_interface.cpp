@@ -187,6 +187,8 @@ void HostInterface::UpdateTitle(float fps) {
             }
 
             if (ImGui::MenuItem("Stop")) {
+                window_type = WindowType::GamesList;
+                reset_title();
                 core.SetState(State::Idle);
             }
 

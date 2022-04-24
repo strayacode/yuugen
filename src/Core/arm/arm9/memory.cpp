@@ -428,9 +428,6 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
         case 0x04000300:
             system.POSTFLG9 = data;
             return;
-        default:
-            log_warn("ARM9: undefined byte write %08x = %02x", addr, data);
-            return;
         }
         
         break;
