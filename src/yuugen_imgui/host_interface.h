@@ -28,7 +28,6 @@ public:
     void Shutdown();
     void HandleInput();
     void UpdateTitle(float fps);
-    void DrawMenubar();
     void SetupStyle();
     void CartridgeWindow();
     
@@ -36,12 +35,10 @@ public:
     void ARMWindow(CPUArch arch);
     void SchedulerWindow();
     void DMAWindow();
-    void InputSettingsWindow();
 
     void render();
 
     bool running = true;
-    bool fullscreen = false;
 
     Core core;
 
@@ -59,7 +56,6 @@ public:
     bool arm9_window = false;
     bool scheduler_window = false;
     bool dma_window = false;
-    bool input_settings_window = false;
     bool demo_window = false;
 
     int disassembly_size = 15;
@@ -78,14 +74,22 @@ private:
     void end_fullscreen_window();
     
     void render_games_list_window();
+    void render_settings_window();
     void render_screens();
+    void render_menubar();
     void reset_title();
+
+    void boot_game(std::string path);
+    void boot_firmware();
+
+    void set_fullscreen(bool value);
 
     Disassembler disassembler;
 
     enum class WindowType {
         GamesList,
         Game,
+        Settings,
     };
 
     WindowType window_type = WindowType::GamesList;
@@ -94,4 +98,10 @@ private:
 
     GLWindow top_screen;
     GLWindow bottom_screen;
+
+    bool fullscreen = false;
+
+    // settings
+    // TODO: should be in a singleton settings class
+    bool fullscreen_on_game_launch = false;
 };
