@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include "common/types.h"
-#include "common/log.h"
-#include "common/GamesList.h"
-#include "core/core.h"
-#include "core/arm/Disassembler/Disassembler.h"
+#include "Common/Types.h"
+#include "Common/Log.h"
+#include "Common/GamesList.h"
+#include "VideoCommon/GLWindow.h"
+#include "Core/core.h"
+#include "Core/arm/Disassembler/Disassembler.h"
 #include <memory>
 #include <vector>
 #include <array>
@@ -33,8 +34,6 @@ public:
     
     // the arch argument specifies whether to render window for arm7 or arm9
     void ARMWindow(CPUArch arch);
-    void GPUWindow();
-    void GPU2DWindow();
     void SchedulerWindow();
     void DMAWindow();
     void InputSettingsWindow();
@@ -58,8 +57,6 @@ public:
     bool cartridge_window = false;
     bool arm7_window = false;
     bool arm9_window = false;
-    bool gpu_window = false;
-    bool gpu_2d_window = false;
     bool scheduler_window = false;
     bool dma_window = false;
     bool input_settings_window = false;
@@ -76,14 +73,12 @@ public:
     ImFont* regular_font = nullptr;
     ImFont* monospace_font = nullptr;
 
-    
-
 private:
     void begin_fullscreen_window(const char *name, float padding = 0.0f);
     void end_fullscreen_window();
     
     void render_games_list_window();
-    void render_screen();
+    void render_screens();
     void reset_title();
 
     Disassembler disassembler;
@@ -96,4 +91,7 @@ private:
     WindowType window_type = WindowType::GamesList;
 
     Common::GamesList games_list;
+
+    GLWindow top_screen;
+    GLWindow bottom_screen;
 };
