@@ -11,6 +11,7 @@ add_library(common
     Memory.h
     GPUTypes.h
     StringHelpers.h StringHelpers.cpp
+    Settings.h Settings.cpp
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

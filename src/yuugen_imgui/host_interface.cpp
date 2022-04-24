@@ -1,3 +1,4 @@
+#include "Common/Settings.h"
 #include "host_interface.h"
 
 HostInterface::HostInterface() : 
@@ -136,7 +137,7 @@ void HostInterface::UpdateTitle(float fps) {
 void HostInterface::render_screens() {
     ImGuiIO& io = ImGui::GetIO();
     
-    SDL_ShowCursor(hide_cursor && (fullscreen || (io.MousePos.y > menubar_height)) ? SDL_DISABLE : SDL_ENABLE);
+    SDL_ShowCursor(Settings::Get().hide_cursor && (fullscreen || (io.MousePos.y > menubar_height)) ? SDL_DISABLE : SDL_ENABLE);
 
     top_screen.render(core.system.gpu.get_framebuffer(Screen::Top));
     bottom_screen.render(core.system.gpu.get_framebuffer(Screen::Bottom));
@@ -588,8 +589,8 @@ void HostInterface::render_games_list_window() {
 void HostInterface::render_settings_window() {
     begin_fullscreen_window("Settings", 10.0f);
     ImGui::Text("Video Settings");
-    ImGui::Checkbox("Fullscreen on Game Launch", &fullscreen_on_game_launch);
-    ImGui::Checkbox("Hide Cursor in Game", &hide_cursor);
+    ImGui::Checkbox("Fullscreen on Game Launch", &Settings::Get().fullscreen_on_game_launch);
+    ImGui::Checkbox("Hide Cursor in Game", &Settings::Get().hide_cursor);
     ImGui::Separator();
     end_fullscreen_window();
 }
@@ -601,13 +602,13 @@ void HostInterface::reset_title() {
 void HostInterface::boot_game(std::string path) {
     window_type = WindowType::Game;
     core.BootGame(path);
-    set_fullscreen(fullscreen_on_game_launch);
+    set_fullscreen(Settings::Get().fullscreen_on_game_launch);
 }
 
 void HostInterface::boot_firmware() {
     window_type = WindowType::Game;
     core.BootFirmware();
-    set_fullscreen(fullscreen_on_game_launch);
+    set_fullscreen(Settings::Get().fullscreen_on_game_launch);
 }
 
 void HostInterface::set_fullscreen(bool value) {
