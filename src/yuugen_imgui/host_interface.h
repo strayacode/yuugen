@@ -89,7 +89,6 @@ private:
     enum class WindowType {
         GamesList,
         Game,
-        Settings,
     };
 
     WindowType window_type = WindowType::GamesList;
@@ -100,4 +99,5 @@ private:
     GLWindow bottom_screen;
 
     bool fullscreen = false;
+    bool settings_window = false;
 };

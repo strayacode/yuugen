@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <thread>
+#include <atomic>
 #include "Common/Types.h"
 #include "VideoCommon/Renderer2D.h"
 #include "VideoCommon/Renderer3D.h"
@@ -40,6 +41,12 @@ public:
         I,
     };
 
+    enum class ThreadState {
+        Idle,
+        SignalDraw,
+        Drawing,
+    };
+
     void update_vram_mapping(Bank bank, u8 data);
     void reset_vram_mapping();
 
@@ -66,8 +73,8 @@ public:
     u8* get_palette_ram() { return palette_ram.data(); }
     u8* get_oam() { return oam.data(); }
 
-    void render_thread_start();
-    void render_thread_stop();
+    void start_render_thread();
+    void stop_render_thread();
 
     std::unique_ptr<Renderer2D> renderer_2d[2];
     std::unique_ptr<Renderer3D> renderer_3d;
@@ -119,6 +126,7 @@ private:
 
     std::thread render_thread;
     bool render_thread_running = false;
+    std::atomic<ThreadState> thread_state;
 
     System& system;
 };

@@ -1,4 +1,4 @@
-#include <yuugen_common/emu_thread.h>
+#include "yuugen_common/emu_thread.h"
 
 EmuThread::EmuThread(RunFunction run_frame, UpdateFunction update_fps) : run_frame(run_frame), update_fps(update_fps) {
 

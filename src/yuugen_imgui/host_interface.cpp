@@ -237,9 +237,10 @@ void HostInterface::render_menubar() {
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Settings")) {
-                window_type = WindowType::Settings;
-                reset_title();
+            if (ImGui::MenuItem("Settings", "", &settings_window)) {
+                // window_type = WindowType::Settings;
+                // reset_title();
+
             }
 
             ImGui::EndMenu();
@@ -471,9 +472,9 @@ void HostInterface::render() {
     case WindowType::Game:
         render_screens();
         break;
-    case WindowType::Settings:
-        render_settings_window();
-        break;
+    // case WindowType::Settings:
+    //     render_settings_window();
+    //     break;
     }
 
     if (cartridge_window) {
@@ -498,6 +499,10 @@ void HostInterface::render() {
 
     if (demo_window) {
         ImGui::ShowDemoWindow();
+    }
+
+    if (settings_window) {
+        render_settings_window();
     }
 
     ImGui::Render();
@@ -587,13 +592,13 @@ void HostInterface::render_games_list_window() {
 }
 
 void HostInterface::render_settings_window() {
-    begin_fullscreen_window("Settings", 10.0f);
+    ImGui::Begin("Settings");
     ImGui::Text("Video Settings");
     ImGui::Checkbox("Fullscreen on Game Launch", &Settings::Get().fullscreen_on_game_launch);
     ImGui::Checkbox("Hide Cursor in Game", &Settings::Get().hide_cursor);
-    ImGui::Checkbox("Do 2D Rendering on Separate Thread", &Settings::Get().threaded_2d);
+    ImGui::Checkbox("Do 2D Rendering on Separate Thread (Experimental)", &Settings::Get().threaded_2d);
     ImGui::Separator();
-    end_fullscreen_window();
+    ImGui::End();
 }
 
 void HostInterface::reset_title() {
