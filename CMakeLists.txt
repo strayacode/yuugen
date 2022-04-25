@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-set(LTO ON)
+option(LTO "Enable link time optimisations" ON)
 
 add_compile_options(
     -Wall

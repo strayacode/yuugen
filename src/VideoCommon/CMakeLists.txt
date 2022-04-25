@@ -1,7 +1,6 @@
 add_library(videocommon
     GPU.h GPU.cpp
     GLWindow.h GLWindow.cpp
-    GPUState.h
     Renderer2D.h Renderer2D.cpp
     Renderer3D.h Renderer3D.cpp
     VRAMPage.h VRAMRegion.h

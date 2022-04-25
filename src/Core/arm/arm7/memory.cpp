@@ -105,6 +105,8 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         switch (addr) {
         case 0x04000004:
             return system.gpu.dispstat[0];
+        case 0x04000006:
+            return system.gpu.vcount;
         case 0x040000BA:
             return system.dma[0].ReadDMACNT_H(0);
         case 0x040000C6:

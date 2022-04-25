@@ -1,11 +1,16 @@
 #include "Common/Log.h"
 #include "Common/Memory.h"
+#include "Common/Settings.h"
 #include "VideoCommon/GPU.h"
 #include "VideoBackends2D/Software/SoftwareRenderer2D.h"
 #include "VideoBackends3D/Software/SoftwareRenderer3D.h"
 #include "Core/system.h"
 
 GPU::GPU(System& system) : system(system) {}
+
+GPU::~GPU() {
+    stop_render_thread();
+}
 
 void GPU::reset() {
     powcnt1 = 0;
@@ -40,6 +45,9 @@ void GPU::reset() {
     });
 
     system.scheduler.AddEvent(1606, &scanline_start_event);
+
+    render_thread_running = false;
+    thread_state.store(ThreadState::Idle);
 
     reset_vram_mapping();
 }
@@ -427,8 +435,15 @@ T GPU::read_ext_palette_objb(u32 addr) {
 
 void GPU::render_scanline_start() {
     if (vcount < 192) {
-        renderer_2d[0]->render_scanline(vcount);
-        renderer_2d[1]->render_scanline(vcount);
+        if (render_thread_running) {
+            // wait for previous scanline to be drawn by render thread
+            while (thread_state.load() == ThreadState::Drawing) {
+                std::this_thread::yield();
+            }
+        } else {
+            renderer_2d[0]->render_scanline(vcount);
+            renderer_2d[1]->render_scanline(vcount);
+        }
 
         // trigger an arm9 dma transfer on hblank (only for visible scanlines)
         system.dma[1].Trigger(2);
@@ -493,7 +508,20 @@ void GPU::render_scanline_end() {
 
     // end of frame
     if (vcount == 263) {
+        // enable threaded 2d renderers
+        if (Settings::Get().threaded_2d && !render_thread_running) {
+            start_render_thread();
+        }
+
+        if (!Settings::Get().threaded_2d && render_thread_running) {
+            stop_render_thread();
+        }
+
         vcount = 0;
+    }
+
+    if (render_thread_running && vcount < 192) {
+        thread_state.store(ThreadState::Drawing);
     }
 }
 
@@ -507,4 +535,34 @@ int GPU::get_bank_offset(u8 vramcnt) {
 
 bool GPU::get_bank_enabled(u8 vramcnt) {
     return (vramcnt & (1 << 7));
+}
+
+void GPU::start_render_thread() {
+    stop_render_thread();
+
+    render_thread_running = true;
+
+    render_thread = std::thread{[this]() {
+        while (render_thread_running) {
+            while (thread_state.load() == ThreadState::Idle) {
+                // early return incase stop_render_thread() is called
+                if (!render_thread_running) return;
+            }
+
+            thread_state.store(ThreadState::Drawing);
+            renderer_2d[0]->render_scanline(vcount);
+            renderer_2d[1]->render_scanline(vcount);
+            thread_state.store(ThreadState::Idle);
+        }
+    }};
+}
+
+void GPU::stop_render_thread() {
+    if (!render_thread_running) {
+        return;
+    }
+
+    render_thread_running = false;
+
+    render_thread.join();
 }

@@ -1,3 +1,4 @@
+#include "Common/Settings.h"
 #include "host_interface.h"
 
 HostInterface::HostInterface() : 
@@ -107,6 +108,9 @@ void HostInterface::HandleInput() {
             case SDLK_w:
                 core.system.input.HandleInput(BUTTON_L, key_pressed);
                 break;
+            case SDLK_ESCAPE:
+                set_fullscreen(false);
+                break;
             }
         } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
             int x = ((event.button.x - center_pos) / scaled_dimensions.x) * 256;
@@ -130,7 +134,42 @@ void HostInterface::UpdateTitle(float fps) {
     SDL_SetWindowTitle(window, window_title);
 }
 
- void HostInterface::DrawMenubar() {
+void HostInterface::render_screens() {
+    ImGuiIO& io = ImGui::GetIO();
+    
+    SDL_ShowCursor(Settings::Get().hide_cursor && (fullscreen || (io.MousePos.y > menubar_height)) ? SDL_DISABLE : SDL_ENABLE);
+
+    top_screen.render(core.system.gpu.get_framebuffer(Screen::Top));
+    bottom_screen.render(core.system.gpu.get_framebuffer(Screen::Bottom));
+
+    const double scale_x = (double)window_width / 256;
+    const double scale_y = (double)window_height / 384;
+    const double scale = scale_x < scale_y ? scale_x : scale_y;
+
+    scaled_dimensions = ImVec2(256 * scale, 192 * scale);
+
+    center_pos = ((double)window_width - scaled_dimensions.x) / 2;
+    
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)top_screen.get_texture(),
+        ImVec2(center_pos, fullscreen ? 0 : menubar_height),
+        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
+    
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)bottom_screen.get_texture(),
+        ImVec2(center_pos, scaled_dimensions.y),
+        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
+}
+
+void HostInterface::render_menubar() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
     if (ImGui::BeginMainMenuBar()) {
@@ -140,8 +179,7 @@ void HostInterface::UpdateTitle(float fps) {
             }
 
             if (ImGui::MenuItem("Boot Firmware")) {
-                window_type = WindowType::Game;
-                core.BootFirmware();
+                boot_firmware();
             }
 
             if (ImGui::MenuItem("Power Off")) {
@@ -197,6 +235,14 @@ void HostInterface::UpdateTitle(float fps) {
                 core.SetState(State::Running);
             }
 
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Settings", "", &settings_window)) {
+                // window_type = WindowType::Settings;
+                // reset_title();
+
+            }
+
             ImGui::EndMenu();
         }
 
@@ -230,20 +276,11 @@ void HostInterface::UpdateTitle(float fps) {
 
         if (ImGui::BeginMenu("View")) {
             if (ImGui::MenuItem("Toggle Fullscreen", nullptr, fullscreen)) {
-                fullscreen = !fullscreen;
-                SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+                set_fullscreen(!fullscreen);
             }
 
             if (ImGui::MenuItem("Set To DS Screen Size")) {
                 SDL_SetWindowSize(window, 512, 768);
-            }
-
-            ImGui::EndMenu();
-        }
-        
-        if (ImGui::BeginMenu("Settings")) {
-            if (ImGui::MenuItem("Input Settings", nullptr, input_settings_window)) { 
-                input_settings_window = !input_settings_window; 
             }
 
             ImGui::EndMenu();
@@ -257,41 +294,9 @@ void HostInterface::UpdateTitle(float fps) {
 
     file_dialog.Display();
     if (file_dialog.HasSelected()) {
-        window_type = WindowType::Game;
-        core.BootGame(file_dialog.GetSelected().string());
+        boot_game(file_dialog.GetSelected().string());
         file_dialog.ClearSelected();
     }
-}
-
-void HostInterface::render_screens() {
-    top_screen.render(core.system.gpu.get_framebuffer(Screen::Top));
-    bottom_screen.render(core.system.gpu.get_framebuffer(Screen::Bottom));
-
-    const double scale_x = (double)window_width / 256;
-    const double scale_y = (double)window_height / 384;
-    const double scale = scale_x < scale_y ? scale_x : scale_y;
-
-    scaled_dimensions = ImVec2(256 * scale, 192 * scale);
-
-    center_pos = ((double)window_width - scaled_dimensions.x) / 2;
-    
-    ImGui::GetBackgroundDrawList()->AddImage(
-        (void*)(intptr_t)top_screen.get_texture(),
-        ImVec2(center_pos, menubar_height),
-        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
-        ImVec2(0, 0),
-        ImVec2(1, 1),
-        IM_COL32_WHITE
-    );
-    
-    ImGui::GetBackgroundDrawList()->AddImage(
-        (void*)(intptr_t)bottom_screen.get_texture(),
-        ImVec2(center_pos, scaled_dimensions.y),
-        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
-        ImVec2(0, 0),
-        ImVec2(1, 1),
-        IM_COL32_WHITE
-    );
 }
 
 void HostInterface::SetupStyle() {
@@ -451,17 +456,14 @@ void HostInterface::DMAWindow() {
     ImGui::End();
 }
 
-void HostInterface::InputSettingsWindow() {
-    ImGui::Begin("Input Settings");
-    ImGui::End();
-}
-
 void HostInterface::render() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    DrawMenubar();
+    if (core.GetState() == State::Idle || !fullscreen) {
+        render_menubar();
+    }
 
     switch (window_type) {
     case WindowType::GamesList:
@@ -470,6 +472,9 @@ void HostInterface::render() {
     case WindowType::Game:
         render_screens();
         break;
+    // case WindowType::Settings:
+    //     render_settings_window();
+    //     break;
     }
 
     if (cartridge_window) {
@@ -492,12 +497,12 @@ void HostInterface::render() {
         DMAWindow();
     }
 
-    if (input_settings_window) {
-        InputSettingsWindow();
-    }
-
     if (demo_window) {
         ImGui::ShowDemoWindow();
+    }
+
+    if (settings_window) {
+        render_settings_window();
     }
 
     ImGui::Render();
@@ -555,29 +560,25 @@ void HostInterface::render_games_list_window() {
             ImGui::TableSetColumnIndex(0);
 
             if (ImGui::Selectable(entry.file_name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
-                window_type = WindowType::Game;
-                core.BootGame(entry.path.c_str());
+                boot_game(entry.path.c_str());
             }
 
             ImGui::TableSetColumnIndex(1);
 
             if (ImGui::Selectable(entry.region.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
-                window_type = WindowType::Game;
-                core.BootGame(entry.path.c_str());
+                boot_game(entry.path.c_str());
             }
 
             ImGui::TableSetColumnIndex(2);
 
             if (ImGui::Selectable(entry.game_code.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
-                window_type = WindowType::Game;
-                core.BootGame(entry.path.c_str());
+                boot_game(entry.path.c_str());
             }
 
             ImGui::TableSetColumnIndex(3);
 
             if (ImGui::Selectable(entry.size.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
-                window_type = WindowType::Game;
-                core.BootGame(entry.path.c_str());
+                boot_game(entry.path.c_str());
             }
             
             ImGui::PopStyleVar();
@@ -590,6 +591,33 @@ void HostInterface::render_games_list_window() {
     end_fullscreen_window();
 }
 
+void HostInterface::render_settings_window() {
+    ImGui::Begin("Settings");
+    ImGui::Text("Video Settings");
+    ImGui::Checkbox("Fullscreen on Game Launch", &Settings::Get().fullscreen_on_game_launch);
+    ImGui::Checkbox("Hide Cursor in Game", &Settings::Get().hide_cursor);
+    ImGui::Checkbox("Do 2D Rendering on Separate Thread (Experimental)", &Settings::Get().threaded_2d);
+    ImGui::Separator();
+    ImGui::End();
+}
+
 void HostInterface::reset_title() {
     SDL_SetWindowTitle(window, "yuugen");
+}
+
+void HostInterface::boot_game(std::string path) {
+    window_type = WindowType::Game;
+    core.BootGame(path);
+    set_fullscreen(Settings::Get().fullscreen_on_game_launch);
+}
+
+void HostInterface::boot_firmware() {
+    window_type = WindowType::Game;
+    core.BootFirmware();
+    set_fullscreen(Settings::Get().fullscreen_on_game_launch);
+}
+
+void HostInterface::set_fullscreen(bool value) {
+    fullscreen = value;
+    SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
