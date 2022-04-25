@@ -43,8 +43,8 @@ public:
 
     enum class ThreadState {
         Idle,
-        SignalDraw,
-        Drawing,
+        DrawingA,
+        DrawingB,
     };
 
     void update_vram_mapping(Bank bank, u8 data);

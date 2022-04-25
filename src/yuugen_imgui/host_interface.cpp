@@ -237,7 +237,8 @@ void HostInterface::render_menubar() {
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Settings", "", &settings_window)) {
+            if (ImGui::MenuItem("Settings")) {
+                settings_window = !settings_window;
                 // window_type = WindowType::Settings;
                 // reset_title();
 

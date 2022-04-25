@@ -436,8 +436,15 @@ T GPU::read_ext_palette_objb(u32 addr) {
 void GPU::render_scanline_start() {
     if (vcount < 192) {
         if (render_thread_running) {
+            // optimisation: get the main thread to render for engine b
+            // while rendering is happening for engine a on the main thread
+            if (thread_state.load() == ThreadState::DrawingA) {
+                thread_state.store(ThreadState::DrawingB);
+                renderer_2d[1]->render_scanline(vcount);
+            }
+
             // wait for previous scanline to be drawn by render thread
-            while (thread_state.load() == ThreadState::Drawing) {
+            while (thread_state.load() != ThreadState::Idle) {
                 std::this_thread::yield();
             }
         } else {
@@ -521,7 +528,7 @@ void GPU::render_scanline_end() {
     }
 
     if (render_thread_running && vcount < 192) {
-        thread_state.store(ThreadState::Drawing);
+        thread_state.store(ThreadState::DrawingA);
     }
 }
 
@@ -549,9 +556,13 @@ void GPU::start_render_thread() {
                 if (!render_thread_running) return;
             }
 
-            thread_state.store(ThreadState::Drawing);
             renderer_2d[0]->render_scanline(vcount);
-            renderer_2d[1]->render_scanline(vcount);
+            
+            // only do engine b rendering if the main thread isn't already doing that for us
+            if (thread_state.exchange(ThreadState::DrawingB) == ThreadState::DrawingA) {
+                renderer_2d[1]->render_scanline(vcount);
+            }
+            
             thread_state.store(ThreadState::Idle);
         }
     }};
