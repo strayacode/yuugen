@@ -1,6 +1,5 @@
 add_library(core
     core.h core.cpp
-    config.h config.cpp
     system.h system.cpp
 
     arm/memory_base.h arm/cpu_registers.h
@@ -33,4 +32,4 @@ add_library(core
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC common videocommon yuugen_common audio_common)
+target_link_libraries(core PUBLIC common videocommon yuugen_common audiocommon)

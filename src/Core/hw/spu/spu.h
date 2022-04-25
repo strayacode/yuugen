@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common/Types.h"
-#include <audio_common/audio_interface.h>
+#include "AudioCommon/AudioInterface.h"
 #include <memory>
 
 enum ChannelRegisters {

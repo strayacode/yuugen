@@ -4,9 +4,8 @@
 #include <string>
 #include <memory>
 #include <yuugen_common/emu_thread.h>
-#include <audio_common/audio_interface.h>
-#include <audio_common/sdl/audio_interface.h>
-#include "Core/config.h"
+#include "AudioCommon/AudioInterface.h"
+#include "AudioCommon/SDLAudioInterface.h"
 #include "Core/system.h"
 
 enum class BootMode {
@@ -41,7 +40,6 @@ public:
     void SetGamePath(std::string path);
 
     System system;
-    Config config;
     std::shared_ptr<AudioInterface> audio_interface;
     
 private:

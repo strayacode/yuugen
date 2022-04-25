@@ -1,8 +1,8 @@
 #include <algorithm>
 #include "Common/Log.h"
+#include "Common/Settings.h"
 #include "Core/hw/spu/spu.h"
 #include "Core/core.h"
-#include "audio_common/audio_interface.h"
 
 // sound notes:
 // for pcm audio data,
@@ -311,8 +311,8 @@ u32 SPU::GenerateSamples() {
     sample_left = std::clamp<s64>(sample_left, 0, 0x3FF);
     sample_right = std::clamp<s64>(sample_right, 0, 0x3FF);
 
-    sample_left = (sample_left - 0x200) << 6;
-    sample_right = (sample_right - 0x200) << 6;
+    sample_left -= 0x200;
+    sample_right -= 0x200;
 
     return (sample_right << 16) | (sample_left & 0xFFFF);
 }
@@ -328,13 +328,20 @@ void SPU::SetAudioInterface(std::shared_ptr<AudioInterface> interface) {
 }
 
 void AudioCallback(SPU* spu, s16* stream, int len) {
+    int volume = Settings::Get().volume;
+
+    // no point in computing samples
+    if (volume == 0) return;
+
+    int multiplier = (volume * 32) / 100;
+
     // divide by 2 since we are using 2 channels
     int no_samples = len / sizeof(s16) / 2;
 
     for (int i = 0; i < no_samples; i++) {
         u32 samples = spu->GenerateSamples();
 
-        *stream++ = samples & 0xFFFF;
-        *stream++ = samples >> 16;
+        *stream++ = (samples & 0xFFFF) * multiplier;
+        *stream++ = (samples >> 16) * multiplier;
     }
 }

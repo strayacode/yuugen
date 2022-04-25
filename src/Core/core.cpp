@@ -21,8 +21,6 @@ void Core::Start() {
 
 void Core::Shutdown() {
     emu_thread.Stop();
-
-    // later do save to config file and stuff
 }
 
 void Core::RunFrame() {

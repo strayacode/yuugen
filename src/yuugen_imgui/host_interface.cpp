@@ -599,6 +599,8 @@ void HostInterface::render_settings_window() {
     ImGui::Checkbox("Hide Cursor in Game", &Settings::Get().hide_cursor);
     ImGui::Checkbox("Do 2D Rendering on Separate Thread (Experimental)", &Settings::Get().threaded_2d);
     ImGui::Separator();
+    ImGui::Text("Audio Settings");
+    ImGui::SliderInt("Volume", &Settings::Get().volume, 0, 100);
     ImGui::End();
 }
 

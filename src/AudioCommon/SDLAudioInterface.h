@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include <audio_common/audio_interface.h>
+#include "AudioCommon/AudioInterface.h"
 
 class SDLAudioInterface : public AudioInterface {
 public:
