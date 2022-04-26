@@ -85,12 +85,30 @@ void System::SetGamePath(std::string path) {
 
 void System::RunFrame() {
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
-
+    
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        cpu_core[1].RunInterpreter(2);
-        cpu_core[0].RunInterpreter(1);
-        
-        scheduler.Tick(1);
+        int arm7_cycles = 0;
+
+        // run 16 arm7 instructions
+        for (int i = 0; i < 16; i++) {
+            if (!cpu_core[0].Halted()) {
+                arm7_cycles += cpu_core[0].step();
+            } else {
+                arm7_cycles += 16;
+            }
+        }
+
+        int arm9_cycles = arm7_cycles * 2;
+
+        while (arm9_cycles > 0) {
+            if (!cpu_core[1].Halted()) {
+                arm9_cycles -= cpu_core[1].step();
+            } else {
+                arm9_cycles--;
+            }
+        }
+
+        scheduler.Tick(arm7_cycles);
         scheduler.RunEvents();
     }
 }

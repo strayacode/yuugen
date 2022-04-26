@@ -95,7 +95,7 @@ public:
     CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15);
 
     void setup_timings();
-
+    
     enum class Access {
         NonSequential,
         Sequential,
@@ -167,8 +167,8 @@ public:
     CP15* cp15;
 
     // first array for each is non seq and second is seq
-    std::array<2, std::array<int, 0x10>> timings_16 = {};
-    std::array<2, std::array<int, 0x10>> timings_32 = {};
+    std::array<std::array<int, 0x10>, 2> timings_16;
+    std::array<std::array<int, 0x10>, 2> timings_32;
     
     int instruction_cycles = 0;
 };

@@ -36,12 +36,14 @@ void CPUCore::Reset() {
     instruction = 0;
 }
 
-void setup_timings() {
+void CPUCore::setup_timings() {
     // assume every memory access takes 1 cycle for now
-    timings_16[0].fill(1);
-    timings_32[0].fill(1);
-    timings_16[1].fill(1);
-    timings_32[1].fill(1);
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 0x10; j++) {
+            timings_16[i][j] = 1;
+            timings_32[i][j] = 1;
+        }
+    }
 }
 
 int CPUCore::step() {
@@ -141,19 +143,19 @@ bool CPUCore::Halted() {
 }
 
 u8 CPUCore::ReadByte(u32 addr, Access access) {
-    instruction_cycles += timings_16[static_cast<int>(access)];
+    instruction_cycles += timings_16[static_cast<int>(access)][(addr >> 28) & 0xF];
 
     return memory.FastRead<u8>(addr);
 }
 
 u16 CPUCore::ReadHalf(u32 addr, Access access) {
-    instruction_cycles += timings_16[static_cast<int>(access)];
+    instruction_cycles += timings_16[static_cast<int>(access)][(addr >> 28) & 0xF];
 
     return memory.FastRead<u16>(addr);
 }
 
 u32 CPUCore::ReadWord(u32 addr, Access access) {
-    instruction_cycles += timings_32[static_cast<int>(access)];
+    instruction_cycles += timings_32[static_cast<int>(access)][(addr >> 28) & 0xF];
 
     return memory.FastRead<u32>(addr);
 }
@@ -170,19 +172,19 @@ u32 CPUCore::ReadWordRotate(u32 addr, Access access) {
 }
 
 void CPUCore::WriteByte(u32 addr, u8 data, Access access) {
-    instruction_cycles += timings_16[static_cast<int>(access)];
+    instruction_cycles += timings_16[static_cast<int>(access)][(addr >> 28) & 0xF];
 
     memory.FastWrite<u8>(addr, data);
 }
 
 void CPUCore::WriteHalf(u32 addr, u16 data, Access access) {
-    instruction_cycles += timings_16[static_cast<int>(access)];
+    instruction_cycles += timings_16[static_cast<int>(access)][(addr >> 28) & 0xF];
 
     memory.FastWrite<u16>(addr, data);
 }
 
 void CPUCore::WriteWord(u32 addr, u32 data, Access access) {
-    instruction_cycles += timings_32[static_cast<int>(access)];
+    instruction_cycles += timings_32[static_cast<int>(access)][(addr >> 28) & 0xF];
 
     memory.FastWrite<u32>(addr, data);
 }
