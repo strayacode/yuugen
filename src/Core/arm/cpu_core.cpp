@@ -6,6 +6,7 @@ static Decoder<CPUCore> decoder;
 
 CPUCore::CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15) : memory(memory), arch(arch), cp15(cp15) {
     GenerateConditionTable();
+    setup_timings();
 }
 
 void CPUCore::Reset() {
@@ -35,42 +36,52 @@ void CPUCore::Reset() {
     instruction = 0;
 }
 
-void CPUCore::RunInterpreter(int cycles) {
-    while (cycles-- > 0) {
-        if (halted) {
-            return;
-        }
+void setup_timings() {
+    // assume every memory access takes 1 cycle for now
+    timings_16[0].fill(1);
+    timings_32[0].fill(1);
+    timings_16[1].fill(1);
+    timings_32[1].fill(1);
+}
 
-        if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
-            HandleInterrupt();
-        }
-
-        // store the current executing instruction
-        instruction = pipeline[0];
-        
-        // shift the pipeline
-        pipeline[0] = pipeline[1];
-
-        // TODO: align r15
-        if (IsARM()) {
-            pipeline[1] = ReadWord(regs.r[15]);
-        } else {
-            pipeline[1] = ReadHalf(regs.r[15]);
-        }
-
-        if (IsARM()) {
-            Instruction inst = decoder.decode_arm(instruction);
-
-            if (ConditionEvaluate(instruction >> 28)) {
-                (this->*inst)();
-            } else {
-                regs.r[15] += 4;
-            }
-        } else {
-            Instruction inst = decoder.decode_thumb(instruction);
-            (this->*inst)();
-        }
+int CPUCore::step() {
+    if (halted) {
+        return 0;
     }
+
+    instruction_cycles = 0;
+
+    if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
+        HandleInterrupt();
+    }
+
+    // store the current executing instruction
+    instruction = pipeline[0];
+    
+    // shift the pipeline
+    pipeline[0] = pipeline[1];
+
+    // TODO: align r15
+    if (IsARM()) {
+        pipeline[1] = ReadWord(regs.r[15]);
+    } else {
+        pipeline[1] = ReadHalf(regs.r[15]);
+    }
+
+    if (IsARM()) {
+        Instruction inst = decoder.decode_arm(instruction);
+
+        if (ConditionEvaluate(instruction >> 28)) {
+            (this->*inst)();
+        } else {
+            regs.r[15] += 4;
+        }
+    } else {
+        Instruction inst = decoder.decode_thumb(instruction);
+        (this->*inst)();
+    }
+
+    return instruction_cycles;
 }
 
 void CPUCore::DirectBoot(u32 entrypoint) {
@@ -129,20 +140,26 @@ bool CPUCore::Halted() {
     return halted;
 }
 
-u8 CPUCore::ReadByte(u32 addr) {
+u8 CPUCore::ReadByte(u32 addr, Access access) {
+    instruction_cycles += timings_16[static_cast<int>(access)];
+
     return memory.FastRead<u8>(addr);
 }
 
-u16 CPUCore::ReadHalf(u32 addr) {
+u16 CPUCore::ReadHalf(u32 addr, Access access) {
+    instruction_cycles += timings_16[static_cast<int>(access)];
+
     return memory.FastRead<u16>(addr);
 }
 
-u32 CPUCore::ReadWord(u32 addr) {
+u32 CPUCore::ReadWord(u32 addr, Access access) {
+    instruction_cycles += timings_32[static_cast<int>(access)];
+
     return memory.FastRead<u32>(addr);
 }
 
-u32 CPUCore::ReadWordRotate(u32 addr) {
-    u32 return_value = memory.FastRead<u32>(addr);
+u32 CPUCore::ReadWordRotate(u32 addr, Access access) {
+    u32 return_value = ReadWord(addr, access);
 
     if (addr & 0x3) {
         int shift_amount = (addr & 0x3) * 8;
@@ -152,15 +169,21 @@ u32 CPUCore::ReadWordRotate(u32 addr) {
     return return_value;
 }
 
-void CPUCore::WriteByte(u32 addr, u8 data) {
+void CPUCore::WriteByte(u32 addr, u8 data, Access access) {
+    instruction_cycles += timings_16[static_cast<int>(access)];
+
     memory.FastWrite<u8>(addr, data);
 }
 
-void CPUCore::WriteHalf(u32 addr, u16 data) {
+void CPUCore::WriteHalf(u32 addr, u16 data, Access access) {
+    instruction_cycles += timings_16[static_cast<int>(access)];
+
     memory.FastWrite<u16>(addr, data);
 }
 
-void CPUCore::WriteWord(u32 addr, u32 data) {
+void CPUCore::WriteWord(u32 addr, u32 data, Access access) {
+    instruction_cycles += timings_32[static_cast<int>(access)];
+
     memory.FastWrite<u32>(addr, data);
 }
 
