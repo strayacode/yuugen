@@ -33,6 +33,7 @@ void GPU::reset() {
 
     renderer_2d[0]->reset();
     renderer_2d[1]->reset();
+    renderer_3d->reset();
 
     scanline_start_event = system.scheduler.RegisterEvent("Scanline Start", [this]() {
         render_scanline_start();
@@ -57,7 +58,7 @@ void GPU::create_renderers(RendererType type) {
     case RendererType::Software:
         renderer_2d[0] = std::make_unique<SoftwareRenderer2D>(*this, Engine::A);
         renderer_2d[1] = std::make_unique<SoftwareRenderer2D>(*this, Engine::B);
-        renderer_3d = std::make_unique<SoftwareRenderer3D>();
+        renderer_3d = std::make_unique<SoftwareRenderer3D>(*this);
         break;
     default:
         log_fatal("GPU: unknown renderer type %d", static_cast<int>(type));

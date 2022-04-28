@@ -5,6 +5,7 @@ add_library(videocommon
     Renderer3D.h Renderer3D.cpp
     VRAMPage.h VRAMRegion.h
     Colour.h Colour.cpp
+    GeometryCommands.cpp
 )
 
 if (POLICY CMP0072)

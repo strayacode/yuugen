@@ -101,6 +101,8 @@ public:
     std::array<u8, 0x8000> bank_h = {};
     std::array<u8, 0x4000> bank_i = {};
 
+    System& system;
+
 private:
     void render_scanline_start();
     void render_scanline_end();
@@ -127,6 +129,4 @@ private:
     std::thread render_thread;
     bool render_thread_running = false;
     std::atomic<ThreadState> thread_state;
-
-    System& system;
 };

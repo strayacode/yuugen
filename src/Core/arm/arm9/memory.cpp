@@ -164,6 +164,8 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
             return system.gpu.dispstat[1];
         case 0x04000006:
             return system.gpu.vcount;
+        case 0x04000060:
+            return system.gpu.renderer_3d->disp3dcnt;
         case 0x040000BA:
             return system.dma[1].ReadDMACNT_H(0);
         case 0x040000C6:
@@ -364,6 +366,10 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         return system.gpu.renderer_2d[0]->read_word(addr);
     }
 
+    if (Common::in_range(0x04000320, 0x040006A3, addr)) {
+        return system.gpu.renderer_3d->read_word(addr);
+    }
+
     if (Common::in_range(0x04001000, 0x04001060, addr)) {
         return system.gpu.renderer_2d[1]->read_word(addr);
     }
@@ -456,6 +462,9 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
         switch (addr) {
         case 0x04000004:
             system.gpu.dispstat[1] = data;
+            return;
+        case 0x04000060:
+            system.gpu.renderer_3d->disp3dcnt = data;
             return;
         case 0x0400006C:
             system.gpu.renderer_2d[0]->master_bright = data;
@@ -568,6 +577,11 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
         system.gpu.renderer_2d[0]->write_half(addr, data);
+        return;
+    }
+
+    if (Common::in_range(0x04000320, 0x040006A3, addr)) {
+        system.gpu.renderer_3d->write_half(addr, data);
         return;
     }
 
@@ -750,6 +764,11 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
         system.gpu.renderer_2d[0]->write_word(addr, data);
+        return;
+    }
+
+    if (Common::in_range(0x04000320, 0x040006A3, addr)) {
+        system.gpu.renderer_3d->write_word(addr, data);
         return;
     }
 
