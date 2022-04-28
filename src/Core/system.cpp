@@ -90,29 +90,6 @@ void System::RunFrame() {
     u64 arm9_cycles = scheduler.GetCurrentTime();
     
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        // while (scheduler.GetCurrentTime() < scheduler.GetEventTime()) {
-        //     int arm9_cycles = 0;
-        //     arm9_cycles += cpu_core[1].step();
-        //     arm9_cycles += cpu_core[1].step();
-
-        //     int arm7_cycles = arm9_cycles >> 1;
-
-        //     scheduler.Tick(arm7_cycles);
-
-        //     while (arm7_cycles > 0) {
-        //         arm7_cycles -= cpu_core[0].step();
-        //     }
-        // }
-
-        // scheduler.RunEvents();
-
-        // cpu_core[1].step();
-        // cpu_core[1].step();
-        // cpu_core[0].step();
-
-        // scheduler.Tick(1);
-        // scheduler.RunEvents();
-
         while (scheduler.GetEventTime() > scheduler.GetCurrentTime()) {
             if (!cpu_core[1].Halted() && arm9_cycles <= scheduler.GetCurrentTime()) {
                 arm9_cycles = scheduler.GetCurrentTime() + cpu_core[1].step();

@@ -80,3 +80,7 @@ void Scheduler::set_current_time(u64 data) {
 std::vector<Event>& Scheduler::GetEvents() {
     return events;
 }
+
+void Scheduler::set_current_time(u64 data) {
+    current_time = data;
+}
