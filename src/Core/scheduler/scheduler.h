@@ -32,6 +32,7 @@ public:
     u64 GetCurrentTime() const;
     u64 GetEventTime() const;
     std::vector<Event>& GetEvents();
+    void set_current_time(u64 data);
 
 private:
     std::vector<Event> events;

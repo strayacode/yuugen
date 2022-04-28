@@ -87,10 +87,22 @@ void System::RunFrame() {
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
 
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        cpu_core[1].RunInterpreter(2);
-        cpu_core[0].RunInterpreter(1);
+        while (scheduler.GetCurrentTime() < scheduler.GetEventTime()) {
+            if (!cpu_core[1].Halted()) {
+                cpu_core[1].RunInterpreter(2);
+            }
+
+            if (!cpu_core[0].Halted()) {
+                cpu_core[0].RunInterpreter(1);
+            }
+
+            if (cpu_core[0].Halted() && cpu_core[1].Halted()) {
+                scheduler.set_current_time(scheduler.GetEventTime());
+            } else {
+                scheduler.Tick(1);
+            }
+        }
         
-        scheduler.Tick(1);
         scheduler.RunEvents();
     }
 }
