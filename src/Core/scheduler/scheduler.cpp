@@ -73,6 +73,10 @@ u64 Scheduler::GetEventTime() const {
     return events[0].time;
 }
 
+void Scheduler::set_current_time(u64 data) {
+    current_time = data;
+}
+
 std::vector<Event>& Scheduler::GetEvents() {
     return events;
 }

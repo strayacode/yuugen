@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Core/system.h"
 
 System::System() 
@@ -85,24 +86,25 @@ void System::SetGamePath(std::string path) {
 
 void System::RunFrame() {
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
-
+    u64 arm7_cycles = scheduler.GetCurrentTime();
+    u64 arm9_cycles = scheduler.GetCurrentTime();
+    
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        while (scheduler.GetCurrentTime() < scheduler.GetEventTime()) {
-            if (!cpu_core[1].Halted()) {
-                cpu_core[1].RunInterpreter(2);
+        while (scheduler.GetEventTime() > scheduler.GetCurrentTime()) {
+            if (!cpu_core[1].Halted() && arm9_cycles <= scheduler.GetCurrentTime()) {
+                arm9_cycles = scheduler.GetCurrentTime() + cpu_core[1].step();
             }
 
-            if (!cpu_core[0].Halted()) {
-                cpu_core[0].RunInterpreter(1);
+            if (!cpu_core[0].Halted() && arm7_cycles <= scheduler.GetCurrentTime()) {
+                arm7_cycles = scheduler.GetCurrentTime() + (cpu_core[0].step() << 1);
             }
 
-            if (cpu_core[0].Halted() && cpu_core[1].Halted()) {
-                scheduler.set_current_time(scheduler.GetEventTime());
-            } else {
-                scheduler.Tick(1);
-            }
+            scheduler.set_current_time(std::min(
+                !cpu_core[1].Halted() ? arm9_cycles : scheduler.GetEventTime(),
+                !cpu_core[0].Halted() ? arm7_cycles : scheduler.GetEventTime())
+            );
         }
-        
+
         scheduler.RunEvents();
     }
 }
