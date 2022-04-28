@@ -45,6 +45,8 @@ void arm_data_processing() {
             if (rm == 15) {
                 op2 += 4;
             }
+
+            add_i_cycle();
         }
 
         op2 = ARMGetShiftedRegisterDataProcessing(op2, shift_type, shift_amount, carry_flag, shift_imm);
@@ -509,6 +511,8 @@ void arm_single_data_swap() {
 
     regs.r[rd] = data;
     regs.r[15] += 4;
+
+    add_i_cycle();
 }
 
 void arm_count_leading_zeroes() {

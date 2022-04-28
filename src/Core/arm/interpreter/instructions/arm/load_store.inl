@@ -95,6 +95,8 @@ void arm_single_data_transfer() {
         } else {
             regs.r[rd] = ReadWordRotate(address);
         }
+
+        add_i_cycle();
     } else {
         if (byte) {
             WriteByte(address, regs.r[rd]);
@@ -381,12 +383,16 @@ void arm_block_data_transfer() {
         }
     }
 
-    if (r15_in_rlist && load) {
-        if ((arch == CPUArch::ARMv5) && (regs.r[15] & 0x1)) {
-            regs.cpsr |= (1 << 5);
-            ThumbFlushPipeline();
-        } else {
-            ARMFlushPipeline();
+    if (load) {
+        if (r15_in_rlist) {
+            if ((arch == CPUArch::ARMv5) && (regs.r[15] & 0x1)) {
+                regs.cpsr |= (1 << 5);
+                ThumbFlushPipeline();
+            } else {
+                ARMFlushPipeline();
+            }
         }
+
+        add_i_cycle();
     }
 }

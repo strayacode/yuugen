@@ -47,10 +47,6 @@ void CPUCore::setup_timings() {
 }
 
 int CPUCore::step() {
-    if (halted) {
-        return 0;
-    }
-
     instruction_cycles = 0;
 
     if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
@@ -65,9 +61,9 @@ int CPUCore::step() {
 
     // TODO: align r15
     if (IsARM()) {
-        pipeline[1] = ReadWord(regs.r[15]);
+        pipeline[1] = ReadWord(regs.r[15], Access::Sequential);
     } else {
-        pipeline[1] = ReadHalf(regs.r[15]);
+        pipeline[1] = ReadHalf(regs.r[15], Access::Sequential);
     }
 
     if (IsARM()) {
@@ -192,14 +188,14 @@ void CPUCore::WriteWord(u32 addr, u32 data, Access access) {
 void CPUCore::ARMFlushPipeline() {
     regs.r[15] &= ~3;
     pipeline[0] = ReadWord(regs.r[15]);
-    pipeline[1] = ReadWord(regs.r[15] + 4);
+    pipeline[1] = ReadWord(regs.r[15] + 4, Access::Sequential);
     regs.r[15] += 8;
 }
 
 void CPUCore::ThumbFlushPipeline() {
     regs.r[15] &= ~1;
     pipeline[0] = ReadHalf(regs.r[15]);
-    pipeline[1] = ReadHalf(regs.r[15] + 2);
+    pipeline[1] = ReadHalf(regs.r[15] + 2, Access::Sequential);
     regs.r[15] += 4;
 }
 
@@ -479,4 +475,8 @@ void CPUCore::log_cpu_state() {
     }
 
     LogFile::Get().Log("%08x\n", instruction);
+}
+
+void CPUCore::add_i_cycle() {
+    instruction_cycles++;
 }

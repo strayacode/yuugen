@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Core/system.h"
 
 System::System() 
@@ -85,30 +86,48 @@ void System::SetGamePath(std::string path) {
 
 void System::RunFrame() {
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
+    u64 arm7_cycles = scheduler.GetCurrentTime();
+    u64 arm9_cycles = scheduler.GetCurrentTime();
     
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        int arm7_cycles = 0;
+        // while (scheduler.GetCurrentTime() < scheduler.GetEventTime()) {
+        //     int arm9_cycles = 0;
+        //     arm9_cycles += cpu_core[1].step();
+        //     arm9_cycles += cpu_core[1].step();
 
-        // run 16 arm7 instructions
-        for (int i = 0; i < 16; i++) {
-            if (!cpu_core[0].Halted()) {
-                arm7_cycles += cpu_core[0].step();
-            } else {
-                arm7_cycles += 16;
+        //     int arm7_cycles = arm9_cycles >> 1;
+
+        //     scheduler.Tick(arm7_cycles);
+
+        //     while (arm7_cycles > 0) {
+        //         arm7_cycles -= cpu_core[0].step();
+        //     }
+        // }
+
+        // scheduler.RunEvents();
+
+        // cpu_core[1].step();
+        // cpu_core[1].step();
+        // cpu_core[0].step();
+
+        // scheduler.Tick(1);
+        // scheduler.RunEvents();
+
+        while (scheduler.GetEventTime() > scheduler.GetCurrentTime()) {
+            if (!cpu_core[1].Halted() && arm9_cycles <= scheduler.GetCurrentTime()) {
+                arm9_cycles = scheduler.GetCurrentTime() + cpu_core[1].step();
             }
+
+            if (!cpu_core[0].Halted() && arm7_cycles <= scheduler.GetCurrentTime()) {
+                arm7_cycles = scheduler.GetCurrentTime() + (cpu_core[0].step() << 1);
+            }
+
+            scheduler.set_current_time(std::min(
+                !cpu_core[1].Halted() ? arm9_cycles : scheduler.GetEventTime(),
+                !cpu_core[0].Halted() ? arm7_cycles : scheduler.GetEventTime())
+            );
         }
 
-        int arm9_cycles = arm7_cycles * 2;
-
-        while (arm9_cycles > 0) {
-            if (!cpu_core[1].Halted()) {
-                arm9_cycles -= cpu_core[1].step();
-            } else {
-                arm9_cycles--;
-            }
-        }
-
-        scheduler.Tick(arm7_cycles);
         scheduler.RunEvents();
     }
 }

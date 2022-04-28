@@ -126,6 +126,7 @@ public:
     void ARMUndefinedException();
     void arm_coprocessor_register_transfer();
     void unknown_instruction();
+    void add_i_cycle();
 
     #include "interpreter/instructions/arm/alu.inl"
     #include "interpreter/instructions/arm/branch.inl"
@@ -154,7 +155,6 @@ public:
     u32 ime;
 
     MemoryBase& memory;
-
     CPUArch arch;
     u32 instruction;
 
