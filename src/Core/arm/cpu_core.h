@@ -93,9 +93,16 @@ class CP15;
 class CPUCore {
 public:
     CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15);
+
+    void setup_timings();
+    
+    enum class Access {
+        NonSequential,
+        Sequential,
+    };
     
     void Reset();
-    void RunInterpreter(int cycles);
+    int step();
     void DirectBoot(u32 entrypoint);
     void FirmwareBoot();
     void SendInterrupt(InterruptType interrupt_type);
@@ -119,6 +126,7 @@ public:
     void ARMUndefinedException();
     void arm_coprocessor_register_transfer();
     void unknown_instruction();
+    void add_i_cycle();
 
     #include "interpreter/instructions/arm/alu.inl"
     #include "interpreter/instructions/arm/branch.inl"
@@ -127,14 +135,14 @@ public:
     #include "interpreter/instructions/thumb/branch.inl"
     #include "interpreter/instructions/thumb/load_store.inl"
 
-    u8 ReadByte(u32 addr);
-    u16 ReadHalf(u32 addr);
-    u32 ReadWord(u32 addr);
-    u32 ReadWordRotate(u32 addr);
+    u8 ReadByte(u32 addr, Access access = Access::Sequential);
+    u16 ReadHalf(u32 addr, Access access = Access::Sequential);
+    u32 ReadWord(u32 addr, Access access = Access::Sequential);
+    u32 ReadWordRotate(u32 addr, Access access = Access::Sequential);
 
-    void WriteByte(u32 addr, u8 data);
-    void WriteHalf(u32 addr, u16 data);
-    void WriteWord(u32 addr, u32 data);
+    void WriteByte(u32 addr, u8 data, Access access = Access::Sequential);
+    void WriteHalf(u32 addr, u16 data, Access access = Access::Sequential);
+    void WriteWord(u32 addr, u32 data, Access access = Access::Sequential);
 
     void log_cpu_state();
 
@@ -147,7 +155,6 @@ public:
     u32 ime;
 
     MemoryBase& memory;
-
     CPUArch arch;
     u32 instruction;
 
@@ -158,4 +165,10 @@ public:
     u32 pipeline[2];
 
     CP15* cp15;
+
+    // first array for each is non seq and second is seq
+    std::array<std::array<int, 0x10>, 2> timings_16;
+    std::array<std::array<int, 0x10>, 2> timings_32;
+    
+    int instruction_cycles = 0;
 };

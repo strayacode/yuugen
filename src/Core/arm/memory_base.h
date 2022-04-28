@@ -81,8 +81,9 @@ public:
         return bios;
     }
 
-    std::array<u8*, 0x100000> read_page_table;
-    std::array<u8*, 0x100000> write_page_table;
+    std::array<u8*, 0x100000> read_page_table = {};
+    std::array<u8*, 0x100000> write_page_table = {};
+
 private:
     virtual auto ReadByte(u32 addr) -> u8 = 0;
     virtual auto ReadHalf(u32 addr) -> u16 = 0;
