@@ -101,6 +101,9 @@ public:
     std::array<u8, 0x8000> bank_h = {};
     std::array<u8, 0x4000> bank_i = {};
 
+    VRAMRegion<128> texture_data;
+    VRAMRegion<96> texture_palette;
+
     System& system;
 
 private:
@@ -120,8 +123,6 @@ private:
     VRAMRegion<128> bgb;
     VRAMRegion<128> objb;
     VRAMRegion<128> arm7_vram;
-    VRAMRegion<128> texture_data;
-    VRAMRegion<96> texture_palette;
 
     std::array<u8, 0x800> palette_ram = {};
     std::array<u8, 0x800> oam = {};

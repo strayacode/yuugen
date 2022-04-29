@@ -106,7 +106,15 @@ u32 Renderer2D::read_word(u32 addr) {
 }
 
 void Renderer2D::write_byte(u32 addr, u8 data) {
+    addr &= 0xFFF;
+
     switch (addr) {
+    case 0x4C:
+        mosaic = (mosaic & ~0xFF) | data;
+        break;
+    case 0x4D:
+        mosaic = (mosaic & 0xFF) | (data << 8);
+        break;
     default:
         log_fatal("Renderer2D: byte write %08x = %02x", addr, data);
     }

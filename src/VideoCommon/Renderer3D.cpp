@@ -109,24 +109,33 @@ void Renderer3D::write_word(u32 addr, u32 data) {
     switch (addr) {
     case 0x04000350:
         clear_colour = data;
-        return;
+        return;   
     case 0x04000600:
         gxstat = data;
         return; 
     }
 
+    if (Common::in_range(0x04000400, 0x04000440, addr)) {
+        write_gxfifo(data);
+        return;
+    }
+
     if (Common::in_range(0x04000440, 0x040005CC, addr)) {
-        queue_entry(addr, data);
+        queue_command(addr, data);
         return;
     }
 
     log_warn("Renderer3D: handle word write %08x = %08x", addr, data);
 }
 
-void Renderer3D::queue_entry(u32 addr, u32 data) {
+void Renderer3D::queue_command(u32 addr, u32 data) {
     u8 command = (addr >> 2) & 0x7F;
     Entry entry = {command, data};
 
+    queue_entry(entry);
+}
+
+void Renderer3D::queue_entry(Entry entry) {
     if (fifo.size() == 0 && pipe.size() < 4) {
         pipe.push(entry);
     } else {
@@ -423,18 +432,34 @@ void Renderer3D::update_clip_matrix() {
 }
 
 void Renderer3D::do_swap_buffers() {
-    // for (int i = 0; i < vertex_ram_size; i++) {
-    //     gpu->render_engine.vertex_ram[i] = vertex_ram[i];
-    // }
-
-    // for (int i = 0; i < polygon_ram_size; i++) {
-    //     gpu->render_engine.polygon_ram[i] = polygon_ram[i];
-    // }
-
-    // gpu->render_engine.vertex_ram_size = vertex_ram_size;
-    // gpu->render_engine.polygon_ram_size = polygon_ram_size;
+    renderer_vertex_ram = vertex_ram;
+    renderer_vertex_ram_size = vertex_ram_size;
+    renderer_polygon_ram = polygon_ram;
+    renderer_polygon_ram_size = polygon_ram_size;
 
     vertex_ram_size = 0;
     vertex_count = 0;
     polygon_ram_size = 0;
+}
+
+void Renderer3D::write_gxfifo(u32 data) {
+    if (gxfifo == 0) {
+        gxfifo = data;
+    } else {
+        u8 command = gxfifo & 0xFF;
+        queue_entry({command, data});
+
+        gxfifo_write_count++;
+
+        if (gxfifo_write_count == param_table[command]) {
+            gxfifo >>= 8;
+            gxfifo_write_count = 0;
+        }
+    }
+
+    while ((gxfifo != 0) && (param_table[gxfifo & 0xFF] == 0)) {
+        u8 command = gxfifo & 0xFF;
+        queue_entry({command, 0});
+        gxfifo >>= 8;
+    }
 }

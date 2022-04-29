@@ -465,10 +465,9 @@ void GPU::render_scanline_start() {
         }
     }
 
-    // TODO: handle 3d rendering
-    // if (vcount == 215) {
-    //     render_engine.Render();
-    // }
+    if (vcount == 215) {
+        renderer_3d->render();
+    }
 
     // ARM9 DMA exclusive
     // check if scanline is between 2 and 193 inclusive

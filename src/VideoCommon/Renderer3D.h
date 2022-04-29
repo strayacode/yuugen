@@ -57,8 +57,19 @@ public:
     u16 clear_depth = 0;
     u32 clear_colour = 0;
 
+    std::array<u32, 256 * 192> framebuffer;
+
+    std::array<Vertex, 6144> renderer_vertex_ram;
+    int renderer_vertex_ram_size;
+
+    std::array<Polygon, 2048> renderer_polygon_ram;
+    int renderer_polygon_ram_size;
+
+    GPU& gpu;
+
 private:
-    void queue_entry(u32 addr, u32 data);
+    void queue_command(u32 addr, u32 data);
+    void queue_entry(Entry entry);
     Entry dequeue_entry();
     void run_command();
     u32 read_gxstat();
@@ -70,6 +81,7 @@ private:
     Vertex MultiplyVertexMatrix(const Vertex& a, const Matrix& b);
     void update_clip_matrix();
     void do_swap_buffers();
+    void write_gxfifo(u32 data);
 
     // geometry commands
     // matrix operations
@@ -113,8 +125,6 @@ private:
     void SetNormalVector();
     void BoxTest();
 
-    std::array<u32, 256 * 192> framebuffer;
-
     u32 gxstat;
     u32 gxfifo;
     int gxfifo_write_count;
@@ -131,11 +141,11 @@ private:
 
     GeometryEngineState state;
 
-    Vertex vertex_ram[6144];
+    std::array<Vertex, 6144> vertex_ram;
     int vertex_ram_size;
     int vertex_count;
 
-    Polygon polygon_ram[2048];
+    std::array<Polygon, 2048> polygon_ram;
     int polygon_ram_size;
 
     Vertex current_vertex;
@@ -147,8 +157,6 @@ private:
     u32 screen_y2;
 
     PolygonType polygon_type;
-
-    GPU& gpu;
 
     EventType geometry_command_event;
 

@@ -446,11 +446,13 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
     }
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
-        log_fatal("handle engine a write");
+        system.gpu.renderer_2d[0]->write_byte(addr, data);
+        return;
     }
 
     if (Common::in_range(0x04001000, 0x04001060, addr)) {
-        log_fatal("handle engine b write");
+        system.gpu.renderer_2d[1]->write_byte(addr, data);
+        return;
     }
 
     log_warn("ARM9: handle byte write %08x = %02x", addr, data);
