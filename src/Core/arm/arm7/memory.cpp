@@ -66,6 +66,8 @@ u8 ARM7Memory::ReadByte(u32 addr) {
             return system.rtc.ReadRTC();
         case 0x040001C2:
             return system.spi.ReadSPIDATA();
+        case 0x04000240:
+            return system.gpu.vramstat;
         case 0x04000241:
             return system.wramcnt;
         case 0x04000300:
@@ -235,6 +237,8 @@ u32 ARM7Memory::ReadWord(u32 addr) {
         }
 
         break;
+    case 0x06:
+        return system.gpu.read_arm7<u32>(addr);
     }
 
     if (Common::in_range(0x04000400, 0x04000500, addr)) {

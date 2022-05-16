@@ -17,6 +17,7 @@ void GPU::reset() {
     vcount = 0;
     dispstat.fill(0);
     vramcnt.fill(0);
+    vramstat = 0;
     dispcapcnt = 0;
     
     bank_a.fill(0);
@@ -151,6 +152,12 @@ void GPU::update_vram_mapping(GPU::Bank bank, u8 data) {
             log_fatal("handle mst %d", get_bank_mst(vramcnt[2]));
         }
     }
+
+    if (get_bank_enabled(vramcnt[2]) && (get_bank_mst(vramcnt[2]) == 2)) {
+        system.gpu.vramstat |= 1;
+    } else {
+        system.gpu.vramstat &= ~1;
+    }
     
     // remap bank d
     if (get_bank_enabled(vramcnt[3])) {
@@ -174,6 +181,12 @@ void GPU::update_vram_mapping(GPU::Bank bank, u8 data) {
         default:
             log_fatal("handle mst %d", get_bank_mst(vramcnt[3]));
         }
+    }
+
+    if (get_bank_enabled(vramcnt[3]) && (get_bank_mst(vramcnt[3]) == 2)) {
+        system.gpu.vramstat |= (1 << 1);
+    } else {
+        system.gpu.vramstat &= ~(1 << 1);
     }
     
     // remap bank e
@@ -347,6 +360,45 @@ void GPU::write_vram(u32 addr, T data) {
     default:
         lcdc.write<T>(addr, data);
         break;
+    }
+}
+
+template u8 GPU::read_arm7(u32 addr);
+template u16 GPU::read_arm7(u32 addr);
+template u32 GPU::read_arm7(u32 addr);
+template <typename T>
+T GPU::read_arm7(u32 addr) {
+    T return_value = 0;
+    if (get_bank_enabled(vramcnt[2])) {
+        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[2]) * 0x20000), 0x20000, addr) && (get_bank_mst(vramcnt[2]) == 2)) {
+            return Common::read<T>(&bank_c[addr & 0x1FFFF], 0);
+        }
+    }
+
+    if (get_bank_enabled(vramcnt[3])) {
+        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[3]) * 0x20000), 0x20000, addr) && (get_bank_mst(vramcnt[3]) == 2)) {
+            return Common::read<T>(&bank_d[addr & 0x1FFFF], 0);
+        }
+    }
+
+    return return_value;
+}
+
+template void GPU::write_arm7(u32 addr, u8 data);
+template void GPU::write_arm7(u32 addr, u16 data);
+template void GPU::write_arm7(u32 addr, u32 data);
+template <typename T>
+void GPU::write_arm7(u32 addr, T data) {
+    if (get_bank_enabled(vramcnt[2])) {
+        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[2]) * 0x20000), 0x20000, addr) && (get_bank_mst(vramcnt[2]) == 2)) {
+            Common::write<T>(&bank_c[addr & 0x1FFFF], 0, data);
+        }
+    }
+
+    if (get_bank_enabled(vramcnt[3])) {
+        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[3]) * 0x20000), 0x20000, addr) && (get_bank_mst(vramcnt[3]) == 2)) {
+            Common::write<T>(&bank_d[addr & 0x1FFFF], 0, data);
+        }
     }
 }
 

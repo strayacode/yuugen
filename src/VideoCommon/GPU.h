@@ -57,6 +57,12 @@ public:
     void write_vram(u32 addr, T data);
 
     template <typename T>
+    T read_arm7(u32 addr);
+
+    template <typename T>
+    void write_arm7(u32 addr, T data);
+
+    template <typename T>
     T read_ext_palette_bga(u32 addr);
 
     template <typename T>
@@ -84,6 +90,7 @@ public:
     u16 vcount = 0;
     std::array<u16, 2> dispstat = {};
     std::array<u8, 9> vramcnt = {};
+    u8 vramstat = 0;
     u32 dispcapcnt = 0;
     
     // 2d engine mmio
