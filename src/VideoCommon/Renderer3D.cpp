@@ -84,11 +84,18 @@ u16 Renderer3D::read_half(u32 addr) {
 
 u32 Renderer3D::read_word(u32 addr) {
     switch (addr) {
+    case 0x040004A4:
+        // is polygon attr even readable?
+        return 0;
     case 0x04000600:
         return read_gxstat();
-    default:
-        log_fatal("Renderer3D: handle word read %08x", addr);
     }
+
+    if (Common::in_range(0x04000640, 0x04000680, addr)) {
+        return read_clip_matrix(addr);
+    }
+
+    log_warn("Renderer3D: handle word read %08x", addr);
 
     return 0;
 }
@@ -111,6 +118,11 @@ void Renderer3D::write_half(u32 addr, u16 data) {
         return;
     case 0x0400035C:
         fog_offset = data;
+        return;
+    }
+
+    if (Common::in_range(0x04000380, 0x040003C0, addr)) {
+        Common::write<u16>(fog_table.data(), addr - 0x04000380, data);
         return;
     }
 
@@ -497,4 +509,11 @@ void Renderer3D::write_gxfifo(u32 data) {
         queue_entry({command, 0});
         gxfifo >>= 8;
     }
+}
+
+u32 Renderer3D::read_clip_matrix(u32 addr) {
+    int x = (addr - 0x04000640) % 4;
+    int y = (addr - 0x04000640) / 4;
+
+    return clip.field[y][x];
 }

@@ -32,6 +32,15 @@ Colour SoftwareRenderer3D::sample_texture(int s, int t, TextureAttributes attrib
     switch (format) {
     case 0:
         return Colour::from_u16(0x0000);
+    case 1: {
+        int data = gpu.texture_data.read<u8>(0x06000000 + address + offset);
+        int index = data & 0x1F;
+        int alpha = (data >> 5) & 0x7;
+        u16 colour = gpu.texture_palette.read<u16>(0x06000000 + palette_base + index * 2);
+        alpha = (alpha * 4) + (alpha / 2);
+        colour |= alpha << 15;
+        return Colour::from_u16(colour);
+    }
     case 2: {
         int index = (gpu.texture_data.read<u8>(0x06000000 + address + (offset / 4)) >> (2 * (offset & 0x3))) & 0x3;
 
@@ -46,6 +55,18 @@ Colour SoftwareRenderer3D::sample_texture(int s, int t, TextureAttributes attrib
         int index = gpu.texture_data.read<u8>(0x06000000 + address + offset);
 
         return Colour::from_u16(gpu.texture_palette.read<u16>(0x06000000 + palette_base + index * 2));
+    }
+    case 5:
+        // TODO: implement 4x4 texel compressed textures
+        return Colour::from_u16(gpu.texture_data.read<u16>(0x06000000 + address + offset * 2));
+    case 6: {
+        int data = gpu.texture_data.read<u8>(0x06000000 + address + offset);
+        int index = data & 0x7;
+        int alpha = data >> 3;
+        u16 colour = gpu.texture_palette.read<u16>(0x06000000 + palette_base + index * 2);
+        alpha = (alpha * 4) + (alpha / 2);
+        colour |= alpha << 15;
+        return Colour::from_u16(colour);
     }
     case 7:
         return Colour::from_u16(gpu.texture_data.read<u16>(0x06000000 + address + offset * 2));

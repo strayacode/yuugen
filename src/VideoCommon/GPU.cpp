@@ -369,14 +369,15 @@ template u32 GPU::read_arm7(u32 addr);
 template <typename T>
 T GPU::read_arm7(u32 addr) {
     T return_value = 0;
+
     if (get_bank_enabled(vramcnt[2])) {
-        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[2]) * 0x20000), 0x20000, addr) && (get_bank_mst(vramcnt[2]) == 2)) {
+        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[2]) * 0x20000), 0x06020000 + (get_bank_offset(vramcnt[2]) * 0x20000), addr) && (get_bank_mst(vramcnt[2]) == 2)) {
             return Common::read<T>(&bank_c[addr & 0x1FFFF], 0);
         }
     }
 
     if (get_bank_enabled(vramcnt[3])) {
-        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[3]) * 0x20000), 0x20000, addr) && (get_bank_mst(vramcnt[3]) == 2)) {
+        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[3]) * 0x20000), 0x06020000 + (get_bank_offset(vramcnt[3]) * 0x20000), addr) && (get_bank_mst(vramcnt[3]) == 2)) {
             return Common::read<T>(&bank_d[addr & 0x1FFFF], 0);
         }
     }
@@ -390,13 +391,13 @@ template void GPU::write_arm7(u32 addr, u32 data);
 template <typename T>
 void GPU::write_arm7(u32 addr, T data) {
     if (get_bank_enabled(vramcnt[2])) {
-        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[2]) * 0x20000), 0x20000, addr) && (get_bank_mst(vramcnt[2]) == 2)) {
+        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[2]) * 0x20000), 0x06020000 + (get_bank_offset(vramcnt[2]) * 0x20000), addr) && (get_bank_mst(vramcnt[2]) == 2)) {
             Common::write<T>(&bank_c[addr & 0x1FFFF], 0, data);
         }
     }
 
     if (get_bank_enabled(vramcnt[3])) {
-        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[3]) * 0x20000), 0x20000, addr) && (get_bank_mst(vramcnt[3]) == 2)) {
+        if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[3]) * 0x20000), 0x06020000 + (get_bank_offset(vramcnt[3]) * 0x20000), addr) && (get_bank_mst(vramcnt[3]) == 2)) {
             Common::write<T>(&bank_d[addr & 0x1FFFF], 0, data);
         }
     }

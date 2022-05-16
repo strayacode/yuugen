@@ -82,6 +82,7 @@ private:
     void update_clip_matrix();
     void do_swap_buffers();
     void write_gxfifo(u32 data);
+    u32 read_clip_matrix(u32 addr);
 
     // geometry commands
     // matrix operations
