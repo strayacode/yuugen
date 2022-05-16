@@ -130,9 +130,8 @@ void Renderer3D::write_word(u32 addr, u32 data) {
 
 void Renderer3D::queue_command(u32 addr, u32 data) {
     u8 command = (addr >> 2) & 0x7F;
-    Entry entry = {command, data};
-
-    queue_entry(entry);
+    
+    queue_entry({command, data});
 }
 
 void Renderer3D::queue_entry(Entry entry) {
@@ -432,9 +431,15 @@ void Renderer3D::update_clip_matrix() {
 }
 
 void Renderer3D::do_swap_buffers() {
-    renderer_vertex_ram = vertex_ram;
+    for (int i = 0; i < vertex_ram_size; i++) {
+        renderer_vertex_ram[i] = vertex_ram[i];
+    }
+
+    for (int i = 0; i < polygon_ram_size; i++) {
+        renderer_polygon_ram[i] = polygon_ram[i];
+    }
+
     renderer_vertex_ram_size = vertex_ram_size;
-    renderer_polygon_ram = polygon_ram;
     renderer_polygon_ram_size = polygon_ram_size;
 
     vertex_ram_size = 0;
