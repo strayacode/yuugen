@@ -226,7 +226,7 @@ void GPU::update_vram_mapping(GPU::Bank bank, u8 data) {
             obja.map(bank_f.data(), (ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10, 4);
             break;
         case 3:
-            texture_palette.map(bank_f.data(), ((ofs & 0x1) + ((ofs >> 1) & 0x1) * 0x4) * 16, 4);
+            texture_palette.map(bank_f.data(), ((ofs & 0x1) + ((ofs >> 1) & 0x1) * 0x4) * 4, 4);
             break;
         case 4:
             // handle ext palette later
@@ -253,7 +253,7 @@ void GPU::update_vram_mapping(GPU::Bank bank, u8 data) {
             obja.map(bank_g.data(), (ofs & 0x1) * 0x4 + ((ofs >> 1) & 0x1) * 0x10, 4);
             break;
         case 3:
-            texture_palette.map(bank_g.data(), ((ofs & 0x1) + ((ofs >> 1) & 0x1) * 0x4) * 16, 4);
+            texture_palette.map(bank_g.data(), ((ofs & 0x1) + ((ofs >> 1) & 0x1) * 0x4) * 4, 4);
             break;
         case 4:
             // handle extended palette later
