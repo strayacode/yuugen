@@ -74,7 +74,7 @@ public:
     template <typename T>
     T read_ext_palette_objb(u32 addr);
 
-    const VRAMRegion<128>& get_texture_data() { return texture_data; }
+    const VRAMRegion<512>& get_texture_data() { return texture_data; }
     const VRAMRegion<96>& get_texture_palette() { return texture_palette; }
     u8* get_palette_ram() { return palette_ram.data(); }
     u8* get_oam() { return oam.data(); }
@@ -108,7 +108,7 @@ public:
     std::array<u8, 0x8000> bank_h = {};
     std::array<u8, 0x4000> bank_i = {};
 
-    VRAMRegion<128> texture_data;
+    VRAMRegion<512> texture_data;
     VRAMRegion<96> texture_palette;
 
     System& system;
