@@ -56,6 +56,12 @@ void Renderer3D::reset() {
 
     texture_attributes.parameters = 0;
     texture_attributes.palette_base = 0;
+    clrimage_offset = 0;
+    fog_colour = 0;
+    fog_offset = 0;
+    edge_colour.fill(0);
+    fog_table.fill(0);
+    toon_table.fill(0);
 }
 
 u8 Renderer3D::read_byte(u32 addr) {
@@ -99,7 +105,13 @@ void Renderer3D::write_half(u32 addr, u16 data) {
     switch (addr) {
     case 0x04000354:
         clear_depth = data;
-        return;   
+        return;
+    case 0x04000356:
+        clrimage_offset = data;
+        return;
+    case 0x0400035C:
+        fog_offset = data;
+        return;
     }
 
     log_warn("Renderer3D: handle half write %08x = %04x", addr, data);
@@ -109,10 +121,28 @@ void Renderer3D::write_word(u32 addr, u32 data) {
     switch (addr) {
     case 0x04000350:
         clear_colour = data;
-        return;   
+        return;
+    case 0x04000358:
+        fog_colour = data;
+        return;
     case 0x04000600:
         gxstat = data;
         return; 
+    }
+
+    if (Common::in_range(0x04000330, 0x04000340, addr)) {
+        Common::write<u32>(edge_colour.data(), addr - 0x04000330, data);
+        return;
+    }
+
+    if (Common::in_range(0x04000360, 0x04000380, addr)) {
+        Common::write<u32>(fog_table.data(), addr - 0x04000360, data);
+        return;
+    }
+
+    if (Common::in_range(0x04000380, 0x040003C0, addr)) {
+        Common::write<u32>(fog_table.data(), addr - 0x04000380, data);
+        return;
     }
 
     if (Common::in_range(0x04000400, 0x04000440, addr)) {

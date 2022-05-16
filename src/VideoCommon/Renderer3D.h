@@ -160,7 +160,13 @@ private:
 
     EventType geometry_command_event;
 
-    u16 disp_1dot_depth;
+    u16 disp_1dot_depth = 0;
+    u16 clrimage_offset = 0;
+    u32 fog_colour = 0;
+    u16 fog_offset = 0;
+    std::array<u8, 0x10> edge_colour = {};
+    std::array<u8, 0x20> fog_table = {};
+    std::array<u8, 0x40> toon_table = {};
 
     // texture attributes per polygon
     TextureAttributes texture_attributes;
