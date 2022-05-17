@@ -266,7 +266,7 @@ void SoftwareRenderer3D::render_polygon(Polygon& polygon) {
                 );
 
                 if (disp3dcnt & 0x1) {
-                    framebuffer[(y * 256) + x] = sample_texture(texcoord[0] >> 4, texcoord[1] >> 4, polygon.texture_attributes).to_u16();
+                    framebuffer[(y * 256) + x] = decode_texture(texcoord[0] >> 4, texcoord[1] >> 4, polygon.texture_attributes).to_u16();
                 } else {
                     framebuffer[(y * 256) + x] = colour.to_u16();
                 }

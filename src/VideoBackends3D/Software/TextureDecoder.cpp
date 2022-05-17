@@ -6,7 +6,7 @@
 
 // given some texture coordinates and some parameters,
 // get the colour value of the corresponding texel
-Colour SoftwareRenderer3D::sample_texture(int s, int t, TextureAttributes attributes) {
+Colour SoftwareRenderer3D::decode_texture(int s, int t, TextureAttributes attributes) {
     u32 address = (attributes.parameters & 0xFFFF) * 8;
     int format = (attributes.parameters >> 26) & 0x7;
     int width = 8 << ((attributes.parameters >> 20) & 0x7);
@@ -29,10 +29,10 @@ Colour SoftwareRenderer3D::sample_texture(int s, int t, TextureAttributes attrib
 
     u32 palette_base = attributes.palette_base * 16;
 
-    switch (format) {
-    case 0:
+    switch (static_cast<TextureFormat>(format)) {
+    case TextureFormat::None:
         return Colour::from_u16(0x0000);
-    case 1: {
+    case TextureFormat::A3I5: {
         int data = gpu.vram.read_texture_data<u8>(0x06000000 + address + offset);
         int index = data & 0x1F;
         int alpha = (data >> 5) & 0x7;
@@ -41,25 +41,25 @@ Colour SoftwareRenderer3D::sample_texture(int s, int t, TextureAttributes attrib
         colour |= alpha << 15;
         return Colour::from_u16(colour);
     }
-    case 2: {
+    case TextureFormat::Palette4Colour: {
         int index = (gpu.vram.read_texture_data<u8>(0x06000000 + address + (offset / 4)) >> (2 * (offset & 0x3))) & 0x3;
 
         return Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + index * 2));
     }
-    case 3: {
+    case TextureFormat::Palette16Colour: {
         int index = (gpu.vram.read_texture_data<u8>(0x06000000 + address + (offset / 2)) >> (4 * (offset & 0x1))) & 0xF;
 
         return Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + index * 2));
     }
-    case 4: {
+    case TextureFormat::Palette256Colour: {
         int index = gpu.vram.read_texture_data<u8>(0x06000000 + address + offset);
 
         return Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + index * 2));
     }
-    case 5:
+    case TextureFormat::Compressed:
         // TODO: implement 4x4 texel compressed textures
         return Colour::from_u16(gpu.vram.read_texture_data<u16>(0x06000000 + address + offset * 2));
-    case 6: {
+    case TextureFormat::A5I3: {
         int data = gpu.vram.read_texture_data<u8>(0x06000000 + address + offset);
         int index = data & 0x7;
         int alpha = data >> 3;
@@ -68,7 +68,7 @@ Colour SoftwareRenderer3D::sample_texture(int s, int t, TextureAttributes attrib
         colour |= alpha << 15;
         return Colour::from_u16(colour);
     }
-    case 7:
+    case TextureFormat::DirectColour:
         return Colour::from_u16(gpu.vram.read_texture_data<u16>(0x06000000 + address + offset * 2));
     default:
         log_fatal("RenderEngine: handle texture format %d", format);

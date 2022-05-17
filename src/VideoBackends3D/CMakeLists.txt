@@ -1,7 +1,7 @@
 add_library(videobackends3d
     Software/SoftwareRenderer3D.h Software/SoftwareRenderer3D.cpp
     Software/Interpolator.h
-    Software/TextureSampler.cpp
+    Software/TextureDecoder.cpp
 )
 
 set_target_properties(videobackends3d PROPERTIES LINKER_LANGUAGE CXX)

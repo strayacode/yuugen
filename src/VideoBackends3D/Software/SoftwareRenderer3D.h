@@ -13,5 +13,16 @@ public:
 
 private:
     void render_polygon(Polygon& polygon);
-    Colour sample_texture(int s, int t, TextureAttributes attributes);
+    Colour decode_texture(int s, int t, TextureAttributes attributes);
+
+    enum class TextureFormat {
+        None,
+        A3I5,
+        Palette4Colour,
+        Palette16Colour,
+        Palette256Colour,
+        Compressed,
+        A5I3,
+        DirectColour,
+    };
 };
