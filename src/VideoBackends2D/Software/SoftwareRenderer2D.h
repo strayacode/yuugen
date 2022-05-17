@@ -16,6 +16,7 @@ private:
     void render_vram_display(int line);
     void render_text(int bg, int line);
     void render_extended(int bg, int line);
+    void render_affine(int bg, int line);
     void render_objects(int line);
 
     void compose_scanline(int line);

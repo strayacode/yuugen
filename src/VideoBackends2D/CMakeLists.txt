@@ -3,6 +3,7 @@ add_library(videobackends2d
     Software/Composer.cpp
     Software/Text.cpp Software/Extended.cpp
     Software/Object.cpp
+    Software/Affine.cpp
     Software/TileDecoder.cpp
 )
 

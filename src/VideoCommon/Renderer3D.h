@@ -168,6 +168,7 @@ private:
     std::array<u8, 0x10> edge_colour = {};
     std::array<u8, 0x20> fog_table = {};
     std::array<u8, 0x40> toon_table = {};
+    u8 alpha_test_ref = 0;
 
     // texture attributes per polygon
     TextureAttributes texture_attributes;

@@ -93,8 +93,7 @@ void SoftwareRenderer2D::render_graphics_display(int line) {
             break;
         case 1:
         case 2:
-            log_fatal("handle");
-            // RenderAffine(3, line);
+            render_affine(3, line);
             break;
         case 3:
         case 4:
@@ -112,25 +111,12 @@ void SoftwareRenderer2D::render_graphics_display(int line) {
 }
 
 void SoftwareRenderer2D::render_vram_display(int line) {
-    for (int x = 0; x < 256; x++) {
-        u16 data = 0;
-        u32 offset = ((256 * line) + x) * 2;
-        
-        switch ((dispcnt >> 18) & 0x3) {
-        case 0:
-            data = Common::read<u16>(gpu.bank_a.data(), offset);
-            break;
-        case 1:
-            data = Common::read<u16>(gpu.bank_b.data(), offset);
-            break;
-        case 2:
-            data = Common::read<u16>(gpu.bank_c.data(), offset);
-            break;
-        case 3:
-            data = Common::read<u16>(gpu.bank_d.data(), offset);
-            break;
-        }
+    u8 vram_block = (dispcnt >> 18) & 0x3;
 
+    for (int x = 0; x < 256; x++) {
+        u32 addr = 0x06800000 + (vram_block * 0x20000) + ((256 * line) + x) * 2;
+        u16 data = gpu.vram.read_vram<u16>(addr);
+        
         draw_pixel(x, line, rgb555_to_rgb888(data) | 0xFF000000);
     }
 }

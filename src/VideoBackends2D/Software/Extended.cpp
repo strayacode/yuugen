@@ -61,7 +61,7 @@ void SoftwareRenderer2D::render_extended(int bg, int line) {
 
             // get the tile address
             u32 screen_addr = screen_base + ((coord_y / 8) * (size / 8) + (coord_x / 8)) * 2;
-            u16 tile_info = gpu.read_vram<u16>(screen_addr);
+            u16 tile_info = gpu.vram.read_vram<u16>(screen_addr);
 
             u32 tile_number = tile_info & 0x3FF;
             u8 horizontal_flip = (tile_info >> 10) & 0x1;
@@ -71,7 +71,7 @@ void SoftwareRenderer2D::render_extended(int bg, int line) {
             character_addr += (vertical_flip ? ((7 - coord_y % 8) * 8) : ((coord_y % 8) * 8));
             character_addr += (horizontal_flip ? (7 - coord_x % 8) : (coord_x % 8));
             
-            u8 palette_index = gpu.read_vram<u8>(character_addr);
+            u8 palette_index = gpu.vram.read_vram<u8>(character_addr);
             u16 colour = Common::read<u16>(palette_ram, (palette_index * 2) & 0x3FF);
             bg_layers[bg][(256 * line) + pixel] = colour;
         }
@@ -88,7 +88,7 @@ void SoftwareRenderer2D::render_extended(int bg, int line) {
 
             u32 data_addr = data_base + (coord_y * size_x + coord_x) * 2;
 
-            u16 colour = gpu.read_vram<u16>(data_addr);
+            u16 colour = gpu.vram.read_vram<u16>(data_addr);
             bg_layers[bg][(256 * line) + pixel] = colour;
         }
     } else {
@@ -104,7 +104,7 @@ void SoftwareRenderer2D::render_extended(int bg, int line) {
 
             u32 data_addr = data_base + (coord_y * size_x + coord_x);
             
-            u8 palette_index = gpu.read_vram<u8>(data_addr);
+            u8 palette_index = gpu.vram.read_vram<u8>(data_addr);
             u16 colour = Common::read<u16>(palette_ram, (palette_index * 2) & 0x3FF);
 
             bg_layers[bg][(256 * line) + pixel] = colour;

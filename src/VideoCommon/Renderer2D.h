@@ -54,8 +54,8 @@ public:
     std::array<u8, 256 * 192> obj_priority = {};
     std::array<u16, 256 * 192> obj_colour = {};
 
-    u8* palette_ram = nullptr;
-    u8* oam = nullptr;
+    u8* palette_ram;
+    u8* oam;
     u32 vram_addr = 0;
     u32 obj_addr = 0;
 

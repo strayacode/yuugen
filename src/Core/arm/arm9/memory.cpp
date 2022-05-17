@@ -128,7 +128,7 @@ u8 ARM9Memory::ReadByte(u32 addr) {
     case 0x05:
         return Common::read<u8>(system.gpu.get_palette_ram(), addr & 0x7FF);
     case 0x06:
-        return system.gpu.read_vram<u8>(addr);
+        return system.gpu.vram.read_vram<u8>(addr);
     case 0x07:
         return Common::read<u8>(system.gpu.get_oam(), addr & 0x7FF);
     case 0x08: case 0x09:
@@ -218,7 +218,7 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
     case 0x05:
         return Common::read<u16>(system.gpu.get_palette_ram(), addr & 0x7FF);
     case 0x06:
-        return system.gpu.read_vram<u16>(addr);
+        return system.gpu.vram.read_vram<u16>(addr);
     case 0x07:
         return Common::read<u16>(system.gpu.get_oam(), addr & 0x7FF);
     case 0x08: case 0x09:
@@ -308,7 +308,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         case 0x04000214:
             return system.cpu_core[1].irf;
         case 0x04000240:
-            return ((system.gpu.vramcnt[3] << 24) | (system.gpu.vramcnt[2] << 16) | (system.gpu.vramcnt[1] << 8) | (system.gpu.vramcnt[0]));
+            return ((system.gpu.vram.vramcnt[3] << 24) | (system.gpu.vram.vramcnt[2] << 16) | (system.gpu.vram.vramcnt[1] << 8) | (system.gpu.vram.vramcnt[0]));
         case 0x04000280:
             return system.maths_unit.DIVCNT;
         case 0x04000290:
@@ -347,7 +347,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
     case 0x05:
         return Common::read<u32>(system.gpu.get_palette_ram(), addr & 0x7FF);
     case 0x06:
-        return system.gpu.read_vram<u32>(addr);
+        return system.gpu.vram.read_vram<u32>(addr);
     case 0x07:
         return Common::read<u16>(system.gpu.get_oam(), addr & 0x7FF);
     case 0x08: case 0x09:
@@ -402,34 +402,34 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
             system.cpu_core[1].ime = data & 0x1;
             return;
         case 0x04000240:
-            system.gpu.update_vram_mapping(GPU::Bank::A, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::A, data);
             return;
         case 0x04000241:
-            system.gpu.update_vram_mapping(GPU::Bank::B, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::B, data);
             return;
         case 0x04000242:
-            system.gpu.update_vram_mapping(GPU::Bank::C, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::C, data);
             return;
         case 0x04000243:
-            system.gpu.update_vram_mapping(GPU::Bank::D, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::D, data);
             return;
         case 0x04000244:
-            system.gpu.update_vram_mapping(GPU::Bank::E, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::E, data);
             return;
         case 0x04000245:
-            system.gpu.update_vram_mapping(GPU::Bank::F, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::F, data);
             return;
         case 0x04000246:
-            system.gpu.update_vram_mapping(GPU::Bank::G, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::G, data);
             return;
         case 0x04000247:
             system.write_wramcnt(data);
             return;
         case 0x04000248:
-            system.gpu.update_vram_mapping(GPU::Bank::H, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::H, data);
             return;
         case 0x04000249:
-            system.gpu.update_vram_mapping(GPU::Bank::I, data);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::I, data);
             return;
         case 0x04000300:
             system.POSTFLG9 = data;
@@ -441,7 +441,7 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
         Common::write<u8>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
         return;
     case 0x06:
-        system.gpu.write_vram<u8>(addr, data);
+        system.gpu.vram.write_vram<u8>(addr, data);
         return;
     }
 
@@ -541,8 +541,8 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             system.cpu_core[1].ime = data & 0x1;
             return;
         case 0x04000248:
-            system.gpu.update_vram_mapping(GPU::Bank::H, data & 0xFF);
-            system.gpu.update_vram_mapping(GPU::Bank::I, data >> 8);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::H, data & 0xFF);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::I, data >> 8);
             return;
         case 0x04000280:
             system.maths_unit.DIVCNT = data;
@@ -567,7 +567,7 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
         Common::write<u16>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
         return;
     case 0x06:
-        system.gpu.write_vram<u16>(addr, data);
+        system.gpu.vram.write_vram<u16>(addr, data);
         return;
     case 0x07:
         Common::write<u16>(system.gpu.get_oam(), addr & 0x7FF, data);
@@ -692,10 +692,10 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             system.cpu_core[1].irf &= ~data;
             return;
         case 0x04000240:
-            system.gpu.update_vram_mapping(GPU::Bank::A, data & 0xFF);
-            system.gpu.update_vram_mapping(GPU::Bank::B, (data >> 8) & 0xFF);
-            system.gpu.update_vram_mapping(GPU::Bank::C, (data >> 16) & 0xFF);
-            system.gpu.update_vram_mapping(GPU::Bank::D, (data >> 24) & 0xFF);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::A, data & 0xFF);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::B, (data >> 8) & 0xFF);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::C, (data >> 16) & 0xFF);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::D, (data >> 24) & 0xFF);
             return;
         case 0x04000280:
             system.maths_unit.DIVCNT = data;
@@ -754,7 +754,7 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
         Common::write<u32>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
         return;
     case 0x06:
-        system.gpu.write_vram<u32>(addr, data);
+        system.gpu.vram.write_vram<u32>(addr, data);
         return;
     case 0x07:
         Common::write<u32>(system.gpu.get_oam(), addr & 0x7FF, data);

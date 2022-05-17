@@ -62,6 +62,7 @@ void Renderer3D::reset() {
     edge_colour.fill(0);
     fog_table.fill(0);
     toon_table.fill(0);
+    alpha_test_ref = 0;
 }
 
 u8 Renderer3D::read_byte(u32 addr) {
@@ -110,6 +111,9 @@ void Renderer3D::write_byte(u32 addr, u8 data) {
 
 void Renderer3D::write_half(u32 addr, u16 data) {
     switch (addr) {
+    case 0x04000340:
+        alpha_test_ref = data;
+        return;
     case 0x04000354:
         clear_depth = data;
         return;

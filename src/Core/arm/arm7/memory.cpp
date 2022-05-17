@@ -67,7 +67,7 @@ u8 ARM7Memory::ReadByte(u32 addr) {
         case 0x040001C2:
             return system.spi.ReadSPIDATA();
         case 0x04000240:
-            return system.gpu.vramstat;
+            return system.gpu.vram.vramstat;
         case 0x04000241:
             return system.wramcnt;
         case 0x04000300:
@@ -189,7 +189,7 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
 
         break;
     case 0x06:
-        return system.gpu.read_arm7<u16>(addr);
+        return system.gpu.vram.read_arm7<u16>(addr);
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -240,7 +240,7 @@ u32 ARM7Memory::ReadWord(u32 addr) {
 
         break;
     case 0x06:
-        return system.gpu.read_arm7<u32>(addr);
+        return system.gpu.vram.read_arm7<u32>(addr);
     }
 
     if (Common::in_range(0x04000400, 0x04000500, addr)) {
@@ -311,7 +311,7 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
 
         break;
     case 0x06:
-        system.gpu.write_arm7<u8>(addr, data);
+        system.gpu.vram.write_arm7<u8>(addr, data);
         return;
     }
 
@@ -540,7 +540,7 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
 
         break;
     case 0x06:
-        system.gpu.write_arm7<u32>(addr, data);
+        system.gpu.vram.write_arm7<u32>(addr, data);
         return;
     case 0x08: case 0x09:
         // for now do nothing lol

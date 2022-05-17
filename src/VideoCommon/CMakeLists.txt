@@ -3,6 +3,7 @@ add_library(videocommon
     GLWindow.h GLWindow.cpp
     Renderer2D.h Renderer2D.cpp
     Renderer3D.h Renderer3D.cpp
+    VRAM.h VRAM.cpp
     VRAMPage.h VRAMRegion.h
     Colour.h Colour.cpp
     GeometryCommands.cpp
