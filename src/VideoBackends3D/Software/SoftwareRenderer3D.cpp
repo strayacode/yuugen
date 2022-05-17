@@ -7,6 +7,9 @@ SoftwareRenderer3D::SoftwareRenderer3D(GPU& gpu) : Renderer3D(gpu) {}
 void SoftwareRenderer3D::render() {
     framebuffer.fill(0);
 
+    // depth values are 24 bits (0 - 0xFFFFFF)
+    depth_buffer.fill(0xFFFFFF);
+
     for (int i = 0; i < renderer_polygon_ram_size; i++) {
         render_polygon(renderer_polygon_ram[i]);
     }
@@ -44,6 +47,11 @@ void SoftwareRenderer3D::render_polygon(Polygon& polygon) {
 
     // w values that get interpolated along slopes
     s32 w[2];
+
+    int depth_test_margin = w_buffering ? 0xFF : 0x200;
+
+    // z values that get interpolated along slopes
+    u32 z[2];
 
     // texture coordinates that get interpolated along slopes
     s16 s[2];
@@ -148,6 +156,27 @@ void SoftwareRenderer3D::render_polygon(Polygon& polygon) {
             polygon.vertices[new_right].w
         );
 
+        if (w_buffering) {
+            z[0] = w[0];
+            z[1] = w[1];
+        } else {
+            z[0] = slope_interpolator.interpolate_linear(
+                polygon.vertices[left].z,
+                polygon.vertices[new_left].z,
+                y,
+                left_y0,
+                left_y1
+            );
+
+            z[1] = slope_interpolator.interpolate_linear(
+                polygon.vertices[right].z,
+                polygon.vertices[new_right].z,
+                y,
+                right_y0,
+                right_y1
+            );
+        }
+
         c[0] = slope_interpolator.interpolate_colour(
             polygon.vertices[left].colour,
             polygon.vertices[new_left].colour,
@@ -233,6 +262,41 @@ void SoftwareRenderer3D::render_polygon(Polygon& polygon) {
             for (int x = left_span_start; x <= right_span_end; x++) {
                 if (x < 0 || x > 255) continue;
 
+                // do depth test
+                u32 depth = 0;
+
+                if (w_buffering) {
+                    depth = scanline_interpolator.interpolate(
+                        z[0],
+                        z[1],
+                        x,
+                        left_span_start,
+                        right_span_end,
+                        w[0],
+                        w[1]
+                    );
+                } else {
+                    depth = scanline_interpolator.interpolate_linear(
+                        z[0],
+                        z[1],
+                        x,
+                        left_span_start,
+                        right_span_end
+                    );
+                }
+                
+                bool depth_test = (polygon.polygon_attributes >> 14) & 0x1;
+                bool depth_test_passed = true;
+
+                if (depth_test) {
+                    // depth values are considered equal if they are within a margin
+                    depth_test_passed = std::abs(static_cast<s32>(depth) - static_cast<s32>(depth_buffer[(256 * y) + x])) <= depth_test_margin;
+                } else {
+                    depth_test_passed = depth < depth_buffer[(256 * y) + x];
+                }
+
+                if (!depth_test_passed) continue;
+
                 Colour colour = scanline_interpolator.interpolate_colour(
                     c[0],
                     c[1],
@@ -270,6 +334,8 @@ void SoftwareRenderer3D::render_polygon(Polygon& polygon) {
                 } else {
                     framebuffer[(y * 256) + x] = colour.to_u16();
                 }
+
+                depth_buffer[(y * 256) + x] = depth;
             }
         }
     }

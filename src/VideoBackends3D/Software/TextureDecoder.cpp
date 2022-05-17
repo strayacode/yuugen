@@ -56,9 +56,84 @@ Colour SoftwareRenderer3D::decode_texture(int s, int t, TextureAttributes attrib
 
         return Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + index * 2));
     }
-    case TextureFormat::Compressed:
-        // TODO: implement 4x4 texel compressed textures
+    case TextureFormat::Compressed: {
+        // get the 2 bit texel
+        int tile_x = s / 4;
+        int tile_y = t / 4;
+        int tile_size = width / 4;
+        int texel_x = s & 0x3;
+        int texel_y = t & 0x3;
+
+        // get the appropriate tile (each tile is 32 bits)
+        u32 row_address = address + ((tile_x * tile_size) + tile_y) * 4 + texel_y;
+
+        // now get the 2 bit texel
+        u8 row = gpu.vram.read_texture_data<u16>(0x06000000 + row_address);
+        u8 index = (row >> (texel_x * 2)) & 0x3;
+
+        // get palette index data from slot 1
+        int slot_number = row_address >> 17;
+        u32 slot_offset = row_address & 0x1FFFF;
+        u32 data_address = 0x06020000 + (slot_offset / 2);
+
+        if (slot_number & 0x2) {
+            data_address += 0x10000;
+        }
+
+        u16 palette_index_data = gpu.vram.read_texture_data<u16>(data_address);
+        u32 palette_offset = palette_index_data & 0x3FFF;
+        u8 mode = palette_index_data >> 14;
+        palette_base += palette_offset * 4;
+
+        switch (mode) {
+        case 0:
+            if (index == 3) {
+                return Colour::from_u16(0x0000);
+            }
+
+            return Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + index * 2));
+        case 1:
+            if (index == 3) {
+                return Colour::from_u16(0x0000);
+            }
+
+            if (index == 2) {
+                Colour c1 = Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base));
+                Colour c2 = Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + 2));
+
+                Colour c3;
+                c3.r = c1.r / 2 + c2.r / 2;
+                c3.g = c1.g / 2 + c2.g / 2;
+                c3.b = c1.b / 2 + c2.b / 2;
+
+                return c3;
+            }
+
+            return Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + index * 2));
+        case 2:
+            return Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + index * 2));
+        case 3:
+            if (index == 2 || index == 3) {
+                int c1_multiplier = index == 2 ? 5 : 3;
+                int c2_multiplier = index == 2 ? 3 : 5;
+                Colour c1 = Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base));
+                Colour c2 = Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + 2));
+
+                Colour c3;
+                c3.r = (c1.r * c1_multiplier + c2.r * c2_multiplier) / 8;
+                c3.g = (c1.g * c1_multiplier + c2.g * c2_multiplier) / 8;
+                c3.b = (c1.b * c1_multiplier + c2.b * c2_multiplier) / 8;
+
+                return c3;
+            }
+
+            return Colour::from_u16(gpu.vram.read_texture_palette<u16>(0x06000000 + palette_base + index * 2));
+        default:
+            log_fatal("SoftwareRenderer3D: handle compressed mode %d", mode);
+        }
+        
         return Colour::from_u16(gpu.vram.read_texture_data<u16>(0x06000000 + address + offset * 2));
+    }
     case TextureFormat::A5I3: {
         int data = gpu.vram.read_texture_data<u8>(0x06000000 + address + offset);
         int index = data & 0x7;
@@ -71,7 +146,7 @@ Colour SoftwareRenderer3D::decode_texture(int s, int t, TextureAttributes attrib
     case TextureFormat::DirectColour:
         return Colour::from_u16(gpu.vram.read_texture_data<u16>(0x06000000 + address + offset * 2));
     default:
-        log_fatal("RenderEngine: handle texture format %d", format);
+        log_fatal("SoftwareRenderer3D: handle texture format %d", format);
     }
 
     return Colour::from_u16(0x7FFF);

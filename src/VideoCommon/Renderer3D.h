@@ -58,6 +58,7 @@ public:
     u32 clear_colour = 0;
 
     std::array<u32, 256 * 192> framebuffer;
+    std::array<u32, 256 * 192> depth_buffer;
 
     std::array<Vertex, 6144> renderer_vertex_ram;
     int renderer_vertex_ram_size;
@@ -65,6 +66,8 @@ public:
     std::array<Polygon, 2048> renderer_polygon_ram;
     int renderer_polygon_ram_size;
 
+    bool w_buffering = false;
+    
     GPU& gpu;
 
 private:
@@ -76,7 +79,7 @@ private:
     void check_gxfifo_interrupt();
     void add_vertex();
     void add_polygon();
-    Vertex NormaliseVertex(Vertex vertex);
+    Vertex normalise_vertex(Vertex vertex);
     Matrix MultiplyMatrixMatrix(const Matrix& a, const Matrix& b);
     Vertex MultiplyVertexMatrix(const Vertex& a, const Matrix& b);
     void update_clip_matrix();
@@ -103,7 +106,7 @@ private:
 
     // vertex / polygon / texture operations
     void SetTextureParameters();
-    void SetPolygonAttributes();
+    void set_polygon_attributes();
     void BeginVertexList();
     void EndVertexList();
     void SetVertexColour();
@@ -170,6 +173,7 @@ private:
     std::array<u8, 0x40> toon_table = {};
     u8 alpha_test_ref = 0;
 
-    // texture attributes per polygon
+    // attributes per polygon
     TextureAttributes texture_attributes;
+    u32 polygon_attributes = 0;
 };

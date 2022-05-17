@@ -163,7 +163,9 @@ void Renderer3D::Load4x3() {
 
 void Renderer3D::SwapBuffers() {
     // TODO: handle bit 0 and 1 of parameter later
-    dequeue_entry();
+    u32 parameter = dequeue_entry().parameter;
+    w_buffering = (parameter >> 1) & 0x1;
+
     do_swap_buffers();
 }
 
@@ -172,8 +174,9 @@ void Renderer3D::SetTextureParameters() {
     texture_attributes.parameters = parameter;
 }
 
-void Renderer3D::SetPolygonAttributes() {
-    dequeue_entry();
+void Renderer3D::set_polygon_attributes() {
+    u32 parameter = dequeue_entry().parameter;
+    polygon_attributes = parameter;
 }
 
 void Renderer3D::SetViewport() {

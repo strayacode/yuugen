@@ -56,6 +56,7 @@ void Renderer3D::reset() {
 
     texture_attributes.parameters = 0;
     texture_attributes.palette_base = 0;
+    polygon_attributes = 0;
     clrimage_offset = 0;
     fog_colour = 0;
     fog_offset = 0;
@@ -63,6 +64,7 @@ void Renderer3D::reset() {
     fog_table.fill(0);
     toon_table.fill(0);
     alpha_test_ref = 0;
+    w_buffering = false;
 }
 
 u8 Renderer3D::read_byte(u32 addr) {
@@ -301,7 +303,7 @@ void Renderer3D::run_command() {
             SetRelativeVertexCoordinates();
             break;
         case 0x29:
-            SetPolygonAttributes();
+            set_polygon_attributes();
             break;
         case 0x2A:
             SetTextureParameters();
@@ -396,7 +398,7 @@ void Renderer3D::add_vertex() {
 
     current_vertex.w = 1 << 12;
     vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(current_vertex, clip);
-    vertex_ram[vertex_ram_size] = NormaliseVertex(vertex_ram[vertex_ram_size]);
+    vertex_ram[vertex_ram_size] = normalise_vertex(vertex_ram[vertex_ram_size]);
     vertex_ram_size++;
     vertex_count++;
 
@@ -433,15 +435,17 @@ void Renderer3D::add_polygon() {
     current_polygon.size = size;
     current_polygon.vertices = &vertex_ram[vertex_ram_size - size];
     current_polygon.texture_attributes = texture_attributes;
+    current_polygon.polygon_attributes = polygon_attributes;
     polygon_ram[polygon_ram_size++] = current_polygon;
 }
 
-Vertex Renderer3D::NormaliseVertex(Vertex vertex) {
+Vertex Renderer3D::normalise_vertex(Vertex vertex) {
     Vertex render_vertex = vertex;
 
     if (vertex.w != 0) {
         render_vertex.x = (( vertex.x * 128) / vertex.w) + 128;
         render_vertex.y = ((-vertex.y * 96)  / vertex.w) + 96;
+        render_vertex.z = (((vertex.z << 14) / vertex.w) + 0x3FFF) << 9;
     }
 
     return render_vertex;

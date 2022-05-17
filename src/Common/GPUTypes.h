@@ -121,6 +121,7 @@ public:
 
     Vertex* vertices = nullptr;
     TextureAttributes texture_attributes;
+    u32 polygon_attributes = 0;
     int size = 0;
 };
 
