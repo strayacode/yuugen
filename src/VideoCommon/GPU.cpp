@@ -107,7 +107,18 @@ void GPU::render_scanline_start() {
 }
 
 void GPU::render_scanline_end() {
-    vcount++;
+    if (++vcount == 263) {
+        // enable threaded 2d renderers
+        if (Settings::Get().threaded_2d && !render_thread_running) {
+            start_render_thread();
+        }
+
+        if (!Settings::Get().threaded_2d && render_thread_running) {
+            stop_render_thread();
+        }
+
+        vcount = 0;
+    }
 
     for (int i = 0; i < 2; i++) {
         dispstat[i] &= ~(1 << 1);
@@ -139,20 +150,6 @@ void GPU::render_scanline_end() {
         } else if (dispstat[i] & (1 << 2)) {
             dispstat[i] &= ~(1 << 2);
         }
-    }
-
-    // end of frame
-    if (vcount == 263) {
-        // enable threaded 2d renderers
-        if (Settings::Get().threaded_2d && !render_thread_running) {
-            start_render_thread();
-        }
-
-        if (!Settings::Get().threaded_2d && render_thread_running) {
-            stop_render_thread();
-        }
-
-        vcount = 0;
     }
 
     if (render_thread_running && vcount < 192) {
