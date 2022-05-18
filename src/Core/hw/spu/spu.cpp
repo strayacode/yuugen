@@ -4,19 +4,11 @@
 #include "Core/hw/spu/spu.h"
 #include "Core/core.h"
 
-// sound notes:
-// for pcm audio data,
-// pcm8 data NN will have
-// the same volume as pcm16 data
-// NN00
-
-SPU::SPU(System& system) : system(system) {
-    
-}
+SPU::SPU(System& system) : system(system) {}
 
 SPU::~SPU() {
     if (audio_interface != nullptr) {
-        audio_interface->Close();
+        audio_interface->close();
     }
 }
 
@@ -25,6 +17,25 @@ void SPU::Reset() {
     soundbias = 0;
     for (int i = 0; i < 16; i++) {
         memset(&channel[i], 0, sizeof(SPUChannel));
+    }
+
+    for (int i = 0; i < 16; i++) {
+        log_debug("%08x", channel[i].soundcnt); // sound control
+        log_debug("%08x", channel[i].soundsad); // sound source address
+        // u16 soundtmr; // timer register
+        // u16 soundpnt; // loop start register
+        log_debug("%08x", channel[i].soundlen); // sound length register
+
+        log_debug("%08x", channel[i].internal_address);
+        // u16 internal_timer;
+
+        log_debug("%08x", channel[i].adpcm_header);
+        // s16 adpcm_value;
+        // int adpcm_index;
+
+        // s16 adpcm_loopstart_value;
+        // int adpcm_loopstart_index;
+        // bool adpcm_second_sample;
     }
 
     SNDCAPCNT[0] = SNDCAPCNT[1] = 0;
@@ -319,15 +330,15 @@ u32 SPU::GenerateSamples() {
 
 void SPU::SetAudioInterface(std::shared_ptr<AudioInterface> interface) {
     if (audio_interface) {
-        audio_interface->Close();
+        audio_interface->close();
     }
 
     audio_interface = interface;
 
-    audio_interface->Open(this, 32768, 1024, (Callback)AudioCallback);
+    audio_interface->configure(this, 32768, 1024, (Callback)audio_callback);
 }
 
-void AudioCallback(SPU* spu, s16* stream, int len) {
+void audio_callback(SPU* spu, s16* stream, int len) {
     int volume = Settings::Get().volume;
 
     // no point in computing samples
@@ -340,6 +351,7 @@ void AudioCallback(SPU* spu, s16* stream, int len) {
 
     for (int i = 0; i < no_samples; i++) {
         u32 samples = spu->GenerateSamples();
+        // log_debug("%08x", samples);
 
         *stream++ = (samples & 0xFFFF) * multiplier;
         *stream++ = (samples >> 16) * multiplier;

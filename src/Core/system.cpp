@@ -2,10 +2,11 @@
 #include "Core/system.h"
 
 System::System() 
-    : cartridge(*this), spi(*this), cp15(*this),
-    dma {DMA(*this, 0), DMA(*this, 1)}, 
-    ipc(*this), timers {Timers(*this, 0), Timers(*this, 1)}, 
-    spu(*this), gpu(*this), arm7_memory(*this), arm9_memory(*this),
+    : arm7_memory(*this), arm9_memory(*this), cartridge(*this),
+    spi(*this), cp15(*this), 
+    dma {DMA(*this, 0), DMA(*this, 1)}, ipc(*this), 
+    timers {Timers(*this, 0), Timers(*this, 1)},
+    spu(*this), gpu(*this),
     cpu_core {CPUCore(arm7_memory, CPUArch::ARMv4, nullptr), CPUCore(arm9_memory, CPUArch::ARMv5, &cp15)} {
     SetCPUCoreType(CPUCoreType::Interpreter);
 }
@@ -30,6 +31,8 @@ void System::Reset() {
     ipc.Reset();
     maths_unit.Reset();
     wifi.Reset();
+    spu.Reset();
+    rtc.Reset();
 
     memset(main_memory, 0, 0x400000);
     memset(shared_wram, 0, 0x8000);

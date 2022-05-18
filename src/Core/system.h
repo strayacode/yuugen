@@ -36,8 +36,11 @@ public:
     void SetCPUCoreType(CPUCoreType type);
     std::string GetCPUCoreType();
 
-    Cartridge cartridge;
+    ARM7Memory arm7_memory;
+    ARM9Memory arm9_memory;
+
     Scheduler scheduler;
+    Cartridge cartridge;
     SPI spi;
     CP15 cp15;
     DMA dma[2];
@@ -49,10 +52,6 @@ public:
     MathsUnit maths_unit;
     Wifi wifi;
     GPU gpu;
-
-    // TODO: combine arm7 and arm9 memory into singular memory class including the shared memory
-    ARM7Memory arm7_memory;
-    ARM9Memory arm9_memory;
 
     CPUCore cpu_core[2];
 

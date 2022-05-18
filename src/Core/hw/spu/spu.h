@@ -87,4 +87,4 @@ public:
     };
 };
 
-void AudioCallback(SPU* spu, s16* stream, int len);
+void audio_callback(SPU* spu, s16* stream, int len);
