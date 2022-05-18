@@ -14,18 +14,34 @@ Colour SoftwareRenderer3D::decode_texture(int s, int t, TextureAttributes attrib
     int transformation_mode = (attributes.parameters >> 30) & 0x3;
     bool repeat_s_direction = (attributes.parameters >> 16) & 0x1;
     bool repeat_t_direction = (attributes.parameters >> 17) & 0x1;
+    bool flip_s_direction = (attributes.parameters >> 18) & 0x1;
+    bool flip_t_direction = (attributes.parameters >> 19) & 0x1;
 
-    u32 offset = t * width + s;
-
-    if (!repeat_s_direction) {
-        // clamp in s direction
+    if (repeat_s_direction) {
+        if (flip_s_direction && (s & width)) {
+            s = (width - 1) - (s & (width - 1));
+        } else {
+            s &= width - 1;
+        }
+    } else {
         s = std::clamp(s, 0, width);
     }
 
-    if (!repeat_t_direction) {
-        // clamp in t direction
+    if (repeat_t_direction) {
+        if (flip_t_direction && (t & height)) {
+            t = (height - 1) - (t & (height - 1));
+        } else {
+            t &= height - 1;
+        }
+    } else {
         t = std::clamp(t, 0, height);
     }
+
+    u32 offset = t * width + s;
+
+    // if (attributes.parameters & (1 << 29)) {
+    //     log_fatal("colour0 of paletted textures is transparent");
+    // }
 
     u32 palette_base = attributes.palette_base * 16;
 
