@@ -177,13 +177,13 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
         case 0x040000EC:
             return system.dma[1].DMAFILL[3] & 0xFFFF;
         case 0x04000100:
-            return system.timers[1].ReadTMCNT_L(0);
+            return system.timers[1].read_counter(0);
         case 0x04000104:
-            return system.timers[1].ReadTMCNT_L(1);
+            return system.timers[1].read_counter(1);
         case 0x04000108:
-            return system.timers[1].ReadTMCNT_L(2);
+            return system.timers[1].read_counter(2);
         case 0x0400010C:
-            return system.timers[1].ReadTMCNT_L(3);
+            return system.timers[1].read_counter(3);
         case 0x04000130:
             return system.input.KEYINPUT;
         case 0x04000180:
@@ -296,7 +296,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         case 0x040000EC:
             return system.dma[1].DMAFILL[3];
         case 0x04000100:
-            return system.timers[1].ReadTMCNT(0);
+            return (system.timers[1].read_control(0) << 16) | (system.timers[1].read_counter(0));
         case 0x04000180:
             return system.ipc.ReadIPCSYNC9();
         case 0x040001A4:
@@ -455,6 +455,11 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
         return;
     }
 
+    if (Common::in_range(0x04000320, 0x040006A3, addr)) {
+        system.gpu.renderer_3d->write_byte(addr, data);
+        return;
+    }
+
     log_warn("ARM9: handle byte write %08x = %02x", addr, data);
 }
 
@@ -496,28 +501,28 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             system.dma[1].WriteDMACNT_H(3, data);
             return;
         case 0x04000100:
-            system.timers[1].WriteTMCNT_L(0, data);
+            system.timers[1].write_counter(0, data);
             return;
         case 0x04000102:
-            system.timers[1].WriteTMCNT_H(0, data);
+            system.timers[1].write_control(0, data);
             return;
         case 0x04000104:
-            system.timers[1].WriteTMCNT_L(1, data);
+            system.timers[1].write_counter(1, data);
             return;
         case 0x04000106:
-            system.timers[1].WriteTMCNT_H(1, data);
+            system.timers[1].write_control(1, data);
             return;
         case 0x04000108:
-            system.timers[1].WriteTMCNT_L(2, data);
+            system.timers[1].write_counter(2, data);
             return;
         case 0x0400010A:
-            system.timers[1].WriteTMCNT_H(2, data);
+            system.timers[1].write_control(2, data);
             return;
         case 0x0400010C:
-            system.timers[1].WriteTMCNT_L(3, data);
+            system.timers[1].write_counter(3, data);
             return;
         case 0x0400010E:
-            system.timers[1].WriteTMCNT_H(3, data);
+            system.timers[1].write_control(3, data);
             return;
         case 0x04000130:
             system.input.KEYINPUT = data;
@@ -696,6 +701,12 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             system.gpu.vram.update_vram_mapping(VRAM::Bank::B, (data >> 8) & 0xFF);
             system.gpu.vram.update_vram_mapping(VRAM::Bank::C, (data >> 16) & 0xFF);
             system.gpu.vram.update_vram_mapping(VRAM::Bank::D, (data >> 24) & 0xFF);
+            return;
+        case 0x04000244:
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::E, data & 0xFF);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::F, (data >> 8) & 0xFF);
+            system.gpu.vram.update_vram_mapping(VRAM::Bank::G, (data >> 16) & 0xFF);
+            system.write_wramcnt((data >> 24) & 0xFF);
             return;
         case 0x04000280:
             system.maths_unit.DIVCNT = data;

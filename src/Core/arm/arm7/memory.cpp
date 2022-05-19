@@ -118,15 +118,15 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         case 0x040000DE:
             return system.dma[0].ReadDMACNT_H(3);
         case 0x04000100:
-            return system.timers[0].ReadTMCNT_L(0);
+            return system.timers[0].read_counter(0);
         case 0x04000104:
-            return system.timers[0].ReadTMCNT_L(1);
+            return system.timers[0].read_counter(1);
         case 0x04000108:
-            return system.timers[0].ReadTMCNT_L(2);
+            return system.timers[0].read_counter(2);
         case 0x0400010C:
-            return system.timers[0].ReadTMCNT_L(3);
+            return system.timers[0].read_counter(3);
         case 0x0400010E:
-            return system.timers[0].ReadTMCNT_H(3);
+            return system.timers[0].read_control(3);
         case 0x04000130:
             return system.input.KEYINPUT;
         case 0x04000134:
@@ -346,28 +346,28 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
             system.dma[0].WriteDMACNT_H(3, data);
             return;
         case 0x04000100:
-            system.timers[0].WriteTMCNT_L(0, data);
+            system.timers[0].write_counter(0, data);
             return;
         case 0x04000102:
-            system.timers[0].WriteTMCNT_H(0, data);
+            system.timers[0].write_control(0, data);
             return;
         case 0x04000104:
-            system.timers[0].WriteTMCNT_L(1, data);
+            system.timers[0].write_counter(1, data);
             return;
         case 0x04000106:
-            system.timers[0].WriteTMCNT_H(1, data);
+            system.timers[0].write_control(1, data);
             return;
         case 0x04000108:
-            system.timers[0].WriteTMCNT_L(2, data);
+            system.timers[0].write_counter(2, data);
             return;
         case 0x0400010A:
-            system.timers[0].WriteTMCNT_H(2, data);
+            system.timers[0].write_control(2, data);
             return;
         case 0x0400010C:
-            system.timers[0].WriteTMCNT_L(3, data);
+            system.timers[0].write_counter(3, data);
             return;
         case 0x0400010E:
-            system.timers[0].WriteTMCNT_H(3, data);
+            system.timers[0].write_control(3, data);
             return;
         case 0x04000128:
             // debug SIOCNT
@@ -489,16 +489,16 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
             system.dma[0].WriteDMACNT(3, data);
             return;
         case 0x04000100:
-            system.timers[0].WriteTMCNT_L(0, data);
-            system.timers[0].WriteTMCNT_H(0, data);
+            system.timers[0].write_counter(0, data);
+            system.timers[0].write_control(0, data);
             return;
         case 0x04000104:
-            system.timers[0].WriteTMCNT_L(1, data);
-            system.timers[0].WriteTMCNT_H(1, data);
+            system.timers[0].write_counter(1, data);
+            system.timers[0].write_control(1, data);
             return;
         case 0x04000108:
-            system.timers[0].WriteTMCNT_L(2, data);
-            system.timers[0].WriteTMCNT_H(2, data);
+            system.timers[0].write_counter(2, data);
+            system.timers[0].write_control(2, data);
             return;
         case 0x04000120:
             // debug SIODATA32

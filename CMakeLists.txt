@@ -12,8 +12,6 @@ option(LTO "Enable link time optimisations" ON)
 add_compile_options(
     -Wall
     -Wextra
-    -pedantic
-    -pedantic-errors
     -Wno-missing-braces
     -no-pie
 )

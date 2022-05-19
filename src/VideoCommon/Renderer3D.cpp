@@ -1,3 +1,4 @@
+#include "Common/Log.h"
 #include "Common/Memory.h"
 #include "VideoCommon/Renderer3D.h"
 #include "VideoCommon/GPU.h"
@@ -64,6 +65,12 @@ void Renderer3D::reset() {
     fog_table.fill(0);
     toon_table.fill(0);
     alpha_test_ref = 0;
+    
+    renderer_vertex_ram.fill(Vertex{});
+    renderer_polygon_ram.fill(Polygon{});
+    renderer_vertex_ram_size = 0;
+    renderer_polygon_ram_size = 0;
+
     w_buffering = false;
 }
 
@@ -106,9 +113,13 @@ u32 Renderer3D::read_word(u32 addr) {
 
 void Renderer3D::write_byte(u32 addr, u8 data) {
     switch (addr) {
-    default:
-        log_fatal("Renderer3D: %08x", addr);
+    case 0x04000603:
+        gxstat = (gxstat & 0xFFFFFF) | (data & 0xC0) << 24;
+        check_gxfifo_interrupt();
+        return;
     }
+
+    log_warn("Renderer3D: handle byte write %08x = %02x", addr, data);
 }
 
 void Renderer3D::write_half(u32 addr, u16 data) {
@@ -145,6 +156,7 @@ void Renderer3D::write_word(u32 addr, u32 data) {
         return;
     case 0x04000600:
         gxstat = data;
+        check_gxfifo_interrupt();
         return; 
     }
 
@@ -491,7 +503,7 @@ void Renderer3D::do_swap_buffers() {
 
     renderer_vertex_ram_size = vertex_ram_size;
     renderer_polygon_ram_size = polygon_ram_size;
-
+    
     vertex_ram_size = 0;
     vertex_count = 0;
     polygon_ram_size = 0;

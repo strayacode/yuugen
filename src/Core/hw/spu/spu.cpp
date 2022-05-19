@@ -19,25 +19,6 @@ void SPU::Reset() {
         memset(&channel[i], 0, sizeof(SPUChannel));
     }
 
-    for (int i = 0; i < 16; i++) {
-        log_debug("%08x", channel[i].soundcnt); // sound control
-        log_debug("%08x", channel[i].soundsad); // sound source address
-        // u16 soundtmr; // timer register
-        // u16 soundpnt; // loop start register
-        log_debug("%08x", channel[i].soundlen); // sound length register
-
-        log_debug("%08x", channel[i].internal_address);
-        // u16 internal_timer;
-
-        log_debug("%08x", channel[i].adpcm_header);
-        // s16 adpcm_value;
-        // int adpcm_index;
-
-        // s16 adpcm_loopstart_value;
-        // int adpcm_loopstart_index;
-        // bool adpcm_second_sample;
-    }
-
     SNDCAPCNT[0] = SNDCAPCNT[1] = 0;
     SNDCAPDAD[0] = SNDCAPDAD[1] = 0;
     SNDCAPLEN[0] = SNDCAPLEN[1] = 0;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include "Common/Types.h"
 #include "Core/scheduler/scheduler.h"
 
@@ -12,21 +11,32 @@ public:
     Timers(System& system, int arch);
     void Reset();
 
-    void WriteTMCNT_L(int timer_index, u16 data);
-    void WriteTMCNT_H(int timer_index, u16 data);
+    void write_counter(int channel, u16 data);
+    void write_control(int channel, u16 data);
 
-    u16 ReadTMCNT_L(int timer_index);
-    u16 ReadTMCNT_H(int timer_index);
-    u32 ReadTMCNT(int timer_index);
+    u16 read_counter(int channel);
+    u16 read_control(int channel);
+    
+    void overflow(int channel);
+    void activate_channel(int channel);
+    void deactivate_channel(int channel);
 
-    void Overflow(int timer_index);
-    void ActivateChannel(int timer_index);
-    void DeactivateChannel(int timer_index);
-
-    u16 UpdateCounter(int timer_index);
+    u16 update_counter(int channel);
 
     struct Timer {
-        u16 control;
+        union Control {
+            struct {
+                u8 prescaler : 2;
+                bool count_up : 1;
+                u32 : 3;
+                bool irq : 1;
+                bool start : 1;
+                u32 : 8;
+            };
+
+            u16 data;
+        } control;
+
         // use u32 so we can detect an overflow
         u32 counter;
         u16 reload_value;
