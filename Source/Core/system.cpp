@@ -31,7 +31,7 @@ void System::Reset() {
     ipc.Reset();
     maths_unit.Reset();
     wifi.Reset();
-    spu.Reset();
+    spu.reset();
     rtc.Reset();
 
     memset(main_memory, 0, 0x400000);

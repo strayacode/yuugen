@@ -10,25 +10,25 @@ add_library(core
     arm/Disassembler/arm.cpp arm/Disassembler/thumb.cpp
     arm/Decoder/Decoder.h
     
-    hw/cartridge/cartridge.h hw/cartridge/cartridge.cpp
-    hw/cartridge/loader_base.h 
-    hw/cartridge/nds_loader.h hw/cartridge/nds_loader.cpp
-    hw/cartridge/backup/flash/flash.h hw/cartridge/backup/flash/flash.cpp
-    hw/cartridge/backup/eeprom/eeprom.h hw/cartridge/backup/eeprom/eeprom.cpp
-    hw/cartridge/backup/no_backup/no_backup.h hw/cartridge/backup/no_backup/no_backup.cpp
-    hw/cartridge/backup/generic_backup.h hw/cartridge/save_database.h
-    hw/spi/spi.h hw/spi/spi.cpp
+    HW/cartridge/cartridge.h HW/cartridge/cartridge.cpp
+    HW/cartridge/loader_base.h 
+    HW/cartridge/nds_loader.h HW/cartridge/nds_loader.cpp
+    HW/cartridge/backup/flash/flash.h HW/cartridge/backup/flash/flash.cpp
+    HW/cartridge/backup/eeprom/eeprom.h HW/cartridge/backup/eeprom/eeprom.cpp
+    HW/cartridge/backup/no_backup/no_backup.h HW/cartridge/backup/no_backup/no_backup.cpp
+    HW/cartridge/backup/generic_backup.h HW/cartridge/save_database.h
+    HW/spi/spi.h HW/spi/spi.cpp
     scheduler/scheduler.h scheduler/scheduler.cpp
-    hw/cp15/cp15.h hw/cp15/cp15.cpp
+    HW/cp15/cp15.h HW/cp15/cp15.cpp
 
-    hw/dma/dma.h hw/dma/dma.cpp
-    hw/input/input.h hw/input/input.cpp
-    hw/ipc/ipc.h hw/ipc/ipc.cpp
-    hw/timers/timers.h hw/timers/timers.cpp
-    hw/spu/spu.h hw/spu/spu.cpp
-    hw/rtc/rtc.h hw/rtc/rtc.cpp
-    hw/maths_unit/maths_unit.h hw/maths_unit/maths_unit.cpp
-    hw/wifi/wifi.h hw/wifi/wifi.cpp
+    HW/dma/dma.h HW/dma/dma.cpp
+    HW/input/input.h HW/input/input.cpp
+    HW/ipc/ipc.h HW/ipc/ipc.cpp
+    HW/timers/timers.h HW/timers/timers.cpp
+    HW/spu/spu.h HW/spu/spu.cpp
+    HW/rtc/rtc.h HW/rtc/rtc.cpp
+    HW/maths_unit/maths_unit.h HW/maths_unit/maths_unit.cpp
+    HW/wifi/wifi.h HW/wifi/wifi.cpp
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")

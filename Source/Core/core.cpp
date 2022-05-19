@@ -6,7 +6,7 @@ Core::Core(UpdateFunction update_fps) :
         RunFrame();
     }, update_fps) {
     audio_interface = std::make_shared<SDLAudioInterface>();
-    system.spu.SetAudioInterface(audio_interface);
+    system.spu.set_audio_interface(audio_interface);
 }
 
 void Core::Start() {

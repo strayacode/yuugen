@@ -76,9 +76,9 @@ u8 ARM7Memory::ReadByte(u32 addr) {
             // read upper byte of SOUNDCNT
             return system.spu.soundcnt >> 8;
         case 0x04000508:
-            return system.spu.SNDCAPCNT[0];
+            return system.spu.sndcapcnt[0];
         case 0x04000509:
-            return system.spu.SNDCAPCNT[1];
+            return system.spu.sndcapcnt[1];
         }
 
         break;
@@ -93,7 +93,7 @@ u8 ARM7Memory::ReadByte(u32 addr) {
     }
 
     if (Common::in_range(0x04000400, 0x04000500, addr)) {
-        return system.spu.ReadByte(addr);
+        return system.spu.read_byte(addr);
     }
 
     log_warn("ARM7: handle byte read %08x", addr);
@@ -160,7 +160,7 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         case 0x04000504:
             return system.spu.soundbias;
         case 0x04000508:
-            return (system.spu.SNDCAPCNT[0]) | (system.spu.SNDCAPCNT[1] << 8);
+            return (system.spu.sndcapcnt[0]) | (system.spu.sndcapcnt[1] << 8);
         case 0x04004700:
             return 0;
         case 0x04808006:
@@ -244,7 +244,7 @@ u32 ARM7Memory::ReadWord(u32 addr) {
     }
 
     if (Common::in_range(0x04000400, 0x04000500, addr)) {
-        return system.spu.ReadWord(addr);
+        return system.spu.read_word(addr);
     }
 
     log_warn("ARM7: handle word read %08x", addr);
@@ -302,10 +302,10 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
             system.spu.soundcnt = (system.spu.soundcnt & 0xFF) | (data << 8);
             return;
         case 0x04000508:
-            system.spu.SNDCAPCNT[0] = data;
+            system.spu.sndcapcnt[0] = data;
             return;
         case 0x04000509:
-            system.spu.SNDCAPCNT[1] = data;
+            system.spu.sndcapcnt[1] = data;
             return;
         }
 
@@ -316,7 +316,7 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
     }
 
     if (Common::in_range(0x04000400, 0x04000500, addr)) {
-        system.spu.WriteByte(addr, data);
+        system.spu.write_byte(addr, data);
         return;
     }
 
@@ -419,14 +419,14 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
             system.spu.soundbias = data & 0x3FF;
             return;
         case 0x04000508:
-            system.spu.SNDCAPCNT[0] = data & 0xFF;
-            system.spu.SNDCAPCNT[1] = data >> 8;
+            system.spu.sndcapcnt[0] = data & 0xFF;
+            system.spu.sndcapcnt[1] = data >> 8;
             return;
         case 0x04000514:
-            system.spu.SNDCAPLEN[0] = data;
+            system.spu.sndcaplen[0] = data;
             return;
         case 0x0400051C:
-            system.spu.SNDCAPLEN[1] = data;
+            system.spu.sndcaplen[1] = data;
             return;
         case 0x04001080:
             // this address seems to just be for debugging for the ds lite so not useful for us
@@ -436,7 +436,7 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
     }
 
     if (Common::in_range(0x04000400, 0x04000500, addr)) {
-        system.spu.WriteHalf(addr, data);
+        system.spu.write_half(addr, data);
         return;
     }
 
@@ -531,10 +531,10 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
             system.BIOSPROT = data;
             return;
         case 0x04000510:
-            system.spu.SNDCAPDAD[0] = data;
+            system.spu.sndcapdad[0] = data;
             return;
         case 0x04000518:
-            system.spu.SNDCAPDAD[1] = data;
+            system.spu.sndcapdad[1] = data;
             return;
         }
 
@@ -548,7 +548,7 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
     }
 
     if (Common::in_range(0x04000400, 0x04000500, addr)) {
-        system.spu.WriteWord(addr, data);
+        system.spu.write_word(addr, data);
         return;
     }
 
