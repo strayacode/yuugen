@@ -35,4 +35,4 @@ if(LTO)
     add_compile_options(-flto)
 endif()
 
-add_subdirectory(src)
+add_subdirectory(Source)

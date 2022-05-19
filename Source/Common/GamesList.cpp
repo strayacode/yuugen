@@ -10,7 +10,7 @@
 namespace Common {
 
 void GamesList::initialise() {
-    load_titles_database("../data/dstdb.txt");
+    load_titles_database("../Data/dstdb.txt");
 
     // TODO: add cache file
     std::vector<std::string> paths = FileSystem::scan_directory("../roms", ".nds");

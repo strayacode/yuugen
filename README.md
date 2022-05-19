@@ -2,11 +2,11 @@
 
 yuugen is a WIP Nintendo DS emulator written in C++
 
-<img src="img/image1.png" width="320" alt="pkmn md" />&nbsp;
-<img src="img/image2.png" width="320" alt="yoshi's island" />
+<img src="Images/image1.png" width="320" alt="pkmn md" />&nbsp;
+<img src="Images/image2.png" width="320" alt="yoshi's island" />
 
-<img src="img/image3.png" width="320" alt="digimon" />&nbsp;
-<img src="img/image4.png" width="320" alt="mariokart" />
+<img src="Images/image3.png" width="320" alt="digimon" />&nbsp;
+<img src="Images/image4.png" width="320" alt="mariokart" />
 
 ## Installation:
 Regardless of the platform you're on you will need to have a dump of the ARM7 and ARM9 BIOS as well as the firmware to boot games. However once I implement high level emulation these 3 files won't be required anymore.

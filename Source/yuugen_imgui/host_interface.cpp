@@ -34,7 +34,7 @@ bool HostInterface::initialise() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 13.0f);
+    io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 13.0f);
     SetupStyle();
     SDL_GetWindowSize(window, &window_width, &window_height);
 
