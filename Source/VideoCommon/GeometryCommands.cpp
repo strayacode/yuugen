@@ -398,12 +398,21 @@ void Renderer3D::SetLightColour() {
 void Renderer3D::SetTextureCoordinates() {
     u32 parameter = dequeue_entry().parameter;
 
-    current_vertex.s = static_cast<s16>(parameter & 0xFFFF);
-    current_vertex.t = static_cast<s16>(parameter >> 16);
+    s16 s = static_cast<s16>(parameter & 0xFFFF);
+    s16 t = static_cast<s16>(parameter >> 16);
 
     u8 transformation_mode = (texture_attributes.parameters >> 30) & 0x3;
     
     // TODO: add texcoord transformation mode
+    if (transformation_mode == 1) {
+        current_vertex.s = ((s * texture.current.field[0][0]) + (t * texture.current.field[1][0]) + texture.current.field[2][0] + texture.current.field[3][0]) >> 12;
+        current_vertex.t = ((s * texture.current.field[0][1]) + (t * texture.current.field[1][1]) + texture.current.field[2][1] + texture.current.field[3][1]) >> 12;
+    } else if (transformation_mode == 0) {
+        current_vertex.s = s;
+        current_vertex.t = t;
+    } else {
+        log_fatal("Renderer3D: handle transformation mode %d", transformation_mode);
+    }
 }
 
 void Renderer3D::SetRelativeVertexCoordinates() {
