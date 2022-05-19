@@ -301,7 +301,7 @@ void HostInterface::render_menubar() {
 }
 
 void HostInterface::SetupStyle() {
-    ImGui::GetStyle().WindowBorderSize = 0.0f;
+    ImGui::GetStyle().WindowBorderSize = 1.0f;
     ImGui::GetStyle().PopupBorderSize = 0.0f;
     ImGui::GetStyle().ChildBorderSize = 0.0f;
     ImGui::GetStyle().WindowRounding = 5.0f;
@@ -441,7 +441,7 @@ void HostInterface::SchedulerWindow() {
 
 void HostInterface::DMAWindow() {
     ImGui::Begin("DMA");
-
+    
     for (int i = 0; i < 4; i++) {
         ImGui::Text("DMA7 Channel %d", i);
         ImGui::Text("Source Address: %08x", core.system.dma[0].channel[i].source);
@@ -505,6 +505,8 @@ void HostInterface::render() {
     if (settings_window) {
         render_settings_window();
     }
+
+    osd.render_messages();
 
     ImGui::Render();
     glViewport(0, 0, 1280, 720);

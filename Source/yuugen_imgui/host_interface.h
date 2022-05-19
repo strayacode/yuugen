@@ -16,6 +16,7 @@
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imfilebrowser.h"
+#include "yuugen_imgui/OnScreenDisplay.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -100,4 +101,6 @@ private:
 
     bool fullscreen = false;
     bool settings_window = false;
+
+    OnScreenDisplay osd;
 };
