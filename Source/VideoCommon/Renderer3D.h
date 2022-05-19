@@ -57,13 +57,13 @@ public:
     u16 clear_depth = 0;
     u32 clear_colour = 0;
 
-    std::array<u32, 256 * 192> framebuffer = {};
-    std::array<u32, 256 * 192> depth_buffer = {};
+    std::array<u32, 256 * 192> framebuffer;
+    std::array<u32, 256 * 192> depth_buffer;
 
-    std::array<Vertex, 6144> renderer_vertex_ram = {};
+    std::array<Vertex, 6144> renderer_vertex_ram;
     int renderer_vertex_ram_size = 0;
 
-    std::array<Polygon, 2048> renderer_polygon_ram = {};
+    std::array<Polygon, 2048> renderer_polygon_ram;
     int renderer_polygon_ram_size = 0;
 
     bool w_buffering = false;
@@ -145,11 +145,11 @@ private:
 
     GeometryEngineState state;
 
-    std::array<Vertex, 6144> vertex_ram = {};
+    std::array<Vertex, 6144> vertex_ram;
     int vertex_ram_size = 0;
     int vertex_count = 0;
 
-    std::array<Polygon, 2048> polygon_ram = {};
+    std::array<Polygon, 2048> polygon_ram;
     int polygon_ram_size = 0;
 
     Vertex current_vertex;
@@ -168,9 +168,9 @@ private:
     u16 clrimage_offset = 0;
     u32 fog_colour = 0;
     u16 fog_offset = 0;
-    std::array<u8, 0x10> edge_colour = {};
-    std::array<u8, 0x20> fog_table = {};
-    std::array<u8, 0x40> toon_table = {};
+    std::array<u8, 0x10> edge_colour;
+    std::array<u8, 0x20> fog_table;
+    std::array<u8, 0x40> toon_table;
     u8 alpha_test_ref = 0;
 
     // attributes per polygon
