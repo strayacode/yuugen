@@ -400,6 +400,10 @@ void Renderer3D::SetTextureCoordinates() {
 
     current_vertex.s = static_cast<s16>(parameter & 0xFFFF);
     current_vertex.t = static_cast<s16>(parameter >> 16);
+
+    u8 transformation_mode = (texture_attributes.parameters >> 30) & 0x3;
+    
+    // TODO: add texcoord transformation mode
 }
 
 void Renderer3D::SetRelativeVertexCoordinates() {

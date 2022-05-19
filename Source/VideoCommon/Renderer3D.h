@@ -29,6 +29,13 @@ enum class PolygonType {
     QuadStrip = 3,
 };
 
+enum class TextureTransformationMode {
+    None = 0,
+    TexCoord = 1,
+    Normal = 2,
+    Vertex = 3,
+};
+
 struct Entry {
     u8 command = 0;
     u32 parameter = 0;

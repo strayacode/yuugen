@@ -14,19 +14,19 @@ SPU::~SPU() {
 
 void SPU::reset() {
     for (int i = 0; i < 16; i++) {
-        channel[i].soundcnt;
-        channel[i].soundsad;
-        channel[i].soundtmr;
-        channel[i].soundpnt;
-        channel[i].soundlen;
-        channel[i].internal_address;
-        channel[i].internal_timer;
-        channel[i].adpcm_header;
-        channel[i].adpcm_value;
-        channel[i].adpcm_index;
-        channel[i].adpcm_loopstart_value;
-        channel[i].adpcm_loopstart_index;
-        channel[i].adpcm_second_sample;
+        channel[i].soundcnt = 0;
+        channel[i].soundsad = 0;
+        channel[i].soundtmr = 0;
+        channel[i].soundpnt = 0;
+        channel[i].soundlen = 0;
+        channel[i].internal_address = 0;
+        channel[i].internal_timer = 0;
+        channel[i].adpcm_header = 0;
+        channel[i].adpcm_value = 0;
+        channel[i].adpcm_index = 0;
+        channel[i].adpcm_loopstart_value = 0;
+        channel[i].adpcm_loopstart_index = 0;
+        channel[i].adpcm_second_sample = 0;
     }
 
     soundcnt = 0;
@@ -166,6 +166,10 @@ u32 SPU::generate_samples() {
         u8 format = (channel[i].soundcnt >> 29) & 0x3;
 
         switch (format) {
+        case 0x0:
+            data = static_cast<s8>(system.arm7_memory.FastRead<u8>(channel[i].internal_address)) << 8;
+            data_size = 1;
+            break;
         case 0x1:
             data = static_cast<s16>(system.arm7_memory.FastRead<u16>(channel[i].internal_address));
             data_size = 2;
