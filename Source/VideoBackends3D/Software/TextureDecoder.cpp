@@ -83,16 +83,12 @@ Colour SoftwareRenderer3D::decode_texture(int s, int t, TextureAttributes attrib
         // get the appropriate tile (each tile is 32 bits)
         u32 row_address = address + ((tile_x * tile_size) + tile_y) * 4 + texel_y;
 
-        // now get the 2 bit texel
-        u8 row = gpu.vram.read_texture_data<u16>(0x06000000 + row_address);
-        u8 index = (row >> (texel_x * 2)) & 0x3;
-
         // get palette index data from slot 1
-        int slot_number = row_address >> 17;
         u32 slot_offset = row_address & 0x1FFFF;
         u32 data_address = 0x06020000 + (slot_offset / 2);
 
-        if (slot_number & 0x2) {
+        // if slot2 address is being used then add 0x10000
+        if (row_address >= 0x40000) {
             data_address += 0x10000;
         }
 
@@ -100,6 +96,10 @@ Colour SoftwareRenderer3D::decode_texture(int s, int t, TextureAttributes attrib
         u32 palette_offset = palette_index_data & 0x3FFF;
         u8 mode = palette_index_data >> 14;
         palette_base += palette_offset * 4;
+
+        // now get the 2 bit texel
+        u8 row = gpu.vram.read_texture_data<u8>(0x06000000 + row_address);
+        u8 index = row >> (texel_x * 2);
 
         switch (mode) {
         case 0:

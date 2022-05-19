@@ -403,7 +403,6 @@ void Renderer3D::SetTextureCoordinates() {
 
     u8 transformation_mode = (texture_attributes.parameters >> 30) & 0x3;
     
-    // TODO: add texcoord transformation mode
     if (transformation_mode == 1) {
         current_vertex.s = ((s * texture.current.field[0][0]) + (t * texture.current.field[1][0]) + texture.current.field[2][0] + texture.current.field[3][0]) >> 12;
         current_vertex.t = ((s * texture.current.field[0][1]) + (t * texture.current.field[1][1]) + texture.current.field[2][1] + texture.current.field[3][1]) >> 12;

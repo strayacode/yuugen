@@ -210,5 +210,5 @@ private:
     VRAMRegion<128> objb;
     VRAMRegion<128> arm7_vram;
     VRAMRegion<512> texture_data;
-    VRAMRegion<96> texture_palette;
+    VRAMRegion<128> texture_palette;
 };
