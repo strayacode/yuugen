@@ -1,3 +1,10 @@
+#include <chrono>
+#include <ctime>
+#include <mutex>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
+#include "Common/format.h"
+#include "Common/Log.h"
 #include "Common/Settings.h"
 #include "host_interface.h"
 
@@ -5,7 +12,6 @@ HostInterface::HostInterface() :
     core([this](float fps) {
         UpdateTitle(fps);
     }) {
-    
 }
 
 bool HostInterface::initialise() {
@@ -194,7 +200,7 @@ void HostInterface::render_menubar() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Emulator")) {
+        if (ImGui::BeginMenu("Emulation")) {
             if (ImGui::BeginMenu("Boot Mode")) {
                 bool direct_boot = core.GetBootMode() == BootMode::Direct;
                 bool firmware_boot = !direct_boot;
@@ -242,6 +248,11 @@ void HostInterface::render_menubar() {
                 // window_type = WindowType::Settings;
                 // reset_title();
 
+            }
+
+            if (ImGui::MenuItem("Take Screenshot")) {
+                take_screenshot();
+                osd.add_message("Screenshot Saved!");
             }
 
             ImGui::EndMenu();
@@ -547,7 +558,7 @@ void HostInterface::render_games_list_window() {
 
     float min_row_height = 20.0f;
 
-    if (ImGui::BeginTable("table_advanced", 4, flags)) {
+    if (ImGui::BeginTable("Games List", 4, flags)) {
         ImGui::TableSetupColumn("Title");
         ImGui::TableSetupColumn("Region");
         ImGui::TableSetupColumn("Gamecode");
@@ -625,4 +636,33 @@ void HostInterface::boot_firmware() {
 void HostInterface::set_fullscreen(bool value) {
     fullscreen = value;
     SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+}
+
+void HostInterface::take_screenshot() {
+    // first combine the top and bottom framebuffer into a std::array
+    const u32* top_framebuffer = core.system.gpu.get_framebuffer(Screen::Top);
+    const u32* bottom_framebuffer = core.system.gpu.get_framebuffer(Screen::Bottom);
+    std::array<u32, 256 * 192 * 2> screenshot_data;
+
+    std::mutex screenshot_copy_mutex;
+
+    screenshot_copy_mutex.lock();
+
+    for (int i = 0; i < 256 * 192; i++) {
+        screenshot_data[i] = top_framebuffer[i];
+        screenshot_data[(256 * 192) + i] = bottom_framebuffer[i];
+    }
+
+    screenshot_copy_mutex.unlock();
+
+    // next construct the path
+    std::string path = Settings::Get().get_screenshots_path();
+    std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::string filename(40, '\0');
+
+    std::strftime(&filename[0], filename.size(), "yuugen-%Y-%m-%d-%H-%M-%S.png", std::localtime(&now));
+    
+    path += filename;
+    
+    stbi_write_png(path.c_str(), 256, 384, 4, screenshot_data.data(), 256 * 4);
 }

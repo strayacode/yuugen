@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstdlib>
 #include "Common/FileSystem.h"
 #include "Common/format.h"
 
@@ -37,6 +38,16 @@ std::string get_formatted_size(u64 size) {
     }
 
     return format("%.2f B", mantissa);
+}
+
+void create_directory_if_not_exists(std::string path) {
+    if (!std::filesystem::is_directory(path) || !std::filesystem::exists(path)) {
+        std::filesystem::create_directory(path);
+    }
+}
+
+std::string get_home_path() {
+    return std::string(getenv("HOME"));
 }
 
 }

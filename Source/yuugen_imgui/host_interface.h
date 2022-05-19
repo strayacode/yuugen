@@ -85,6 +85,8 @@ private:
 
     void set_fullscreen(bool value);
 
+    void take_screenshot();
+
     Disassembler disassembler;
 
     enum class WindowType {

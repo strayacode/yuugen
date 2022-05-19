@@ -14,7 +14,7 @@ void GLWindow::initialise(int width, int height) {
 
 void GLWindow::render(const u32* pointer) {
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pointer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pointer);
 }
 
 void GLWindow::destroy() {
