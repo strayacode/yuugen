@@ -20,6 +20,7 @@ public:
     bool IsActive();
     int GetFPS();
     void ToggleFramelimiter();
+    bool framelimiter_enabled() { return framelimiter; }
 
     std::thread thread;
 

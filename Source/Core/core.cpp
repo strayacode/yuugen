@@ -93,7 +93,13 @@ void Core::BootFirmware() {
 }
 
 void Core::ToggleFramelimiter() {
-    emu_thread.ToggleFramelimiter();
+    if (GetState() == State::Running) {
+        SetState(State::Paused);
+        emu_thread.ToggleFramelimiter();
+        SetState(State::Running);
+    } else {
+        emu_thread.ToggleFramelimiter();
+    }
 }
 
 void Core::SetGamePath(std::string path) {

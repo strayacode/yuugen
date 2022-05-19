@@ -38,6 +38,7 @@ public:
     void BootFirmware();
     void ToggleFramelimiter();
     void SetGamePath(std::string path);
+    bool framelimiter_enabled() { return emu_thread.framelimiter_enabled(); }
 
     System system;
     std::shared_ptr<AudioInterface> audio_interface;

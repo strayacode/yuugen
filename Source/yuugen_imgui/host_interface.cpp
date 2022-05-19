@@ -216,27 +216,37 @@ void HostInterface::render_menubar() {
                 ImGui::EndMenu();
             }
 
-            if (ImGui::MenuItem("Toggle Framelimiter")) {
-                core.SetState(State::Paused);
+            bool framelimiter_enabled = core.framelimiter_enabled();
+
+            if (ImGui::MenuItem("Toggle Framelimiter", "", &framelimiter_enabled)) {
+                if (framelimiter_enabled) {
+                    osd.add_message("Framelimiter On");
+                } else {
+                    osd.add_message("Framelimiter Off");
+                }
+                
                 core.ToggleFramelimiter();
-                core.SetState(State::Running);
             }
 
             if (ImGui::MenuItem("Pause")) {
                 if (core.GetState() == State::Running) {
                     core.SetState(State::Paused);
+                    osd.add_message("Emulation Paused");
                 } else {
                     core.SetState(State::Running);
+                    osd.add_message("Emulation Resumed");
                 }
             }
 
             if (ImGui::MenuItem("Stop")) {
+                osd.add_message("Emulation Stopped");
                 window_type = WindowType::GamesList;
                 reset_title();
                 core.SetState(State::Idle);
             }
 
             if (ImGui::MenuItem("Restart")) {
+                osd.add_message("Emulation Restarted");
                 core.SetState(State::Idle);
                 core.SetState(State::Running);
             }
