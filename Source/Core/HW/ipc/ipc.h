@@ -1,6 +1,7 @@
 #pragma once
 
 #include <queue>
+#include <array>
 #include "Common/Types.h"
 
 class System;
@@ -8,39 +9,53 @@ class System;
 class IPC {
 public:
     IPC(System& system);
-    void Reset();
 
-    void WriteIPCSYNC7(u16 data);
-    void WriteIPCSYNC9(u16 data);
-    u16 ReadIPCSYNC7();
-
-    u16 ReadIPCSYNC9();
-
-    void WriteIPCFIFOCNT7(u16 data);
-    void WriteIPCFIFOCNT9(u16 data);
-
-    void EmptyFIFO7();
-    void EmptyFIFO9();
-
-    // if the fifo is read from, we are reading from fiforecv
-    // and if the fifo is written to, we are writing to fifosend
-    u32 ReadFIFORECV7();
-    u32 ReadFIFORECV9();
-
-    void WriteFIFOSEND7(u32 data);
-    void WriteFIFOSEND9(u32 data);
+    void reset();
+    void write_ipcsync(int cpu, u16 data);
+    void write_ipcfifocnt(int cpu, u16 data);
     
-    u16 IPCSYNC7;
-    u16 IPCSYNC9;
-    u16 IPCFIFOCNT7;
-    u16 IPCFIFOCNT9;
+    void empty_fifo(int cpu);
 
-    std::queue<u32> fifo7;
-    std::queue<u32> fifo9;
+    u32 read_ipcfiforecv(int cpu);
+    
+    void write_send_fifo(int cpu, u32 data);
 
-    // these are used when we read from ipcfiforecv
-    u32 fifo7recv;
-    u32 fifo9recv;
+    union IPCSync {
+        struct {
+            u8 input : 4;
+            u32 : 4;
+            u8 output : 4;
+            bool : 1;
+            bool send_irq : 1;
+            bool enable_irq : 1;
+            u32 : 17;
+        };
+
+        u32 data;
+    };
+
+    union IPCFifoControl {
+        struct {
+            bool send_fifo_empty : 1;
+            bool send_fifo_full : 1;
+            bool send_fifo_empty_irq : 1;
+            bool send_fifo_clear : 1;
+            u32 : 4;
+            bool receive_fifo_empty : 1;
+            bool receive_fifo_full : 1;
+            bool receive_fifo_empty_irq : 1;
+            u32 : 3;
+            bool error : 1;
+            bool enable_fifos : 1;
+        };
+
+        u16 data;
+    };
+
+    std::array<IPCSync, 2> ipcsync;
+    std::array<IPCFifoControl, 2> ipcfifocnt;
+    std::array<std::queue<u32>, 2> fifo;
+    std::array<u32, 2> ipcfiforecv;
 
     System& system;
 };

@@ -136,9 +136,9 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         case 0x04000138:
             return system.rtc.RTC_REG;
         case 0x04000180:
-            return system.ipc.ReadIPCSYNC7();
+            return system.ipc.ipcsync[0].data;
         case 0x04000184:
-            return system.ipc.IPCFIFOCNT7;
+            return system.ipc.ipcfifocnt[0].data;
         case 0x040001A0:
             return system.cartridge.AUXSPICNT;
         case 0x040001A2:
@@ -219,7 +219,7 @@ u32 ARM7Memory::ReadWord(u32 addr) {
         case 0x040000DC:
             return system.dma[0].ReadDMACNT(3);
         case 0x04000180:
-            return system.ipc.ReadIPCSYNC7();
+            return system.ipc.ipcsync[0].data;
         case 0x040001A4:
             return system.cartridge.ROMCTRL;
         case 0x040001C0:
@@ -233,7 +233,7 @@ u32 ARM7Memory::ReadWord(u32 addr) {
         case 0x04004008:
             return 0;
         case 0x04100000:
-            return system.ipc.ReadFIFORECV7();
+            return system.ipc.read_ipcfiforecv(0);
         case 0x04100010:
             return system.cartridge.ReadData();
         }
@@ -380,10 +380,10 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
             system.rtc.WriteRTC(data);
             return;
         case 0x04000180:
-            system.ipc.WriteIPCSYNC7(data);
+            system.ipc.write_ipcsync(0, data);
             return;
         case 0x04000184:
-            system.ipc.WriteIPCFIFOCNT7(data);
+            system.ipc.write_ipcfifocnt(0, data);
             return;
         case 0x040001A0:
             system.cartridge.WriteAUXSPICNT(data);
@@ -507,10 +507,10 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
             // debug SIOCNT but it doesn't matter
             return;
         case 0x04000180:
-            system.ipc.WriteIPCSYNC7(data);
+            system.ipc.write_ipcsync(0, data);
             return;
         case 0x04000188:
-            system.ipc.WriteFIFOSEND7(data);
+            system.ipc.write_send_fifo(0, data);
             return;
         case 0x040001A4:
             system.cartridge.WriteROMCTRL(data);

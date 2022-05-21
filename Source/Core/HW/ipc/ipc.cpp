@@ -1,260 +1,118 @@
-#include "Common/Log.h"
 #include "Core/HW/ipc/ipc.h"
 #include "Core/core.h"
 
 IPC::IPC(System& system) : system(system) {}
 
-void IPC::Reset() {
-    IPCSYNC7 = 0;
-    IPCSYNC9 = 0;
-    IPCFIFOCNT7 = 0x101;
-    IPCFIFOCNT9 = 0x101;
-    fifo7recv = 0;
-    fifo9recv = 0;
+void IPC::reset() {
+    ipcsync[0].data = 0;
+    ipcsync[1].data = 0;
+    ipcfifocnt[0].data = 0x101;
+    ipcfifocnt[1].data = 0x101;
+    ipcfiforecv[0] = 0;
+    ipcfiforecv[1] = 0;
+
+    empty_fifo(0);
+    empty_fifo(1);
 }
 
-void IPC::WriteIPCSYNC7(u16 data) {
-    // write to bits 8..11, 13 and 14
-    // also we must make sure to preserve bits 0..3
-    IPCSYNC7 = (IPCSYNC7 & ~0x6F00) | (data & 0x6F00);
+void IPC::write_ipcsync(int cpu, u16 data) {
+    int remote = !cpu;
 
-    // then send the output of ipcsync7 (bits 8..11) to bits 0..3 of ipcsync9
-    IPCSYNC9 = (IPCSYNC9 & ~((0x6F00 >> 8) & 0xF)) | (((data & 0x6F00) >> 8) & 0xF);
+    ipcsync[cpu].data = (ipcsync[cpu].data & ~0x6F00) | (data & 0x6F00);
+    ipcsync[remote].input = ipcsync[cpu].output;
     
-    // if ipcsync 7 is sending an interrupt and interrupts are enabled on ipcsync9
-    if ((IPCSYNC7 & (1 << 13)) && (IPCSYNC9 & (1 << 14))) {
-        system.cpu_core[1].SendInterrupt(InterruptType::IPCSync);
+    if (ipcsync[cpu].send_irq && ipcsync[remote].enable_irq) {
+        system.cpu_core[cpu].SendInterrupt(InterruptType::IPCSync);
     }
 }
 
+void IPC::write_ipcfifocnt(int cpu, u16 data) {
+    int remote = !cpu;
+    bool old_send_fifo_empty_irq = ipcfifocnt[cpu].send_fifo_empty_irq;
+    bool old_receive_fifo_empty_irq = ipcfifocnt[cpu].receive_fifo_empty_irq;
 
-void IPC::WriteIPCSYNC9(u16 data) {
-    // write to bits 8..11, 13 and 14
-    // also we must make sure to preserve bits 0..3
-    IPCSYNC9 = (IPCSYNC9 & ~0x6F00) | (data & 0x6F00);
+    ipcfifocnt[cpu].data = (ipcfifocnt[cpu].data & ~0x8404) | (data & 0x8404);
 
-    // then send the output of ipcsync9 (bits 8..11) to bits 0..3 of ipcsync7
-    IPCSYNC7 = (IPCSYNC7 & ~((0x6F00 >> 8) & 0xF)) | (((data & 0x6F00) >> 8) & 0xF);
-    
-    // if ipcsync 9 is sending an interrupt and interrupts are enabled on ipcsync 7
-    if ((IPCSYNC9 & (1 << 13)) && (IPCSYNC7 & (1 << 14))) {
-        system.cpu_core[0].SendInterrupt(InterruptType::IPCSync);
-    }
-}
-
-u16 IPC::ReadIPCSYNC7() {
-    return IPCSYNC7 & 0x4F0F;
-}
-
-u16 IPC::ReadIPCSYNC9() {
-    return IPCSYNC9 & 0x4F0F;
-}
-
-void IPC::WriteIPCFIFOCNT7(u16 data) {
-    IPCFIFOCNT7 = (IPCFIFOCNT7 & ~0x8404) | (data & 0x8404);
-
-    // don't set bit 3 in ipcfifocnt
-    // it's purpose is to empty fifo
+    // empty the send fifo
     if (data & (1 << 3)) {
-        EmptyFIFO7();
-        // set send fifo empty status to set
-        IPCFIFOCNT7 |= 1;
-        // reset send fifo full status to set
-        IPCFIFOCNT7 &= ~(1 << 1);
+        empty_fifo(cpu);
+        
+        ipcfifocnt[cpu].send_fifo_empty = true;
+        ipcfifocnt[cpu].send_fifo_full = false;
+        ipcfifocnt[remote].receive_fifo_empty = true;
+        ipcfifocnt[remote].receive_fifo_full = false;
 
-        IPCFIFOCNT9 |= (1 << 8);
-        IPCFIFOCNT9 &= ~(1 << 9);
-
-        // request a Send Fifo Empty IRQ if bit 2 is set
-        if (IPCFIFOCNT7 & (1 << 2)) {
-            system.cpu_core[0].SendInterrupt(InterruptType::IPCSendEmpty);
-        }
-
-    }
-
-    // request a send fifo empty irq if (bit 2 and bit 0) goes from 0 to 1
-    if (!(IPCFIFOCNT7 & (1 << 2)) && (IPCFIFOCNT7 & 1) && (data & (1 << 2))) {
-        system.cpu_core[0].SendInterrupt(InterruptType::IPCSendEmpty);
-    }
-
-    // request a fifo recv not empty irq if (bit 10 and not bit 8) goes from 0 to 1
-    if (!(IPCFIFOCNT7 & (1 << 10)) && !(IPCFIFOCNT7 & (1 << 8)) && (data & (1 << 10))) {
-        system.cpu_core[0].SendInterrupt(InterruptType::IPCReceiveNonEmpty);
-    }
-
-    // if bit 14 is set then this signifies that the error has been acknowledged
-    if (data & (1 << 14)) {
-        IPCFIFOCNT7 &= ~(1 << 14);
-    }
-}
-
-void IPC::WriteIPCFIFOCNT9(u16 data) {
-    IPCFIFOCNT9 = (IPCFIFOCNT9 & ~0x8404) | (data & 0x8404);
-
-    // don't set bit 3 in ipcfifocnt
-    // it's purpose is to empty fifo
-    if (data & (1 << 3)) {
-        EmptyFIFO9();
-        // set send fifo empty status to set
-        IPCFIFOCNT9 |= 1;
-        // reset send fifo full status to set
-        IPCFIFOCNT9 &= ~(1 << 1);
-
-        IPCFIFOCNT7 |= (1 << 8);
-        IPCFIFOCNT7 &= ~(1 << 9);
-
-        // request a Send Fifo Empty IRQ if bit 2 is set
-        if (IPCFIFOCNT9 & (1 << 2)) {
-            system.cpu_core[1].SendInterrupt(InterruptType::IPCSendEmpty);
+        if (ipcfifocnt[cpu].send_fifo_empty_irq) {
+            system.cpu_core[cpu].SendInterrupt(InterruptType::IPCSendEmpty);
         }
     }
 
-    // request a send fifo empty irq if (bit 2 and bit 0) goes from 0 to 1
-    if (!(IPCFIFOCNT9 & (1 << 2)) && (IPCFIFOCNT9 & 1) && (data & (1 << 2))) {
-        system.cpu_core[1].SendInterrupt(InterruptType::IPCSendEmpty);
+    if (!old_send_fifo_empty_irq && ipcfifocnt[cpu].send_fifo_empty_irq && ipcfifocnt[cpu].send_fifo_empty) {
+        system.cpu_core[cpu].SendInterrupt(InterruptType::IPCSendEmpty);
     }
 
-    // request a fifo recv not empty irq if (bit 10 and not bit 8) goes from 0 to 1
-    if (!(IPCFIFOCNT9 & (1 << 10)) && !(IPCFIFOCNT9 & (1 << 8)) && (data & (1 << 10))) {
-        system.cpu_core[1].SendInterrupt(InterruptType::IPCReceiveNonEmpty);
+    if (!old_receive_fifo_empty_irq && ipcfifocnt[cpu].receive_fifo_empty_irq && ipcfifocnt[cpu].receive_fifo_empty) {
+        system.cpu_core[cpu].SendInterrupt(InterruptType::IPCReceiveNonEmpty);
     }
 
-    // if bit 14 is set then this signifies that the error has been acknowledged
     if (data & (1 << 14)) {
-        IPCFIFOCNT9 &= ~(1 << 14);
+        ipcfifocnt[cpu].error = false;
     }
 }
 
-void IPC::EmptyFIFO7() {
-    // create an empty queue and swap it
+void IPC::empty_fifo(int cpu) {
     std::queue<u32> empty_queue;
-    fifo7.swap(empty_queue);
+    fifo[cpu].swap(empty_queue);
 }
 
+u32 IPC::read_ipcfiforecv(int cpu) {
+    int remote = !cpu;
 
-void IPC::EmptyFIFO9() {
-    // create an empty queue and swap it
-    std::queue<u32> empty_queue;
-    fifo9.swap(empty_queue);
-}
+    if (!fifo[remote].empty()) {
+        ipcfiforecv[cpu] = fifo[remote].front();
 
-u32 IPC::ReadFIFORECV7() {
-    if (!fifo9.empty()) {
-        // get the first word
-        fifo7recv = fifo9.front();
-        if (IPCFIFOCNT7 & (1 << 15)) {
-            // remove the word we recieved from the send fifo
-            // of the other cpu
-            fifo9.pop();
+        if (ipcfifocnt[cpu].enable_fifos) {
+            fifo[remote].pop();
 
-            // check if send fifo of other cpu is empty
-            if (fifo9.empty()) {
-                // set respective bits
-                IPCFIFOCNT9 |= 1;
-                IPCFIFOCNT7 |= (1 << 8);
-                // trigger a recieve fifo empty irq if enabled
-                // on the other ipcfifocnt
-                if (IPCFIFOCNT9 & (1 << 2)) {
-                    system.cpu_core[1].SendInterrupt(InterruptType::IPCSendEmpty);
+            if (fifo[remote].empty()) {
+                ipcfifocnt[remote].send_fifo_empty = true;
+                ipcfifocnt[cpu].receive_fifo_empty = true;
+                
+                if (ipcfifocnt[remote].send_fifo_empty_irq) {
+                    system.cpu_core[remote].SendInterrupt(InterruptType::IPCSendEmpty);
                 }
-            } else if (fifo9.size() == 15) {
-                // recieve fifo now went from full to not full
-                IPCFIFOCNT9 &= ~(1 << 1);
-                IPCFIFOCNT7 &= ~(1 << 9);
+            } else if (fifo[remote].size() == 15) {
+                ipcfifocnt[remote].send_fifo_full = false;
+                ipcfifocnt[cpu].receive_fifo_full = false;
             }
         }
     } else {
-        // set the error bit as reading had an empty fifo
-        IPCFIFOCNT7 |= (1 << 14);
+        ipcfifocnt[cpu].error = true;
     }
 
-    return fifo7recv;
+    return ipcfiforecv[cpu];
 }
 
-u32 IPC::ReadFIFORECV9() {
-    if (!fifo7.empty()) {
-        // get the first word
-        fifo9recv = fifo7.front();
-        if (IPCFIFOCNT9 & (1 << 15)) {
-            // remove the word we recieved from the send fifo
-            // of the other cpu
-            fifo7.pop();
+void IPC::write_send_fifo(int cpu, u32 data) {
+    int remote = !cpu;
 
-            // check if send fifo of other cpu is empty
-            if (fifo7.empty()) {
-                // set respective bits
-                IPCFIFOCNT7 |= 1;
-                IPCFIFOCNT9 |= (1 << 8);
-                // trigger a recieve fifo empty irq if enabled
-                // on the other ipcfifocnt
-                if (IPCFIFOCNT7 & (1 << 2)) {
-                    system.cpu_core[0].SendInterrupt(InterruptType::IPCSendEmpty);
+    if (ipcfifocnt[cpu].enable_fifos) {
+        if (fifo[cpu].size() < 16) {
+            fifo[cpu].push(data);
+
+            if (fifo[cpu].size() == 1) {
+                ipcfifocnt[cpu].send_fifo_empty = false;
+                ipcfifocnt[remote].receive_fifo_empty = false;
+
+                if (ipcfifocnt[remote].receive_fifo_empty_irq) {
+                    system.cpu_core[remote].SendInterrupt(InterruptType::IPCReceiveNonEmpty);
                 }
-            } else if (fifo7.size() == 15) {
-                // recieve fifo now went from full to not full
-                IPCFIFOCNT7 &= ~(1 << 1);
-                IPCFIFOCNT9 &= ~(1 << 9);
-            }
-        }
-    } else {
-        // set the error bit as reading had an empty fifo
-        IPCFIFOCNT9 |= (1 << 14);
-    }
-    return fifo9recv;
-}
-
-void IPC::WriteFIFOSEND7(u32 data) {
-    // only write if send and recieve fifo is enabled
-    if (IPCFIFOCNT7 & (1 << 15)) {
-        if (fifo7.size() < 16) {
-            // push a word to the fifo
-            fifo7.push(data);
-
-            if (fifo7.size() == 1) {
-                // now the send fifo is not empty anymore
-                IPCFIFOCNT7 &= ~1;
-                IPCFIFOCNT9 &= ~(1 << 8);
-                if (IPCFIFOCNT9 & (1 << 10)) {
-                    // send recv fifo not empty irq to other cpu
-                    system.cpu_core[1].SendInterrupt(InterruptType::IPCReceiveNonEmpty);
-                }
-            } else if (fifo7.size() == 16) {
-                // set the full bits since fifo is full
-                // set send fifo full status
-                IPCFIFOCNT7 |= (1 << 1);
-                IPCFIFOCNT9 |= (1 << 9);
+            } else if (fifo[cpu].size() == 16) {
+                ipcfifocnt[cpu].send_fifo_full = true;
+                ipcfifocnt[remote].receive_fifo_full = true;
             }
         } else {
-            // set the error fifo send full bit in ipcfifocnt
-            IPCFIFOCNT7 |= (1 << 14);
-        }
-    }
-}
-
-// write a word to the fifo
-void IPC::WriteFIFOSEND9(u32 data) {
-    // only write if send and recieve fifo is enabled
-    if (IPCFIFOCNT9 & (1 << 15)) {
-        if (fifo9.size() < 16) {
-            // push a word to the fifo
-            fifo9.push(data);
-            if (fifo9.size() == 1) {
-                IPCFIFOCNT9 &= ~1;
-                IPCFIFOCNT7 &= ~(1 << 8);
-
-                if (IPCFIFOCNT7 & (1 << 10)) {
-                    // send recv fifo not empty irq to other cpu
-                    system.cpu_core[0].SendInterrupt(InterruptType::IPCReceiveNonEmpty);
-                }
-            } else if (fifo9.size() == 16) {
-                // set the full bits since fifo is full
-                // set send fifo full status
-                IPCFIFOCNT9 |= (1 << 1);
-                IPCFIFOCNT7 |= (1 << 9);
-            }
-        } else {
-            // set the error fifo send full bit in ipcfifocnt
-            IPCFIFOCNT9 |= (1 << 14);
+            ipcfifocnt[cpu].error = true;
         }
     }
 }

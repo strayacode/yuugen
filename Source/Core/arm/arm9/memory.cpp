@@ -187,9 +187,9 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
         case 0x04000130:
             return system.input.KEYINPUT;
         case 0x04000180:
-            return system.ipc.ReadIPCSYNC9();
+            return system.ipc.ipcsync[1].data;
         case 0x04000184:
-            return system.ipc.IPCFIFOCNT9;
+            return system.ipc.ipcfifocnt[1].data;
         case 0x040001A0:
             return system.cartridge.AUXSPICNT;
         case 0x040001A2:
@@ -298,7 +298,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         case 0x04000100:
             return (system.timers[1].read_control(0) << 16) | (system.timers[1].read_counter(0));
         case 0x04000180:
-            return system.ipc.ReadIPCSYNC9();
+            return system.ipc.ipcsync[1].data;
         case 0x040001A4:
             return system.cartridge.ROMCTRL;
         case 0x04000208:
@@ -338,7 +338,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         case 0x04004008:
             return 0;
         case 0x04100000:
-            return system.ipc.ReadFIFORECV9();
+            return system.ipc.read_ipcfiforecv(1);
         case 0x04100010:
             return system.cartridge.ReadData();
         }
@@ -528,10 +528,10 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             system.input.KEYINPUT = data;
             return;
         case 0x04000180:
-            system.ipc.WriteIPCSYNC9(data);
+            system.ipc.write_ipcsync(1, data);
             return;
         case 0x04000184:
-            system.ipc.WriteIPCFIFOCNT9(data);
+            system.ipc.write_ipcfifocnt(1, data);
             return;
         case 0x040001A0:
             system.cartridge.WriteAUXSPICNT(data);
@@ -682,10 +682,10 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             system.cartridge.ReceiveCommand((data >> 24) & 0xFF, 7);
             return;
         case 0x04000180:
-            system.ipc.WriteIPCSYNC9(data);
+            system.ipc.write_ipcsync(1, data);
             return;
         case 0x04000188:
-            system.ipc.WriteFIFOSEND9(data);
+            system.ipc.write_send_fifo(1, data);
             return;
         case 0x04000208:
             system.cpu_core[1].ime = data & 0x1;
