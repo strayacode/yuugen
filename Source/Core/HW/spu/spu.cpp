@@ -327,13 +327,7 @@ void SPU::set_audio_interface(std::shared_ptr<AudioInterface> interface) {
 
 void audio_callback(SPU* spu, s16* stream, int len) {
     int volume = Settings::Get().volume;
-
-    // no point in computing samples
-    if (volume == 0) return;
-
     int multiplier = (volume * 32) / 100;
-
-    // divide by 2 since we are using 2 channels
     int no_samples = len / sizeof(s16) / 2;
 
     for (int i = 0; i < no_samples; i++) {

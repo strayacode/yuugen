@@ -138,6 +138,11 @@ void Renderer3D::write_half(u32 addr, u16 data) {
         return;
     }
 
+    if (Common::in_range(0x04000330, 0x04000340, addr)) {
+        Common::write<u16>(edge_colour.data(), addr - 0x04000330, data);
+        return;
+    }
+
     if (Common::in_range(0x04000380, 0x040003C0, addr)) {
         Common::write<u16>(fog_table.data(), addr - 0x04000380, data);
         return;

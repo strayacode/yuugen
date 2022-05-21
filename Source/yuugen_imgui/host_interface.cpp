@@ -325,10 +325,12 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().WindowBorderSize = 1.0f;
     ImGui::GetStyle().PopupBorderSize = 0.0f;
     ImGui::GetStyle().ChildBorderSize = 0.0f;
+    ImGui::GetStyle().GrabMinSize = 7.0f;
     ImGui::GetStyle().WindowRounding = 5.0f;
     ImGui::GetStyle().FrameRounding = 0.0f;
     ImGui::GetStyle().PopupRounding = 0.0f;
     ImGui::GetStyle().ChildRounding = 0.0f;
+    ImGui::GetStyle().GrabRounding = 4.0f;
     ImGui::GetStyle().ScrollbarSize = 10.0f;
     ImGui::GetStyle().ScrollbarRounding = 12.0f;
     ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
