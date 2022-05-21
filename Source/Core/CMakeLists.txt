@@ -9,6 +9,7 @@ add_library(core
     arm/Disassembler/Disassembler.h arm/Disassembler/Disassembler.cpp
     arm/Disassembler/arm.cpp arm/Disassembler/thumb.cpp
     arm/Decoder/Decoder.h
+    arm/HLESoftwareInterrupts.cpp
     
     HW/cartridge/cartridge.h HW/cartridge/cartridge.cpp
     HW/cartridge/loader_base.h 

@@ -157,4 +157,18 @@ public:
     u32 pipeline[2];
 
     CP15* cp15;
+
+private:
+    // hle software interrupt stuff
+    using SoftwareInterrupt = void (CPUCore::*)();
+
+    void unknown_software_interrupt();
+    void generate_software_interrupt_table();
+    void hle_software_interrupt();
+    void register_software_interrupt(int type, SoftwareInterrupt callback);
+
+    void software_interrupt_delay();
+    
+    std::array<SoftwareInterrupt, 0x100> software_interrupt_table;
+    u8 software_interrupt_type = 0;
 };

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "Common/Settings.h"
 #include "Core/arm/cpu_core.h"
 #include "Core/HW/cp15/cp15.h"
 
@@ -6,6 +7,7 @@ static Decoder<CPUCore> decoder;
 
 CPUCore::CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15) : memory(memory), arch(arch), cp15(cp15) {
     GenerateConditionTable();
+    generate_software_interrupt_table();
 }
 
 void CPUCore::Reset() {
@@ -33,6 +35,8 @@ void CPUCore::Reset() {
     ie = 0;
     irf = 0;
     instruction = 0;
+
+    software_interrupt_type = 0;
 }
 
 void CPUCore::run_interpreter(int cycles) {
@@ -405,6 +409,11 @@ void CPUCore::arm_coprocessor_register_transfer() {
 }
 
 void CPUCore::arm_software_interrupt() {
+    if (Settings::Get().hle_bios) {
+        hle_software_interrupt();
+        return;
+    }
+    
     regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
     SwitchMode(SVC);
@@ -418,6 +427,11 @@ void CPUCore::arm_software_interrupt() {
 }
 
 void CPUCore::thumb_software_interrupt() {
+    if (Settings::Get().hle_bios) {
+        hle_software_interrupt();
+        return;
+    }
+
     regs.spsr_banked[BANK_SVC] = regs.cpsr;
 
     SwitchMode(SVC);
