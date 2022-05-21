@@ -172,6 +172,10 @@ private:
     void register_software_interrupt(int type, SoftwareInterrupt callback);
 
     void software_interrupt_delay();
+    void software_interrupt_copy();
+    void software_interrupt_is_debugger();
+    void software_interrupt_vblank_interrupt_wait();
+    void software_interrupt_interrupt_wait();
     
     std::array<SoftwareInterrupt, 0x100> software_interrupt_table;
     u8 software_interrupt_type = 0;
