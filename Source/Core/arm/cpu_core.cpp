@@ -35,46 +35,49 @@ void CPUCore::Reset() {
     ie = 0;
     irf = 0;
     instruction = 0;
+    instruction_cycles = 0;
 
     software_interrupt_type = 0;
 }
 
-void CPUCore::run_interpreter(int cycles) {
-    while (cycles-- > 0) {
-        if (halted) {
-            return;
-        }
-
-        if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
-            HandleInterrupt();
-        }
-
-        // store the current executing instruction
-        instruction = pipeline[0];
-        
-        // shift the pipeline
-        pipeline[0] = pipeline[1];
-
-        // TODO: align r15
-        if (IsARM()) {
-            pipeline[1] = ReadWord(regs.r[15]);
-        } else {
-            pipeline[1] = ReadHalf(regs.r[15]);
-        }
-
-        if (IsARM()) {
-            Instruction inst = decoder.decode_arm(instruction);
-
-            if (ConditionEvaluate(instruction >> 28)) {
-                (this->*inst)();
-            } else {
-                regs.r[15] += 4;
-            }
-        } else {
-            Instruction inst = decoder.decode_thumb(instruction);
-            (this->*inst)();
-        }
+int CPUCore::step_interpreter() {
+    if (halted) {
+        return 0;
     }
+
+    instruction_cycles = 0;
+
+    if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
+        HandleInterrupt();
+    }
+
+    // store the current executing instruction
+    instruction = pipeline[0];
+    
+    // shift the pipeline
+    pipeline[0] = pipeline[1];
+
+    // TODO: align r15
+    if (IsARM()) {
+        pipeline[1] = ReadWord(regs.r[15]);
+    } else {
+        pipeline[1] = ReadHalf(regs.r[15]);
+    }
+
+    if (IsARM()) {
+        Instruction inst = decoder.decode_arm(instruction);
+
+        if (ConditionEvaluate(instruction >> 28)) {
+            (this->*inst)();
+        } else {
+            regs.r[15] += 4;
+        }
+    } else {
+        Instruction inst = decoder.decode_thumb(instruction);
+        (this->*inst)();
+    }
+    
+    return 1;
 }
 
 void CPUCore::DirectBoot(u32 entrypoint) {
@@ -468,4 +471,8 @@ void CPUCore::log_cpu_state() {
     }
 
     LogFile::Get().Log("%08x\n", instruction);
+}
+
+void CPUCore::add_internal_cycles(int cycles) {
+    instruction_cycles += cycles;
 }

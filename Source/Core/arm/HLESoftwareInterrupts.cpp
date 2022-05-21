@@ -34,5 +34,9 @@ void CPUCore::register_software_interrupt(int type, SoftwareInterrupt callback) 
 }
 
 void CPUCore::software_interrupt_delay() {
-    log_fatal("swiDelay %d", regs.r[0]);
+    // each loop involves a sub (1 cycle) and branch (3 cycles) instruction 
+    // finally we have a bx (3 cycles)
+    int num_loops = regs.r[0];
+
+    add_internal_cycles(num_loops * 4 + 3);
 }

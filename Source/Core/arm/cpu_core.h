@@ -95,7 +95,7 @@ public:
     CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15);
     
     void Reset();
-    void run_interpreter(int cycles);
+    int step_interpreter();
     void DirectBoot(u32 entrypoint);
     void FirmwareBoot();
     void SendInterrupt(InterruptType interrupt_type);
@@ -159,6 +159,10 @@ public:
     CP15* cp15;
 
 private:
+    int instruction_cycles = 0;
+
+    void add_internal_cycles(int cycles);
+
     // hle software interrupt stuff
     using SoftwareInterrupt = void (CPUCore::*)();
 

@@ -26,6 +26,7 @@ void Scheduler::AddEvent(u64 delay, EventType* type) {
     u64 time = GetCurrentTime() + delay;
     Event event{time, type};
     int index = CalculateEventIndex(event);
+
     events.insert(events.begin() + index, event);
 }
 
