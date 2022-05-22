@@ -36,15 +36,23 @@ void CPUCore::Reset() {
     irf = 0;
     instruction = 0;
     instruction_cycles = 0;
+    timestamp = 0;
 
     software_interrupt_type = 0;
 }
 
-int CPUCore::step_interpreter() {
-    if (halted) {
-        return 0;
-    }
+void CPUCore::run(u64 target) {
+    while (timestamp < target) {
+        if (halted) {
+            timestamp = target;
+            return;
+        }
 
+        timestamp += single_step();
+    }
+}
+
+int CPUCore::single_step() {
     instruction_cycles = 0;
 
     if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
@@ -76,8 +84,11 @@ int CPUCore::step_interpreter() {
         Instruction inst = decoder.decode_thumb(instruction);
         (this->*inst)();
     }
-    
-    return 1;
+
+    // just assume 1 cpi for now
+    add_internal_cycles(1);
+
+    return instruction_cycles;
 }
 
 void CPUCore::DirectBoot(u32 entrypoint) {

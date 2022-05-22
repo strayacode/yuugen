@@ -91,47 +91,19 @@ void System::RunFrame() {
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
 
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        u64 cycles_left = std::min(16UL, scheduler.GetEventTime() - scheduler.GetCurrentTime());
-        u64 arm7_cycles_left = cycles_left;
-        u64 arm9_cycles_left = arm7_cycles_left << 1;
-        u64 scheduler_target = cycles_left;
-
+        u64 cycles = std::min(32UL, scheduler.GetEventTime() - scheduler.GetCurrentTime());
+        u64 arm7_target = scheduler.GetCurrentTime() + cycles;
+        u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
+        
         // run the arm9 until the next scheduled event
-        while (arm9_cycles_left > 0) {
-            if (cpu_core[1].Halted()) {
-                arm9_cycles_left = 0;
-                break;
-            }
-
-            arm9_cycles_left -= cpu_core[1].step_interpreter();
-        }
+        cpu_core[1].run(arm9_target);
 
         // let the arm7 catch up
-        while (arm7_cycles_left > 0) {
-            if (cpu_core[0].Halted()) {
-                arm7_cycles_left = 0;
-                break;
-            }
-
-            arm7_cycles_left -= cpu_core[0].step_interpreter();
-        }
+        cpu_core[0].run(arm7_target);
 
         // advance the scheduler
-        scheduler.Tick(scheduler_target);
+        scheduler.Tick(cycles);
         scheduler.RunEvents();
-
-        // while (scheduler.GetEventTime() > scheduler.GetCurrentTime()) {
-        //     if (!cpu_core[0].Halted() || !cpu_core[1].Halted()) {
-        //         cpu_core[1].run_interpreter(2);
-        //         cpu_core[0].run_interpreter(1);
-
-        //         scheduler.Tick(1);
-        //     } else {
-        //         scheduler.set_current_time(scheduler.GetEventTime());
-        //     }   
-        // }
-
-        // scheduler.RunEvents();
     }
 }
 
