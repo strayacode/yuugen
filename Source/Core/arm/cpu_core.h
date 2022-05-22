@@ -180,6 +180,13 @@ private:
     void software_interrupt_is_debugger();
     void software_interrupt_vblank_interrupt_wait();
     void software_interrupt_interrupt_wait();
+    void software_interrupt_get_crc16();
+    void software_interrupt_halt();
+    void software_interrupt_get_volume_table();
+    void software_interrupt_get_pitch_table();
+    void software_interrupt_fast_copy();
+    void software_interrupt_soundbias();
+    void software_interrupt_getbootprocs();
     
     std::array<SoftwareInterrupt, 0x100> software_interrupt_table;
     u8 software_interrupt_type = 0;
