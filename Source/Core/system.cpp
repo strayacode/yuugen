@@ -91,18 +91,24 @@ void System::RunFrame() {
     u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
 
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        u64 cycles = std::min(32UL, scheduler.GetEventTime() - scheduler.GetCurrentTime());
-        u64 arm7_target = scheduler.GetCurrentTime() + cycles;
-        u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
-        
-        // run the arm9 until the next scheduled event
-        cpu_core[1].run(arm9_target);
+        if (!cpu_core[0].Halted() || !cpu_core[1].Halted()) {
+            u64 cycles = std::min(32UL, scheduler.GetEventTime() - scheduler.GetCurrentTime());
+            u64 arm7_target = scheduler.GetCurrentTime() + cycles;
+            u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
+            
+            // run the arm9 until the next scheduled event
+            cpu_core[1].run(arm9_target);
 
-        // let the arm7 catch up
-        cpu_core[0].run(arm7_target);
+            // let the arm7 catch up
+            cpu_core[0].run(arm7_target);
 
-        // advance the scheduler
-        scheduler.Tick(cycles);
+            // advance the scheduler
+            scheduler.Tick(cycles);
+        } else {
+            // if both cpus are halted we can just advance to the next event
+            scheduler.set_current_time(scheduler.GetEventTime());
+        }
+
         scheduler.RunEvents();
     }
 }
