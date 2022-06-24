@@ -75,6 +75,9 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
     left_slope.Setup(left_x0, left_y0, left_x1, left_y1);
     right_slope.Setup(right_x0, right_y0, right_x1, right_y1);
 
+    s32 span_start = left_slope.SpanStart(y);
+    s32 span_end = right_slope.SpanEnd(y);
+
     // calculate the current w value along each slope at y
     s32 w0 = slope_interpolator.interpolate(polygon.vertices[left].w, polygon.vertices[next_left].w, y, left_y0, left_y1, polygon.vertices[left].w, polygon.vertices[next_left].w);
     s32 w1 = slope_interpolator.interpolate(polygon.vertices[right].w, polygon.vertices[next_right].w, y, right_y0, right_y1, polygon.vertices[right].w, polygon.vertices[next_right].w);
@@ -93,23 +96,13 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
     s16 t0 = slope_interpolator.interpolate(polygon.vertices[left].t, polygon.vertices[next_left].t, y, left_y0, left_y1, polygon.vertices[left].w, polygon.vertices[next_left].w);
     s16 t1 = slope_interpolator.interpolate(polygon.vertices[right].t, polygon.vertices[next_right].t, y, right_y0, right_y1, polygon.vertices[right].w, polygon.vertices[next_right].w);
 
-    s32 span_start = left_slope.SpanStart(y);
-    s32 span_end = right_slope.SpanEnd(y);
-
-    // if (left_slope.Negative()) {
-    //     std::swap(left_span_start, left_span_end);
-    // }
-
-    // if (right_slope.Negative()) {
-    //     std::swap(right_span_start, right_span_end);
-    // }
-
     if (span_start > span_end) {
         std::swap(span_start, span_end);
+        std::swap(w0, w1);
+        std::swap(z0, z1);
         std::swap(c0, c1);
         std::swap(s0, s1);
         std::swap(t0, t1);
-        // std::swap(w[0], w[1]);
     }
 
     if ((y >= left_y0 && y < left_y1) && (y >= right_y0 && y < right_y1)) {
@@ -136,7 +129,7 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
 
             if (disp3dcnt & 0x1) {
                 // log_fatal("handle texture");
-                framebuffer[(y * 256) + x] = decode_texture(s >> 4, t >> 4, polygon.texture_attributes).to_u16();
+                framebuffer[(y * 256) + x] = decode_texture(s, t, polygon.texture_attributes).to_u16();
             } else {
                 framebuffer[(y * 256) + x] = c.to_u16();
             }

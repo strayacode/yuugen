@@ -17,6 +17,9 @@ Colour SoftwareRenderer3D::decode_texture(int s, int t, TextureAttributes attrib
     bool flip_s_direction = (attributes.parameters >> 18) & 0x1;
     bool flip_t_direction = (attributes.parameters >> 19) & 0x1;
 
+    s >>= 4;
+    t >>= 4;
+
     if (repeat_s_direction) {
         if (flip_s_direction && (s & width)) {
             s = (width - 1) - (s & (width - 1));
