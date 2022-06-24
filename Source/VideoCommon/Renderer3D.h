@@ -68,7 +68,7 @@ public:
     std::array<u32, 256 * 192> depth_buffer;
 
     std::array<Vertex, 6144> renderer_vertex_ram;
-    int renderer_vertex_ram_size = 0;
+    int renderer_num_polygons = 0;
 
     std::array<Polygon, 2048> renderer_polygon_ram;
     int renderer_polygon_ram_size = 0;
@@ -135,6 +135,7 @@ private:
     void SetLightColour();
     void SetNormalVector();
     void BoxTest();
+    void position_test();
 
     u32 gxstat;
     u32 gxfifo;

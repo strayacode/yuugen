@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "Common/Settings.h"
 #include "Core/arm/cpu_core.h"
 #include "Core/HW/cp15/cp15.h"
 
@@ -33,44 +34,58 @@ void CPUCore::Reset() {
     ie = 0;
     irf = 0;
     instruction = 0;
+    instruction_cycles = 0;
+    timestamp = 0;
 }
 
-void CPUCore::run_interpreter(int cycles) {
-    while (cycles-- > 0) {
+void CPUCore::run(u64 target) {
+    while (timestamp < target) {
         if (halted) {
+            timestamp = target;
             return;
         }
 
-        if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
-            HandleInterrupt();
-        }
-
-        // store the current executing instruction
-        instruction = pipeline[0];
-        
-        // shift the pipeline
-        pipeline[0] = pipeline[1];
-
-        // TODO: align r15
-        if (IsARM()) {
-            pipeline[1] = ReadWord(regs.r[15]);
-        } else {
-            pipeline[1] = ReadHalf(regs.r[15]);
-        }
-
-        if (IsARM()) {
-            Instruction inst = decoder.decode_arm(instruction);
-
-            if (ConditionEvaluate(instruction >> 28)) {
-                (this->*inst)();
-            } else {
-                regs.r[15] += 4;
-            }
-        } else {
-            Instruction inst = decoder.decode_thumb(instruction);
-            (this->*inst)();
-        }
+        timestamp += single_step();
     }
+}
+
+int CPUCore::single_step() {
+    instruction_cycles = 0;
+
+    if (ime && (ie & irf) && !(regs.cpsr & (1 << 7))) {
+        HandleInterrupt();
+    }
+
+    // store the current executing instruction
+    instruction = pipeline[0];
+    
+    // shift the pipeline
+    pipeline[0] = pipeline[1];
+
+    // TODO: align r15
+    if (IsARM()) {
+        pipeline[1] = ReadWord(regs.r[15]);
+    } else {
+        pipeline[1] = ReadHalf(regs.r[15]);
+    }
+
+    if (IsARM()) {
+        Instruction inst = decoder.decode_arm(instruction);
+
+        if (ConditionEvaluate(instruction >> 28)) {
+            (this->*inst)();
+        } else {
+            regs.r[15] += 4;
+        }
+    } else {
+        Instruction inst = decoder.decode_thumb(instruction);
+        (this->*inst)();
+    }
+
+    // just assume 1 cpi for now
+    add_internal_cycles(1);
+
+    return instruction_cycles;
 }
 
 void CPUCore::DirectBoot(u32 entrypoint) {
@@ -454,4 +469,8 @@ void CPUCore::log_cpu_state() {
     }
 
     LogFile::Get().Log("%08x\n", instruction);
+}
+
+void CPUCore::add_internal_cycles(int cycles) {
+    instruction_cycles += cycles;
 }

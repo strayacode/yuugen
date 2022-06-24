@@ -118,6 +118,24 @@ u8 ARM9Memory::ReadByte(u32 addr) {
             return system.cartridge.ReadCommand(addr - 0x040001A8);
         case 0x04000208:
             return system.cpu_core[1].ime & 0x1;
+        case 0x04000240:
+            return system.gpu.vram.vramcnt[0];
+        case 0x04000241:
+            return system.gpu.vram.vramcnt[1];
+        case 0x04000242:
+            return system.gpu.vram.vramcnt[2];
+        case 0x04000243:
+            return system.gpu.vram.vramcnt[3];
+        case 0x04000244:
+            return system.gpu.vram.vramcnt[4];
+        case 0x04000245:
+            return system.gpu.vram.vramcnt[5];
+        case 0x04000246:
+            return system.gpu.vram.vramcnt[6];
+        case 0x04000248:
+            return system.gpu.vram.vramcnt[7];
+        case 0x04000249:
+            return system.gpu.vram.vramcnt[8];
         case 0x04000300:
             return system.POSTFLG9;
         case 0x04004000:

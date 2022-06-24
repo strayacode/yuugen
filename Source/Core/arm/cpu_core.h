@@ -95,7 +95,10 @@ public:
     CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15);
     
     void Reset();
-    void run_interpreter(int cycles);
+
+    void run(u64 target);
+    int single_step();
+
     void DirectBoot(u32 entrypoint);
     void FirmwareBoot();
     void SendInterrupt(InterruptType interrupt_type);
@@ -157,4 +160,10 @@ public:
     u32 pipeline[2];
 
     CP15* cp15;
+
+private:
+    int instruction_cycles = 0;
+    u64 timestamp = 0;
+
+    void add_internal_cycles(int cycles);
 };

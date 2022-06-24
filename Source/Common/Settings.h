@@ -17,6 +17,7 @@ public:
     bool fullscreen_on_game_launch = false;
     bool hide_cursor = false;
     bool threaded_2d = false;
+    bool hle_bios = true;
     int volume = 100;
 
 private:

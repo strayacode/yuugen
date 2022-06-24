@@ -4,6 +4,7 @@
 
 // an interpolate which does perspective correct and linear interpolation
 // for colour and texture coordinates
+// TODO: do optimisations where possible
 template <int precision>
 class Interpolator {
 public:

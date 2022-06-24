@@ -461,3 +461,8 @@ void Renderer3D::BoxTest() {
     dequeue_entry();
     dequeue_entry();
 }
+
+void Renderer3D::position_test() {
+    dequeue_entry();
+    dequeue_entry();
+}
