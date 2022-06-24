@@ -166,28 +166,4 @@ private:
     u64 timestamp = 0;
 
     void add_internal_cycles(int cycles);
-
-    // hle software interrupt stuff
-    using SoftwareInterrupt = void (CPUCore::*)();
-
-    void unknown_software_interrupt();
-    void generate_software_interrupt_table();
-    void hle_software_interrupt();
-    void register_software_interrupt(int type, SoftwareInterrupt callback);
-
-    void software_interrupt_delay();
-    void software_interrupt_copy();
-    void software_interrupt_is_debugger();
-    void software_interrupt_vblank_interrupt_wait();
-    void software_interrupt_interrupt_wait();
-    void software_interrupt_get_crc16();
-    void software_interrupt_halt();
-    void software_interrupt_get_volume_table();
-    void software_interrupt_get_pitch_table();
-    void software_interrupt_fast_copy();
-    void software_interrupt_soundbias();
-    void software_interrupt_getbootprocs();
-    
-    std::array<SoftwareInterrupt, 0x100> software_interrupt_table;
-    u8 software_interrupt_type = 0;
 };

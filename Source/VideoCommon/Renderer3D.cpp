@@ -68,8 +68,8 @@ void Renderer3D::reset() {
     
     renderer_vertex_ram.fill(Vertex{});
     renderer_polygon_ram.fill(Polygon{});
-    renderer_vertex_ram_size = 0;
-    renderer_polygon_ram_size = 0;
+    renderer_num_polygons = 0;
+    renderer_num_polygons = 0;
 
     w_buffering = false;
 }
@@ -358,6 +358,9 @@ void Renderer3D::run_command() {
         case 0x70:
             BoxTest();
             break;
+        case 0x71:
+            position_test();
+            break;
         default:
             log_fatal("Renderer3D: unknown geometry command %02x", command);
         }
@@ -506,8 +509,8 @@ void Renderer3D::do_swap_buffers() {
         renderer_polygon_ram[i] = polygon_ram[i];
     }
 
-    renderer_vertex_ram_size = vertex_ram_size;
-    renderer_polygon_ram_size = polygon_ram_size;
+    renderer_num_polygons = vertex_ram_size;
+    renderer_num_polygons = polygon_ram_size;
     
     vertex_ram_size = 0;
     vertex_count = 0;
