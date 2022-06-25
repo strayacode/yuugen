@@ -97,6 +97,10 @@ void DMA::Trigger(u8 mode) {
             start_timing = (channel[channel_index].DMACNT >> 28) & 0x3;
         }
         if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == mode)) {
+            if (start_timing == 7) {
+                log_fatal("implement gxfifo dmas");
+            }
+
             system.scheduler.AddEvent(1, &transfer_event[channel_index]);
         }
     }

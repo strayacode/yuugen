@@ -235,7 +235,9 @@ Entry Renderer3D::dequeue_entry() {
 
         check_gxfifo_interrupt();
 
-        // TODO: do dma stuff
+        if (fifo.size() < 128) {
+            gpu.system.dma[1].Trigger(7);
+        }
     }
 
     return entry;

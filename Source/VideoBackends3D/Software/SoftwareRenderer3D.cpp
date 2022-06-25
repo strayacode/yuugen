@@ -113,7 +113,7 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
             u32 depth = 0;
 
             if (w_buffering) {
-                depth = scanline_interpolator.interpolate(z0, z1, x, span_start, span_end, w0, w1);
+                depth = scanline_interpolator.interpolate(w0, w1, x, span_start, span_end, w0, w1);
             } else {
                 depth = scanline_interpolator.interpolate_linear(z0, z1, x, span_start, span_end);
             }
