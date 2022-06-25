@@ -1,16 +1,16 @@
 #include "Common/Log.h"
 #include "VideoCommon/Renderer2D.h"
-#include "VideoCommon/GPU.h"
+#include "VideoCommon/VideoUnit.h"
 
-Renderer2D::Renderer2D(GPU& gpu, Engine engine) : gpu(gpu), engine(engine) {
+Renderer2D::Renderer2D(VideoUnit& video_unit, Engine engine) : video_unit(video_unit), engine(engine) {
     if (engine == Engine::A) {
-        palette_ram = gpu.get_palette_ram();
-        oam = gpu.get_oam();
+        palette_ram = video_unit.get_palette_ram();
+        oam = video_unit.get_oam();
         vram_addr = 0x06000000;
         obj_addr = 0x06400000;
     } else {
-        palette_ram = gpu.get_palette_ram() + 0x400;
-        oam = gpu.get_oam() + 0x400;
+        palette_ram = video_unit.get_palette_ram() + 0x400;
+        oam = video_unit.get_oam() + 0x400;
         vram_addr = 0x06200000;
         obj_addr = 0x06600000;
     }

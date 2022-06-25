@@ -2,7 +2,7 @@
 #include <iterator>
 #include "Common/Log.h"
 #include "Core/HW/spi/spi.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 SPI::SPI(System& system) : system(system) {
     

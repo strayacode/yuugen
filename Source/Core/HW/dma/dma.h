@@ -4,7 +4,7 @@
 #include <string.h>
 #include "Common/Log.h"
 #include "Common/Types.h"
-#include "Core/scheduler/scheduler.h"
+#include "Core/Scheduler.h"
 
 class System;
 

@@ -1,26 +1,26 @@
 #include <algorithm>
-#include "Core/system.h"
+#include "Core/System.h"
 
 System::System() 
     : arm7_memory(*this), arm9_memory(*this), cartridge(*this),
     spi(*this), cp15(*this), 
     dma {DMA(*this, 0), DMA(*this, 1)}, ipc(*this), 
     timers {Timers(*this, 0), Timers(*this, 1)},
-    spu(*this), gpu(*this),
+    spu(*this), video_unit(*this),
     cpu_core {CPUCore(arm7_memory, CPUArch::ARMv4, nullptr), CPUCore(arm9_memory, CPUArch::ARMv5, &cp15)} {
     SetCPUCoreType(CPUCoreType::Interpreter);
 }
 
 void System::Reset() {
     SetCPUCoreType(CPUCoreType::Interpreter);
-    gpu.create_renderers(RendererType::Software);
+    video_unit.create_renderers(RendererType::Software);
 
     arm7_memory.Reset();
     arm9_memory.Reset();
     scheduler.Reset();
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
-    gpu.reset();
+    video_unit.reset();
     dma[0].Reset();
     dma[1].Reset();
     timers[0].Reset();
@@ -92,7 +92,7 @@ void System::RunFrame() {
 
     while (scheduler.GetCurrentTime() < frame_end_time) {
         if (!cpu_core[0].Halted() || !cpu_core[1].Halted()) {
-            u64 cycles = std::min(32UL, scheduler.GetEventTime() - scheduler.GetCurrentTime());
+            u64 cycles = std::min(16UL, scheduler.GetEventTime() - scheduler.GetCurrentTime());
             u64 arm7_target = scheduler.GetCurrentTime() + cycles;
             u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
             

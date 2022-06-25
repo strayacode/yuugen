@@ -1,10 +1,10 @@
 #include "Common/Log.h"
 #include "Common/Memory.h"
-#include "VideoCommon/GPU.h"
+#include "VideoCommon/VideoUnit.h"
 #include "VideoCommon/Colour.h"
 #include "VideoBackends2D/Software/SoftwareRenderer2D.h"
 
-SoftwareRenderer2D::SoftwareRenderer2D(GPU& gpu, Engine engine) : Renderer2D(gpu, engine) {}
+SoftwareRenderer2D::SoftwareRenderer2D(VideoUnit& video_unit, Engine engine) : Renderer2D(video_unit, engine) {}
 
 void SoftwareRenderer2D::render_scanline(int line) {
     for (int i = 0; i < 4; i++) {
@@ -51,7 +51,7 @@ void SoftwareRenderer2D::render_graphics_display(int line) {
     if (dispcnt & (1 << 8)) {
         if ((dispcnt & (1 << 3)) || (bg_mode == 6)) {
             for (int i = 0; i < 256; i++) {
-                bg_layers[0][(256 * line) + i] = gpu.renderer_3d->framebuffer[(256 * line) + i];
+                bg_layers[0][(256 * line) + i] = video_unit.renderer_3d->framebuffer[(256 * line) + i];
             }
         } else {
             render_text(0, line);
@@ -115,7 +115,7 @@ void SoftwareRenderer2D::render_vram_display(int line) {
 
     for (int x = 0; x < 256; x++) {
         u32 addr = 0x06800000 + (vram_block * 0x20000) + ((256 * line) + x) * 2;
-        u16 data = gpu.vram.read_vram<u16>(addr);
+        u16 data = video_unit.vram.read_vram<u16>(addr);
         
         draw_pixel(x, line, rgb555_to_rgb888(data) | 0xFF000000);
     }

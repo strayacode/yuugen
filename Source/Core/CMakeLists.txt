@@ -1,6 +1,6 @@
 add_library(core
-    core.h core.cpp
-    system.h system.cpp
+    Core.h Core.cpp
+    System.h System.cpp
 
     arm/memory_base.h arm/cpu_registers.h
     arm/cpu_core.h arm/cpu_core.cpp
@@ -18,7 +18,7 @@ add_library(core
     HW/cartridge/backup/no_backup/no_backup.h HW/cartridge/backup/no_backup/no_backup.cpp
     HW/cartridge/backup/generic_backup.h HW/cartridge/save_database.h
     HW/spi/spi.h HW/spi/spi.cpp
-    scheduler/scheduler.h scheduler/scheduler.cpp
+    Scheduler.h Scheduler.cpp
     HW/cp15/cp15.h HW/cp15/cp15.cpp
 
     HW/dma/dma.h HW/dma/dma.cpp

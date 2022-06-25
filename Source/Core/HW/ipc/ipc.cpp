@@ -1,5 +1,5 @@
 #include "Core/HW/ipc/ipc.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 IPC::IPC(System& system) : system(system) {}
 

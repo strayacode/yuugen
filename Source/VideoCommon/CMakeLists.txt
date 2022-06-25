@@ -1,5 +1,5 @@
 add_library(videocommon
-    GPU.h GPU.cpp
+    VideoUnit.h VideoUnit.cpp
     GLWindow.h GLWindow.cpp
     Renderer2D.h Renderer2D.cpp
     Renderer3D.h Renderer3D.cpp

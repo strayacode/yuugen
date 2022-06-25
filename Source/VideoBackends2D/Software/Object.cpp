@@ -1,5 +1,5 @@
 #include "Common/Memory.h"
-#include "VideoCommon/GPU.h"
+#include "VideoCommon/VideoUnit.h"
 #include "VideoBackends2D/Software/SoftwareRenderer2D.h"
 
 void SoftwareRenderer2D::render_objects(int line) {
@@ -57,7 +57,7 @@ void SoftwareRenderer2D::render_objects(int line) {
                     continue;
                 }
 
-                u16 colour = gpu.vram.read_vram<u16>(obj_base + ((height_difference * map_width) + j) * 2);
+                u16 colour = video_unit.vram.read_vram<u16>(obj_base + ((height_difference * map_width) + j) * 2);
 
                 if (colour & 0x8000) {
                     if (priority < obj_priority[(256 * line) + layer_offset]) {

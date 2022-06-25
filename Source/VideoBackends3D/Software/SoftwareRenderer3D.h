@@ -5,11 +5,11 @@
 #include "VideoCommon/Renderer3D.h"
 #include "VideoBackends3D/Software/Interpolator.h"
 
-class GPU;
+class VideoUnit;
 
 class SoftwareRenderer3D : public Renderer3D {
 public:
-    SoftwareRenderer3D(GPU& gpu);
+    SoftwareRenderer3D(VideoUnit& video_unit);
     
     void render() override;
 

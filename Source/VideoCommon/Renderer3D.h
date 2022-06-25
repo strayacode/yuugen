@@ -8,7 +8,7 @@
 #include <vector>
 #include "Common/Types.h"
 #include "Common/GPUTypes.h"
-#include "Core/scheduler/scheduler.h"
+#include "Core/Scheduler.h"
 
 enum class GeometryEngineState {
     Halted,
@@ -41,11 +41,11 @@ struct Entry {
     u32 parameter = 0;
 };
 
-class GPU;
+class VideoUnit;
 
 class Renderer3D {
 public:
-    Renderer3D(GPU& gpu);
+    Renderer3D(VideoUnit& video_unit);
 
     void reset();
     virtual void render() = 0;
@@ -77,7 +77,7 @@ public:
 
     bool w_buffering = false;
     
-    GPU& gpu;
+    VideoUnit& video_unit;
 
 private:
     void queue_command(u32 addr, u32 data);

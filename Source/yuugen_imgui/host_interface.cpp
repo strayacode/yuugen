@@ -145,8 +145,8 @@ void HostInterface::render_screens() {
     
     SDL_ShowCursor(Settings::Get().hide_cursor && (fullscreen || (io.MousePos.y > menubar_height)) ? SDL_DISABLE : SDL_ENABLE);
 
-    top_screen.render(core.system.gpu.get_framebuffer(Screen::Top));
-    bottom_screen.render(core.system.gpu.get_framebuffer(Screen::Bottom));
+    top_screen.render(core.system.video_unit.get_framebuffer(Screen::Top));
+    bottom_screen.render(core.system.video_unit.get_framebuffer(Screen::Bottom));
 
     const double scale_x = (double)window_width / 256;
     const double scale_y = (double)window_height / 384;
@@ -655,8 +655,8 @@ void HostInterface::set_fullscreen(bool value) {
 
 void HostInterface::take_screenshot() {
     // first combine the top and bottom framebuffer into a std::array
-    const u32* top_framebuffer = core.system.gpu.get_framebuffer(Screen::Top);
-    const u32* bottom_framebuffer = core.system.gpu.get_framebuffer(Screen::Bottom);
+    const u32* top_framebuffer = core.system.video_unit.get_framebuffer(Screen::Top);
+    const u32* bottom_framebuffer = core.system.video_unit.get_framebuffer(Screen::Bottom);
     std::array<u32, 256 * 192 * 2> screenshot_data;
 
     std::mutex screenshot_copy_mutex;

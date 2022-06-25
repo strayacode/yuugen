@@ -64,8 +64,8 @@ void HostInterface::Run(std::string path) {
     core.BootGame(path);
 
     while (true) {
-        SDL_UpdateTexture(top_texture, nullptr, core.system.gpu.GetFramebuffer(Screen::Top), sizeof(u32) * 256);
-        SDL_UpdateTexture(bottom_texture, nullptr, core.system.gpu.GetFramebuffer(Screen::Bottom), sizeof(u32) * 256);
+        SDL_UpdateTexture(top_texture, nullptr, core.system.video_unit.GetFramebuffer(Screen::Top), sizeof(u32) * 256);
+        SDL_UpdateTexture(bottom_texture, nullptr, core.system.video_unit.GetFramebuffer(Screen::Bottom), sizeof(u32) * 256);
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, top_texture, nullptr, &top_texture_area);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common/Types.h"
-#include "Core/scheduler/scheduler.h"
+#include "Core/Scheduler.h"
 
 class System;
 

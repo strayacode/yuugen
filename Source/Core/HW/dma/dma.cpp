@@ -1,6 +1,6 @@
 #include <string>
 #include "Core/HW/dma/dma.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 DMA::DMA(System& system, int arch) : system(system), arch(arch) {
     
@@ -88,7 +88,7 @@ void DMA::Transfer(int channel_index) {
         }
 
         // schedule another gxfifo dma if the gxfifo is still half empty
-        if (mode == 7 && system.gpu.renderer_3d->gxfifo_half_empty()) {
+        if (mode == 7 && system.video_unit.renderer_3d->gxfifo_half_empty()) {
             system.scheduler.AddEvent(1, &transfer_event[channel_index]);
         }
     } else {
@@ -129,7 +129,7 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
 
     // immediately schedule a dma transfer if the gxfifo is half empty
-    if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == 7) && system.gpu.renderer_3d->gxfifo_half_empty()) {
+    if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == 7) && system.video_unit.renderer_3d->gxfifo_half_empty()) {
         system.scheduler.AddEvent(1, &transfer_event[channel_index]);
     }
 

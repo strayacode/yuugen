@@ -1,7 +1,7 @@
-#include "VideoCommon/GPU.h"
+#include "VideoCommon/VideoUnit.h"
 #include "VideoBackends3D/Software/SoftwareRenderer3D.h"
 
-SoftwareRenderer3D::SoftwareRenderer3D(GPU& gpu) : Renderer3D(gpu) {}
+SoftwareRenderer3D::SoftwareRenderer3D(VideoUnit& video_unit) : Renderer3D(video_unit) {}
 
 void SoftwareRenderer3D::render() {
     framebuffer.fill(0);

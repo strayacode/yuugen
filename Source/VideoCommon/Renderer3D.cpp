@@ -1,8 +1,8 @@
 #include "Common/Log.h"
 #include "Common/Memory.h"
 #include "VideoCommon/Renderer3D.h"
-#include "VideoCommon/GPU.h"
-#include "Core/system.h"
+#include "VideoCommon/VideoUnit.h"
+#include "Core/System.h"
 
 static constexpr std::array<int, 256> param_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -22,7 +22,7 @@ static constexpr std::array<int, 256> param_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 }};
 
-Renderer3D::Renderer3D(GPU& gpu) : gpu(gpu) {}
+Renderer3D::Renderer3D(VideoUnit& video_unit) : video_unit(video_unit) {}
 
 void Renderer3D::reset() {
     disp3dcnt = 0;
@@ -50,7 +50,7 @@ void Renderer3D::reset() {
     polygon_ram_size = 0;
     disp_1dot_depth = 0;
 
-    geometry_command_event = gpu.system.scheduler.RegisterEvent("GeometryCommand", [this]() {
+    geometry_command_event = video_unit.system.scheduler.RegisterEvent("GeometryCommand", [this]() {
         busy = false;
         run_command();
     });
@@ -208,7 +208,7 @@ void Renderer3D::queue_entry(Entry entry) {
         while (fifo.size() >= 256) {
             // just run commands until the fifo isn't full
             busy = false;
-            gpu.system.scheduler.CancelEvent(&geometry_command_event);
+            video_unit.system.scheduler.CancelEvent(&geometry_command_event);
             run_command();
         }
     }
@@ -236,7 +236,7 @@ Entry Renderer3D::dequeue_entry() {
         check_gxfifo_interrupt();
 
         if (fifo.size() < 128) {
-            gpu.system.dma[1].Trigger(7);
+            video_unit.system.dma[1].Trigger(7);
         }
     }
 
@@ -368,7 +368,7 @@ void Renderer3D::run_command() {
         }
 
         busy = true;
-        gpu.system.scheduler.AddEvent(1, &geometry_command_event);
+        video_unit.system.scheduler.AddEvent(1, &geometry_command_event);
     }
 }
 
@@ -401,13 +401,13 @@ void Renderer3D::check_gxfifo_interrupt() {
     case 1:
         // trigger interrupt if fifo is less than half full
         if (fifo.size() < 128) {
-            gpu.system.cpu_core[1].SendInterrupt(InterruptType::GXFIFO);
+            video_unit.system.cpu_core[1].SendInterrupt(InterruptType::GXFIFO);
         }
         break;
     case 2:
         // trigger interrupt if fifo is empty
         if (fifo.size() == 0) {
-            gpu.system.cpu_core[1].SendInterrupt(InterruptType::GXFIFO);
+            video_unit.system.cpu_core[1].SendInterrupt(InterruptType::GXFIFO);
         }
         break;
     }

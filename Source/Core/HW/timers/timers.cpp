@@ -1,7 +1,7 @@
 #include "Common/format.h"
 #include "Common/Log.h"
 #include "Core/HW/timers/timers.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 Timers::Timers(System& system, int arch) : system(system), arch(arch) {}
 

@@ -2,7 +2,7 @@
 #include <string.h>
 #include "Common/Log.h"
 #include "Core/HW/cp15/cp15.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 CP15::CP15(System& system) : system(system) {}
 

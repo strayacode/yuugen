@@ -6,7 +6,7 @@
 #include <yuugen_common/emu_thread.h>
 #include "AudioCommon/AudioInterface.h"
 #include "AudioCommon/SDLAudioInterface.h"
-#include "Core/system.h"
+#include "Core/System.h"
 
 enum class BootMode {
     Direct,

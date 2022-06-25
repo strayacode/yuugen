@@ -7,7 +7,7 @@
 #include "Common/Log.h"
 #include "Common/GamesList.h"
 #include "VideoCommon/GLWindow.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 #include "Core/arm/Disassembler/Disassembler.h"
 #include <memory>
 #include <vector>

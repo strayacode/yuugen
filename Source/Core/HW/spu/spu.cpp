@@ -2,7 +2,7 @@
 #include "Common/Log.h"
 #include "Common/Settings.h"
 #include "Core/HW/spu/spu.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 SPU::SPU(System& system) : system(system) {}
 

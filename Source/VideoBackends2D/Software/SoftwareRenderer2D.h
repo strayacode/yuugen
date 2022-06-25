@@ -3,11 +3,11 @@
 #include <memory>
 #include "VideoCommon/Renderer2D.h"
 
-class GPU;
+class VideoUnit;
 
 class SoftwareRenderer2D : public Renderer2D {
 public:
-    SoftwareRenderer2D(GPU& gpu, Engine engine);
+    SoftwareRenderer2D(VideoUnit& video_unit, Engine engine);
     void render_scanline(int line) override;
 
 private:

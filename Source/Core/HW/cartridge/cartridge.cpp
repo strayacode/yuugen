@@ -1,5 +1,5 @@
 #include "Core/HW/cartridge/cartridge.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 Cartridge::Cartridge(System& system) : system(system) {}
 

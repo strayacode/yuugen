@@ -3,7 +3,7 @@
 #include "Core/arm/cpu_core.h"
 #include "Core/arm/arm7/memory.h"
 #include "Core/arm/arm9/memory.h"
-#include "Core/scheduler/scheduler.h"
+#include "Core/Scheduler.h"
 #include "Core/HW/cartridge/cartridge.h"
 #include "Core/HW/spi/spi.h"
 #include "Core/HW/cp15/cp15.h"
@@ -15,7 +15,7 @@
 #include "Core/HW/rtc/rtc.h"
 #include "Core/HW/maths_unit/maths_unit.h"
 #include "Core/HW/wifi/wifi.h"
-#include "VideoCommon/GPU.h"
+#include "VideoCommon/VideoUnit.h"
 
 enum class CPUCoreType {
     Interpreter,
@@ -51,7 +51,7 @@ public:
     RTC rtc;
     MathsUnit maths_unit;
     Wifi wifi;
-    GPU gpu;
+    VideoUnit video_unit;
 
     CPUCore cpu_core[2];
 

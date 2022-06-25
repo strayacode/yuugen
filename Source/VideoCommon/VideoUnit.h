@@ -7,7 +7,7 @@
 #include "VideoCommon/Renderer2D.h"
 #include "VideoCommon/Renderer3D.h"
 #include "VideoCommon/VRAM.h"
-#include "Core/scheduler/scheduler.h"
+#include "Core/Scheduler.h"
 
 enum class RendererType {
     Software,
@@ -20,10 +20,10 @@ enum class Screen {
 
 class System;
 
-class GPU {
+class VideoUnit {
 public:
-    GPU(System& system);
-    ~GPU();
+    VideoUnit(System& system);
+    ~VideoUnit();
     void reset();
 
     void create_renderers(RendererType type);

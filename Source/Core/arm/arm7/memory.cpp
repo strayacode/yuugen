@@ -1,5 +1,5 @@
 #include "Common/Memory.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 #include "Core/arm/arm7/memory.h"
 
 ARM7Memory::ARM7Memory(System& system) : system(system) {
@@ -67,7 +67,7 @@ u8 ARM7Memory::ReadByte(u32 addr) {
         case 0x040001C2:
             return system.spi.ReadSPIDATA();
         case 0x04000240:
-            return system.gpu.vram.vramstat;
+            return system.video_unit.vram.vramstat;
         case 0x04000241:
             return system.wramcnt;
         case 0x04000300:
@@ -106,9 +106,9 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
     case 0x04:
         switch (addr) {
         case 0x04000004:
-            return system.gpu.dispstat[0];
+            return system.video_unit.dispstat[0];
         case 0x04000006:
-            return system.gpu.vcount;
+            return system.video_unit.vcount;
         case 0x040000BA:
             return system.dma[0].ReadDMACNT_H(0);
         case 0x040000C6:
@@ -189,7 +189,7 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
 
         break;
     case 0x06:
-        return system.gpu.vram.read_arm7<u16>(addr);
+        return system.video_unit.vram.read_arm7<u16>(addr);
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -240,7 +240,7 @@ u32 ARM7Memory::ReadWord(u32 addr) {
 
         break;
     case 0x06:
-        return system.gpu.vram.read_arm7<u32>(addr);
+        return system.video_unit.vram.read_arm7<u32>(addr);
     }
 
     if (Common::in_range(0x04000400, 0x04000500, addr)) {
@@ -311,7 +311,7 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
 
         break;
     case 0x06:
-        system.gpu.vram.write_arm7<u8>(addr, data);
+        system.video_unit.vram.write_arm7<u8>(addr, data);
         return;
     }
 
@@ -331,7 +331,7 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
     case 0x04:
         switch (addr) {
         case 0x04000004:
-            system.gpu.dispstat[0] = data;
+            system.video_unit.dispstat[0] = data;
             return;
         case 0x040000BA:
             system.dma[0].WriteDMACNT_H(0, data);
@@ -540,7 +540,7 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
 
         break;
     case 0x06:
-        system.gpu.vram.write_arm7<u32>(addr, data);
+        system.video_unit.vram.write_arm7<u32>(addr, data);
         return;
     case 0x08: case 0x09:
         // for now do nothing lol

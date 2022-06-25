@@ -1,5 +1,5 @@
 #include "Common/Settings.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 Core::Core(UpdateFunction update_fps) : 
     emu_thread([this]() {
@@ -46,7 +46,7 @@ void Core::SetState(State new_state) {
         emu_thread.Start();
 
         if (Settings::Get().threaded_2d) {
-            system.gpu.start_render_thread();
+            system.video_unit.start_render_thread();
         }
         break;
     case State::Paused:
@@ -54,7 +54,7 @@ void Core::SetState(State new_state) {
         emu_thread.Stop();
 
         if (Settings::Get().threaded_2d) {
-            system.gpu.stop_render_thread();
+            system.video_unit.stop_render_thread();
         }
         break;
     case State::Idle:
@@ -62,7 +62,7 @@ void Core::SetState(State new_state) {
         emu_thread.Stop();
 
         if (Settings::Get().threaded_2d) {
-            system.gpu.stop_render_thread();
+            system.video_unit.stop_render_thread();
         }
         break;
     }

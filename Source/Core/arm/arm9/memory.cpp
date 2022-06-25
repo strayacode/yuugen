@@ -2,7 +2,7 @@
 #include "Common/Log.h"
 #include "Common/Memory.h"
 #include "Core/arm/arm9/memory.h"
-#include "Core/core.h"
+#include "Core/Core.h"
 
 ARM9Memory::ARM9Memory(System& system) : system(system) {
     bios = LoadBios<0x8000>("../bios/bios9.bin");
@@ -119,23 +119,23 @@ u8 ARM9Memory::ReadByte(u32 addr) {
         case 0x04000208:
             return system.cpu_core[1].ime & 0x1;
         case 0x04000240:
-            return system.gpu.vram.vramcnt[0];
+            return system.video_unit.vram.vramcnt[0];
         case 0x04000241:
-            return system.gpu.vram.vramcnt[1];
+            return system.video_unit.vram.vramcnt[1];
         case 0x04000242:
-            return system.gpu.vram.vramcnt[2];
+            return system.video_unit.vram.vramcnt[2];
         case 0x04000243:
-            return system.gpu.vram.vramcnt[3];
+            return system.video_unit.vram.vramcnt[3];
         case 0x04000244:
-            return system.gpu.vram.vramcnt[4];
+            return system.video_unit.vram.vramcnt[4];
         case 0x04000245:
-            return system.gpu.vram.vramcnt[5];
+            return system.video_unit.vram.vramcnt[5];
         case 0x04000246:
-            return system.gpu.vram.vramcnt[6];
+            return system.video_unit.vram.vramcnt[6];
         case 0x04000248:
-            return system.gpu.vram.vramcnt[7];
+            return system.video_unit.vram.vramcnt[7];
         case 0x04000249:
-            return system.gpu.vram.vramcnt[8];
+            return system.video_unit.vram.vramcnt[8];
         case 0x04000300:
             return system.POSTFLG9;
         case 0x04004000:
@@ -144,11 +144,11 @@ u8 ARM9Memory::ReadByte(u32 addr) {
             log_fatal("[ARM9] Undefined 8-bit io read %08x", addr);
         }
     case 0x05:
-        return Common::read<u8>(system.gpu.get_palette_ram(), addr & 0x7FF);
+        return Common::read<u8>(system.video_unit.get_palette_ram(), addr & 0x7FF);
     case 0x06:
-        return system.gpu.vram.read_vram<u8>(addr);
+        return system.video_unit.vram.read_vram<u8>(addr);
     case 0x07:
-        return Common::read<u8>(system.gpu.get_oam(), addr & 0x7FF);
+        return Common::read<u8>(system.video_unit.get_oam(), addr & 0x7FF);
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -179,11 +179,11 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
     case 0x04:
         switch (addr) {
         case 0x04000004:
-            return system.gpu.dispstat[1];
+            return system.video_unit.dispstat[1];
         case 0x04000006:
-            return system.gpu.vcount;
+            return system.video_unit.vcount;
         case 0x04000060:
-            return system.gpu.renderer_3d->disp3dcnt;
+            return system.video_unit.renderer_3d->disp3dcnt;
         case 0x040000BA:
             return system.dma[1].ReadDMACNT_H(0);
         case 0x040000C6:
@@ -223,7 +223,7 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
         case 0x04000300:
             return system.POSTFLG9;
         case 0x04000304:
-            return system.gpu.powcnt1;
+            return system.video_unit.powcnt1;
         case 0x04000320:
             return 0;
         case 0x04004004:
@@ -234,11 +234,11 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
 
         break;
     case 0x05:
-        return Common::read<u16>(system.gpu.get_palette_ram(), addr & 0x7FF);
+        return Common::read<u16>(system.video_unit.get_palette_ram(), addr & 0x7FF);
     case 0x06:
-        return system.gpu.vram.read_vram<u16>(addr);
+        return system.video_unit.vram.read_vram<u16>(addr);
     case 0x07:
-        return Common::read<u16>(system.gpu.get_oam(), addr & 0x7FF);
+        return Common::read<u16>(system.video_unit.get_oam(), addr & 0x7FF);
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -253,11 +253,11 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
     }
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
-        return system.gpu.renderer_2d[0]->read_half(addr);
+        return system.video_unit.renderer_2d[0]->read_half(addr);
     }
 
     if (Common::in_range(0x04001000, 0x04001060, addr)) {
-        return system.gpu.renderer_2d[1]->read_half(addr);
+        return system.video_unit.renderer_2d[1]->read_half(addr);
     }
 
     log_warn("ARM9: handle half read %08x", addr);
@@ -326,7 +326,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         case 0x04000214:
             return system.cpu_core[1].irf;
         case 0x04000240:
-            return ((system.gpu.vram.vramcnt[3] << 24) | (system.gpu.vram.vramcnt[2] << 16) | (system.gpu.vram.vramcnt[1] << 8) | (system.gpu.vram.vramcnt[0]));
+            return ((system.video_unit.vram.vramcnt[3] << 24) | (system.video_unit.vram.vramcnt[2] << 16) | (system.video_unit.vram.vramcnt[1] << 8) | (system.video_unit.vram.vramcnt[0]));
         case 0x04000280:
             return system.maths_unit.DIVCNT;
         case 0x04000290:
@@ -363,11 +363,11 @@ u32 ARM9Memory::ReadWord(u32 addr) {
 
         break;
     case 0x05:
-        return Common::read<u32>(system.gpu.get_palette_ram(), addr & 0x7FF);
+        return Common::read<u32>(system.video_unit.get_palette_ram(), addr & 0x7FF);
     case 0x06:
-        return system.gpu.vram.read_vram<u32>(addr);
+        return system.video_unit.vram.read_vram<u32>(addr);
     case 0x07:
-        return Common::read<u16>(system.gpu.get_oam(), addr & 0x7FF);
+        return Common::read<u16>(system.video_unit.get_oam(), addr & 0x7FF);
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -381,15 +381,15 @@ u32 ARM9Memory::ReadWord(u32 addr) {
     }
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
-        return system.gpu.renderer_2d[0]->read_word(addr);
+        return system.video_unit.renderer_2d[0]->read_word(addr);
     }
 
     if (Common::in_range(0x04000320, 0x040006A3, addr)) {
-        return system.gpu.renderer_3d->read_word(addr);
+        return system.video_unit.renderer_3d->read_word(addr);
     }
 
     if (Common::in_range(0x04001000, 0x04001060, addr)) {
-        return system.gpu.renderer_2d[1]->read_word(addr);
+        return system.video_unit.renderer_2d[1]->read_word(addr);
     }
 
     log_warn("ARM9: handle word read %08x", addr);
@@ -420,34 +420,34 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
             system.cpu_core[1].ime = data & 0x1;
             return;
         case 0x04000240:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::A, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::A, data);
             return;
         case 0x04000241:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::B, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::B, data);
             return;
         case 0x04000242:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::C, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::C, data);
             return;
         case 0x04000243:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::D, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::D, data);
             return;
         case 0x04000244:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::E, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::E, data);
             return;
         case 0x04000245:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::F, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::F, data);
             return;
         case 0x04000246:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::G, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::G, data);
             return;
         case 0x04000247:
             system.write_wramcnt(data);
             return;
         case 0x04000248:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::H, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::H, data);
             return;
         case 0x04000249:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::I, data);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::I, data);
             return;
         case 0x04000300:
             system.POSTFLG9 = data;
@@ -456,25 +456,25 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
         
         break;
     case 0x05:
-        Common::write<u8>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
+        Common::write<u8>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
         return;
     case 0x06:
-        system.gpu.vram.write_vram<u8>(addr, data);
+        system.video_unit.vram.write_vram<u8>(addr, data);
         return;
     }
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
-        system.gpu.renderer_2d[0]->write_byte(addr, data);
+        system.video_unit.renderer_2d[0]->write_byte(addr, data);
         return;
     }
 
     if (Common::in_range(0x04001000, 0x04001060, addr)) {
-        system.gpu.renderer_2d[1]->write_byte(addr, data);
+        system.video_unit.renderer_2d[1]->write_byte(addr, data);
         return;
     }
 
     if (Common::in_range(0x04000320, 0x040006A3, addr)) {
-        system.gpu.renderer_3d->write_byte(addr, data);
+        system.video_unit.renderer_3d->write_byte(addr, data);
         return;
     }
 
@@ -486,13 +486,13 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
     case 0x04:
         switch (addr) {
         case 0x04000004:
-            system.gpu.dispstat[1] = data;
+            system.video_unit.dispstat[1] = data;
             return;
         case 0x04000060:
-            system.gpu.renderer_3d->disp3dcnt = data;
+            system.video_unit.renderer_3d->disp3dcnt = data;
             return;
         case 0x0400006C:
-            system.gpu.renderer_2d[0]->master_bright = data;
+            system.video_unit.renderer_2d[0]->master_bright = data;
             return;
         case 0x040000B8:
             system.dma[1].WriteDMACNT_L(0, data);
@@ -564,8 +564,8 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             system.cpu_core[1].ime = data & 0x1;
             return;
         case 0x04000248:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::H, data & 0xFF);
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::I, data >> 8);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::H, data & 0xFF);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::I, data >> 8);
             return;
         case 0x04000280:
             system.maths_unit.DIVCNT = data;
@@ -579,21 +579,21 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
             system.POSTFLG9 = data;
             return;
         case 0x04000304:
-            system.gpu.powcnt1 = data;
+            system.video_unit.powcnt1 = data;
             return;
         case 0x0400106C:
-            system.gpu.renderer_2d[1]->master_bright = data;
+            system.video_unit.renderer_2d[1]->master_bright = data;
             return;
         }
         break;
     case 0x05:
-        Common::write<u16>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
+        Common::write<u16>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
         return;
     case 0x06:
-        system.gpu.vram.write_vram<u16>(addr, data);
+        system.video_unit.vram.write_vram<u16>(addr, data);
         return;
     case 0x07:
-        Common::write<u16>(system.gpu.get_oam(), addr & 0x7FF, data);
+        Common::write<u16>(system.video_unit.get_oam(), addr & 0x7FF, data);
         return;
     case 0x08: case 0x09:
         // for now do nothing lol
@@ -601,17 +601,17 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
     }
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
-        system.gpu.renderer_2d[0]->write_half(addr, data);
+        system.video_unit.renderer_2d[0]->write_half(addr, data);
         return;
     }
 
     if (Common::in_range(0x04000320, 0x040006A3, addr)) {
-        system.gpu.renderer_3d->write_half(addr, data);
+        system.video_unit.renderer_3d->write_half(addr, data);
         return;
     }
 
     if (Common::in_range(0x04001000, 0x04001060, addr)) {
-        system.gpu.renderer_2d[1]->write_half(addr, data);
+        system.video_unit.renderer_2d[1]->write_half(addr, data);
         return;
     }
 
@@ -623,14 +623,14 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
     case 0x04:
         switch (addr) {
         case 0x04000004:
-            system.gpu.dispstat[1] = data & 0xFFFF;
-            system.gpu.vcount = data >> 16;
+            system.video_unit.dispstat[1] = data & 0xFFFF;
+            system.video_unit.vcount = data >> 16;
             return;
         case 0x04000060:
-            system.gpu.renderer_3d->disp3dcnt = data;
+            system.video_unit.renderer_3d->disp3dcnt = data;
             return;
         case 0x04000064:
-            system.gpu.dispcapcnt = data;
+            system.video_unit.dispcapcnt = data;
             return;
         case 0x040000B0:
             system.dma[1].channel[0].source = data;
@@ -715,15 +715,15 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             system.cpu_core[1].irf &= ~data;
             return;
         case 0x04000240:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::A, data & 0xFF);
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::B, (data >> 8) & 0xFF);
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::C, (data >> 16) & 0xFF);
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::D, (data >> 24) & 0xFF);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::A, data & 0xFF);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::B, (data >> 8) & 0xFF);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::C, (data >> 16) & 0xFF);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::D, (data >> 24) & 0xFF);
             return;
         case 0x04000244:
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::E, data & 0xFF);
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::F, (data >> 8) & 0xFF);
-            system.gpu.vram.update_vram_mapping(VRAM::Bank::G, (data >> 16) & 0xFF);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::E, data & 0xFF);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::F, (data >> 8) & 0xFF);
+            system.video_unit.vram.update_vram_mapping(VRAM::Bank::G, (data >> 16) & 0xFF);
             system.write_wramcnt((data >> 24) & 0xFF);
             return;
         case 0x04000280:
@@ -769,24 +769,24 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
             system.maths_unit.StartSquareRoot();
             return;
         case 0x04000304:
-            system.gpu.powcnt1 = data;
+            system.video_unit.powcnt1 = data;
             return;
         case 0x04001004: case 0x04001060: case 0x04001064: case 0x04001068:
             return;
         case 0x0400106C:
-            system.gpu.renderer_2d[1]->master_bright = data;
+            system.video_unit.renderer_2d[1]->master_bright = data;
             return;
         }
         
         break;
     case 0x05:
-        Common::write<u32>(system.gpu.get_palette_ram(), addr & 0x7FF, data);
+        Common::write<u32>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
         return;
     case 0x06:
-        system.gpu.vram.write_vram<u32>(addr, data);
+        system.video_unit.vram.write_vram<u32>(addr, data);
         return;
     case 0x07:
-        Common::write<u32>(system.gpu.get_oam(), addr & 0x7FF, data);
+        Common::write<u32>(system.video_unit.get_oam(), addr & 0x7FF, data);
         return;
     case 0x08: case 0x09:
         // for now do nothing lol
@@ -794,17 +794,17 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
     }
 
     if (Common::in_range(0x04000000, 0x04000060, addr)) {
-        system.gpu.renderer_2d[0]->write_word(addr, data);
+        system.video_unit.renderer_2d[0]->write_word(addr, data);
         return;
     }
 
     if (Common::in_range(0x04000320, 0x040006A3, addr)) {
-        system.gpu.renderer_3d->write_word(addr, data);
+        system.video_unit.renderer_3d->write_word(addr, data);
         return;
     }
 
     if (Common::in_range(0x04001000, 0x04001060, addr)) {
-        system.gpu.renderer_2d[1]->write_word(addr, data);
+        system.video_unit.renderer_2d[1]->write_word(addr, data);
         return;
     }
 

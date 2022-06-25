@@ -3,7 +3,7 @@
 #include <array>
 #include "Common/Types.h"
 
-class GPU;
+class VideoUnit;
 
 enum class Engine {
     A,
@@ -12,7 +12,7 @@ enum class Engine {
 
 class Renderer2D {
 public:
-    Renderer2D(GPU& gpu, Engine engine);
+    Renderer2D(VideoUnit& video_unit, Engine engine);
 
     void reset();
     virtual void render_scanline(int line) = 0;
@@ -59,6 +59,6 @@ public:
     u32 vram_addr = 0;
     u32 obj_addr = 0;
 
-    GPU& gpu;
+    VideoUnit& video_unit;
     Engine engine;
 };

@@ -1,18 +1,18 @@
 #include "Common/Log.h"
 #include "Common/Memory.h"
 #include "Common/Settings.h"
-#include "VideoCommon/GPU.h"
+#include "VideoCommon/VideoUnit.h"
 #include "VideoBackends2D/Software/SoftwareRenderer2D.h"
 #include "VideoBackends3D/Software/SoftwareRenderer3D.h"
-#include "Core/system.h"
+#include "Core/System.h"
 
-GPU::GPU(System& system) : system(system) {}
+VideoUnit::VideoUnit(System& system) : system(system) {}
 
-GPU::~GPU() {
+VideoUnit::~VideoUnit() {
     stop_render_thread();
 }
 
-void GPU::reset() {
+void VideoUnit::reset() {
     powcnt1 = 0;
     vcount = 0;
     dispstat.fill(0);
@@ -42,7 +42,7 @@ void GPU::reset() {
     thread_state.store(ThreadState::Idle);
 }
 
-void GPU::create_renderers(RendererType type) {
+void VideoUnit::create_renderers(RendererType type) {
     switch (type) {
     case RendererType::Software:
         renderer_2d[0] = std::make_unique<SoftwareRenderer2D>(*this, Engine::A);
@@ -50,11 +50,11 @@ void GPU::create_renderers(RendererType type) {
         renderer_3d = std::make_unique<SoftwareRenderer3D>(*this);
         break;
     default:
-        log_fatal("GPU: unknown renderer type %d", static_cast<int>(type));
+        log_fatal("VideoUnit: unknown renderer type %d", static_cast<int>(type));
     }
 }
 
-const u32* GPU::get_framebuffer(Screen screen) {
+const u32* VideoUnit::get_framebuffer(Screen screen) {
     if (((powcnt1 >> 15) & 0x1) == (screen == Screen::Top)) {
         return renderer_2d[0]->get_framebuffer();
     } else {
@@ -62,7 +62,7 @@ const u32* GPU::get_framebuffer(Screen screen) {
     }
 }
 
-void GPU::render_scanline_start() {
+void VideoUnit::render_scanline_start() {
     if (vcount < 192) {
         if (render_thread_running) {
             // optimisation: get the main thread to render for engine b
@@ -106,7 +106,7 @@ void GPU::render_scanline_start() {
     }
 }
 
-void GPU::render_scanline_end() {
+void VideoUnit::render_scanline_end() {
     if (++vcount == 263) {
         // enable threaded 2d renderers
         if (Settings::Get().threaded_2d && !render_thread_running) {
@@ -157,7 +157,7 @@ void GPU::render_scanline_end() {
     }
 }
 
-void GPU::start_render_thread() {
+void VideoUnit::start_render_thread() {
     stop_render_thread();
 
     render_thread_running = true;
@@ -181,7 +181,7 @@ void GPU::start_render_thread() {
     }};
 }
 
-void GPU::stop_render_thread() {
+void VideoUnit::stop_render_thread() {
     if (!render_thread_running) {
         return;
     }
