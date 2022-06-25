@@ -299,7 +299,6 @@ void Renderer3D::Multiply3x3() {
 }
 
 void Renderer3D::BeginVertexList() {
-    // TODO: handle polygon rendering later
     u32 parameter = dequeue_entry().parameter;
     polygon_type = static_cast<PolygonType>(parameter & 0x3);
     vertex_count = 0;

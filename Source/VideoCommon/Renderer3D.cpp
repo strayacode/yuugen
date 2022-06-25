@@ -458,6 +458,12 @@ void Renderer3D::add_polygon() {
     int size = 3 + (static_cast<int>(polygon_type) & 0x1);
     current_polygon.size = size;
     current_polygon.vertices = &vertex_ram[vertex_ram_size - size];
+
+    // make sure quad strips are in an anticlockwise arrangement
+    if (polygon_type == PolygonType::QuadStrip) {
+        std::swap(current_polygon.vertices[2], current_polygon.vertices[3]);
+    }
+
     current_polygon.texture_attributes = texture_attributes;
     current_polygon.polygon_attributes = polygon_attributes;
     polygon_ram[polygon_ram_size++] = current_polygon;
