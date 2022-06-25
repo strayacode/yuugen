@@ -59,6 +59,8 @@ public:
     void write_half(u32 addr, u16 data);
     void write_word(u32 addr, u32 data);
 
+    bool gxfifo_half_empty() { return fifo.size() < 128; }
+
     // mmio
     u16 disp3dcnt = 0;
     u16 clear_depth = 0;

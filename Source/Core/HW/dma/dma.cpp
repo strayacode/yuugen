@@ -22,9 +22,10 @@ void DMA::Reset() {
 void DMA::Transfer(int channel_index) {
     u8 destination_control = (channel[channel_index].DMACNT >> 21) & 0x3;
     u8 source_control = (channel[channel_index].DMACNT >> 23) & 0x3;
-    u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
+    u8 mode = (channel[channel_index].DMACNT >> 27) & 0x7;
     int source_adjust = adjust_lut[(channel[channel_index].DMACNT >> 26) & 0x1][source_control];
     int destination_adjust = adjust_lut[(channel[channel_index].DMACNT >> 26) & 0x1][destination_control];
+    int gxfifo_transfers = 0;
     
     if (channel[channel_index].DMACNT & (1 << 26)) {
         // word transfer
@@ -38,6 +39,9 @@ void DMA::Transfer(int channel_index) {
 
             channel[channel_index].internal_source += source_adjust;
             channel[channel_index].internal_destination += destination_adjust;
+
+            // gxfifo dma can only transfer 112 words
+            if (mode == 7 && ++gxfifo_transfers == 112) break;
         }
     } else {
         // halfword transfer
@@ -50,6 +54,9 @@ void DMA::Transfer(int channel_index) {
 
             channel[channel_index].internal_source += source_adjust;
             channel[channel_index].internal_destination += destination_adjust;
+
+            // gxfifo dma can only transfer 112 words
+            if (mode == 7 && ++gxfifo_transfers == 112) break;
         }
     }
 
@@ -71,13 +78,18 @@ void DMA::Transfer(int channel_index) {
         }
     }
 
-    if (channel[channel_index].DMACNT & (1 << 25) && start_timing != 0) {
+    if (channel[channel_index].DMACNT & (1 << 25) && mode != 0) {
         // restart the internal registers
         channel[channel_index].internal_length = channel[channel_index].DMACNT & 0x1FFFFF;
 
         if (destination_control == 3) {
             // only reload internal destination register in increment/reload mode
             channel[channel_index].internal_destination = channel[channel_index].destination;
+        }
+
+        // schedule another gxfifo dma if the gxfifo is still half empty
+        if (mode == 7 && system.gpu.renderer_3d->gxfifo_half_empty()) {
+            system.scheduler.AddEvent(1, &transfer_event[channel_index]);
         }
     } else {
         // disable the dma channel after the transfer is finished
@@ -97,10 +109,6 @@ void DMA::Trigger(u8 mode) {
             start_timing = (channel[channel_index].DMACNT >> 28) & 0x3;
         }
         if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == mode)) {
-            if (start_timing == 7) {
-                log_fatal("implement gxfifo dmas");
-            }
-
             system.scheduler.AddEvent(1, &transfer_event[channel_index]);
         }
     }
@@ -119,6 +127,11 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     channel[channel_index].DMACNT = (channel[channel_index].DMACNT & 0xFFFF) | (data << 16);
 
     u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
+
+    // immediately schedule a dma transfer if the gxfifo is half empty
+    if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == 7) && system.gpu.renderer_3d->gxfifo_half_empty()) {
+        system.scheduler.AddEvent(1, &transfer_event[channel_index]);
+    }
 
     // don't load internal registers if enable bit wasn't changed from 0 to 1
     if ((old_DMACNT & (1 << 31)) || !(channel[channel_index].DMACNT & (1 << 31))) {
