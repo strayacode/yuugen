@@ -619,8 +619,6 @@ void HostInterface::render_games_list_window() {
 
 void HostInterface::render_settings_window() {
     ImGui::Begin("Settings");
-    ImGui::Text("Emulation Settings");
-    ImGui::Checkbox("HLE BIOS", &Settings::Get().hle_bios);
     ImGui::Separator();
     ImGui::Text("Video Settings");
     ImGui::Checkbox("Fullscreen on Game Launch", &Settings::Get().fullscreen_on_game_launch);

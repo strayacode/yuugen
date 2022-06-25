@@ -418,6 +418,8 @@ void Renderer3D::add_vertex() {
         return;
     }
 
+    update_clip_matrix();
+
     current_vertex.w = 1 << 12;
     vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(current_vertex, clip);
     vertex_ram[vertex_ram_size] = normalise_vertex(vertex_ram[vertex_ram_size]);
@@ -542,6 +544,8 @@ void Renderer3D::write_gxfifo(u32 data) {
 }
 
 u32 Renderer3D::read_clip_matrix(u32 addr) {
+    update_clip_matrix();
+
     int x = (addr - 0x04000640) % 4;
     int y = (addr - 0x04000640) / 4;
 

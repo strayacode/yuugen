@@ -29,12 +29,10 @@ void Renderer3D::PopCurrentMatrix() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.Pop(offset);
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview: case MatrixMode::Simultaneous:
         modelview.Pop(offset);
         direction.Pop(offset);
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.Pop(offset);
@@ -67,12 +65,10 @@ void Renderer3D::RestoreCurrentMatrix() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.Restore(offset);
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview: case MatrixMode::Simultaneous:
         modelview.Restore(offset);
         direction.Restore(offset);
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.Restore(offset);
@@ -86,16 +82,13 @@ void Renderer3D::LoadUnitMatrix() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.current = Matrix();
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview:
         modelview.current = Matrix();
-        update_clip_matrix();
         break;
     case MatrixMode::Simultaneous:
         modelview.current = Matrix();
         direction.current = Matrix();
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.current = Matrix();
@@ -115,16 +108,13 @@ void Renderer3D::Load4x4() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.current = matrix;
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview:
         modelview.current = matrix;
-        update_clip_matrix();
         break;
     case MatrixMode::Simultaneous:
         modelview.current = matrix;
         direction.current = matrix;
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.current = matrix;
@@ -144,16 +134,13 @@ void Renderer3D::Load4x3() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.current = matrix;
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview:
         modelview.current = matrix;
-        update_clip_matrix();
         break;
     case MatrixMode::Simultaneous:
         modelview.current = matrix;
         direction.current = matrix;
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.current = matrix;
@@ -201,16 +188,13 @@ void Renderer3D::Multiply4x4() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.current = MultiplyMatrixMatrix(matrix, projection.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview: 
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Simultaneous:
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         direction.current = MultiplyMatrixMatrix(matrix, direction.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.current = MultiplyMatrixMatrix(matrix, texture.current);
@@ -230,16 +214,13 @@ void Renderer3D::Multiply4x3() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.current = MultiplyMatrixMatrix(matrix, projection.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview: 
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Simultaneous:
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         direction.current = MultiplyMatrixMatrix(matrix, direction.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.current = MultiplyMatrixMatrix(matrix, texture.current);
@@ -257,16 +238,13 @@ void Renderer3D::MultiplyTranslation() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.current = MultiplyMatrixMatrix(matrix, projection.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview: 
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Simultaneous:
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         direction.current = MultiplyMatrixMatrix(matrix, direction.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.current = MultiplyMatrixMatrix(matrix, texture.current);
@@ -284,11 +262,9 @@ void Renderer3D::MultiplyScale() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.current = MultiplyMatrixMatrix(matrix, projection.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview: case MatrixMode::Simultaneous:
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.current = MultiplyMatrixMatrix(matrix, texture.current);
@@ -308,16 +284,13 @@ void Renderer3D::Multiply3x3() {
     switch (matrix_mode) {
     case MatrixMode::Projection:
         projection.current = MultiplyMatrixMatrix(matrix, projection.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Modelview: 
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Simultaneous:
         modelview.current = MultiplyMatrixMatrix(matrix, modelview.current);
         direction.current = MultiplyMatrixMatrix(matrix, direction.current);
-        update_clip_matrix();
         break;
     case MatrixMode::Texture:
         texture.current = MultiplyMatrixMatrix(matrix, texture.current);
