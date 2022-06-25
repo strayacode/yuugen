@@ -626,6 +626,19 @@ void HostInterface::render_settings_window() {
     ImGui::Checkbox("Fullscreen on Game Launch", &Settings::Get().fullscreen_on_game_launch);
     ImGui::Checkbox("Hide Cursor in Game", &Settings::Get().hide_cursor);
     ImGui::Checkbox("Do 2D Rendering on Separate Thread (Experimental)", &Settings::Get().threaded_2d);
+
+    const char* items[] = {"Nearest Neighbour", "Linear"};
+    static int item_current = 0;
+    int item_prev = item_current;
+    ImGui::Combo("Texture Filtering", &item_current, items, IM_ARRAYSIZE(items));
+
+    if (item_prev != item_current) {
+        bool nearest_filtering = item_current == 0;
+
+        top_screen.initialise(256, 192, nearest_filtering);
+        bottom_screen.initialise(256, 192, nearest_filtering);
+    }
+    
     ImGui::Separator();
     ImGui::Text("Audio Settings");
     ImGui::SliderInt("Volume", &Settings::Get().volume, 0, 100);

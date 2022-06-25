@@ -5,7 +5,7 @@
 
 class GLWindow {
 public:
-    void initialise(int width, int height);
+    void initialise(int width, int height, bool nearest_filtering = true);
     void render(const u32* pointer);
     void destroy();
 
