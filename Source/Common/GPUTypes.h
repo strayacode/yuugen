@@ -119,7 +119,7 @@ public:
         }
     }
 
-    Vertex* vertices = nullptr;
+    Vertex* vertices[10];
     TextureAttributes texture_attributes;
     u32 polygon_attributes = 0;
     int size = 0;

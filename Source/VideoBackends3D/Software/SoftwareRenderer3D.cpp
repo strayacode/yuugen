@@ -26,15 +26,15 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
 
     // determine the indices of the top left and bottom right vertex
     for (int i = 0; i < polygon.size; i++) {
-        if (polygon.vertices[i].y < polygon.vertices[start].y) {
+        if (polygon.vertices[i]->y < polygon.vertices[start]->y) {
             start = i;
-        } else if ((polygon.vertices[i].y == polygon.vertices[start].y) && (polygon.vertices[i].x < polygon.vertices[start].x)) {
+        } else if ((polygon.vertices[i]->y == polygon.vertices[start]->y) && (polygon.vertices[i]->x < polygon.vertices[start]->x)) {
             start = i;
         }
 
-        if (polygon.vertices[i].y > polygon.vertices[end].y) {
+        if (polygon.vertices[i]->y > polygon.vertices[end]->y) {
             end = i;
-        } else if ((polygon.vertices[i].y == polygon.vertices[end].y) && (polygon.vertices[i].x > polygon.vertices[end].x)) {
+        } else if ((polygon.vertices[i]->y == polygon.vertices[end]->y) && (polygon.vertices[i]->x > polygon.vertices[end]->x)) {
             end = i;
         }
     }
@@ -44,29 +44,29 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
     int next_left = polygon.Next(left);
     int next_right = polygon.Prev(right);
 
-    while (polygon.vertices[next_left].y <= y && next_left != end) {
+    while (polygon.vertices[next_left]->y <= y && next_left != end) {
         left = next_left;
         next_left = polygon.Next(left);
     }
 
-    while (polygon.vertices[next_right].y <= y && next_right != end) {
+    while (polygon.vertices[next_right]->y <= y && next_right != end) {
         right = next_right;
         next_right = polygon.Prev(right);
     }
 
-    s32 left_x0 = polygon.vertices[left].x;
-    s32 left_x1 = polygon.vertices[next_left].x;
-    s32 left_y0 = polygon.vertices[left].y;
-    s32 left_y1 = polygon.vertices[next_left].y;
+    s32 left_x0 = polygon.vertices[left]->x;
+    s32 left_x1 = polygon.vertices[next_left]->x;
+    s32 left_y0 = polygon.vertices[left]->y;
+    s32 left_y1 = polygon.vertices[next_left]->y;
 
     if (left_y0 == left_y1) {
         left_y1++;
     }
 
-    s32 right_x0 = polygon.vertices[right].x;
-    s32 right_x1 = polygon.vertices[next_right].x;
-    s32 right_y0 = polygon.vertices[right].y;
-    s32 right_y1 = polygon.vertices[next_right].y;
+    s32 right_x0 = polygon.vertices[right]->x;
+    s32 right_x1 = polygon.vertices[next_right]->x;
+    s32 right_y0 = polygon.vertices[right]->y;
+    s32 right_y1 = polygon.vertices[next_right]->y;
 
     if (right_y0 == right_y1) {
         right_y1++;
@@ -79,22 +79,22 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
     s32 span_end = right_slope.SpanEnd(y);
 
     // calculate the current w value along each slope at y
-    s32 w0 = slope_interpolator.interpolate(polygon.vertices[left].w, polygon.vertices[next_left].w, y, left_y0, left_y1, polygon.vertices[left].w, polygon.vertices[next_left].w);
-    s32 w1 = slope_interpolator.interpolate(polygon.vertices[right].w, polygon.vertices[next_right].w, y, right_y0, right_y1, polygon.vertices[right].w, polygon.vertices[next_right].w);
+    s32 w0 = slope_interpolator.interpolate(polygon.vertices[left]->w, polygon.vertices[next_left]->w, y, left_y0, left_y1, polygon.vertices[left]->w, polygon.vertices[next_left]->w);
+    s32 w1 = slope_interpolator.interpolate(polygon.vertices[right]->w, polygon.vertices[next_right]->w, y, right_y0, right_y1, polygon.vertices[right]->w, polygon.vertices[next_right]->w);
     
     // calculate the current depth value along each slope at y
-    u32 z0 = slope_interpolator.interpolate_linear(polygon.vertices[left].z, polygon.vertices[next_left].z, y, left_y0, left_y1);
-    u32 z1 = slope_interpolator.interpolate_linear(polygon.vertices[right].z, polygon.vertices[next_right].z, y, right_y0, right_y1);
+    u32 z0 = slope_interpolator.interpolate_linear(polygon.vertices[left]->z, polygon.vertices[next_left]->z, y, left_y0, left_y1);
+    u32 z1 = slope_interpolator.interpolate_linear(polygon.vertices[right]->z, polygon.vertices[next_right]->z, y, right_y0, right_y1);
 
     // calculate the current colour value along each slope at y
-    Colour c0 = slope_interpolator.interpolate_colour(polygon.vertices[left].colour, polygon.vertices[next_left].colour, y, left_y0, left_y1, 0, 0);
-    Colour c1 = slope_interpolator.interpolate_colour(polygon.vertices[right].colour, polygon.vertices[next_right].colour, y, right_y0, right_y1, 0, 0);
+    Colour c0 = slope_interpolator.interpolate_colour(polygon.vertices[left]->colour, polygon.vertices[next_left]->colour, y, left_y0, left_y1, 0, 0);
+    Colour c1 = slope_interpolator.interpolate_colour(polygon.vertices[right]->colour, polygon.vertices[next_right]->colour, y, right_y0, right_y1, 0, 0);
 
     // calculate the current texture coords along each slope at y
-    s16 s0 = slope_interpolator.interpolate(polygon.vertices[left].s, polygon.vertices[next_left].s, y, left_y0, left_y1, polygon.vertices[left].w, polygon.vertices[next_left].w);
-    s16 s1 = slope_interpolator.interpolate(polygon.vertices[right].s, polygon.vertices[next_right].s, y, right_y0, right_y1, polygon.vertices[right].w, polygon.vertices[next_right].w);
-    s16 t0 = slope_interpolator.interpolate(polygon.vertices[left].t, polygon.vertices[next_left].t, y, left_y0, left_y1, polygon.vertices[left].w, polygon.vertices[next_left].w);
-    s16 t1 = slope_interpolator.interpolate(polygon.vertices[right].t, polygon.vertices[next_right].t, y, right_y0, right_y1, polygon.vertices[right].w, polygon.vertices[next_right].w);
+    s16 s0 = slope_interpolator.interpolate(polygon.vertices[left]->s, polygon.vertices[next_left]->s, y, left_y0, left_y1, polygon.vertices[left]->w, polygon.vertices[next_left]->w);
+    s16 s1 = slope_interpolator.interpolate(polygon.vertices[right]->s, polygon.vertices[next_right]->s, y, right_y0, right_y1, polygon.vertices[right]->w, polygon.vertices[next_right]->w);
+    s16 t0 = slope_interpolator.interpolate(polygon.vertices[left]->t, polygon.vertices[next_left]->t, y, left_y0, left_y1, polygon.vertices[left]->w, polygon.vertices[next_left]->w);
+    s16 t1 = slope_interpolator.interpolate(polygon.vertices[right]->t, polygon.vertices[next_right]->t, y, right_y0, right_y1, polygon.vertices[right]->w, polygon.vertices[next_right]->w);
 
     if (span_start > span_end) {
         std::swap(span_start, span_end);

@@ -1,4 +1,5 @@
 #include "Common/Log.h"
+#include "Common/log_file.h"
 #include "Common/Memory.h"
 #include "VideoCommon/Renderer3D.h"
 #include "VideoCommon/VideoUnit.h"
@@ -455,10 +456,15 @@ void Renderer3D::add_polygon() {
         return;
     }
 
+    // TODO: implement clipping and culling
+
     int size = 3 + (static_cast<int>(polygon_type) & 0x1);
     current_polygon.size = size;
-    current_polygon.vertices = &vertex_ram[vertex_ram_size - size];
 
+    for (int i = 0; i < current_polygon.size; i++) {
+        current_polygon.vertices[i] = &vertex_ram[vertex_ram_size - size + i];
+    }
+    
     // make sure quad strips are in an anticlockwise arrangement
     if (polygon_type == PolygonType::QuadStrip) {
         std::swap(current_polygon.vertices[2], current_polygon.vertices[3]);
