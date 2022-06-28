@@ -423,7 +423,6 @@ void Renderer3D::add_vertex() {
 
     current_vertex.w = 1 << 12;
     vertex_ram[vertex_ram_size] = MultiplyVertexMatrix(current_vertex, clip);
-    vertex_ram[vertex_ram_size] = normalise_vertex(vertex_ram[vertex_ram_size]);
     vertex_ram_size++;
     vertex_count++;
 
@@ -456,7 +455,7 @@ void Renderer3D::add_polygon() {
         return;
     }
 
-    // TODO: implement clipping and culling
+    // TODO: implement clipping
 
     int size = 3 + (static_cast<int>(polygon_type) & 0x1);
     current_polygon.size = size;
@@ -482,6 +481,10 @@ void Renderer3D::add_polygon() {
         default:
             log_fatal("handle culling for polygon type %d", static_cast<int>(polygon_type));
         }
+    }
+
+    for (int i = 0; i < current_polygon.size; i++) {
+        *current_polygon.vertices[i] = normalise_vertex(*current_polygon.vertices[i]);
     }
 
     polygon_ram[polygon_ram_size++] = current_polygon;
@@ -522,17 +525,11 @@ bool Renderer3D::cull_polygon(Polygon& polygon) {
         log_fatal("figure out what to do here");
     }
 
-    if (dot < 0) {
-        log_warn("back facing");
-    } else {
-        log_warn("front facing");
-    }
-
     polygon.clockwise = dot < 0;
     bool render_back = (polygon.polygon_attributes >> 6) & 0x1;
     bool render_front = (polygon.polygon_attributes >> 7) & 0x1;
 
-    return (!render_back && dot < 0) || (!render_front && dot > 0);
+    return (!render_back && dot > 0) || (!render_front && dot < 0);
 }
 
 Vertex Renderer3D::normalise_vertex(Vertex vertex) {

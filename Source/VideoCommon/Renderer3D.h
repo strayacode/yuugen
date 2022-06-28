@@ -50,6 +50,7 @@ public:
     void reset();
     virtual void render() = 0;
     const u32* get_framebuffer() { return framebuffer.data(); }
+    Vertex normalise_vertex(Vertex vertex);
 
     u8 read_byte(u32 addr);
     u16 read_half(u32 addr);
@@ -89,7 +90,6 @@ private:
     void add_vertex();
     void add_polygon();
     bool cull_polygon(Polygon& polygon);
-    Vertex normalise_vertex(Vertex vertex);
     Matrix MultiplyMatrixMatrix(const Matrix& a, const Matrix& b);
     Vertex MultiplyVertexMatrix(const Vertex& a, const Matrix& b);
     void update_clip_matrix();
