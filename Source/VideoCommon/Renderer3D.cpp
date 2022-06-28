@@ -475,7 +475,13 @@ void Renderer3D::add_polygon() {
     bool cull = cull_polygon(current_polygon);
 
     if (cull) {
-        log_fatal("handle polygon culling");
+        switch (polygon_type) {
+        case PolygonType::Triangle: case PolygonType::Quad:
+            vertex_ram_size -= size;
+            return;
+        default:
+            log_fatal("handle culling for polygon type %d", static_cast<int>(polygon_type));
+        }
     }
 
     polygon_ram[polygon_ram_size++] = current_polygon;
@@ -514,6 +520,12 @@ bool Renderer3D::cull_polygon(Polygon& polygon) {
 
     if (dot == 0) {
         log_fatal("figure out what to do here");
+    }
+
+    if (dot < 0) {
+        log_warn("back facing");
+    } else {
+        log_warn("front facing");
     }
 
     polygon.clockwise = dot < 0;
