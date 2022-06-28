@@ -192,6 +192,8 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
             return system.dma[1].ReadDMACNT_H(2);
         case 0x040000DE:
             return system.dma[1].ReadDMACNT_H(3);
+        case 0x040000E0:
+            return system.dma[1].DMAFILL[0] & 0xFFFF;
         case 0x040000EC:
             return system.dma[1].DMAFILL[3] & 0xFFFF;
         case 0x04000100:

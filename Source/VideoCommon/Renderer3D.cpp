@@ -460,6 +460,8 @@ void Renderer3D::add_polygon() {
 
     int size = 3 + (static_cast<int>(polygon_type) & 0x1);
     current_polygon.size = size;
+    current_polygon.texture_attributes = texture_attributes;
+    current_polygon.polygon_attributes = polygon_attributes;
 
     for (int i = 0; i < current_polygon.size; i++) {
         current_polygon.vertices[i] = &vertex_ram[vertex_ram_size - size + i];
@@ -470,9 +472,55 @@ void Renderer3D::add_polygon() {
         std::swap(current_polygon.vertices[2], current_polygon.vertices[3]);
     }
 
-    current_polygon.texture_attributes = texture_attributes;
-    current_polygon.polygon_attributes = polygon_attributes;
+    bool cull = cull_polygon(current_polygon);
+
+    if (cull) {
+        log_fatal("handle polygon culling");
+    }
+
     polygon_ram[polygon_ram_size++] = current_polygon;
+}
+
+bool Renderer3D::cull_polygon(Polygon& polygon) {
+    // take cross product of (v0 - v1) x (v2 - v1)
+    s64 x0 = polygon.vertices[0]->x - polygon.vertices[1]->x;
+    s64 x1 = polygon.vertices[2]->x - polygon.vertices[1]->x;
+    s64 y0 = polygon.vertices[0]->y - polygon.vertices[1]->y;
+    s64 y1 = polygon.vertices[2]->y - polygon.vertices[1]->y;
+    s64 w0 = polygon.vertices[0]->w - polygon.vertices[1]->w;
+    s64 w1 = polygon.vertices[2]->w - polygon.vertices[1]->w;
+
+    s64 xcross = y0 * w1 - w0 * y1;
+    s64 ycross = w0 * x1 - x0 * w1;
+    s64 wcross = x0 * y1 - y0 * x1;
+
+    // reduce cross product results to 32-bit to avoid overflow
+    while (xcross != static_cast<s32>(xcross) || ycross != static_cast<s32>(ycross) || wcross != static_cast<s32>(wcross)) {
+        xcross >>= 4;
+        ycross >>= 4;
+        wcross >>= 4;
+    }
+
+    // calculate dot product of cross.v0
+    s64 dot = xcross * polygon.vertices[0]->x + ycross * polygon.vertices[0]->y + wcross * polygon.vertices[0]->w;
+
+    if (polygon_type == PolygonType::TriangleStrip) {
+        log_fatal("handle triangle strips (should reverse the winding)");
+    }
+
+    // if dot is negative, then it's back facing
+    // if dot is positive, then it's front facing
+    // TODO: handle case when dot == 0
+
+    if (dot == 0) {
+        log_fatal("figure out what to do here");
+    }
+
+    polygon.clockwise = dot < 0;
+    bool render_back = (polygon.polygon_attributes >> 6) & 0x1;
+    bool render_front = (polygon.polygon_attributes >> 7) & 0x1;
+
+    return (!render_back && dot < 0) || (!render_front && dot > 0);
 }
 
 Vertex Renderer3D::normalise_vertex(Vertex vertex) {

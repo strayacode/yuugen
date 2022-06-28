@@ -17,6 +17,7 @@ private:
     void render_scanline(int y);
     void render_polygon_scanline(Polygon& polygon, int y);
     Colour decode_texture(int s, int t, TextureAttributes attributes);
+    u32 render_pixel(Polygon& polygon, Colour colour, s16 s, s16 t);
     bool depth_test(u32 old_depth, u32 depth, bool equal);
     
     enum class TextureFormat {

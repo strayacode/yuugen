@@ -128,10 +128,6 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
 
     u8 start_timing = (channel[channel_index].DMACNT >> 27) & 0x7;
 
-    if (start_timing == 7) {
-        log_fatal("gxfifo dma");
-    }
-
     // immediately schedule a dma transfer if the gxfifo is half empty
     if ((channel[channel_index].DMACNT & (1 << 31)) && (start_timing == 7) && system.video_unit.renderer_3d->gxfifo_half_empty()) {
         system.scheduler.AddEvent(1, &transfer_event[channel_index]);

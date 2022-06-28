@@ -88,6 +88,7 @@ private:
     void check_gxfifo_interrupt();
     void add_vertex();
     void add_polygon();
+    bool cull_polygon(Polygon& polygon);
     Vertex normalise_vertex(Vertex vertex);
     Matrix MultiplyMatrixMatrix(const Matrix& a, const Matrix& b);
     Vertex MultiplyVertexMatrix(const Vertex& a, const Matrix& b);

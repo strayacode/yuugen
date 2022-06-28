@@ -109,7 +109,7 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
         for (int x = span_start; x <= span_end; x++) {
             if (x < 0 || x > 255) continue;
 
-            // do depth test
+            u32 addr = (256 * y) + x;
             u32 depth = 0;
 
             if (w_buffering) {
@@ -118,7 +118,7 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
                 depth = scanline_interpolator.interpolate_linear(z0, z1, x, span_start, span_end);
             }
 
-            if (!depth_test(depth_buffer[(256 * y) + x], depth, (polygon.polygon_attributes >> 14) & 0x1)) continue;
+            if (!depth_test(depth_buffer[addr], depth, (polygon.polygon_attributes >> 14) & 0x1)) continue;
 
             // calculate colour value for scanline at x
             Colour c = scanline_interpolator.interpolate_colour(c0, c1, x, span_start, span_end, w0, w1);
@@ -127,15 +127,17 @@ void SoftwareRenderer3D::render_polygon_scanline(Polygon& polygon, int y) {
             s16 s = scanline_interpolator.interpolate(s0, s1, x, span_start, span_end, w0, w1);
             s16 t = scanline_interpolator.interpolate(t0, t1, x, span_start, span_end, w0, w1);
 
-            if (disp3dcnt & 0x1) {
-                // log_fatal("handle texture");
-                framebuffer[(y * 256) + x] = decode_texture(s, t, polygon.texture_attributes).to_u16();
-            } else {
-                framebuffer[(y * 256) + x] = c.to_u16();
-            }
-
-            depth_buffer[(y * 256) + x] = depth;
+            framebuffer[addr] = render_pixel(polygon, c, s, t);
+            depth_buffer[addr] = depth;
         }
+    }
+}
+
+u32 SoftwareRenderer3D::render_pixel(Polygon& polygon, Colour colour, s16 s, s16 t) {
+    if (disp3dcnt & 0x1) {
+        return decode_texture(s, t, polygon.texture_attributes).to_u16();
+    } else {
+        return colour.to_u16();
     }
 }
 
