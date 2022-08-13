@@ -106,6 +106,8 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
 
 u8 ARM9Memory::ReadByte(u32 addr) {
     switch (addr >> 24) {
+    case 0x04:
+        return mmio.read<u8>(addr);
     case 0x05:
         return Common::read<u8>(system.video_unit.get_palette_ram(), addr & 0x7FF);
     case 0x06:
@@ -139,6 +141,8 @@ u16 ARM9Memory::ReadHalf(u32 addr) {
             return 0;
         }
         break;
+    case 0x04:
+        return mmio.read<u16>(addr);
     case 0x05:
         return Common::read<u16>(system.video_unit.get_palette_ram(), addr & 0x7FF);
     case 0x06:
@@ -177,6 +181,8 @@ u32 ARM9Memory::ReadWord(u32 addr) {
             return 0;
         }
         break;
+    case 0x04:
+        return mmio.read<u32>(addr);
     case 0x05:
         return Common::read<u32>(system.video_unit.get_palette_ram(), addr & 0x7FF);
     case 0x06:
@@ -276,6 +282,7 @@ void ARM9Memory::build_mmio() {
     );
 
     system.video_unit.build_mmio(mmio, Arch::ARMv5);
+    system.ipc.build_mmio(mmio, Arch::ARMv5);
 
     log_debug("[ARM9Memory] mmio handlers registered");
 }

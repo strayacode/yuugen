@@ -27,7 +27,9 @@ class VideoUnit {
 public:
     VideoUnit(System& system);
     ~VideoUnit();
+
     void reset();
+    void build_mmio(MMIO& mmio, Arch arch);
 
     const u32* get_framebuffer(Screen screen);
 
@@ -42,8 +44,6 @@ public:
 
     void start_render_thread();
     void stop_render_thread();
-
-    void build_mmio(MMIO& mmio, Arch arch);
 
     SoftwareRenderer2D renderer_2d[2];
     SoftwareRenderer3D renderer_3d;

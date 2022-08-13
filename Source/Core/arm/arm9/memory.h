@@ -21,8 +21,8 @@ public:
     void WriteWord(u32 addr, u32 data) override;
 
 private:
+    void build_mmio();
+
     System& system;
     std::array<u8, 0x8000> bios;
-    
-    void build_mmio();
 };

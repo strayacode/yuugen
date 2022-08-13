@@ -16,6 +16,8 @@ public:
     Renderer2D(VideoUnit& video_unit, Engine engine);
 
     void reset();
+    void build_mmio(MMIO& mmio);
+
     virtual void render_scanline(int line) = 0;
     const u32* get_framebuffer() { return framebuffer.data(); }
 
@@ -26,8 +28,6 @@ public:
     void write_byte(u32 addr, u8 data);
     void write_half(u32 addr, u16 data);
     void write_word(u32 addr, u32 data);
-
-    void build_mmio(MMIO& mmio);
 
     // mmio
     u32 dispcnt = 0;

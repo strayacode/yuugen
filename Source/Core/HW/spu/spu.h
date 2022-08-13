@@ -16,7 +16,9 @@ class SPU {
 public:
     SPU(System& system);
     ~SPU();
+
     void reset();
+    void build_mmio(MMIO& mmio);
 
     u8 read_byte(u32 addr);
     u32 read_word(u32 addr);
@@ -35,8 +37,6 @@ public:
     u32 generate_samples();
 
     void set_audio_interface(std::shared_ptr<AudioInterface> interface);
-
-    void build_mmio(MMIO& mmio);
 
     struct SPUChannel {
         u32 soundcnt; // sound control

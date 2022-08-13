@@ -36,6 +36,14 @@ void SPU::reset() {
     sndcaplen.fill(0);
 }
 
+void SPU::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u16>(
+        0x04000504,
+        mmio.direct_read<u16>(&soundbias, 0x3FF),
+        mmio.direct_write<u16>(&soundbias, 0x3FF)
+    );
+}
+
 u8 SPU::read_byte(u32 addr) {
     u8 index = (addr >> 4) & 0xF;
 
@@ -323,14 +331,6 @@ void SPU::set_audio_interface(std::shared_ptr<AudioInterface> interface) {
     audio_interface = interface;
 
     audio_interface->configure(this, 32768, 1024, (AudioCallback)audio_callback);
-}
-
-void SPU::build_mmio(MMIO& mmio) {
-    mmio.register_mmio<u16>(
-        0x04000504,
-        mmio.direct_read<u16>(&soundbias, 0x3FF),
-        mmio.direct_write<u16>(&soundbias, 0x3FF)
-    );
 }
 
 void audio_callback(SPU* spu, s16* stream, int len) {

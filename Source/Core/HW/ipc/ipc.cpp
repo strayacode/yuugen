@@ -15,6 +15,28 @@ void IPC::reset() {
     empty_fifo(1);
 }
 
+void IPC::build_mmio(MMIO& mmio, Arch arch) {
+    if (arch == Arch::ARMv5) {
+
+    } else {
+        mmio.register_mmio<u16>(
+            0x04000180,
+            mmio.direct_read<u16, u32>(&ipcsync[0].data),
+            mmio.complex_write<u16>([this](u32, u16 data) {
+                write_ipcsync(0, data);
+            })
+        );
+
+        mmio.register_mmio<u16>(
+            0x04000184,
+            mmio.direct_read<u16>(&ipcfifocnt[0].data),
+            mmio.complex_write<u16>([this](u32, u16 data) {
+                write_ipcfifocnt(0, data);
+            })
+        );
+    }
+}
+
 void IPC::write_ipcsync(int cpu, u16 data) {
     int remote = !cpu;
 

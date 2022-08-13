@@ -3,6 +3,7 @@
 #include <queue>
 #include <array>
 #include "Common/Types.h"
+#include "Core/arm/MMIO.h"
 
 class System;
 
@@ -11,6 +12,8 @@ public:
     IPC(System& system);
 
     void reset();
+    void build_mmio(MMIO& mmio, Arch arch);
+    
     void write_ipcsync(int cpu, u16 data);
     void write_ipcfifocnt(int cpu, u16 data);
     

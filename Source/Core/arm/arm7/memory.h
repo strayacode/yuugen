@@ -21,9 +21,10 @@ public:
     void WriteHalf(u32 addr, u16 data) override;
     void WriteWord(u32 addr, u32 data) override;
 
+private:
+    void build_mmio();
+
     System& system;
     std::array<u8, 0x4000> bios;
     u8 arm7_wram[0x10000] = {};
-    
-    void build_mmio();
 };

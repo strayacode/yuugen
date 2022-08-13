@@ -50,6 +50,14 @@ void Renderer2D::reset() {
     obj_colour.fill(0);
 }
 
+void Renderer2D::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u32>(
+        0x04000000,
+        mmio.direct_read<u32>(&dispcnt),
+        mmio.direct_write<u32>(&dispcnt)
+    );
+}
+
 u8 Renderer2D::read_byte(u32 addr) {
     switch (addr) {
     default:
@@ -312,12 +320,4 @@ void Renderer2D::write_word(u32 addr, u32 data) {
     default:
         log_fatal("Renderer2D: word write %08x = %08x", addr, data);
     }
-}
-
-void Renderer2D::build_mmio(MMIO& mmio) {
-    mmio.register_mmio<u32>(
-        0x04000000,
-        mmio.direct_read<u32>(&dispcnt),
-        mmio.direct_write<u32>(&dispcnt)
-    );
 }

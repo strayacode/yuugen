@@ -62,6 +62,8 @@ void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
 
 u8 ARM7Memory::ReadByte(u32 addr) {
     switch (addr >> 24) {
+    case 0x04:
+        return mmio.read<u8>(addr);
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
@@ -79,6 +81,8 @@ u8 ARM7Memory::ReadByte(u32 addr) {
 
 u16 ARM7Memory::ReadHalf(u32 addr) {
     switch (addr >> 24) {
+    case 0x04:
+        return mmio.read<u16>(addr);
     case 0x06:
         return system.video_unit.vram.read_arm7<u16>(addr);
     case 0x08: case 0x09:
@@ -103,6 +107,8 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
 
 u32 ARM7Memory::ReadWord(u32 addr) {
     switch (addr >> 24) {
+    case 0x04:
+        return mmio.read<u32>(addr);
     case 0x06:
         return system.video_unit.vram.read_arm7<u32>(addr);
     }
@@ -174,6 +180,7 @@ void ARM7Memory::build_mmio() {
     );
 
     system.spu.build_mmio(mmio);
+    system.ipc.build_mmio(mmio, Arch::ARMv4);
 
     log_debug("[ARM7Memory] mmio handlers registered");
 }
