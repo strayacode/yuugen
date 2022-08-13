@@ -112,7 +112,7 @@ void arm_single_data_transfer() {
     }
 
     if (load && rd == 15) {
-        if ((arch == CPUArch::ARMv5) && (regs.r[15] & 1)) {
+        if ((arch == Arch::ARMv5) && (regs.r[15] & 1)) {
             regs.cpsr |= 1 << 5;
             regs.r[15] &= ~1;
             ThumbFlushPipeline();
@@ -286,7 +286,7 @@ void arm_block_data_transfer() {
         // handle empty rlist
         bytes = 0x40;
 
-        if (arch == CPUArch::ARMv4) {
+        if (arch == Arch::ARMv4) {
             // only r15 gets transferred
             rlist = 1 << 15;
             r15_in_rlist = true;
@@ -308,7 +308,7 @@ void arm_block_data_transfer() {
     // stm armv4: store old base if rb is first in rlist, otherwise store new base
     // stm armv5: always store old base
     if (writeback && !load) {
-        if ((arch == CPUArch::ARMv4) && (first != rn)) {
+        if ((arch == Arch::ARMv4) && (first != rn)) {
             regs.r[rn] = new_base;
         }
     }
@@ -346,7 +346,7 @@ void arm_block_data_transfer() {
         // ldm armv4: writeback if rb is not in rlist
         // ldm armv5: writeback if rb is only register or not the last register in rlist
         if (load) {
-            if (arch == CPUArch::ARMv5) {
+            if (arch == Arch::ARMv5) {
                 if ((rlist == (1 << rn)) || !((rlist >> rn) == 1)) {
                     regs.r[rn] = new_base;
                 }
@@ -382,7 +382,7 @@ void arm_block_data_transfer() {
     }
 
     if (load && r15_in_rlist) {
-        if ((arch == CPUArch::ARMv5) && (regs.r[15] & 0x1)) {
+        if ((arch == Arch::ARMv5) && (regs.r[15] & 0x1)) {
             regs.cpsr |= (1 << 5);
             ThumbFlushPipeline();
         } else {

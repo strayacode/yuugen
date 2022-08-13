@@ -16,7 +16,7 @@ void thumb_branch_exchange() {
 }
 
 void thumb_branch_link_exchange() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 
@@ -52,7 +52,7 @@ void thumb_branch_link_offset() {
 
 void thumb_branch_link_exchange_offset() {
     // arm9 specific instruction
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 

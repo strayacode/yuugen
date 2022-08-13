@@ -7,13 +7,15 @@
 #include <assert.h>
 #include "Common/Types.h"
 #include "Common/Log.h"
-#include "Common/Callback.h"
+#include "Core/arm/MMIO.h"
 
 // this is a base class
 // which is used by the arm7
 // and arm9 memory classes
 class MemoryBase {
 public:
+    MemoryBase(Arch arch) : mmio(arch) {}
+
     template <typename T>
     T FastRead(u32 addr) {
         addr &= ~(sizeof(T) - 1);
@@ -84,70 +86,7 @@ public:
 
     std::array<u8*, 0x100000> read_page_table;
     std::array<u8*, 0x100000> write_page_table;
-
-    template <typename T>
-    using ReadCallback = Common::Callback<T(u32)>;
-
-    template <typename T>
-    using WriteCallback = Common::Callback<void(u32, T)>;
-
-    template <typename T>
-    struct ReadHandler {
-        ReadCallback<T> callback;
-        bool mapped = false;
-    };
-
-    template <typename T>
-    struct WriteHandler {
-        WriteCallback<T> callback;
-        bool mapped = false;
-    };
-
-    template <typename T, int N>
-    using ReadHandlers = std::array<ReadHandler<T>, N / sizeof(T)>;
-
-    template <typename T, int N>
-    using WriteHandlers = std::array<WriteHandler<T>, N / sizeof(T)>;
-
-    template <typename T>
-    ReadCallback<T> invalid_read() {
-        return [](u32 addr) -> T {
-            log_fatal("invalid read %08x", addr);
-        };
-    }
-
-    template <typename T>
-    ReadCallback<T> direct_read(T* mmio, u32 mask) {
-        return [mmio, mask](u32) -> T {
-            return *mmio & mask;
-        };
-    }
-
-    // just fallthrough
-    template <typename T>
-    ReadCallback<T> complex_read(ReadCallback<T> callback) {
-        return callback;
-    }
-
-    template <typename T>
-    WriteCallback<T> invalid_write() {
-        return [](u32 addr, T data) {
-            log_fatal("invalid write %08x = %08x", addr, data);
-        };
-    }
-
-    template <typename T>
-    WriteCallback<T> direct_write(T* mmio, u32 mask) {
-        return [mmio, mask](u32, T data) {
-            *mmio = data & mask;
-        };
-    }
-
-    // just fallthrough
-    template <typename T>
-    WriteCallback<T> complex_write(WriteCallback<T> callback) {
-        return callback;
-    }
+    MMIO mmio;
 
 private:
     virtual auto ReadByte(u32 addr) -> u8 = 0;

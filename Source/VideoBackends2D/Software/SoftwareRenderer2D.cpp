@@ -51,7 +51,7 @@ void SoftwareRenderer2D::render_graphics_display(int line) {
     if (dispcnt & (1 << 8)) {
         if ((dispcnt & (1 << 3)) || (bg_mode == 6)) {
             for (int i = 0; i < 256; i++) {
-                bg_layers[0][(256 * line) + i] = video_unit.renderer_3d->framebuffer[(256 * line) + i];
+                bg_layers[0][(256 * line) + i] = video_unit.renderer_3d.framebuffer[(256 * line) + i];
             }
         } else {
             render_text(0, line);

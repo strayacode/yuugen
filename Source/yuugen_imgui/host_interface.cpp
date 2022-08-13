@@ -10,7 +10,7 @@
 
 HostInterface::HostInterface() : 
     core([this](float fps) {
-        UpdateTitle(fps);
+        this->fps = fps;
     }) {
 }
 
@@ -132,14 +132,6 @@ void HostInterface::HandleInput() {
     }
 }
 
-void HostInterface::UpdateTitle(float fps) {
-    char window_title[60];
-    float percent_usage = (fps / 60.0f) * 100;
-    
-    snprintf(window_title, 60, "yuugen | %s | %0.2f FPS | %0.2f%s", core.system.GetCPUCoreType().c_str(), fps, percent_usage, "%");
-    SDL_SetWindowTitle(window, window_title);
-}
-
 void HostInterface::render_screens() {
     ImGuiIO& io = ImGui::GetIO();
     
@@ -175,7 +167,7 @@ void HostInterface::render_screens() {
     );
 }
 
-void HostInterface::render_menubar() {
+void HostInterface::render_menu_bar() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
     if (ImGui::BeginMainMenuBar()) {
@@ -308,6 +300,11 @@ void HostInterface::render_menubar() {
             ImGui::EndMenu();
         }
 
+        std::string fps_string = format("%f FPS", fps);
+
+        ImGui::SetCursorPosX(500.0f);
+        ImGui::Text(fps_string.c_str());
+
         ImGui::EndMainMenuBar();
     }
 
@@ -369,9 +366,9 @@ void HostInterface::CartridgeWindow() {
     ImGui::End();
 }
 
-void HostInterface::ARMWindow(CPUArch arch) {
-    std::string name = arch == CPUArch::ARMv5 ? "ARM9" : "ARM7";
-    int index = arch == CPUArch::ARMv5 ? 1 : 0;
+void HostInterface::ARMWindow(Arch arch) {
+    std::string name = arch == Arch::ARMv5 ? "ARM9" : "ARM7";
+    int index = arch == Arch::ARMv5 ? 1 : 0;
 
     ImGui::Begin(name.c_str());
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
@@ -486,7 +483,7 @@ void HostInterface::render() {
     ImGui::NewFrame();
 
     if (core.GetState() == State::Idle || !fullscreen) {
-        render_menubar();
+        render_menu_bar();
     }
 
     switch (window_type) {
@@ -506,11 +503,11 @@ void HostInterface::render() {
     }
 
     if (arm7_window) {
-        ARMWindow(CPUArch::ARMv4);
+        ARMWindow(Arch::ARMv4);
     }
 
     if (arm9_window) {
-        ARMWindow(CPUArch::ARMv5);
+        ARMWindow(Arch::ARMv5);
     }
 
     if (scheduler_window) {

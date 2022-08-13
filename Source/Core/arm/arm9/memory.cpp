@@ -1,10 +1,10 @@
 #include <cassert>
 #include "Common/Log.h"
 #include "Common/Memory.h"
-#include "Core/arm/arm9/memory.h"
 #include "Core/Core.h"
+#include "Core/arm/arm9/memory.h"
 
-ARM9Memory::ARM9Memory(System& system) : system(system) {
+ARM9Memory::ARM9Memory(System& system) : MemoryBase(Arch::ARMv5), system(system) {
     bios = LoadBios<0x8000>("../bios/bios9.bin");
 
     build_mmio();
@@ -203,7 +203,7 @@ u32 ARM9Memory::ReadWord(u32 addr) {
 void ARM9Memory::WriteByte(u32 addr, u8 data) {
     switch (addr >> 24) {
     case 0x04:
-        mmio_write<u8>(addr, data);
+        mmio.write<u8>(addr, data);
         return;
     case 0x05:
         Common::write<u8>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
@@ -218,6 +218,9 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
 
 void ARM9Memory::WriteHalf(u32 addr, u16 data) {
     switch (addr >> 24) {
+    case 0x04:
+        mmio.write<u16>(addr, data);
+        return;
     case 0x05:
         Common::write<u16>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
         return;
@@ -237,6 +240,9 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
 
 void ARM9Memory::WriteWord(u32 addr, u32 data) {
     switch (addr >> 24) {
+    case 0x04:
+        mmio.write<u32>(addr, data);
+        return;
     case 0x05:
         Common::write<u32>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
         return;
@@ -254,34 +260,22 @@ void ARM9Memory::WriteWord(u32 addr, u32 data) {
     log_fatal("ARM9: handle word write %08x = %08x", addr, data);
 }
 
-template <typename T>
-void ARM9Memory::register_mmio(u32 addr, ReadCallback<T> read_callback, WriteCallback<T> write_callback) {
-    ReadHandler<T>& read_handler = get_read_handler<T>(addr);
-    WriteHandler<T>& write_handler = get_write_handler<T>(addr);
-
-    read_handler.callback = read_callback;
-    read_handler.mapped = true;
-
-    write_handler.callback = write_callback;
-    write_handler.mapped = true;
-
-    read8[0x247].callback = read_callback;
-}
-
 void ARM9Memory::build_mmio() {
-    register_mmio<u8>(
+    mmio.register_mmio<u8>(
         0x04000247,
-        invalid_read<u8>(),
-        complex_write<u8>([this](u32, u8 data) {
+        mmio.invalid_read<u8>(),
+        mmio.complex_write<u8>([this](u32, u8 data) {
             system.write_wramcnt(data);
         })
     );
 
-    register_mmio<u8>(
+    mmio.register_mmio<u8>(
         0x04000300,
-        direct_read<u8>(&system.postflg9, 0x3),
-        direct_write<u8>(&system.postflg9, 0x3)
+        mmio.direct_read<u8>(&system.postflg9, 0x3),
+        mmio.direct_write<u8>(&system.postflg9, 0x3)
     );
+
+    system.video_unit.build_mmio(mmio, Arch::ARMv5);
 
     log_debug("[ARM9Memory] mmio handlers registered");
 }

@@ -4,6 +4,7 @@
 #include <memory>
 #include "Common/Types.h"
 #include "AudioCommon/AudioInterface.h"
+#include "Core/arm/MMIO.h"
 
 class System;
 
@@ -34,6 +35,8 @@ public:
     u32 generate_samples();
 
     void set_audio_interface(std::shared_ptr<AudioInterface> interface);
+
+    void build_mmio(MMIO& mmio);
 
     struct SPUChannel {
         u32 soundcnt; // sound control

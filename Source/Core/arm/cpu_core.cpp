@@ -5,7 +5,7 @@
 
 static Decoder<CPUCore> decoder;
 
-CPUCore::CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15) : memory(memory), arch(arch), cp15(cp15) {
+CPUCore::CPUCore(MemoryBase& memory, Arch arch, CP15* cp15) : memory(memory), arch(arch), cp15(cp15) {
     GenerateConditionTable();
 }
 
@@ -92,11 +92,11 @@ void CPUCore::DirectBoot(u32 entrypoint) {
     regs.r[12] = regs.r[14] = regs.r[15] = entrypoint;
 
     // armv4/armv5 specific
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         regs.r[13] = 0x0380FD80;
         regs.r_banked[BANK_IRQ][5] = 0x0380FF80;
         regs.r_banked[BANK_SVC][5] = 0x0380FFC0;
-    } else if (arch == CPUArch::ARMv5) {
+    } else if (arch == Arch::ARMv5) {
         regs.r[13] = 0x03002F7C;
         regs.r_banked[BANK_IRQ][5] = 0x03003F80;
         regs.r_banked[BANK_SVC][5] = 0x03003FC0;
@@ -110,7 +110,7 @@ void CPUCore::DirectBoot(u32 entrypoint) {
 }
 
 void CPUCore::FirmwareBoot() {
-    if (arch == CPUArch::ARMv5) {
+    if (arch == Arch::ARMv5) {
         // make arm9 start at arm9 bios
         regs.r[15] = 0xFFFF0000;
     } else {
@@ -130,7 +130,7 @@ void CPUCore::SendInterrupt(InterruptType interrupt_type) {
     // check if the interrupt is enabled too
     if (ie & (1 << static_cast<int>(interrupt_type))) {
         // to unhalt on the arm9 ime needs to be set
-        if (ime || arch == CPUArch::ARMv4) {
+        if (ime || arch == Arch::ARMv4) {
             halted = false;
         }
     }
@@ -223,7 +223,7 @@ void CPUCore::GenerateConditionTable() {
 
 bool CPUCore::ConditionEvaluate(u8 condition) {
     if (condition == CONDITION_NV) {
-        if (arch == CPUArch::ARMv5) {
+        if (arch == Arch::ARMv5) {
             // using arm decoding table this can only occur for branch and branch with link and change to thumb
             // so where bits 25..27 is 0b101
             if ((instruction & 0x0E000000) == 0xA000000) {
@@ -391,13 +391,13 @@ void CPUCore::HandleInterrupt() {
 
     // check the exception base and jump to the correct address in the bios
     // also only use cp15 exception base from control register if arm9
-    regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x18;
+    regs.r[15] = ((arch == Arch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x18;
     
     ARMFlushPipeline();
 }
 
 void CPUCore::arm_coprocessor_register_transfer() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 
@@ -428,7 +428,7 @@ void CPUCore::arm_software_interrupt() {
     regs.r[14] = regs.r[15] - 4;
 
     // jump to the exception base in the bios
-    regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x08;
+    regs.r[15] = ((arch == Arch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x08;
     ARMFlushPipeline();
 }
 
@@ -442,7 +442,7 @@ void CPUCore::thumb_software_interrupt() {
     regs.r[14] = regs.r[15] - 2;
 
     // jump to the exception base in the bios
-    regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x08;
+    regs.r[15] = ((arch == Arch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x08;
     ARMFlushPipeline();
 }
 
@@ -455,7 +455,7 @@ void CPUCore::ARMUndefinedException() {
     regs.r[14] = regs.r[15] - 4;
 
     // jump to the exception base in the bios
-    regs.r[15] = ((arch == CPUArch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x04;
+    regs.r[15] = ((arch == Arch::ARMv5) ? cp15->GetExceptionBase() : 0x00000000) + 0x04;
     ARMFlushPipeline();
 }
 

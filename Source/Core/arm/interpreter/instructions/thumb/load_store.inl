@@ -105,7 +105,7 @@ void thumb_push_pop() {
             regs.r[15] = ReadWord(address);
             address += 4;
 
-            if ((arch == CPUArch::ARMv4) || (regs.r[15] & 0x1)) {
+            if ((arch == Arch::ARMv4) || (regs.r[15] & 0x1)) {
                 // halfword align r15 and flush pipeline
                 regs.r[15] &= ~1;
                 ThumbFlushPipeline();
@@ -200,7 +200,7 @@ void thumb_load_store_multiple() {
         // if rn is in rlist:
         // if arm9 writeback if rn is the only register or not the last register in rlist
         // if arm7 then no writeback if rn in rlist
-        if (arch == CPUArch::ARMv5) {
+        if (arch == Arch::ARMv5) {
             if (((instruction & 0xFF) == (unsigned int)(1 << rn)) || !(((instruction & 0xFF) >> rn) == 1)) {
                 regs.r[rn] = address;
             }

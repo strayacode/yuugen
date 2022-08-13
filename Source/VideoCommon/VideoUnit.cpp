@@ -2,11 +2,9 @@
 #include "Common/Memory.h"
 #include "Common/Settings.h"
 #include "VideoCommon/VideoUnit.h"
-#include "VideoBackends2D/Software/SoftwareRenderer2D.h"
-#include "VideoBackends3D/Software/SoftwareRenderer3D.h"
 #include "Core/System.h"
 
-VideoUnit::VideoUnit(System& system) : system(system) {}
+VideoUnit::VideoUnit(System& system) : renderer_2d {SoftwareRenderer2D(*this, Engine::A), SoftwareRenderer2D(*this, Engine::B)}, renderer_3d(*this), system(system) {}
 
 VideoUnit::~VideoUnit() {
     stop_render_thread();
@@ -21,9 +19,9 @@ void VideoUnit::reset() {
     palette_ram.fill(0);
     oam.fill(0);
 
-    renderer_2d[0]->reset();
-    renderer_2d[1]->reset();
-    renderer_3d->reset();
+    renderer_2d[0].reset();
+    renderer_2d[1].reset();
+    renderer_3d.reset();
     vram.reset();
 
     scanline_start_event = system.scheduler.RegisterEvent("Scanline Start", [this]() {
@@ -42,23 +40,11 @@ void VideoUnit::reset() {
     thread_state.store(ThreadState::Idle);
 }
 
-void VideoUnit::create_renderers(RendererType type) {
-    switch (type) {
-    case RendererType::Software:
-        renderer_2d[0] = std::make_unique<SoftwareRenderer2D>(*this, Engine::A);
-        renderer_2d[1] = std::make_unique<SoftwareRenderer2D>(*this, Engine::B);
-        renderer_3d = std::make_unique<SoftwareRenderer3D>(*this);
-        break;
-    default:
-        log_fatal("VideoUnit: unknown renderer type %d", static_cast<int>(type));
-    }
-}
-
 const u32* VideoUnit::get_framebuffer(Screen screen) {
     if (((powcnt1 >> 15) & 0x1) == (screen == Screen::Top)) {
-        return renderer_2d[0]->get_framebuffer();
+        return renderer_2d[0].get_framebuffer();
     } else {
-        return renderer_2d[1]->get_framebuffer();
+        return renderer_2d[1].get_framebuffer();
     }
 }
 
@@ -69,7 +55,7 @@ void VideoUnit::render_scanline_start() {
             // while rendering is happening for engine a on the main thread
             if (thread_state.load() == ThreadState::DrawingA) {
                 thread_state.store(ThreadState::DrawingB);
-                renderer_2d[1]->render_scanline(vcount);
+                renderer_2d[1].render_scanline(vcount);
             }
 
             // wait for previous scanline to be drawn by render thread
@@ -77,8 +63,8 @@ void VideoUnit::render_scanline_start() {
                 std::this_thread::yield();
             }
         } else {
-            renderer_2d[0]->render_scanline(vcount);
-            renderer_2d[1]->render_scanline(vcount);
+            renderer_2d[0].render_scanline(vcount);
+            renderer_2d[1].render_scanline(vcount);
         }
 
         // trigger an arm9 dma transfer on hblank (only for visible scanlines)
@@ -94,7 +80,7 @@ void VideoUnit::render_scanline_start() {
     }
 
     if (vcount == 215) {
-        renderer_3d->render();
+        renderer_3d.render();
     }
 
     // ARM9 DMA exclusive
@@ -169,11 +155,11 @@ void VideoUnit::start_render_thread() {
                 if (!render_thread_running) return;
             }
 
-            renderer_2d[0]->render_scanline(vcount);
+            renderer_2d[0].render_scanline(vcount);
             
             // only do engine b rendering if the main thread isn't already doing that for us
             if (thread_state.exchange(ThreadState::DrawingB) == ThreadState::DrawingA) {
-                renderer_2d[1]->render_scanline(vcount);
+                renderer_2d[1].render_scanline(vcount);
             }
             
             thread_state.store(ThreadState::Idle);
@@ -189,4 +175,47 @@ void VideoUnit::stop_render_thread() {
     render_thread_running = false;
 
     render_thread.join();
+}
+
+void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
+    if (arch == Arch::ARMv5) {
+        int masks[9] = {0x9b, 0x9b, 0x9f, 0x9f, 0x87, 0x9f, 0x9f, 0x83, 0x83};
+
+        for (int i = 0; i < 7; i++) {
+            mmio.register_mmio<u8>(
+                0x04000240 + i,
+                mmio.direct_read<u8>(&vram.vramcnt[i], masks[i]),
+                mmio.complex_write<u8>([&, this](u32, u8 data) {
+                    system.video_unit.vram.update_vram_mapping(static_cast<VRAM::Bank>(i), data);
+                })
+            );
+        }
+        
+        mmio.register_mmio<u32>(
+            0x04000240,
+            mmio.complex_read<u32>([this](u32) {
+                return ((vram.vramcnt[3] << 24) | (vram.vramcnt[2] << 16) | (vram.vramcnt[1] << 8) | vram.vramcnt[0]);
+            }),
+            mmio.complex_write<u32>([&, this](u32, u8 data) {
+                system.video_unit.vram.update_vram_mapping(VRAM::Bank::A, data);
+                system.video_unit.vram.update_vram_mapping(VRAM::Bank::B, (data >> 8) & 0xFF);
+                system.video_unit.vram.update_vram_mapping(VRAM::Bank::C, (data >> 16) & 0xFF);
+                system.video_unit.vram.update_vram_mapping(VRAM::Bank::D, (data >> 24) & 0xFF);
+            })
+        );
+
+        mmio.register_mmio<u16>(
+            0x04000304,
+            mmio.direct_read<u16>(&powcnt1, 0x820f),
+            mmio.direct_write<u16>(&powcnt1, 0x820f)
+        );
+
+        mmio.register_mmio<u32>(
+            0x04000304,
+            mmio.invalid_read<u32>(),
+            mmio.direct_write<u32, u16>(&powcnt1, 0x820f)
+        );
+
+        renderer_2d[0].build_mmio(mmio);
+    }
 }

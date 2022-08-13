@@ -325,6 +325,14 @@ void SPU::set_audio_interface(std::shared_ptr<AudioInterface> interface) {
     audio_interface->configure(this, 32768, 1024, (AudioCallback)audio_callback);
 }
 
+void SPU::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u16>(
+        0x04000504,
+        mmio.direct_read<u16>(&soundbias, 0x3FF),
+        mmio.direct_write<u16>(&soundbias, 0x3FF)
+    );
+}
+
 void audio_callback(SPU* spu, s16* stream, int len) {
     int volume = Settings::Get().volume;
     int multiplier = (volume * 32) / 100;

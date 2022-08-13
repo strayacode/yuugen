@@ -6,11 +6,7 @@
 #include "Core/arm/cpu_registers.h"
 #include "Core/arm/memory_base.h"
 #include "Core/arm/Decoder/Decoder.h"
-
-enum class CPUArch {
-    ARMv4 = 0,
-    ARMv5 = 1,
-};
+#include "Core/arm/ARMTypes.h"
 
 enum class InterruptType {
     VBlank = 0,
@@ -92,7 +88,7 @@ class CP15;
 // cached interpreter and jit
 class CPUCore {
 public:
-    CPUCore(MemoryBase& memory, CPUArch arch, CP15* cp15);
+    CPUCore(MemoryBase& memory, Arch arch, CP15* cp15);
     
     void Reset();
 
@@ -150,7 +146,7 @@ public:
     u32 ime;
 
     MemoryBase& memory;
-    CPUArch arch;
+    Arch arch;
     u32 instruction;
 
     // condition table for every possible condition of the bits 28..31 in an opcode

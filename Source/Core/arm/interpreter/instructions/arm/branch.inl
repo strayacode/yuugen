@@ -38,7 +38,7 @@ void arm_branch_exchange() {
 }
 
 void arm_branch_link_exchange() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 
@@ -51,7 +51,7 @@ void arm_branch_link_exchange() {
 }
 
 void arm_branch_link_exchange_register() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 

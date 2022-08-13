@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Core/arm/memory_base.h"
 #include "Common/Types.h"
 #include "Common/Log.h"
+#include "Core/arm/memory_base.h"
 
 class System;
 
@@ -24,4 +24,6 @@ public:
     System& system;
     std::array<u8, 0x4000> bios;
     u8 arm7_wram[0x10000] = {};
+    
+    void build_mmio();
 };

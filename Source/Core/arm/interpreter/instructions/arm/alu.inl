@@ -512,7 +512,7 @@ void arm_single_data_swap() {
 }
 
 void arm_count_leading_zeroes() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 
@@ -531,7 +531,7 @@ void arm_count_leading_zeroes() {
 }
 
 void arm_saturating_add_subtract() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 
@@ -642,7 +642,7 @@ void arm_saturating_add_subtract() {
 }
 
 void arm_signed_halfword_multiply() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 
@@ -692,7 +692,7 @@ void arm_signed_halfword_multiply() {
 }
 
 void arm_signed_halfword_word_multiply() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 
@@ -728,7 +728,7 @@ void arm_signed_halfword_word_multiply() {
 }
 
 void arm_signed_halfword_accumulate_long() {
-    if (arch == CPUArch::ARMv4) {
+    if (arch == Arch::ARMv4) {
         return;
     }
 

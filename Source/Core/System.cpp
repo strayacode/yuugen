@@ -7,20 +7,21 @@ System::System()
     dma {DMA(*this, 0), DMA(*this, 1)}, ipc(*this), 
     timers {Timers(*this, 0), Timers(*this, 1)},
     spu(*this), video_unit(*this),
-    cpu_core {CPUCore(arm7_memory, CPUArch::ARMv4, nullptr), CPUCore(arm9_memory, CPUArch::ARMv5, &cp15)} {
+    cpu_core {CPUCore(arm7_memory, Arch::ARMv4, nullptr), CPUCore(arm9_memory, Arch::ARMv5, &cp15)} {
     SetCPUCoreType(CPUCoreType::Interpreter);
 }
 
 void System::Reset() {
     SetCPUCoreType(CPUCoreType::Interpreter);
-    video_unit.create_renderers(RendererType::Software);
-
+    
     arm7_memory.Reset();
     arm9_memory.Reset();
     scheduler.Reset();
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
+    printf("a\n");
     video_unit.reset();
+    printf("b\n");
     dma[0].Reset();
     dma[1].Reset();
     timers[0].Reset();
@@ -42,7 +43,7 @@ void System::Reset() {
     RCNT = 0;
     HALTCNT = 0;
     EXMEMCNT = 0;
-    POSTFLG7 = 0;
+    postflg7 = 0;
     postflg9 = 0;
     BIOSPROT = 0;
     SIOCNT = 0;

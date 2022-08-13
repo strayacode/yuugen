@@ -313,3 +313,11 @@ void Renderer2D::write_word(u32 addr, u32 data) {
         log_fatal("Renderer2D: word write %08x = %08x", addr, data);
     }
 }
+
+void Renderer2D::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u32>(
+        0x04000000,
+        mmio.direct_read<u32>(&dispcnt),
+        mmio.direct_write<u32>(&dispcnt)
+    );
+}

@@ -2,8 +2,10 @@
 #include "Core/Core.h"
 #include "Core/arm/arm7/memory.h"
 
-ARM7Memory::ARM7Memory(System& system) : system(system) {
+ARM7Memory::ARM7Memory(System& system) : MemoryBase(Arch::ARMv4), system(system) {
     bios = LoadBios<0x4000>("../bios/bios7.bin");
+
+    build_mmio();
 }
 
 void ARM7Memory::Reset() {
@@ -119,6 +121,9 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
     case 0x00:
         // ignore all bios writes
         return;
+    case 0x04:
+        mmio.write<u8>(addr, data);
+        return;
     case 0x06:
         system.video_unit.vram.write_arm7<u8>(addr, data);
         return;
@@ -137,6 +142,9 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
     case 0x00:
         // ignore all bios writes
         break;
+    case 0x04:
+        mmio.write<u16>(addr, data);
+        return;
     }
 
     log_fatal("ARM7: handle half write %08x = %04x", addr, data);
@@ -144,6 +152,9 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
 
 void ARM7Memory::WriteWord(u32 addr, u32 data) {
     switch (addr >> 24) {
+    case 0x04:
+        mmio.write<u32>(addr, data);
+        return;
     case 0x06:
         system.video_unit.vram.write_arm7<u32>(addr, data);
         return;
@@ -153,4 +164,16 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
     }
 
     log_fatal("ARM7: handle word write %08x = %08x", addr, data);
+}
+
+void ARM7Memory::build_mmio() {
+    mmio.register_mmio<u8>(
+        0x04000300,
+        mmio.direct_read<u8>(&system.postflg9, 0x1),
+        mmio.direct_write<u8>(&system.postflg9, 0x1)
+    );
+
+    system.spu.build_mmio(mmio);
+
+    log_debug("[ARM7Memory] mmio handlers registered");
 }
