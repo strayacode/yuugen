@@ -269,19 +269,19 @@ void ARM9Memory::register_mmio(u32 addr, ReadCallback<T> read_callback, WriteCal
 }
 
 void ARM9Memory::build_mmio() {
-    volatile int i = 100;
-
-    printf("%d %p\n", i, &i);
-
     register_mmio<u8>(
         0x04000247,
         invalid_read<u8>(),
-        complex_write<u8>([&i](u32, u8 data) {
-            printf("%p\n", &i);
-            // printf("hmm %d\n", i);
-            data += i;
-            // system.write_wramcnt(data);
-            printf("done\n");
+        complex_write<u8>([this](u32, u8 data) {
+            system.write_wramcnt(data);
+        })
+    );
+
+    register_mmio<u8>(
+        0x04000300,
+        invalid_read<u8>(),
+        complex_write<u8>([this](u32, u8 data) {
+            system.write_wramcnt(data);
         })
     );
 
