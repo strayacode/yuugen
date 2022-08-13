@@ -5,7 +5,11 @@ add_library(audiocommon
     SDLAudioInterface.h SDLAudioInterface.cpp
 )
 
-include_directories(audiocommon ${SDL2_INCLUDE_DIRS})
+message(STATUS ${SDL2_INCLUDE_DIRS})
+message(STATUS ${SDL2_LIBRARIES})
+
+# TODO: don't hardcode this
+include_directories("/opt/homebrew/include")
 target_link_libraries(audiocommon PRIVATE ${SDL2_LIBRARIES})
 
 set_target_properties(audiocommon PROPERTIES LINKER_LANGUAGE CXX)

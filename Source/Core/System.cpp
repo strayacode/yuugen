@@ -92,7 +92,7 @@ void System::RunFrame() {
 
     while (scheduler.GetCurrentTime() < frame_end_time) {
         if (!cpu_core[0].Halted() || !cpu_core[1].Halted()) {
-            u64 cycles = std::min(16UL, scheduler.GetEventTime() - scheduler.GetCurrentTime());
+            u64 cycles = std::min(static_cast<u64>(16), scheduler.GetEventTime() - scheduler.GetCurrentTime());
             u64 arm7_target = scheduler.GetCurrentTime() + cycles;
             u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
             

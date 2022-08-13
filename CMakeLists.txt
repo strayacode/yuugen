@@ -13,7 +13,6 @@ add_compile_options(
     -Wall
     -Wextra
     -Wno-missing-braces
-    -no-pie
 )
 
 if(NOT CMAKE_BUILD_TYPE)

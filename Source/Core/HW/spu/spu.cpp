@@ -322,7 +322,7 @@ void SPU::set_audio_interface(std::shared_ptr<AudioInterface> interface) {
 
     audio_interface = interface;
 
-    audio_interface->configure(this, 32768, 1024, (Callback)audio_callback);
+    audio_interface->configure(this, 32768, 1024, (AudioCallback)audio_callback);
 }
 
 void audio_callback(SPU* spu, s16* stream, int len) {

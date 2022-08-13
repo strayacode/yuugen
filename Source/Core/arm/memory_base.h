@@ -7,6 +7,7 @@
 #include <assert.h>
 #include "Common/Types.h"
 #include "Common/Log.h"
+#include "Common/Callback.h"
 
 // this is a base class
 // which is used by the arm7
@@ -81,8 +82,58 @@ public:
         return bios;
     }
 
-    std::array<u8*, 0x100000> read_page_table = {};
-    std::array<u8*, 0x100000> write_page_table = {};
+    std::array<u8*, 0x100000> read_page_table;
+    std::array<u8*, 0x100000> write_page_table;
+
+    template <typename T>
+    using ReadCallback = Common::Callback<T(u32)>;
+
+    template <typename T>
+    using WriteCallback = Common::Callback<void(u32, T)>;
+
+    template <typename T>
+    struct ReadHandler {
+        ReadCallback<T> callback;
+        bool mapped = false;
+    };
+
+    template <typename T>
+    struct WriteHandler {
+        WriteCallback<T> callback;
+        bool mapped = false;
+    };
+
+    template <typename T, int N>
+    using ReadHandlers = std::array<ReadHandler<T>, N / sizeof(T)>;
+
+    template <typename T, int N>
+    using WriteHandlers = std::array<WriteHandler<T>, N / sizeof(T)>;
+
+    template <typename T>
+    ReadCallback<T> invalid_read() {
+        return [](u32 addr) -> T {
+            log_fatal("invalid read %08x", addr);
+        };
+    }
+
+    template <typename T>
+    ReadCallback<T> direct_read(T* mmio, u32 mask) {
+        return [&](u32) -> T {
+            return *mmio & mask;
+        };
+    }
+
+    // just fallthrough
+    template <typename T>
+    ReadCallback<T> complex_read(ReadCallback<T> callback) {
+        return callback;
+    }
+
+    // just fallthrough
+    template <typename T>
+    WriteCallback<T> complex_write(WriteCallback<T> callback) {
+        return callback;
+    }
 
 private:
     virtual auto ReadByte(u32 addr) -> u8 = 0;
