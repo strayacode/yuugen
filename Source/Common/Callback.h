@@ -8,7 +8,7 @@
 
 namespace Common {
 
-template <typename Func, size_t N = 8>
+template <typename Func, size_t N = 16>
 class Callback;
 
 template <typename Return, typename... Args, size_t N>

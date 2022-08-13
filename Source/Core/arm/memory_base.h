@@ -118,7 +118,7 @@ public:
 
     template <typename T>
     ReadCallback<T> direct_read(T* mmio, u32 mask) {
-        return [&](u32) -> T {
+        return [mmio, mask](u32) -> T {
             return *mmio & mask;
         };
     }
@@ -127,6 +127,20 @@ public:
     template <typename T>
     ReadCallback<T> complex_read(ReadCallback<T> callback) {
         return callback;
+    }
+
+    template <typename T>
+    WriteCallback<T> invalid_write() {
+        return [](u32 addr, T data) {
+            log_fatal("invalid write %08x = %08x", addr, data);
+        };
+    }
+
+    template <typename T>
+    WriteCallback<T> direct_write(T* mmio, u32 mask) {
+        return [mmio, mask](u32, T data) {
+            *mmio = data & mask;
+        };
     }
 
     // just fallthrough

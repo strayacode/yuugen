@@ -31,17 +31,11 @@ public:
     void mmio_write(u32 addr, T data) {
         auto handler = get_write_handler<T>(addr);
 
-        printf("cool\n");
-
         if (!handler.mapped) {
             log_fatal("[ARM9Memory] handle unmapped %lu-bit write %08x", sizeof(T) * 8, addr);
         }
 
-        printf("a\n");
-
         handler.callback(addr, data);
-
-        printf("b\n");
     }
 
     void WriteByte(u32 addr, u8 data) override;

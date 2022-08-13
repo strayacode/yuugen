@@ -43,7 +43,7 @@ void System::Reset() {
     HALTCNT = 0;
     EXMEMCNT = 0;
     POSTFLG7 = 0;
-    POSTFLG9 = 0;
+    postflg9 = 0;
     BIOSPROT = 0;
     SIOCNT = 0;
 

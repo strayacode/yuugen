@@ -70,7 +70,7 @@ u8 ARM7Memory::ReadByte(u32 addr) {
         return 0xFF;
     }
 
-    log_warn("ARM7: handle byte read %08x", addr);
+    log_fatal("ARM7: handle byte read %08x", addr);
 
     return 0;
 }
@@ -94,7 +94,7 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
         return 0;
     }
 
-    log_warn("ARM7: handle half read %08x", addr);
+    log_fatal("ARM7: handle half read %08x", addr);
 
     return 0;
 }
@@ -109,7 +109,7 @@ u32 ARM7Memory::ReadWord(u32 addr) {
         return system.spu.read_word(addr);
     }
 
-    log_warn("ARM7: handle word read %08x", addr);
+    log_fatal("ARM7: handle word read %08x", addr);
 
     return 0;
 }
@@ -129,7 +129,7 @@ void ARM7Memory::WriteByte(u32 addr, u8 data) {
         return;
     }
 
-    log_warn("ARM7: handle byte write %08x = %02x", addr, data);
+    log_fatal("ARM7: handle byte write %08x = %02x", addr, data);
 }
 
 void ARM7Memory::WriteHalf(u32 addr, u16 data) {
@@ -139,7 +139,7 @@ void ARM7Memory::WriteHalf(u32 addr, u16 data) {
         break;
     }
 
-    log_warn("ARM7: handle half write %08x = %04x", addr, data);
+    log_fatal("ARM7: handle half write %08x = %04x", addr, data);
 }
 
 void ARM7Memory::WriteWord(u32 addr, u32 data) {
@@ -152,5 +152,5 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
         return;
     }
 
-    log_warn("ARM7: handle word write %08x = %08x", addr, data);
+    log_fatal("ARM7: handle word write %08x = %08x", addr, data);
 }

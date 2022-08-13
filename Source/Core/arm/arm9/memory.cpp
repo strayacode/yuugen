@@ -279,10 +279,8 @@ void ARM9Memory::build_mmio() {
 
     register_mmio<u8>(
         0x04000300,
-        invalid_read<u8>(),
-        complex_write<u8>([this](u32, u8 data) {
-            system.write_wramcnt(data);
-        })
+        direct_read<u8>(&system.postflg9, 0x3),
+        direct_write<u8>(&system.postflg9, 0x3)
     );
 
     log_debug("[ARM9Memory] mmio handlers registered");
