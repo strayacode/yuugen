@@ -300,10 +300,14 @@ void HostInterface::render_menu_bar() {
             ImGui::EndMenu();
         }
 
-        std::string fps_string = format("%f FPS", fps);
+        if (core.GetState() == State::Running && fps != 0.0f) {
+            std::string fps_string = format("%.0f FPS | %.2f ms", fps, 1000.0f / fps);
 
-        ImGui::SetCursorPosX(500.0f);
-        ImGui::Text(fps_string.c_str());
+            auto pos = window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x;
+
+            ImGui::SetCursorPosX(pos);
+            ImGui::Text("%s", fps_string.c_str());
+        }
 
         ImGui::EndMainMenuBar();
     }

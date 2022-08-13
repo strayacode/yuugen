@@ -19,9 +19,7 @@ void System::Reset() {
     scheduler.Reset();
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
-    printf("a\n");
     video_unit.reset();
-    printf("b\n");
     dma[0].Reset();
     dma[1].Reset();
     timers[0].Reset();
