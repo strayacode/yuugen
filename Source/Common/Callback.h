@@ -1,23 +1,32 @@
 #pragma once
 
+#include <utility>
+#include <memory>
+#include "Common/Types.h"
+
+template <typename Func>
+class Callback;
+
 template <typename Return, typename... Args>
-class Callback {
+class Callback<Return(Args...)> {
 public:
     Callback() = delete;
 
     template <typename Func>
     Callback(Func&& func) {
-        printf("pog\n");
-        func();
+        ptr = (void*)std::addressof(func);
+
+        fn = [](void* ptr, Args... args) -> Return {
+            return (*reinterpret_cast<Func*>(ptr))(
+                std::forward<Args>(args)...);
+        };
     }
 
-    // Return operator(Args... args) {
-
-    // }
+    Return operator()(Args... args) {
+        return fn(ptr, args...);
+    }
+    
 private:
+    void* ptr = nullptr;
+    Return (*fn)(void*, Args...) = nullptr;
 };
-
-// example of how our callback thing should work
-// Callback<void()> cb = [&]() {
-//     printf("hi\n");
-// };
