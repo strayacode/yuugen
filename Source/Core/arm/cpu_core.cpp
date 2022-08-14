@@ -38,6 +38,26 @@ void CPUCore::Reset() {
     timestamp = 0;
 }
 
+void CPUCore::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u32>(
+        0x04000208,
+        mmio.direct_read<u32>(&ime, 0x1),
+        mmio.direct_write<u32>(&ime, 0x1)
+    );
+
+    mmio.register_mmio<u32>(
+        0x04000210,
+        mmio.direct_read<u32>(&ie),
+        mmio.direct_write<u32>(&ie)
+    );
+
+    mmio.register_mmio<u32>(
+        0x04000214,
+        mmio.direct_read<u32>(&irf),
+        mmio.direct_write<u32>(&irf)
+    );
+}
+
 void CPUCore::run(u64 target) {
     while (timestamp < target) {
         if (halted) {

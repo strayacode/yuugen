@@ -42,6 +42,12 @@ void VideoUnit::reset() {
 
 void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
     if (arch == Arch::ARMv5) {
+        mmio.register_mmio<u16>(
+            0x04000004,
+            mmio.direct_read<u16>(&dispstat[1], 0xffbf),
+            mmio.direct_write<u16>(&dispstat[1], 0xffbf)
+        );
+
         int masks[9] = {0x9b, 0x9b, 0x9f, 0x9f, 0x87, 0x9f, 0x9f, 0x83, 0x83};
 
         for (int i = 0; i < 7; i++) {

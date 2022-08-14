@@ -6,6 +6,7 @@
 #include "Core/arm/cpu_registers.h"
 #include "Core/arm/memory_base.h"
 #include "Core/arm/Decoder/Decoder.h"
+#include "Core/arm/MMIO.h"
 #include "Core/arm/ARMTypes.h"
 
 enum class InterruptType {
@@ -91,6 +92,7 @@ public:
     CPUCore(MemoryBase& memory, Arch arch, CP15* cp15);
     
     void Reset();
+    void build_mmio(MMIO& mmio);
 
     void run(u64 target);
     int single_step();

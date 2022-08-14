@@ -17,7 +17,21 @@ void IPC::reset() {
 
 void IPC::build_mmio(MMIO& mmio, Arch arch) {
     if (arch == Arch::ARMv5) {
+        mmio.register_mmio<u16>(
+            0x04000180,
+            mmio.direct_read<u16, u32>(&ipcsync[1].data),
+            mmio.complex_write<u16>([this](u32, u16 data) {
+                write_ipcsync(1, data);
+            })
+        );
 
+        mmio.register_mmio<u16>(
+            0x04000184,
+            mmio.direct_read<u16>(&ipcfifocnt[1].data),
+            mmio.complex_write<u16>([this](u32, u16 data) {
+                write_ipcfifocnt(1, data);
+            })
+        );
     } else {
         mmio.register_mmio<u16>(
             0x04000180,
