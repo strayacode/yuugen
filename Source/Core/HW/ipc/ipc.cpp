@@ -16,55 +16,31 @@ void IPC::reset() {
 }
 
 void IPC::build_mmio(MMIO& mmio, Arch arch) {
-    if (arch == Arch::ARMv5) {
-        mmio.register_mmio<u16>(
-            0x04000180,
-            mmio.direct_read<u16, u32>(&ipcsync[1].data),
-            mmio.complex_write<u16>([this](u32, u16 data) {
-                write_ipcsync(1, data);
-            })
-        );
+    int cpu = static_cast<int>(arch);
 
-        mmio.register_mmio<u16>(
-            0x04000184,
-            mmio.direct_read<u16>(&ipcfifocnt[1].data),
-            mmio.complex_write<u16>([this](u32, u16 data) {
-                write_ipcfifocnt(1, data);
-            })
-        );
+    mmio.register_mmio<u16>(
+        0x04000180,
+        mmio.direct_read<u16, u32>(&ipcsync[cpu].data),
+        mmio.complex_write<u16>([this, cpu](u32, u16 data) {
+            write_ipcsync(cpu, data);
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000188,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                write_send_fifo(1, data);
-            })
-        );
-    } else {
-        mmio.register_mmio<u16>(
-            0x04000180,
-            mmio.direct_read<u16, u32>(&ipcsync[0].data),
-            mmio.complex_write<u16>([this](u32, u16 data) {
-                write_ipcsync(0, data);
-            })
-        );
+    mmio.register_mmio<u16>(
+        0x04000184,
+        mmio.direct_read<u16>(&ipcfifocnt[cpu].data),
+        mmio.complex_write<u16>([this, cpu](u32, u16 data) {
+            write_ipcfifocnt(cpu, data);
+        })
+    );
 
-        mmio.register_mmio<u16>(
-            0x04000184,
-            mmio.direct_read<u16>(&ipcfifocnt[0].data),
-            mmio.complex_write<u16>([this](u32, u16 data) {
-                write_ipcfifocnt(0, data);
-            })
-        );
-
-        mmio.register_mmio<u32>(
-            0x04000188,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                write_send_fifo(0, data);
-            })
-        );
-    }
+    mmio.register_mmio<u32>(
+        0x04000188,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this, cpu](u32, u32 data) {
+            write_send_fifo(cpu, data);
+        })
+    );
 }
 
 void IPC::write_ipcsync(int cpu, u16 data) {
