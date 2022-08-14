@@ -19,7 +19,9 @@ void IPC::build_mmio(MMIO& mmio, Arch arch) {
     if (arch == Arch::ARMv5) {
         mmio.register_mmio<u16>(
             0x04000180,
-            mmio.direct_read<u16, u32>(&ipcsync[1].data),
+            mmio.complex_read<u16>([this](u32) {
+                return static_cast<u16>(ipcsync[1].data);
+            }),
             mmio.complex_write<u16>([this](u32, u16 data) {
                 write_ipcsync(1, data);
             })
@@ -27,7 +29,9 @@ void IPC::build_mmio(MMIO& mmio, Arch arch) {
 
         mmio.register_mmio<u16>(
             0x04000184,
-            mmio.direct_read<u16>(&ipcfifocnt[1].data),
+            mmio.complex_read<u16>([this](u32) {
+                return ipcfifocnt[1].data;
+            }),
             mmio.complex_write<u16>([this](u32, u16 data) {
                 write_ipcfifocnt(1, data);
             })
@@ -35,7 +39,9 @@ void IPC::build_mmio(MMIO& mmio, Arch arch) {
     } else {
         mmio.register_mmio<u16>(
             0x04000180,
-            mmio.direct_read<u16, u32>(&ipcsync[0].data),
+            mmio.complex_read<u16>([this](u32) {
+                return static_cast<u16>(ipcsync[0].data);
+            }),
             mmio.complex_write<u16>([this](u32, u16 data) {
                 write_ipcsync(0, data);
             })
@@ -43,7 +49,9 @@ void IPC::build_mmio(MMIO& mmio, Arch arch) {
 
         mmio.register_mmio<u16>(
             0x04000184,
-            mmio.direct_read<u16>(&ipcfifocnt[0].data),
+            mmio.complex_read<u16>([this](u32) {
+                return ipcfifocnt[0].data;
+            }),
             mmio.complex_write<u16>([this](u32, u16 data) {
                 write_ipcfifocnt(0, data);
             })
@@ -56,7 +64,7 @@ void IPC::write_ipcsync(int cpu, u16 data) {
 
     ipcsync[cpu].data = (ipcsync[cpu].data & ~0x6F00) | (data & 0x6F00);
     ipcsync[remote].input = ipcsync[cpu].output;
-    
+
     if (ipcsync[cpu].send_irq && ipcsync[remote].enable_irq) {
         system.cpu_core[cpu].SendInterrupt(InterruptType::IPCSync);
     }

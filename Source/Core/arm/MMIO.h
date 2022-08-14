@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include "Common/Types.h"
 #include "Common/Log.h"
 #include "Common/Callback.h"

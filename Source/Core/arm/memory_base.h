@@ -84,8 +84,8 @@ public:
         return bios;
     }
 
-    std::array<u8*, 0x100000> read_page_table;
-    std::array<u8*, 0x100000> write_page_table;
+    std::array<u8*, 0x100000> read_page_table = {};
+    std::array<u8*, 0x100000> write_page_table = {};
     MMIO mmio;
 
 private:
