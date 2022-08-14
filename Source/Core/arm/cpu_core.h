@@ -3,11 +3,11 @@
 #include <array>
 #include "Common/arithmetic.h"
 #include "Common/log_file.h"
-#include "Core/arm/cpu_registers.h"
-#include "Core/arm/memory_base.h"
-#include "Core/arm/Decoder/Decoder.h"
-#include "Core/arm/MMIO.h"
-#include "Core/arm/ARMTypes.h"
+#include "Core/ARM/cpu_registers.h"
+#include "Core/ARM/memory_base.h"
+#include "Core/ARM/Decoder/Decoder.h"
+#include "Core/ARM/MMIO.h"
+#include "Core/ARM/ARMTypes.h"
 
 enum class InterruptType {
     VBlank = 0,
@@ -121,9 +121,9 @@ public:
     void arm_coprocessor_register_transfer();
     void unknown_instruction();
 
-    #include "interpreter/instructions/arm/alu.inl"
-    #include "interpreter/instructions/arm/branch.inl"
-    #include "interpreter/instructions/arm/load_store.inl"
+    #include "interpreter/instructions/ARM/alu.inl"
+    #include "interpreter/instructions/ARM/branch.inl"
+    #include "interpreter/instructions/ARM/load_store.inl"
     #include "interpreter/instructions/thumb/alu.inl"
     #include "interpreter/instructions/thumb/branch.inl"
     #include "interpreter/instructions/thumb/load_store.inl"

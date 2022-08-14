@@ -2,7 +2,7 @@
 
 #include <array>
 #include "Common/Types.h"
-#include "Core/arm/MMIO.h"
+#include "Core/ARM/MMIO.h"
 
 class VideoUnit;
 

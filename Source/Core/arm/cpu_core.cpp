@@ -1,7 +1,7 @@
 #include <algorithm>
 #include "Common/Settings.h"
-#include "Core/arm/cpu_core.h"
-#include "Core/HW/cp15/cp15.h"
+#include "Core/ARM/cpu_core.h"
+#include "Core/Hardware/cp15/cp15.h"
 
 static Decoder<CPUCore> decoder;
 

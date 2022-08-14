@@ -10,7 +10,7 @@
 #include "VideoBackends2D/Software/SoftwareRenderer2D.h"
 #include "VideoBackends3D/Software/SoftwareRenderer3D.h"
 #include "Core/Scheduler.h"
-#include "Core/arm/MMIO.h"
+#include "Core/ARM/MMIO.h"
 
 enum class RendererType {
     Software,

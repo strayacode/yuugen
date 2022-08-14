@@ -1,4 +1,4 @@
-#include "Core/arm/Disassembler/Disassembler.h"
+#include "Core/ARM/Disassembler/Disassembler.h"
 
 std::string Disassembler::disassemble(u32 instruction, bool arm) {
     if (arm) {

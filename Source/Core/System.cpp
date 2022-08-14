@@ -28,7 +28,7 @@ void System::Reset() {
     spi.Reset();
     input.Reset();
     ipc.reset();
-    maths_unit.Reset();
+    maths_unit.reset();
     wifi.Reset();
     spu.reset();
     rtc.Reset();

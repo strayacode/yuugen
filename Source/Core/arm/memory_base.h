@@ -7,7 +7,7 @@
 #include <assert.h>
 #include "Common/Types.h"
 #include "Common/Log.h"
-#include "Core/arm/MMIO.h"
+#include "Core/ARM/MMIO.h"
 
 // this is a base class
 // which is used by the arm7

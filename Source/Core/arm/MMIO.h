@@ -4,7 +4,7 @@
 #include "Common/Types.h"
 #include "Common/Log.h"
 #include "Common/Callback.h"
-#include "Core/arm/ARMTypes.h"
+#include "Core/ARM/ARMTypes.h"
 
 class MMIO {
 public:

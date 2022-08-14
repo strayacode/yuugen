@@ -1,6 +1,6 @@
 #include "Common/Memory.h"
 #include "Core/Core.h"
-#include "Core/arm/arm7/memory.h"
+#include "Core/ARM/arm7/memory.h"
 
 ARM7Memory::ARM7Memory(System& system) : MemoryBase(Arch::ARMv4), system(system) {
     bios = LoadBios<0x4000>("../bios/bios7.bin");

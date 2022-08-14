@@ -8,7 +8,7 @@
 #include "Common/GamesList.h"
 #include "VideoCommon/GLWindow.h"
 #include "Core/Core.h"
-#include "Core/arm/Disassembler/Disassembler.h"
+#include "Core/ARM/Disassembler/Disassembler.h"
 #include <memory>
 #include <vector>
 #include <array>

@@ -2,7 +2,7 @@
 #include "Common/format.h"
 #include "Common/arithmetic.h"
 #include "Common/Log.h"
-#include "Core/arm/Disassembler/Disassembler.h"
+#include "Core/ARM/Disassembler/Disassembler.h"
 
 std::string Disassembler::arm_branch_link_maybe_exchange(u32 instruction) {
     if ((instruction & 0xF0000000) != 0xF0000000) {

@@ -1,4 +1,4 @@
-#include "Core/arm/Disassembler/Disassembler.h"
+#include "Core/ARM/Disassembler/Disassembler.h"
 
 std::string Disassembler::thumb_alu_immediate(u32 instruction) {
     return "";
