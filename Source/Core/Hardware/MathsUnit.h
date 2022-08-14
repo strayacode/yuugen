@@ -18,7 +18,7 @@ public:
     u64 div_numer;
     u64 div_denom;
     u64 divrem_result;
-    u64 divresult;
+    u64 div_result;
 
     // square is started when sqrtcnt or sqrt_param is written to
     u16 sqrtcnt;

@@ -13,7 +13,7 @@
 #include "Core/Hardware/timers/timers.h"
 #include "Core/Hardware/spu/spu.h"
 #include "Core/Hardware/rtc/rtc.h"
-#include "Core/Hardware/maths_unit/maths_unit.h"
+#include "Core/Hardware/MathsUnit.h"
 #include "Core/Hardware/wifi/wifi.h"
 #include "VideoCommon/VideoUnit.h"
 

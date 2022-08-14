@@ -182,13 +182,6 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         }
         break;
     case 0x04:
-        switch (addr) {
-        case 0x040002B8:
-            return system.maths_unit.sqrt_param & 0xFFFFFFFF;
-        case 0x040002BC:
-            return system.maths_unit.sqrt_param >> 32;
-        }
-
         // TODO: handle this more nicely later
         if (addr != 0x04100000) {
             return mmio.read<u32>(addr);
@@ -237,13 +230,6 @@ void ARM9Memory::WriteByte(u32 addr, u8 data) {
 void ARM9Memory::WriteHalf(u32 addr, u16 data) {
     switch (addr >> 24) {
     case 0x04:
-        switch (addr) {
-        case 0x040002B0:
-            system.maths_unit.sqrtcnt = data;
-            system.maths_unit.start_square_root();
-            return;
-        }
-
         mmio.write<u16>(addr, data);
         return;
     case 0x05:
@@ -266,19 +252,6 @@ void ARM9Memory::WriteHalf(u32 addr, u16 data) {
 void ARM9Memory::WriteWord(u32 addr, u32 data) {
     switch (addr >> 24) {
     case 0x04:
-        switch (addr) {
-        case 0x040002B8:
-            // write to lower 32 bits of SQRT_PARAM
-            system.maths_unit.sqrt_param = (system.maths_unit.sqrt_param & ~0xFFFFFFFF) | data;
-            system.maths_unit.start_square_root();
-            return;
-        case 0x040002BC:
-            // write to upper 32 bits of sqrt_param
-            system.maths_unit.sqrt_param = (system.maths_unit.sqrt_param & 0xFFFFFFFF) | ((u64)data << 32);
-            system.maths_unit.start_square_root();
-            return;
-        }
-
         mmio.write<u32>(addr, data);
         return;
     case 0x05:

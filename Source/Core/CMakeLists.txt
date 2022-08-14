@@ -29,7 +29,7 @@ add_library(core
     Hardware/timers/timers.h Hardware/timers/timers.cpp
     Hardware/spu/spu.h Hardware/spu/spu.cpp
     Hardware/rtc/rtc.h Hardware/rtc/rtc.cpp
-    Hardware/maths_unit/maths_unit.h Hardware/maths_unit/maths_unit.cpp
+    Hardware/MathsUnit.h Hardware/MathsUnit.cpp
     Hardware/wifi/wifi.h Hardware/wifi/wifi.cpp
 )
 

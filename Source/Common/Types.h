@@ -2,11 +2,13 @@
 
 #include <cstdint>
 
-typedef std::uint8_t u8;
-typedef std::int8_t s8;
-typedef std::uint16_t u16;
-typedef std::int16_t s16;
-typedef std::uint32_t u32;
-typedef std::int32_t s32;
-typedef std::uint64_t u64;
-typedef std::int64_t s64;
+using u8 = std::uint8_t;
+using s8 = std::uint8_t;
+using u16 = std::uint16_t;
+using s16 = std::int16_t;
+using u32 = std::uint32_t;
+using s32 = std::int32_t;
+using u64 = std::uint64_t;
+using s64 = std::int64_t;
+using f32 = float;
+using f64 = double;
