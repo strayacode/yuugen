@@ -54,7 +54,9 @@ void CPUCore::build_mmio(MMIO& mmio) {
     mmio.register_mmio<u32>(
         0x04000214,
         mmio.direct_read<u32>(&irf),
-        mmio.direct_write<u32>(&irf)
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            irf &= ~data;
+        })
     );
 }
 

@@ -19,9 +19,7 @@ void IPC::build_mmio(MMIO& mmio, Arch arch) {
     if (arch == Arch::ARMv5) {
         mmio.register_mmio<u16>(
             0x04000180,
-            mmio.complex_read<u16>([this](u32) {
-                return static_cast<u16>(ipcsync[1].data);
-            }),
+            mmio.direct_read<u16, u32>(&ipcsync[1].data),
             mmio.complex_write<u16>([this](u32, u16 data) {
                 write_ipcsync(1, data);
             })
@@ -29,19 +27,23 @@ void IPC::build_mmio(MMIO& mmio, Arch arch) {
 
         mmio.register_mmio<u16>(
             0x04000184,
-            mmio.complex_read<u16>([this](u32) {
-                return ipcfifocnt[1].data;
-            }),
+            mmio.direct_read<u16>(&ipcfifocnt[1].data),
             mmio.complex_write<u16>([this](u32, u16 data) {
                 write_ipcfifocnt(1, data);
+            })
+        );
+
+        mmio.register_mmio<u32>(
+            0x04000188,
+            mmio.invalid_read<u32>(),
+            mmio.complex_write<u32>([this](u32, u32 data) {
+                write_send_fifo(1, data);
             })
         );
     } else {
         mmio.register_mmio<u16>(
             0x04000180,
-            mmio.complex_read<u16>([this](u32) {
-                return static_cast<u16>(ipcsync[0].data);
-            }),
+            mmio.direct_read<u16, u32>(&ipcsync[0].data),
             mmio.complex_write<u16>([this](u32, u16 data) {
                 write_ipcsync(0, data);
             })
@@ -49,11 +51,17 @@ void IPC::build_mmio(MMIO& mmio, Arch arch) {
 
         mmio.register_mmio<u16>(
             0x04000184,
-            mmio.complex_read<u16>([this](u32) {
-                return ipcfifocnt[0].data;
-            }),
+            mmio.direct_read<u16>(&ipcfifocnt[0].data),
             mmio.complex_write<u16>([this](u32, u16 data) {
                 write_ipcfifocnt(0, data);
+            })
+        );
+
+        mmio.register_mmio<u32>(
+            0x04000188,
+            mmio.invalid_read<u32>(),
+            mmio.complex_write<u32>([this](u32, u32 data) {
+                write_send_fifo(0, data);
             })
         );
     }
@@ -66,7 +74,7 @@ void IPC::write_ipcsync(int cpu, u16 data) {
     ipcsync[remote].input = ipcsync[cpu].output;
 
     if (ipcsync[cpu].send_irq && ipcsync[remote].enable_irq) {
-        system.cpu_core[cpu].SendInterrupt(InterruptType::IPCSync);
+        system.cpu_core[remote].SendInterrupt(InterruptType::IPCSync);
     }
 }
 

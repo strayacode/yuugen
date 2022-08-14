@@ -105,27 +105,27 @@ private:
 
     template <typename T>
     ReadHandler<T>& get_read_handler(u32 addr) {
-        addr -= 0x04000000;
+        int index = (addr - 0x04000000) / sizeof(T);
 
         if constexpr (sizeof(T) == 1) {
-            return read8[addr];
+            return read8[index];
         } else if constexpr (sizeof(T) == 2) {
-            return read16[addr];
+            return read16[index];
         } else {
-            return read32[addr];
+            return read32[index];
         }
     }
 
     template <typename T>
     WriteHandler<T>& get_write_handler(u32 addr) {
-        addr -= 0x04000000;
+        int index = (addr - 0x04000000) / sizeof(T);
 
         if constexpr (sizeof(T) == 1) {
-            return write8[addr];
+            return write8[index];
         } else if constexpr (sizeof(T) == 2) {
-            return write16[addr];
+            return write16[index];
         } else {
-            return write32[addr];
+            return write32[index];
         }
     }
 

@@ -182,7 +182,12 @@ u32 ARM9Memory::ReadWord(u32 addr) {
         }
         break;
     case 0x04:
-        return mmio.read<u32>(addr);
+        // TODO: handle this more nicely later
+        if (addr != 0x04100000) {
+            return mmio.read<u32>(addr);
+        }
+        
+        return system.ipc.read_ipcfiforecv(1);
     case 0x05:
         return Common::read<u32>(system.video_unit.get_palette_ram(), addr & 0x7FF);
     case 0x06:

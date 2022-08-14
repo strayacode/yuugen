@@ -108,7 +108,12 @@ u16 ARM7Memory::ReadHalf(u32 addr) {
 u32 ARM7Memory::ReadWord(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
-        return mmio.read<u32>(addr);
+        // TODO: handle this more nicely later
+        if (addr != 0x04100000) {
+            return mmio.read<u32>(addr);
+        }
+        
+        return system.ipc.read_ipcfiforecv(0);
     case 0x06:
         return system.video_unit.vram.read_arm7<u32>(addr);
     }
