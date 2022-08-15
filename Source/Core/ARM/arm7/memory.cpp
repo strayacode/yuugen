@@ -1,19 +1,19 @@
 #include "Common/Memory.h"
 #include "Core/Core.h"
-#include "Core/ARM/arm7/memory.h"
+#include "Core/ARM/ARM7/Memory.h"
 
 ARM7Memory::ARM7Memory(System& system) : MemoryBase(Arch::ARMv4), system(system) {
-    bios = LoadBios<0x4000>("../bios/bios7.bin");
+    bios = load_bios<0x4000>("../bios/bios7.bin");
 
     build_mmio();
 }
 
-void ARM7Memory::Reset() {
-    UpdateMemoryMap(0, 0xFFFFFFFF);
+void ARM7Memory::reset() {
+    update_memory_map(0, 0xFFFFFFFF);
     memset(arm7_wram, 0, 0x10000);
 }
 
-void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
+void ARM7Memory::update_memory_map(u32 low_addr, u32 high_addr) {
     for (u64 addr = low_addr; addr < high_addr; addr += PAGE_SIZE) {
         // get the pagetable index
         int index = addr >> PAGE_BITS;
@@ -60,121 +60,80 @@ void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
     }
 }
 
-u8 ARM7Memory::ReadByte(u32 addr) {
-    switch (addr >> 24) {
-    case 0x04:
-        return mmio.read<u8>(addr);
-    case 0x08: case 0x09:
-        // check if the arm9 has access rights to the gba slot
-        // if not return 0
-        if (!(system.EXMEMCNT & (1 << 7))) {
-            return 0;
-        }
-        // otherwise return openbus (0xFFFFFFFF)
-        return 0xFF;
-    }
-
-    log_fatal("ARM7: handle byte read %08x", addr);
-
-    return 0;
+u8 ARM7Memory::slow_read_byte(u32 addr) {
+    return slow_read<u8>(addr);
 }
 
-u16 ARM7Memory::ReadHalf(u32 addr) {
-    switch (addr >> 24) {
-    case 0x04:
-        return mmio.read<u16>(addr);
-    case 0x06:
-        return system.video_unit.vram.read_arm7<u16>(addr);
-    case 0x08: case 0x09:
-        // check if the arm9 has access rights to the gba slot
-        // if not return 0
-        if (!(system.EXMEMCNT & (1 << 7))) {
-            return 0;
-        }
-        // otherwise return openbus (0xFFFFFFFF)
-        return 0xFFFF;
-    }
-
-    if (Common::in_range(0x04800000, 0x04900000, addr)) {
-        // TODO: implement wifi regs correctly
-        return 0;
-    }
-
-    log_fatal("ARM7: handle half read %08x", addr);
-
-    return 0;
+u16 ARM7Memory::slow_read_half(u32 addr) {
+    return slow_read<u16>(addr);
 }
 
-u32 ARM7Memory::ReadWord(u32 addr) {
+u32 ARM7Memory::slow_read_word(u32 addr) {
+    return slow_read<u32>(addr);
+}
+
+void ARM7Memory::slow_write_byte(u32 addr, u8 data) {
+    slow_write<u8>(addr, data);
+}
+
+void ARM7Memory::slow_write_half(u32 addr, u16 data) {
+    slow_write<u16>(addr, data);
+}
+
+void ARM7Memory::slow_write_word(u32 addr, u32 data) {
+    slow_write<u32>(addr, data);
+}
+
+template <typename T>
+T ARM7Memory::slow_read(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
-        // TODO: handle this more nicely later
-        if (addr != 0x04100000) {
-            return mmio.read<u32>(addr);
+        if (addr < 0x04000520) [[likely]] {
+            return mmio.read<T>(addr);
+        }
+
+        if constexpr (sizeof(T) == 4) {
+            if (addr == 0x04100000) {
+                return system.ipc.read_ipcfiforecv(0);
+            }
         }
         
-        return system.ipc.read_ipcfiforecv(0);
+        log_warn("[ARM7Memory] unhandled mmio read %08x", addr);
+
+        return 0;
     case 0x06:
-        return system.video_unit.vram.read_arm7<u32>(addr);
+        return system.video_unit.vram.read_arm7<T>(addr);
+    case 0x08: case 0x09:
+        // check if the arm9 has access rights to the gba slot
+        // if not return 0
+        if (!(system.EXMEMCNT & (1 << 7))) {
+            return 0;
+        }
+
+        // otherwise return openbus
+        return (~static_cast<T>(0));
     }
 
-    if (Common::in_range(0x04000400, 0x04000500, addr)) {
-        return system.spu.read_word(addr);
-    }
-
-    log_fatal("ARM7: handle word read %08x", addr);
-
-    return 0;
+    log_fatal("[ARM7Memory] handle %lu-bit read %08x", sizeof(T) * 8, addr);
 }
 
-void ARM7Memory::WriteByte(u32 addr, u8 data) {
+template <typename T>
+void ARM7Memory::slow_write(u32 addr, T data) {
     switch (addr >> 24) {
     case 0x00:
         // ignore all bios writes
         return;
     case 0x04:
-        mmio.write<u8>(addr, data);
+        mmio.write<T>(addr, data);
         return;
     case 0x06:
-        system.video_unit.vram.write_arm7<u8>(addr, data);
-        return;
-    }
-
-    if (Common::in_range(0x04000400, 0x04000500, addr)) {
-        system.spu.write_byte(addr, data);
-        return;
-    }
-
-    log_fatal("ARM7: handle byte write %08x = %02x", addr, data);
-}
-
-void ARM7Memory::WriteHalf(u32 addr, u16 data) {
-    switch (addr >> 24) {
-    case 0x00:
-        // ignore all bios writes
-        break;
-    case 0x04:
-        mmio.write<u16>(addr, data);
-        return;
-    }
-
-    log_fatal("ARM7: handle half write %08x = %04x", addr, data);
-}
-
-void ARM7Memory::WriteWord(u32 addr, u32 data) {
-    switch (addr >> 24) {
-    case 0x04:
-        mmio.write<u32>(addr, data);
-        return;
-    case 0x06:
-        system.video_unit.vram.write_arm7<u32>(addr, data);
+        system.video_unit.vram.write_arm7<T>(addr, data);
         return;
     case 0x08: case 0x09:
-        // for now do nothing lol
         return;
     }
 
-    log_fatal("ARM7: handle word write %08x = %08x", addr, data);
+    log_fatal("[ARM7Memory] handle %lu-bit write %08x = %08x", sizeof(T) * 8, addr, data);
 }
 
 void ARM7Memory::build_mmio() {

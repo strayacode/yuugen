@@ -3,10 +3,9 @@
 #include <array>
 #include <string>
 #include <fstream>
-#include <string.h>
-#include <assert.h>
 #include "Common/Types.h"
 #include "Common/Log.h"
+#include "Common/Memory.h"
 #include "Core/ARM/MMIO.h"
 
 // this is a base class
@@ -17,51 +16,47 @@ public:
     MemoryBase(Arch arch) : mmio(arch) {}
 
     template <typename T>
-    T FastRead(u32 addr) {
+    T read(u32 addr) {
         addr &= ~(sizeof(T) - 1);
-
-        T return_value = 0;
 
         int index = addr >> PAGE_BITS;
         int offset = addr & PAGE_MASK;
 
         if (read_page_table[index]) {
-            memcpy(&return_value, &read_page_table[index][offset], sizeof(T));
+            return Common::read<T>(&read_page_table[index][offset]);
         } else {
             if constexpr (sizeof(T) == 1) {
-                return ReadByte(addr);
+                return slow_read_byte(addr);
             } else if constexpr (sizeof(T) == 2) {
-                return ReadHalf(addr);
+                return slow_read_half(addr);
             } else {
-                return ReadWord(addr);
+                return slow_read_word(addr);
             }
         }
-
-        return return_value;
     }
 
     template <typename T>
-    void FastWrite(u32 addr, T data) {
+    void write(u32 addr, T data) {
         addr &= ~(sizeof(T) - 1);
 
         int index = addr >> PAGE_BITS;
         int offset = addr & PAGE_MASK;
 
         if (write_page_table[index]) {
-            memcpy(&write_page_table[index][offset], &data, sizeof(T));
+            Common::write<T>(&write_page_table[index][offset], data);
         } else {
             if constexpr (sizeof(T) == 1) {
-                WriteByte(addr, data);
+                slow_write_byte(addr, data);
             } else if constexpr (sizeof(T) == 2) {
-                WriteHalf(addr, data);
+                slow_write_half(addr, data);
             } else {
-                WriteWord(addr, data);
+                slow_write_word(addr, data);
             }
         }
     }
 
     template <int size>
-    std::array<u8, size> LoadBios(std::string path) {
+    std::array<u8, size> load_bios(std::string path) {
         std::ifstream file(path, std::ios::binary | std::ios::ate);
         std::array<u8, size> bios;
 
@@ -71,9 +66,11 @@ public:
 
         file.unsetf(std::ios::skipws);
 
-        std::streampos bios_size = file.tellg();
+        u64 bios_size = file.tellg();
 
-        assert(bios_size <= size);
+        if (bios_size > size) {
+            log_fatal("[MemoryBase] bios has incorrect size! expected: %08x actual: %08x", size, bios_size);
+        }
 
         file.seekg(0, std::ios::beg);
         file.read(reinterpret_cast<char*>(bios.data()), size);
@@ -88,16 +85,16 @@ public:
     static constexpr int PAGE_SIZE = 1 << PAGE_BITS;
     static constexpr u32 PAGE_MASK = PAGE_SIZE - 1;
 
-    std::array<u8*, 0x100000> read_page_table = {};
-    std::array<u8*, 0x100000> write_page_table = {};
+    std::array<u8*, 0x40000> read_page_table = {};
+    std::array<u8*, 0x40000> write_page_table = {};
     MMIO mmio;
 
 private:
-    virtual auto ReadByte(u32 addr) -> u8 = 0;
-    virtual auto ReadHalf(u32 addr) -> u16 = 0;
-    virtual auto ReadWord(u32 addr) -> u32 = 0;
+    virtual u8 slow_read_byte(u32 addr) = 0;
+    virtual u16 slow_read_half(u32 addr) = 0;
+    virtual u32 slow_read_word(u32 addr) = 0;
 
-    virtual void WriteByte(u32 addr, u8 data) = 0;
-    virtual void WriteHalf(u32 addr, u16 data) = 0;
-    virtual void WriteWord(u32 addr, u32 data) = 0;
+    virtual void slow_write_byte(u32 addr, u8 data) = 0;
+    virtual void slow_write_half(u32 addr, u16 data) = 0;
+    virtual void slow_write_word(u32 addr, u32 data) = 0;
 };

@@ -140,12 +140,12 @@ void Renderer3D::write_half(u32 addr, u16 data) {
     }
 
     if (Common::in_range(0x04000330, 0x04000340, addr)) {
-        Common::write<u16>(edge_colour.data(), addr - 0x04000330, data);
+        Common::write<u16>(edge_colour.data(), data, addr - 0x04000330);
         return;
     }
 
     if (Common::in_range(0x04000380, 0x040003C0, addr)) {
-        Common::write<u16>(fog_table.data(), addr - 0x04000380, data);
+        Common::write<u16>(fog_table.data(), data, addr - 0x04000380);
         return;
     }
 
@@ -167,17 +167,17 @@ void Renderer3D::write_word(u32 addr, u32 data) {
     }
 
     if (Common::in_range(0x04000330, 0x04000340, addr)) {
-        Common::write<u32>(edge_colour.data(), addr - 0x04000330, data);
+        Common::write<u32>(edge_colour.data(), data, addr - 0x04000330);
         return;
     }
 
     if (Common::in_range(0x04000360, 0x04000380, addr)) {
-        Common::write<u32>(fog_table.data(), addr - 0x04000360, data);
+        Common::write<u32>(fog_table.data(), data, addr - 0x04000360);
         return;
     }
 
     if (Common::in_range(0x04000380, 0x040003C0, addr)) {
-        Common::write<u32>(fog_table.data(), addr - 0x04000380, data);
+        Common::write<u32>(fog_table.data(), data, addr - 0x04000380);
         return;
     }
 

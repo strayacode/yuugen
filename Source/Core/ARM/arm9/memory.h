@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common/Types.h"
-#include "Core/ARM/memory_base.h"
+#include "Core/ARM/MemoryBase.h"
 
 class System;
 
@@ -9,18 +9,24 @@ class ARM9Memory : public MemoryBase {
 public:
     ARM9Memory(System& system);
 
-    void Reset();
-    void UpdateMemoryMap(u32 low_addr, u32 high_addr);
+    void reset();
+    void update_memory_map(u32 low_addr, u32 high_addr);
 
-    u8 ReadByte(u32 addr) override;
-    u16 ReadHalf(u32 addr) override;
-    u32 ReadWord(u32 addr) override;
+    u8 slow_read_byte(u32 addr) override;
+    u16 slow_read_half(u32 addr) override;
+    u32 slow_read_word(u32 addr) override;
 
-    void WriteByte(u32 addr, u8 data) override;
-    void WriteHalf(u32 addr, u16 data) override;
-    void WriteWord(u32 addr, u32 data) override;
+    void slow_write_byte(u32 addr, u8 data) override;
+    void slow_write_half(u32 addr, u16 data) override;
+    void slow_write_word(u32 addr, u32 data) override;
 
 private:
+    template <typename T>
+    T slow_read(u32 addr);
+
+    template <typename T>
+    void slow_write(u32 addr, T data);
+
     void build_mmio();
 
     System& system;

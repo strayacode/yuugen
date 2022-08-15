@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Core/ARM/cpu_core.h"
-#include "Core/ARM/arm7/memory.h"
-#include "Core/ARM/arm9/memory.h"
+#include "Core/ARM/ARM7/Memory.h"
+#include "Core/ARM/ARM9/Memory.h"
 #include "Core/Scheduler.h"
 #include "Core/Hardware/Cartridge/cartridge.h"
 #include "Core/Hardware/spi/spi.h"

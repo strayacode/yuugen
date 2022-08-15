@@ -44,9 +44,9 @@ void DMA::Transfer(int channel_index) {
         // loop through all the data units specified by internal length
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
             if (arch == 1) {
-                system.arm9_memory.FastWrite<u32>(channel[channel_index].internal_destination, system.arm9_memory.FastRead<u32>(channel[channel_index].internal_source));
+                system.arm9_memory.write<u32>(channel[channel_index].internal_destination, system.arm9_memory.read<u32>(channel[channel_index].internal_source));
             } else {
-                system.arm7_memory.FastWrite<u32>(channel[channel_index].internal_destination, system.arm7_memory.FastRead<u32>(channel[channel_index].internal_source));
+                system.arm7_memory.write<u32>(channel[channel_index].internal_destination, system.arm7_memory.read<u32>(channel[channel_index].internal_source));
             }
 
             channel[channel_index].internal_source += source_adjust;
@@ -59,9 +59,9 @@ void DMA::Transfer(int channel_index) {
         // halfword transfer
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
             if (arch == 1) {
-                system.arm9_memory.FastWrite<u16>(channel[channel_index].internal_destination, system.arm9_memory.FastRead<u16>(channel[channel_index].internal_source));
+                system.arm9_memory.write<u16>(channel[channel_index].internal_destination, system.arm9_memory.read<u16>(channel[channel_index].internal_source));
             } else {
-                system.arm7_memory.FastWrite<u16>(channel[channel_index].internal_destination, system.arm7_memory.FastRead<u16>(channel[channel_index].internal_source));
+                system.arm7_memory.write<u16>(channel[channel_index].internal_destination, system.arm7_memory.read<u16>(channel[channel_index].internal_source));
             }
 
             channel[channel_index].internal_source += source_adjust;

@@ -167,15 +167,15 @@ bool CPUCore::Halted() {
 }
 
 u8 CPUCore::ReadByte(u32 addr) {
-    return memory.FastRead<u8>(addr);
+    return memory.read<u8>(addr);
 }
 
 u16 CPUCore::ReadHalf(u32 addr) {
-    return memory.FastRead<u16>(addr);
+    return memory.read<u16>(addr);
 }
 
 u32 CPUCore::ReadWord(u32 addr) {
-    return memory.FastRead<u32>(addr);
+    return memory.read<u32>(addr);
 }
 
 u32 CPUCore::ReadWordRotate(u32 addr) {
@@ -190,15 +190,15 @@ u32 CPUCore::ReadWordRotate(u32 addr) {
 }
 
 void CPUCore::WriteByte(u32 addr, u8 data) {
-    memory.FastWrite<u8>(addr, data);
+    memory.write<u8>(addr, data);
 }
 
 void CPUCore::WriteHalf(u32 addr, u16 data) {
-    memory.FastWrite<u16>(addr, data);
+    memory.write<u16>(addr, data);
 }
 
 void CPUCore::WriteWord(u32 addr, u32 data) {
-    memory.FastWrite<u32>(addr, data);
+    memory.write<u32>(addr, data);
 }
 
 void CPUCore::ARMFlushPipeline() {

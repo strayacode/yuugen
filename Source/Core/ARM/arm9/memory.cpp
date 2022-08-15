@@ -2,19 +2,19 @@
 #include "Common/Log.h"
 #include "Common/Memory.h"
 #include "Core/Core.h"
-#include "Core/ARM/arm9/memory.h"
+#include "Core/ARM/ARM9/Memory.h"
 
 ARM9Memory::ARM9Memory(System& system) : MemoryBase(Arch::ARMv5), system(system) {
-    bios = LoadBios<0x8000>("../bios/bios9.bin");
+    bios = load_bios<0x8000>("../bios/bios9.bin");
 
     build_mmio();
 }
 
-void ARM9Memory::Reset() {
-    UpdateMemoryMap(0, 0xFFFFFFFF);
+void ARM9Memory::reset() {
+    update_memory_map(0, 0xFFFFFFFF);
 }
 
-void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
+void ARM9Memory::update_memory_map(u32 low_addr, u32 high_addr) {
     // for mapping itcm and dtcm:
     // itcm has higher priority than dtcm
     // do UpdateARM9MemoryMap for old itcm and dtcm range, this will make the pages now not in the range
@@ -104,171 +104,103 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
     }
 }
 
-u8 ARM9Memory::ReadByte(u32 addr) {
-    switch (addr >> 24) {
-    case 0x04:
-        return mmio.read<u8>(addr);
-    case 0x05:
-        return Common::read<u8>(system.video_unit.get_palette_ram(), addr & 0x7FF);
-    case 0x06:
-        return system.video_unit.vram.read_vram<u8>(addr);
-    case 0x07:
-        return Common::read<u8>(system.video_unit.get_oam(), addr & 0x7FF);
-    case 0x08: case 0x09:
-        // check if the arm9 has access rights to the gba slot
-        // if not return 0
-        if (system.EXMEMCNT & (1 << 7)) {
-            return 0;
-        }
-        // otherwise return openbus (0xFFFFFFFF)
-        return 0xFF;
-    default:
-        log_fatal("handle byte read from %08x", addr);
-    }
+u8 ARM9Memory::slow_read_byte(u32 addr) {
+    return slow_read<u8>(addr);
 }
 
-u16 ARM9Memory::ReadHalf(u32 addr) {
+u16 ARM9Memory::slow_read_half(u32 addr) {
+    return slow_read<u16>(addr);
+}
+
+u32 ARM9Memory::slow_read_word(u32 addr) {
+    return slow_read<u32>(addr);
+}
+
+void ARM9Memory::slow_write_byte(u32 addr, u8 data) {
+    slow_write<u8>(addr, data);
+}
+
+void ARM9Memory::slow_write_half(u32 addr, u16 data) {
+    slow_write<u16>(addr, data);
+}
+
+void ARM9Memory::slow_write_word(u32 addr, u32 data) {
+    slow_write<u32>(addr, data);
+}
+
+template <typename T>
+T ARM9Memory::slow_read(u32 addr) {
     switch (addr >> 24) {
     case 0x03:
         switch (system.wramcnt) {
         case 0:
-            return Common::read<u16>(&system.shared_wram[addr & 0x7FFF], 0);
+            return Common::read<T>(&system.shared_wram[addr & 0x7FFF]);
         case 1:
-            return Common::read<u16>(&system.shared_wram[(addr & 0x3FFF) + 0x4000], 0);
+            return Common::read<T>(&system.shared_wram[(addr & 0x3FFF) + 0x4000]);
         case 2:
-            return Common::read<u16>(&system.shared_wram[addr & 0x3FFF], 0);
+            return Common::read<T>(&system.shared_wram[addr & 0x3FFF]);
         case 3:
             return 0;
         }
-        break;
-    case 0x04:
-        return mmio.read<u16>(addr);
-    case 0x05:
-        return Common::read<u16>(system.video_unit.get_palette_ram(), addr & 0x7FF);
-    case 0x06:
-        return system.video_unit.vram.read_vram<u16>(addr);
-    case 0x07:
-        return Common::read<u16>(system.video_unit.get_oam(), addr & 0x7FF);
-    case 0x08: case 0x09:
-        // check if the arm9 has access rights to the gba slot
-        // if not return 0
-        if (system.EXMEMCNT & (1 << 7)) {
-            return 0;
-        }
-        // otherwise return openbus (0xFFFFFFFF)
-        return 0xFFFF;
-    default:
-        log_fatal("handle half read from %08x", addr);
-        break;
-    }
 
-    log_fatal("ARM9: handle half read %08x", addr);
-
-    return 0;
-}
-
-u32 ARM9Memory::ReadWord(u32 addr) {
-    switch (addr >> 24) {
-    case 0x03:
-        switch (system.wramcnt) {
-        case 0:
-            return Common::read<u32>(&system.shared_wram[addr & 0x7FFF], 0);
-        case 1:
-            return Common::read<u32>(&system.shared_wram[(addr & 0x3FFF) + 0x4000], 0);
-        case 2:
-            return Common::read<u32>(&system.shared_wram[addr & 0x3FFF], 0);
-        case 3:
-            return 0;
-        }
         break;
     case 0x04:
         // TODO: handle this more nicely later
-        if (addr != 0x04100000) {
-            return mmio.read<u32>(addr);
+        if (addr < 0x04001080) [[likely]] {
+            return mmio.read<T>(addr);
         }
         
-        return system.ipc.read_ipcfiforecv(1);
+        if constexpr (sizeof(T) == 4) {
+            if (addr == 0x04100000) {
+                return system.ipc.read_ipcfiforecv(1);
+            }
+        }
+
+        log_warn("[ARM9Memory] unhandled mmio read %08x", addr);
+
+        return 0;
     case 0x05:
-        return Common::read<u32>(system.video_unit.get_palette_ram(), addr & 0x7FF);
+        return Common::read<T>(system.video_unit.get_palette_ram(), addr & 0x7FF);
     case 0x06:
-        return system.video_unit.vram.read_vram<u32>(addr);
+        return system.video_unit.vram.read_vram<T>(addr);
     case 0x07:
-        return Common::read<u16>(system.video_unit.get_oam(), addr & 0x7FF);
+        return Common::read<T>(system.video_unit.get_oam(), addr & 0x7FF);
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
         if (system.EXMEMCNT & (1 << 7)) {
             return 0;
         }
-        // otherwise return openbus (0xFFFFFFFF)
-        return 0xFFFFFFFF;
+
+        // otherwise return openbus
+        return (~static_cast<T>(0));
     case 0x0A:
         return 0;
     }
 
-    log_fatal("ARM9: handle word read %08x", addr);
-
-    return 0;
+    log_fatal("[ARM9Memory] handle %lu-bit read %08x", sizeof(T) * 8, addr);
 }
 
-void ARM9Memory::WriteByte(u32 addr, u8 data) {
+template <typename T>
+void ARM9Memory::slow_write(u32 addr, T data) {
     switch (addr >> 24) {
     case 0x04:
-        mmio.write<u8>(addr, data);
+        mmio.write<T>(addr, data);
         return;
     case 0x05:
-        Common::write<u8>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
+        Common::write<T>(system.video_unit.get_palette_ram(), data, addr & 0x7FF);
         return;
     case 0x06:
-        system.video_unit.vram.write_vram<u8>(addr, data);
-        return;
-    }
-
-    log_fatal("ARM9: handle byte write %08x = %02x", addr, data);
-}
-
-void ARM9Memory::WriteHalf(u32 addr, u16 data) {
-    switch (addr >> 24) {
-    case 0x04:
-        mmio.write<u16>(addr, data);
-        return;
-    case 0x05:
-        Common::write<u16>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
-        return;
-    case 0x06:
-        system.video_unit.vram.write_vram<u16>(addr, data);
+        system.video_unit.vram.write_vram<T>(addr, data);
         return;
     case 0x07:
-        Common::write<u16>(system.video_unit.get_oam(), addr & 0x7FF, data);
+        Common::write<T>(system.video_unit.get_oam(), data, addr & 0x7FF);
         return;
     case 0x08: case 0x09:
-        // for now do nothing lol
         return;
     }
 
-    log_fatal("ARM9: handle half write %08x = %04x", addr, data);
-}
-
-void ARM9Memory::WriteWord(u32 addr, u32 data) {
-    switch (addr >> 24) {
-    case 0x04:
-        mmio.write<u32>(addr, data);
-        return;
-    case 0x05:
-        Common::write<u32>(system.video_unit.get_palette_ram(), addr & 0x7FF, data);
-        return;
-    case 0x06:
-        system.video_unit.vram.write_vram<u32>(addr, data);
-        return;
-    case 0x07:
-        Common::write<u32>(system.video_unit.get_oam(), addr & 0x7FF, data);
-        return;
-    case 0x08: case 0x09:
-        // for now do nothing lol
-        return;
-    }
-
-    log_fatal("ARM9: handle word write %08x = %08x", addr, data);
+    log_fatal("ARM9: handle %lu-bit write %08x = %08x", sizeof(T) * 8, addr, data);
 }
 
 void ARM9Memory::build_mmio() {

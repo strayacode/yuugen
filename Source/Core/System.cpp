@@ -14,8 +14,8 @@ System::System()
 void System::Reset() {
     SetCPUCoreType(CPUCoreType::Interpreter);
     
-    arm7_memory.Reset();
-    arm9_memory.Reset();
+    arm7_memory.reset();
+    arm9_memory.reset();
     scheduler.Reset();
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
@@ -55,20 +55,20 @@ void System::DirectBoot() {
 
     RCNT = 0x8000;
 
-    arm9_memory.FastWrite<u8>(0x4000247, 0x03); // wramcnt
-    arm9_memory.FastWrite<u8>(0x4000300, 0x01); // POSTFLG (ARM9)
-    arm7_memory.FastWrite<u8>(0x4000300, 0x01); // POSTFLG (ARM7)
-    arm9_memory.FastWrite<u16>(0x4000304, 0x0001); // POWCNT1
-    arm7_memory.FastWrite<u16>(0x4000504, 0x0200); // SOUNDBIAS
-    arm9_memory.FastWrite<u32>(0x27FF800, 0x00001FC2); // Chip ID 1
-    arm9_memory.FastWrite<u32>(0x27FF804, 0x00001FC2); // Chip ID 2
-    arm9_memory.FastWrite<u16>(0x27FF850, 0x5835); // ARM7 BIOS CRC
-    arm9_memory.FastWrite<u16>(0x27FF880, 0x0007); // Message from ARM9 to ARM7
-    arm9_memory.FastWrite<u16>(0x27FF884, 0x0006); // ARM7 boot task
-    arm9_memory.FastWrite<u32>(0x27FFC00, 0x00001FC2); // Copy of chip ID 1
-    arm9_memory.FastWrite<u32>(0x27FFC04, 0x00001FC2); // Copy of chip ID 2
-    arm9_memory.FastWrite<u16>(0x27FFC10, 0x5835); // Copy of ARM7 BIOS CRC
-    arm9_memory.FastWrite<u16>(0x27FFC40, 0x0001); // Boot indicator
+    arm9_memory.write<u8>(0x4000247, 0x03); // wramcnt
+    arm9_memory.write<u8>(0x4000300, 0x01); // POSTFLG (ARM9)
+    arm7_memory.write<u8>(0x4000300, 0x01); // POSTFLG (ARM7)
+    arm9_memory.write<u16>(0x4000304, 0x0001); // POWCNT1
+    arm7_memory.write<u16>(0x4000504, 0x0200); // SOUNDBIAS
+    arm9_memory.write<u32>(0x27FF800, 0x00001FC2); // Chip ID 1
+    arm9_memory.write<u32>(0x27FF804, 0x00001FC2); // Chip ID 2
+    arm9_memory.write<u16>(0x27FF850, 0x5835); // ARM7 BIOS CRC
+    arm9_memory.write<u16>(0x27FF880, 0x0007); // Message from ARM9 to ARM7
+    arm9_memory.write<u16>(0x27FF884, 0x0006); // ARM7 boot task
+    arm9_memory.write<u32>(0x27FFC00, 0x00001FC2); // Copy of chip ID 1
+    arm9_memory.write<u32>(0x27FFC04, 0x00001FC2); // Copy of chip ID 2
+    arm9_memory.write<u16>(0x27FFC10, 0x5835); // Copy of ARM7 BIOS CRC
+    arm9_memory.write<u16>(0x27FFC40, 0x0001); // Boot indicator
 
     cartridge.DirectBoot();
     cpu_core[0].DirectBoot(cartridge.loader.GetARM7Entrypoint());
@@ -135,8 +135,8 @@ void System::write_wramcnt(u8 data) {
     wramcnt = data & 0x3;
 
     // now we must update the memory map for the shared wram space specifically
-    arm7_memory.UpdateMemoryMap(0x03000000, 0x04000000);
-    arm9_memory.UpdateMemoryMap(0x03000000, 0x04000000);
+    arm7_memory.update_memory_map(0x03000000, 0x04000000);
+    arm9_memory.update_memory_map(0x03000000, 0x04000000);
 }
 
 bool System::CartridgeAccessRights() {

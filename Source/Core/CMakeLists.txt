@@ -2,12 +2,11 @@ add_library(core
     Core.h Core.cpp
     System.h System.cpp
 
-    ARM/memory_base.h ARM/cpu_registers.h
-    ARM/MMIO.h
+    ARM/MemoryBase.h ARM/MMIO.h
     ARM/ARMTypes.h ARM/ARMTypes.cpp
     ARM/cpu_core.h ARM/cpu_core.cpp
-    ARM/arm7/memory.h ARM/arm7/memory.cpp
-    ARM/arm9/memory.h ARM/arm9/memory.cpp
+    ARM/ARM7/Memory.h ARM/ARM7/Memory.cpp
+    ARM/ARM9/Memory.h ARM/ARM9/Memory.cpp
     ARM/Disassembler/Disassembler.h ARM/Disassembler/Disassembler.cpp
     ARM/Disassembler/arm.cpp ARM/Disassembler/thumb.cpp
     ARM/Decoder/Decoder.h

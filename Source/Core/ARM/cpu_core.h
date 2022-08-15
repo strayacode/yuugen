@@ -3,8 +3,7 @@
 #include <array>
 #include "Common/arithmetic.h"
 #include "Common/log_file.h"
-#include "Core/ARM/cpu_registers.h"
-#include "Core/ARM/memory_base.h"
+#include "Core/ARM/MemoryBase.h"
 #include "Core/ARM/Decoder/Decoder.h"
 #include "Core/ARM/MMIO.h"
 #include "Core/ARM/ARMTypes.h"
@@ -139,7 +138,19 @@ public:
 
     void log_cpu_state();
 
-    CPURegisters regs;
+    struct Registers {
+        // 16 general purpose registers
+        u32 r[16];
+
+        // this stores 5 banks of registers from r8-r14
+        u32 r_banked[6][7];
+
+        // the current program status register
+        u32 cpsr;
+
+        // this is for the banked spsrs
+        u32 spsr_banked[6];
+    } regs;
 
     bool halted = true;
 

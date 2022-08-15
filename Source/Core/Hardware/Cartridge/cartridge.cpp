@@ -245,17 +245,17 @@ u8 Cartridge::ReadCommand(int command_index) {
 void Cartridge::DirectBoot() {
     // first transfer the cartridge header (this is taken from rom address 0 and loaded into main memory at address 0x27FFE00)
     for (u32 i = 0; i < 0x170; i++) {
-        system.arm9_memory.FastWrite<u8>(0x027FFE00 + i, *loader.GetPointer(i));
+        system.arm9_memory.write<u8>(0x027FFE00 + i, *loader.GetPointer(i));
     }
 
     // next transfer the arm9 code
     for (u32 i = 0; i < loader.GetARM9Size(); i++) {
-        system.arm9_memory.FastWrite<u8>(loader.GetARM9RAMAddress() + i, *loader.GetPointer(loader.GetARM9Offset() + i));
+        system.arm9_memory.write<u8>(loader.GetARM9RAMAddress() + i, *loader.GetPointer(loader.GetARM9Offset() + i));
     }
 
     // finally transfer the arm7 code
     for (u32 i = 0; i < loader.GetARM7Size(); i++) {
-        system.arm7_memory.FastWrite<u8>(loader.GetARM7RAMAddress() + i, *loader.GetPointer(loader.GetARM7Offset() + i));
+        system.arm7_memory.write<u8>(loader.GetARM7RAMAddress() + i, *loader.GetPointer(loader.GetARM7Offset() + i));
     }
 
     log_debug("[Cartridge] Data transferred into memory");
@@ -346,7 +346,7 @@ u64 Cartridge::Encrypt64(u64 data) {
 void Cartridge::InitKeyCode(u32 level, u32 modulo) {
     // copy the key1 buffer from the arm7 bios
     for (int i = 0; i < 0x412; i++) {
-        key1_buffer[i] = system.arm7_memory.FastRead<u32>(0x30 + (i * 4));
+        key1_buffer[i] = system.arm7_memory.read<u32>(0x30 + (i * 4));
     }
 
     key1_code[0] = loader.GetGamecode();

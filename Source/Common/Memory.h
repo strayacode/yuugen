@@ -6,7 +6,7 @@
 namespace Common {
 
 template <typename T>
-inline T read(void* data, int offset) {
+inline T read(void* data, int offset = 0) {
     T return_value = 0;
 
     memcpy(&return_value, (u8*)data + offset, sizeof(T));
@@ -15,7 +15,7 @@ inline T read(void* data, int offset) {
 }
 
 template <typename T>
-inline void write(void* data, int offset, T value) {
+inline void write(void* data, T value, int offset = 0) {
     memcpy((u8*)data + offset, &value, sizeof(T));
 }
 
