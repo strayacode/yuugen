@@ -14,9 +14,9 @@ void ARM7Memory::Reset() {
 }
 
 void ARM7Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
-    for (u64 addr = low_addr; addr < high_addr; addr += 0x1000) {
+    for (u64 addr = low_addr; addr < high_addr; addr += PAGE_SIZE) {
         // get the pagetable index
-        int index = addr >> 12;
+        int index = addr >> PAGE_BITS;
         switch (addr >> 24) {
         case 0x00:
             read_page_table[index] = &bios[addr & 0x3FFF];
@@ -179,11 +179,18 @@ void ARM7Memory::WriteWord(u32 addr, u32 data) {
 
 void ARM7Memory::build_mmio() {
     mmio.register_mmio<u8>(
+        0x04000241,
+        mmio.direct_read<u8>(&system.wramcnt),
+        mmio.invalid_write<u8>()
+    );
+
+    mmio.register_mmio<u8>(
         0x04000300,
         mmio.direct_read<u8>(&system.postflg9, 0x1),
         mmio.direct_write<u8>(&system.postflg9, 0x1)
     );
 
+    system.video_unit.build_mmio(mmio, Arch::ARMv4);
     system.spu.build_mmio(mmio);
     system.ipc.build_mmio(mmio, Arch::ARMv4);
     system.cpu_core[0].build_mmio(mmio);

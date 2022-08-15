@@ -19,9 +19,9 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
     // itcm has higher priority than dtcm
     // do UpdateARM9MemoryMap for old itcm and dtcm range, this will make the pages now not in the range
     // as nullptr. then do another UpdateARM9MemoryMap to make sure the itcm and range is fully covered
-    for (u64 addr = low_addr; addr < high_addr; addr += 0x1000) {
+    for (u64 addr = low_addr; addr < high_addr; addr += PAGE_SIZE) {
         // get the pagetable index
-        int index = addr >> 12;
+        int index = addr >> PAGE_BITS;
 
         if (system.cp15.GetITCMReadEnabled() && (addr < system.cp15.GetITCMSize())) {
             read_page_table[index] = &system.cp15.itcm[addr & 0x7FFF];
@@ -65,9 +65,9 @@ void ARM9Memory::UpdateMemoryMap(u32 low_addr, u32 high_addr) {
         }
     }
 
-    for (u64 addr = low_addr; addr < high_addr; addr += 0x1000) {
+    for (u64 addr = low_addr; addr < high_addr; addr += PAGE_SIZE) {
         // get the pagetable index
-        int index = addr >> 12;
+        int index = addr >> PAGE_BITS;
 
         if (system.cp15.GetITCMWriteEnabled() && (addr < system.cp15.GetITCMSize())) {
             write_page_table[index] = &system.cp15.itcm[addr & 0x7FFF];

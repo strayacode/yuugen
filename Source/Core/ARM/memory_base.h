@@ -22,8 +22,8 @@ public:
 
         T return_value = 0;
 
-        int index = addr >> 12;
-        int offset = addr & 0xFFF;
+        int index = addr >> PAGE_BITS;
+        int offset = addr & PAGE_MASK;
 
         if (read_page_table[index]) {
             memcpy(&return_value, &read_page_table[index][offset], sizeof(T));
@@ -44,8 +44,8 @@ public:
     void FastWrite(u32 addr, T data) {
         addr &= ~(sizeof(T) - 1);
 
-        int index = addr >> 12;
-        int offset = addr & 0xFFF;
+        int index = addr >> PAGE_BITS;
+        int offset = addr & PAGE_MASK;
 
         if (write_page_table[index]) {
             memcpy(&write_page_table[index][offset], &data, sizeof(T));
@@ -83,6 +83,10 @@ public:
 
         return bios;
     }
+
+    static constexpr int PAGE_BITS = 14;
+    static constexpr int PAGE_SIZE = 1 << PAGE_BITS;
+    static constexpr u32 PAGE_MASK = PAGE_SIZE - 1;
 
     std::array<u8*, 0x100000> read_page_table = {};
     std::array<u8*, 0x100000> write_page_table = {};

@@ -50,11 +50,13 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
 
         int masks[9] = {0x9b, 0x9b, 0x9f, 0x9f, 0x87, 0x9f, 0x9f, 0x83, 0x83};
 
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 10; i++) {
+            if (i == 7) continue;
+
             mmio.register_mmio<u8>(
                 0x04000240 + i,
                 mmio.direct_read<u8>(&vram.vramcnt[i], masks[i]),
-                mmio.complex_write<u8>([&, this](u32, u8 data) {
+                mmio.complex_write<u8>([this, i](u32, u8 data) {
                     system.video_unit.vram.update_vram_mapping(static_cast<VRAM::Bank>(i), data);
                 })
             );
@@ -65,7 +67,7 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
             mmio.complex_read<u32>([this](u32) {
                 return ((vram.vramcnt[3] << 24) | (vram.vramcnt[2] << 16) | (vram.vramcnt[1] << 8) | vram.vramcnt[0]);
             }),
-            mmio.complex_write<u32>([&, this](u32, u8 data) {
+            mmio.complex_write<u32>([this](u32, u8 data) {
                 system.video_unit.vram.update_vram_mapping(VRAM::Bank::A, data);
                 system.video_unit.vram.update_vram_mapping(VRAM::Bank::B, (data >> 8) & 0xFF);
                 system.video_unit.vram.update_vram_mapping(VRAM::Bank::C, (data >> 16) & 0xFF);
@@ -86,6 +88,12 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
         );
 
         renderer_2d[0].build_mmio(mmio);
+    } else {
+        mmio.register_mmio<u8>(
+            0x04000240,
+            mmio.direct_read<u8>(&vram.vramstat),
+            mmio.invalid_write<u8>()
+        );
     }
 }
 
