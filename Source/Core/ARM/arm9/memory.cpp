@@ -288,6 +288,7 @@ void ARM9Memory::build_mmio() {
 
     system.video_unit.build_mmio(mmio, Arch::ARMv5);
     system.ipc.build_mmio(mmio, Arch::ARMv5);
+    system.dma[1].build_mmio(mmio, Arch::ARMv5);
     system.cpu_core[1].build_mmio(mmio);
     system.input.build_mmio(mmio);
     system.maths_unit.build_mmio(mmio);

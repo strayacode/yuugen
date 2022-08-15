@@ -5,13 +5,17 @@
 #include "Common/Log.h"
 #include "Common/Types.h"
 #include "Core/Scheduler.h"
+#include "Core/ARM/MMIO.h"
 
 class System;
 
 class DMA {
 public:
     DMA(System& system, int arch);
-    void Reset();
+    
+    void reset();
+    void build_mmio(MMIO& mmio, Arch arch);
+
     void Transfer(int channel_index);
     void Trigger(u8 mode);
 
@@ -39,7 +43,7 @@ public:
         // understanding: length and control account for the entire 32 bits of dma cnt
         // with length occupying bits 0..20 and control occupying bits 21..31
         u32 internal_length;
-        u32 DMACNT;
+        u32 dmacnt;
     } channel[4];
 
     u32 DMAFILL[4];

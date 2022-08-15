@@ -211,7 +211,8 @@ void arm_halfword_data_transfer() {
     case 0x2:
         if (load) {
             regs.r[rd] = (s32)(s8)ReadByte(address);
-        } else {
+            printf("r%d is now %08x\n", rd, regs.r[rd]);
+        } else if (arch == Arch::ARMv5) {
             // cpu locks up when rd is odd
             if (rd & 0x1) {
                 log_fatal("undefined ldrd exception");
@@ -233,7 +234,7 @@ void arm_halfword_data_transfer() {
     case 0x3:
         if (load) {
             regs.r[rd] = (s32)(s16)ReadHalf(address);
-        } else {
+        } else if (arch == Arch::ARMv5) {
             // cpu locks up when rd is odd
             if (rd & 0x1) {
                 log_fatal("undefined strd exception");

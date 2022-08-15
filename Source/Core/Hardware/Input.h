@@ -23,7 +23,7 @@ struct Point {
 
 class Input {
 public:
-    void Reset();
+    void reset();
     void build_mmio(MMIO& mmio);
 
     void HandleInput(int button, bool pressed);

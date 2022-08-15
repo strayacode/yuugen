@@ -1,8 +1,8 @@
 #include "Core/Hardware/Input.h"
 
-void Input::Reset() {
-    keyinput = 0x3FF;
-    extkeyin = 0x7F;
+void Input::reset() {
+    keyinput = 0x3ff;
+    extkeyin = 0x7f;
 
     point.x = 0;
     point.y = 0;

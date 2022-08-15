@@ -20,13 +20,13 @@ void System::Reset() {
     cartridge.Reset();
     cartridge.LoadRom(rom_path);
     video_unit.reset();
-    dma[0].Reset();
-    dma[1].Reset();
+    dma[0].reset();
+    dma[1].reset();
     timers[0].Reset();
     timers[1].Reset();
     cp15.Reset();
     spi.Reset();
-    input.Reset();
+    input.reset();
     ipc.reset();
     maths_unit.reset();
     wifi.Reset();
