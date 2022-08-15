@@ -21,11 +21,42 @@ void DMA::build_mmio(MMIO& mmio, Arch arch) {
     int channel_size = 12;
 
     for (int i = 0; i < 4; i++) {
+        mmio.register_mmio<u32>(
+            0x040000b0 + (channel_size * i),
+            mmio.direct_read<u32>(&channel[i].source),
+            mmio.direct_write<u32>(&channel[i].source)
+        );
+
+        mmio.register_mmio<u32>(
+            0x040000b4 + (channel_size * i),
+            mmio.direct_read<u32>(&channel[i].destination),
+            mmio.direct_write<u32>(&channel[i].destination)
+        );
+
         mmio.register_mmio<u16>(
             0x040000b8 + (channel_size * i),
             mmio.invalid_read<u16>(),
             mmio.complex_write<u16>([this, i](u32, u16 data) {
-                channel[i].dmacnt = (channel[i].dmacnt & ~0xFFFF) | (data & 0xFFFF);
+                write_dma_length(i, data);
+            })
+        );
+
+        mmio.register_mmio<u32>(
+            0x040000b8 + (channel_size * i),
+            mmio.direct_read<u32>(&channel[i].dmacnt),
+            mmio.complex_write<u32>([this, i](u32, u32 data) {
+                write_dma_length(i, data & 0xFFFF);
+                write_dma_control(i, data >> 16);
+            })
+        );
+
+        mmio.register_mmio<u16>(
+            0x040000ba + (channel_size * i),
+            mmio.complex_read<u16>([this, i](u32) {
+                return channel[i].dmacnt >> 16;
+            }),
+            mmio.complex_write<u16>([this, i](u32, u16 data) {
+                write_dma_control(i, data);
             })
         );
     }
@@ -126,12 +157,12 @@ void DMA::Trigger(u8 mode) {
     }
 }
 
-void DMA::WriteDMACNT_L(int channel_index, u16 data) {
+void DMA::write_dma_length(int channel_index, u16 data) {
     // write to the lower 16 bits of dmacnt
     channel[channel_index].dmacnt = (channel[channel_index].dmacnt & ~0xFFFF) | (data & 0xFFFF);
 }
 
-void DMA::WriteDMACNT_H(int channel_index, u16 data) {
+void DMA::write_dma_control(int channel_index, u16 data) {
     // write to the upper 16 bits of dmacnt
     // so this will include bits 16..20 of the Length and then all the bits of Control
     u32 old_DMACNT = channel[channel_index].dmacnt;
@@ -173,30 +204,12 @@ void DMA::WriteDMACNT_H(int channel_index, u16 data) {
     }
 }
 
-void DMA::WriteDMACNT(int channel_index, u32 data) {
-    // do a write length but only give bits 0..20 as that is what the word count occupies in dmacnt
-    WriteDMACNT_L(channel_index, data & 0xFFFF);
-    WriteDMACNT_H(channel_index, data >> 16);
-}
-
-u32 DMA::ReadDMACNT(int channel_index) {
-    return channel[channel_index].dmacnt;
-}
-
-u16 DMA::ReadDMACNT_L(int channel_index) {
-    return channel[channel_index].dmacnt & 0xFFFF;
-}
-
-u16 DMA::ReadDMACNT_H(int channel_index) {
-    return channel[channel_index].dmacnt >> 16;
-}
-
 void DMA::WriteLength(int channel_index, u32 data) {
     if (arch == 1) {
         // arm9 dma
         if (data == 0) {
             // 0 = 0x200000
-            channel[channel_index].dmacnt = (channel[channel_index].dmacnt & 0xFFC00000) | (0x200000);
+            channel[channel_index].dmacnt = (channel[channel_index].dmacnt & 0xFFC00000) | 0x200000;
         } else {
             // 0x1..0x1FFFFF
             channel[channel_index].dmacnt = (channel[channel_index].dmacnt & ~0x1FFFFF) | (data & 0x1FFFFF);

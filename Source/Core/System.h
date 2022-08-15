@@ -62,7 +62,7 @@ public:
     u8 POWCNT2;
     u16 RCNT;
     u8 HALTCNT;
-    u16 EXMEMCNT;
+    u16 exmemcnt;
     u8 postflg7;
     u8 postflg9;
     u32 BIOSPROT;

@@ -1,5 +1,4 @@
 #include <limits>
-#include "Common/Log.h"
 #include "Core/Hardware/MathsUnit.h"
 
 void MathsUnit::reset() {

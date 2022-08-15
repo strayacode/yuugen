@@ -168,7 +168,7 @@ T ARM9Memory::slow_read(u32 addr) {
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
-        if (system.EXMEMCNT & (1 << 7)) {
+        if (system.exmemcnt & (1 << 7)) {
             return 0;
         }
 
@@ -204,6 +204,12 @@ void ARM9Memory::slow_write(u32 addr, T data) {
 }
 
 void ARM9Memory::build_mmio() {
+    mmio.register_mmio<u16>(
+        0x04000204,
+        mmio.direct_read<u16>(&system.exmemcnt),
+        mmio.direct_write<u16>(&system.exmemcnt)
+    );
+
     mmio.register_mmio<u8>(
         0x04000247,
         mmio.invalid_read<u8>(),

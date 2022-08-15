@@ -40,7 +40,7 @@ void System::Reset() {
     POWCNT2 = 0;
     RCNT = 0;
     HALTCNT = 0;
-    EXMEMCNT = 0;
+    exmemcnt = 0;
     postflg7 = 0;
     postflg9 = 0;
     BIOSPROT = 0;
@@ -141,7 +141,7 @@ void System::write_wramcnt(u8 data) {
 
 bool System::CartridgeAccessRights() {
     // check which cpu has access to the nds cartridge
-    if (EXMEMCNT & (1 << 11)) {
+    if (exmemcnt & (1 << 11)) {
         return false; // 0 = ARMv4
     } else {
         return true; // 1 = ARMv5

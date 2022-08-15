@@ -19,14 +19,8 @@ public:
     void Transfer(int channel_index);
     void Trigger(u8 mode);
 
-    void WriteDMACNT_L(int channel_index, u16 data);
-    void WriteDMACNT_H(int channel_index, u16 data);
-
-    void WriteDMACNT(int channel_index, u32 data);
-    u32 ReadDMACNT(int channel_index);
-
-    u16 ReadDMACNT_L(int channel_index);
-    u16 ReadDMACNT_H(int channel_index);
+    void write_dma_length(int channel_index, u16 data);
+    void write_dma_control(int channel_index, u16 data);
 
     u32 ReadLength(int channel_index);
     void WriteLength(int channel_index, u32 data);

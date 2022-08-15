@@ -106,7 +106,7 @@ T ARM7Memory::slow_read(u32 addr) {
     case 0x08: case 0x09:
         // check if the arm9 has access rights to the gba slot
         // if not return 0
-        if (!(system.EXMEMCNT & (1 << 7))) {
+        if (!(system.exmemcnt & (1 << 7))) {
             return 0;
         }
 

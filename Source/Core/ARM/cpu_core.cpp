@@ -39,6 +39,18 @@ void CPUCore::Reset() {
 }
 
 void CPUCore::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u8>(
+        0x04000208,
+        mmio.direct_read<u8>(&ime, 0x1),
+        mmio.direct_write<u8>(&ime, 0x1)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000208,
+        mmio.direct_read<u16>(&ime, 0x1),
+        mmio.direct_write<u16>(&ime, 0x1)
+    );
+
     mmio.register_mmio<u32>(
         0x04000208,
         mmio.direct_read<u32>(&ime, 0x1),
