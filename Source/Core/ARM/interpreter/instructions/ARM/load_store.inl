@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common/arithmetic.h"
+
 void arm_psr_transfer() {
     const bool opcode = (instruction >> 21) & 0x1;
     const bool spsr = (instruction >> 22) & 0x1;
@@ -210,8 +212,7 @@ void arm_halfword_data_transfer() {
         break;
     case 0x2:
         if (load) {
-            regs.r[rd] = (s32)(s8)ReadByte(address);
-            printf("r%d is now %08x\n", rd, regs.r[rd]);
+            regs.r[rd] = sign_extend(ReadByte(address), 8);
         } else if (arch == Arch::ARMv5) {
             // cpu locks up when rd is odd
             if (rd & 0x1) {
