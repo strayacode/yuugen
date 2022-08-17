@@ -41,6 +41,10 @@ bool HostInterface::initialise() {
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 13.0f);
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.DisplaySize = ImVec2(2500.0f, 1600.0f);
+    io.DisplayFramebufferScale = ImVec2(2500.0f, 1600.0f);
+
     SetupStyle();
     SDL_GetWindowSize(window, &window_width, &window_height);
 
@@ -170,6 +174,7 @@ void HostInterface::render_screens() {
 void HostInterface::render_menu_bar() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
+
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Load ROM")) {
@@ -334,6 +339,9 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().GrabRounding = 4.0f;
     ImGui::GetStyle().ScrollbarSize = 10.0f;
     ImGui::GetStyle().ScrollbarRounding = 12.0f;
+    ImGui::GetStyle().WindowTitleAlign = ImVec2(0.50f, 0.50f);
+    ImGui::GetStyle().WindowMenuButtonPosition = ImGuiDir_None;
+    ImGui::GetStyle().FramePadding = ImVec2(4.0f, 2.0f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
@@ -346,8 +354,8 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = ImVec4(0.349f, 0.500f, 0.910f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Tab] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_TabHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_TabActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TabHovered] = ImVec4(0.186f, 0.186f, 0.188f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TabActive] = ImVec4(0.231f, 0.231f, 0.251f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBg] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
@@ -375,7 +383,7 @@ void HostInterface::ARMWindow(Arch arch) {
     int index = arch == Arch::ARMv5 ? 1 : 0;
 
     ImGui::Begin(name.c_str());
-    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable;
     if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
         if (ImGui::BeginTabItem("Registers")) {
             ImGui::EndTabItem();

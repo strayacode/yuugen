@@ -203,30 +203,3 @@ void DMA::write_dma_control(int channel_index, u16 data) {
         system.scheduler.AddEvent(1, &transfer_event[channel_index]);
     }
 }
-
-void DMA::WriteLength(int channel_index, u32 data) {
-    if (arch == 1) {
-        // arm9 dma
-        if (data == 0) {
-            // 0 = 0x200000
-            channel[channel_index].dmacnt = (channel[channel_index].dmacnt & 0xFFC00000) | 0x200000;
-        } else {
-            // 0x1..0x1FFFFF
-            channel[channel_index].dmacnt = (channel[channel_index].dmacnt & ~0x1FFFFF) | (data & 0x1FFFFF);
-        }
-    } else {
-        // arm7 dma
-        if (data == 0) {
-            // 0 = 0x10000 on channel 3 and 0x4000 on all other channels
-            channel[channel_index].dmacnt = (channel[channel_index].dmacnt & 0xFFE00000) | ((channel_index == 3) ? 0x10000 : 0x4000);
-        } else {
-            // 0x1..0xFFFF on channel 3 and 0x1..0x3FFF on all other channels
-            channel[channel_index].dmacnt = (channel[channel_index].dmacnt & ~0xFFFF) | (data & ((channel_index == 3) ? 0xFFFF : 0x3FFF));
-        }
-    }
-}
-
-u32 DMA::ReadLength(int channel_index) {
-    // get bits 0..20 of dmacnt
-    return channel[channel_index].dmacnt & 0x1FFFFF;
-}

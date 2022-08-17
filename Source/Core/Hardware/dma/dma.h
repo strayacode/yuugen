@@ -22,9 +22,6 @@ public:
     void write_dma_length(int channel_index, u16 data);
     void write_dma_control(int channel_index, u16 data);
 
-    u32 ReadLength(int channel_index);
-    void WriteLength(int channel_index, u32 data);
-
     System& system;
 
     int arch;

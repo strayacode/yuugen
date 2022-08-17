@@ -61,7 +61,7 @@ public:
     int disassembly_size = 15;
 
     ImVec2 scaled_dimensions;
-    static constexpr float menubar_height = 19;
+    static constexpr float menubar_height = 18;
     double center_pos = 0;
     int window_width = 0;
     int window_height = 0;
