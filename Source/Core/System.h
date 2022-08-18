@@ -14,7 +14,6 @@
 #include "Core/Hardware/SPU.h"
 #include "Core/Hardware/RTC.h"
 #include "Core/Hardware/MathsUnit.h"
-#include "Core/Hardware/wifi/wifi.h"
 #include "VideoCommon/VideoUnit.h"
 
 enum class CPUCoreType {
@@ -38,6 +37,7 @@ public:
     void SetCPUCoreType(CPUCoreType type);
     std::string GetCPUCoreType();
 
+    VideoUnit video_unit;
     ARM7Memory arm7_memory;
     ARM9Memory arm9_memory;
 
@@ -52,8 +52,6 @@ public:
     SPU spu;
     RTC rtc;
     MathsUnit maths_unit;
-    Wifi wifi;
-    VideoUnit video_unit;
 
     CPUCore cpu_core[2];
 

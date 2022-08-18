@@ -75,6 +75,14 @@ void Renderer3D::reset() {
     w_buffering = false;
 }
 
+void Renderer3D::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u32>(
+        0x04000060,
+        mmio.direct_read<u32>(&disp3dcnt),
+        mmio.direct_write<u32>(&disp3dcnt)
+    );
+}
+
 u8 Renderer3D::read_byte(u32 addr) {
     switch (addr) {
     default:

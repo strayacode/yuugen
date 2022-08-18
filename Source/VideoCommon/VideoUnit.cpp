@@ -44,20 +44,26 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
     if (arch == Arch::ARMv5) {
         mmio.register_mmio<u16>(
             0x04000004,
-            mmio.direct_read<u16>(&dispstat[1], 0xffbf),
-            mmio.direct_write<u16>(&dispstat[1], 0xffbf)
+            mmio.direct_read<u16>(&dispstat[1], 0xFFBF),
+            mmio.direct_write<u16>(&dispstat[1], 0xFFBF)
         );
 
         mmio.register_mmio<u32>(
             0x04000004,
             mmio.invalid_read<u32>(),
             mmio.complex_write<u32>([this](u32, u32 data) {
-                dispstat[1] = data & 0xffbf;
+                dispstat[1] = data & 0xFFBF;
                 vcount = data >> 16;
             })
         );
 
-        int masks[9] = {0x9b, 0x9b, 0x9f, 0x9f, 0x87, 0x9f, 0x9f, 0x83, 0x83};
+        mmio.register_mmio<u32>(
+            0x04000064,
+            mmio.invalid_read<u32>(),
+            mmio.direct_write<u32>(&dispcapcnt)
+        );
+
+        int masks[9] = {0x9B, 0x9B, 0x9F, 0x9F, 0x87, 0x9F, 0x9F, 0x83, 0x83};
 
         for (int i = 0; i < 10; i++) {
             if (i == 7) continue;
@@ -85,23 +91,34 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
         );
 
         mmio.register_mmio<u16>(
+            0x04000248,
+            mmio.invalid_read<u16>(),
+            mmio.complex_write<u16>([this](u32, u16 data) {
+                vram.update_vram_mapping(VRAM::Bank::H, data & 0xFF);
+                vram.update_vram_mapping(VRAM::Bank::I, data >> 8);
+            })
+        );
+
+        mmio.register_mmio<u16>(
             0x04000304,
-            mmio.direct_read<u16>(&powcnt1, 0x820f),
-            mmio.direct_write<u16>(&powcnt1, 0x820f)
+            mmio.direct_read<u16>(&powcnt1, 0x820F),
+            mmio.direct_write<u16>(&powcnt1, 0x820F)
         );
 
         mmio.register_mmio<u32>(
             0x04000304,
             mmio.invalid_read<u32>(),
-            mmio.direct_write<u32, u16>(&powcnt1, 0x820f)
+            mmio.direct_write<u32, u16>(&powcnt1, 0x820F)
         );
 
         renderer_2d[0].build_mmio(mmio);
+        renderer_2d[1].build_mmio(mmio);
+        renderer_3d.build_mmio(mmio);
     } else {
         mmio.register_mmio<u16>(
             0x04000004,
-            mmio.direct_read<u16>(&dispstat[0], 0xffbf),
-            mmio.direct_write<u16>(&dispstat[0], 0xffbf)
+            mmio.direct_read<u16>(&dispstat[0], 0xFFBF),
+            mmio.direct_write<u16>(&dispstat[0], 0xFFBF)
         );
 
         mmio.register_mmio<u8>(

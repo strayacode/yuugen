@@ -48,9 +48,7 @@ public:
     void WriteAUXSPICNT(u16 data);
     void WriteAUXSPIDATA(u8 data);
 
-    void ReceiveCommand(u8 command, int command_index);
-    u8 ReadCommand(int command_index);
-    u32 ReadData();
+    u32 read_data();
     void StartTransfer();
     void InterpretEncryptedCommand();
     void InterpretDecryptedCommand();
@@ -65,13 +63,15 @@ public:
     u64 Encrypt64(u64 data);
     void InitKeyCode(u32 level, u32 modulo);
     void ApplyKeyCode(u32 modulo);
+
+    // TODO: put this into a common file
     u32 BSwap32(u32 data);
 
     u32 transfer_count;
     u32 transfer_size;
     u32 rom_position;
     u32 romctrl;
-    u16 AUXSPICNT;
+    u16 auxspicnt;
     u16 AUXSPIDATA;
     u8 command_buffer[8];
     u64 command;

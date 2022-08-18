@@ -5,7 +5,7 @@ Cartridge::Cartridge(System& system) : system(system) {}
 
 void Cartridge::reset() {
     romctrl = 0;
-    AUXSPICNT = 0;
+    auxspicnt = 0;
     AUXSPIDATA = 0;
     transfer_count = 0;
     transfer_size = 0;
@@ -23,6 +23,14 @@ void Cartridge::reset() {
 
 void Cartridge::build_mmio(MMIO& mmio, Arch arch) {
     if (arch == Arch::ARMv5) {
+        mmio.register_mmio<u8>(
+            0x040001a1,
+            mmio.invalid_read<u8>(),
+            mmio.complex_write<u8>([this](u32, u8 data) {
+                auxspicnt = (auxspicnt & 0xFF) | (data << 8);
+            })
+        );
+
         mmio.register_mmio<u32>(
             0x040001a4,
             mmio.direct_read<u32>(&romctrl),
@@ -30,6 +38,14 @@ void Cartridge::build_mmio(MMIO& mmio, Arch arch) {
                 write_romctrl(data);
             })
         );
+
+        for (int i = 0; i < 8; i++) {
+            mmio.register_mmio<u8>(
+                0x040001a8 + i,
+                mmio.direct_read<u8>(&command_buffer[i]),
+                mmio.direct_write<u8>(&command_buffer[i])
+            );
+        }  
     }
 }
 
@@ -76,9 +92,9 @@ void Cartridge::StartTransfer() {
         romctrl &= ~(1 << 23);
         romctrl &= ~(1 << 31);
 
-        // send a transfer ready interrupt if enabled in AUXSPICNT
+        // send a transfer ready interrupt if enabled in auxspicnt
         // TODO: are we meant to send interrupt to both cpus?
-        if (AUXSPICNT & (1 << 14)) {
+        if (auxspicnt & (1 << 14)) {
             system.cpu_core[0].SendInterrupt(InterruptType::CartridgeTransfer);
             system.cpu_core[1].SendInterrupt(InterruptType::CartridgeTransfer);
         }
@@ -149,7 +165,7 @@ void Cartridge::InterpretDecryptedCommand() {
     }
 }
 
-u32 Cartridge::ReadData() {
+u32 Cartridge::read_data() {
     u32 data = 0xFFFFFFFF;
 
     if (!(romctrl & (1 << 23))) {
@@ -200,8 +216,8 @@ u32 Cartridge::ReadData() {
         romctrl &= ~(1 << 23);
         romctrl &= ~(1 << 31);
 
-        // send a transfer ready interrupt if enabled in AUXSPICNT
-        if (AUXSPICNT & (1 << 14)) {
+        // send a transfer ready interrupt if enabled in auxspicnt
+        if (auxspicnt & (1 << 14)) {
             system.cpu_core[0].SendInterrupt(InterruptType::CartridgeTransfer);
             system.cpu_core[1].SendInterrupt(InterruptType::CartridgeTransfer);
         }
@@ -218,7 +234,7 @@ u32 Cartridge::ReadData() {
 }
 
 void Cartridge::WriteAUXSPICNT(u16 data) {
-    AUXSPICNT = data;
+    auxspicnt = data;
 }
 
 void Cartridge::WriteAUXSPIDATA(u8 data) {
@@ -237,21 +253,13 @@ void Cartridge::WriteAUXSPIDATA(u8 data) {
         AUXSPIDATA = loader.backup->Transfer(data, loader.backup_write_count);
     }
     
-    if (AUXSPICNT & (1 << 6)) {
+    if (auxspicnt & (1 << 6)) {
         // keep selected
         loader.backup_write_count++;
     } else {
         // deselect
         loader.backup_write_count = 0;
     }
-}
-
-void Cartridge::ReceiveCommand(u8 command, int command_index) {
-    command_buffer[command_index] = command;
-}
-
-u8 Cartridge::ReadCommand(int command_index) {
-    return command_buffer[command_index];
 }
 
 void Cartridge::DirectBoot() {

@@ -153,6 +153,8 @@ T ARM9Memory::slow_read(u32 addr) {
         if constexpr (sizeof(T) == 4) {
             if (addr == 0x04100000) {
                 return system.ipc.read_ipcfiforecv(1);
+            } else if (addr == 0x04100010) {
+                return system.cartridge.read_data();
             }
         }
 

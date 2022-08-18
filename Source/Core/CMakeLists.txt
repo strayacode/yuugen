@@ -29,7 +29,6 @@ add_library(core
     Hardware/SPU.h Hardware/SPU.cpp
     Hardware/RTC.h Hardware/RTC.cpp
     Hardware/MathsUnit.h Hardware/MathsUnit.cpp
-    Hardware/wifi/wifi.h Hardware/wifi/wifi.cpp
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")

@@ -20,7 +20,7 @@ struct Event {
 
 class Scheduler {
 public:
-    void Reset();
+    void reset();
     void Tick(int cycles);
     void ResetCurrentTime();
     void RunEvents();

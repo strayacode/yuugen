@@ -51,195 +51,205 @@ void Renderer2D::reset() {
 }
 
 void Renderer2D::build_mmio(MMIO& mmio) {
-    for (int i = 0; i < 2; i++) {
-        u32 offset = 0x1000 * i;
+    u32 offset = engine == Engine::A ? 0 : 0x1000;
 
-        mmio.register_mmio<u32>(
-            0x04000000 + offset,
-            mmio.direct_read<u32>(&dispcnt),
-            mmio.direct_write<u32>(&dispcnt)
-        );
+    mmio.register_mmio<u32>(
+        0x04000000 + offset,
+        mmio.direct_read<u32>(&dispcnt),
+        mmio.direct_write<u32>(&dispcnt)
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000008 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgcnt[0] = data & 0xffff;
-                bgcnt[1] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000008 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgcnt[0] = data & 0xffff;
+            bgcnt[1] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x0400000c + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgcnt[2] = data & 0xffff;
-                bgcnt[3] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x0400000C + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgcnt[2] = data & 0xffff;
+            bgcnt[3] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000010 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bghofs[0] = data & 0xffff;
-                bgvofs[0] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000010 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bghofs[0] = data & 0xffff;
+            bgvofs[0] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000014 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bghofs[1] = data & 0xffff;
-                bgvofs[1] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000014 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bghofs[1] = data & 0xffff;
+            bgvofs[1] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000018 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bghofs[2] = data & 0xffff;
-                bgvofs[2] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000018 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bghofs[2] = data & 0xffff;
+            bgvofs[2] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x0400001c + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bghofs[3] = data & 0xffff;
-                bgvofs[3] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x0400001C + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bghofs[3] = data & 0xffff;
+            bgvofs[3] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000020 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgpa[0] = data & 0xffff;
-                bgpb[0] = data >> 16;
-            })
-        );
-        
-        mmio.register_mmio<u32>(
-            0x04000024 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgpc[0] = data & 0xffff;
-                bgpd[0] = data >> 16;
-            })
-        );
-        
-        mmio.register_mmio<u32>(
-            0x04000028 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgx[0] = data;
-                internal_x[0] = data;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000020 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgpa[0] = data & 0xffff;
+            bgpb[0] = data >> 16;
+        })
+    );
+    
+    mmio.register_mmio<u32>(
+        0x04000024 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgpc[0] = data & 0xffff;
+            bgpd[0] = data >> 16;
+        })
+    );
+    
+    mmio.register_mmio<u32>(
+        0x04000028 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgx[0] = data;
+            internal_x[0] = data;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x0400002c + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgy[0] = data;
-                internal_y[0] = data;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x0400002C + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgy[0] = data;
+            internal_y[0] = data;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000030 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgpa[1] = data & 0xffff;
-                bgpb[1] = data >> 16;
-            })
-        );
-        
-        mmio.register_mmio<u32>(
-            0x04000034 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgpc[1] = data & 0xffff;
-                bgpd[1] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000030 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgpa[1] = data & 0xffff;
+            bgpb[1] = data >> 16;
+        })
+    );
+    
+    mmio.register_mmio<u32>(
+        0x04000034 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgpc[1] = data & 0xffff;
+            bgpd[1] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000038 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgx[1] = data;
-                internal_x[1] = data;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000038 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgx[1] = data;
+            internal_x[1] = data;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x0400003c + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bgy[1] = data;
-                internal_y[1] = data;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x0400003C + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bgy[1] = data;
+            internal_y[1] = data;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000040 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                winh[0] = data & 0xffff;
-                winh[1] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000040 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            winh[0] = data & 0xffff;
+            winh[1] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000044 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                winv[0] = data & 0xffff;
-                winv[1] = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000044 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            winv[0] = data & 0xffff;
+            winv[1] = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000048 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                winin = data & 0xffff;
-                winout = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000048 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            winin = data & 0xffff;
+            winout = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x0400004c + offset,
-            mmio.invalid_read<u32>(),
-            mmio.direct_write<u32>(&mosaic)
-        );
+    mmio.register_mmio<u32>(
+        0x0400004C + offset,
+        mmio.invalid_read<u32>(),
+        mmio.direct_write<u32>(&mosaic)
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000050 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.complex_write<u32>([this](u32, u32 data) {
-                bldcnt = data & 0xffff;
-                bldalpha = data >> 16;
-            })
-        );
+    mmio.register_mmio<u32>(
+        0x04000050 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            bldcnt = data & 0xffff;
+            bldalpha = data >> 16;
+        })
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000054 + offset,
-            mmio.invalid_read<u32>(),
-            mmio.direct_write<u32>(&bldy)
-        );
+    mmio.register_mmio<u32>(
+        0x04000054 + offset,
+        mmio.invalid_read<u32>(),
+        mmio.direct_write<u32>(&bldy)
+    );
 
-        mmio.register_mmio<u32>(
-            0x04000058 + offset,
-            mmio.stub_read<u32>(),
-            mmio.stub_write<u32>()
-        );
-    }
+    mmio.register_mmio<u32>(
+        0x04000058 + offset,
+        mmio.stub_read<u32>(),
+        mmio.stub_write<u32>()
+    );
+
+    mmio.register_mmio<u32>(
+        0x0400005C + offset,
+        mmio.stub_read<u32>(),
+        mmio.stub_write<u32>()
+    );
+
+    mmio.register_mmio<u16>(
+        0x0400006C + offset,
+        mmio.invalid_read<u16>(),
+        mmio.direct_write<u16>(&master_bright)
+    );
 }
 
 u8 Renderer2D::read_byte(u32 addr) {
@@ -411,97 +421,5 @@ void Renderer2D::write_half(u32 addr, u16 data) {
         break;
     default:
         log_fatal("Renderer2D: half write %08x = %04x", addr, data);
-    }
-}
-
-void Renderer2D::write_word(u32 addr, u32 data) {
-    addr &= 0xFFF;
-
-    switch (addr) {
-    case 0x00:
-        dispcnt = data;
-        break;
-    case 0x08:
-        bgcnt[0] = data & 0xFFFF;
-        bgcnt[1] = data >> 16;
-        break;
-    case 0x0C:
-        bgcnt[2] = data & 0xFFFF;
-        bgcnt[3] = data >> 16;
-        break;
-    case 0x10:
-        bghofs[0] = data & 0xFFFF;
-        bgvofs[0] = data >> 16;
-        break;
-    case 0x14:
-        bghofs[1] = data & 0xFFFF;
-        bgvofs[1] = data >> 16;
-        break;
-    case 0x18:
-        bghofs[2] = data & 0xFFFF;
-        bgvofs[2] = data >> 16;
-        break;
-    case 0x1C:
-        bghofs[3] = data & 0xFFFF;
-        bgvofs[3] = data >> 16;
-        break;
-    case 0x20:
-        bgpa[0] = data & 0xFFFF;
-        bgpb[0] = data >> 16;
-        break;
-    case 0x24:
-        bgpc[0] = data & 0xFFFF;
-        bgpd[0] = data >> 16;
-        break;
-    case 0x28:
-        bgx[0] = data;
-        internal_x[0] = data;
-        break;
-    case 0x2C:
-        bgy[0] = data;
-        internal_y[0] = data;
-        break;
-    case 0x30:
-        bgpa[1] = data & 0xFFFF;
-        bgpb[1] = data >> 16;
-        break;
-    case 0x34:
-        bgpc[1] = data & 0xFFFF;
-        bgpd[1] = data >> 16;
-        break;
-    case 0x38:
-        bgx[1] = data;
-        internal_x[1] = data;
-        break;
-    case 0x3C:
-        bgy[1] = data;
-        internal_y[1] = data;
-        break;
-    case 0x40:
-        winh[0] = data & 0xFFFF;
-        winh[1] = data >> 16;
-        break;
-    case 0x44:
-        winv[0] = data & 0xFFFF;
-        winv[1] = data >> 16;
-        break;
-    case 0x48:
-        winin = data & 0xFFFF;
-        winout = data >> 16;
-        break;
-    case 0x4C:
-        mosaic = data;
-        break;
-    case 0x50:
-        bldcnt = data & 0xFFFF;
-        bldalpha = data >> 16;
-        break;
-    case 0x54:
-        bldy = data;
-        break;
-    case 0x58: case 0x5C:
-        break;
-    default:
-        log_fatal("Renderer2D: word write %08x = %08x", addr, data);
     }
 }

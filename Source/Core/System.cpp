@@ -2,11 +2,11 @@
 #include "Core/System.h"
 
 System::System() 
-    : arm7_memory(*this), arm9_memory(*this), cartridge(*this),
+    :video_unit(*this), arm7_memory(*this), arm9_memory(*this), cartridge(*this),
     spi(*this), cp15(*this), 
     dma {DMA(*this, 0), DMA(*this, 1)}, ipc(*this), 
     timers {Timers(*this, 0), Timers(*this, 1)},
-    spu(*this), video_unit(*this),
+    spu(*this),
     cpu_core {CPUCore(arm7_memory, Arch::ARMv4, nullptr), CPUCore(arm9_memory, Arch::ARMv5, &cp15)} {
     SetCPUCoreType(CPUCoreType::Interpreter);
 }
@@ -16,7 +16,7 @@ void System::Reset() {
     
     arm7_memory.reset();
     arm9_memory.reset();
-    scheduler.Reset();
+    scheduler.reset();
     cartridge.reset();
     cartridge.LoadRom(rom_path);
     video_unit.reset();
@@ -29,7 +29,6 @@ void System::Reset() {
     input.reset();
     ipc.reset();
     maths_unit.reset();
-    wifi.Reset();
     spu.reset();
     rtc.reset();
 
