@@ -1,9 +1,9 @@
 #include <ctime>
 #include "Common/Log.h"
-#include "Core/Hardware/rtc/rtc.h"
+#include "Core/Hardware/RTC.h"
 
-void RTC::Reset() {
-    RTC_REG = 0;
+void RTC::reset() {
+    rtc_register = 0;
 
     write_count = 0;
     command = 0;
@@ -15,35 +15,41 @@ void RTC::Reset() {
     }
 }
 
-u8 RTC::ReadRTC() {
-    return RTC_REG;
+void RTC::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u16>(
+        0x04000138,
+        mmio.direct_read<u16, u8>(&rtc_register),
+        mmio.complex_write<u16>([this](u32, u16 data) {
+            write_rtc(data);
+        })
+    );
 }
 
-void RTC::WriteRTC(u8 data) {
+void RTC::write_rtc(u8 data) {
     // if the cs pinout (bit 2) is set from low to high, then a transfer is started
     if (data & (1 << 2)) {
         // if the sck pinout (bit 1) is set from high to low, then a bit transfer is started
-        if ((RTC_REG & (1 << 1)) && (!(data & (1 << 1)))) {
+        if ((rtc_register & (1 << 1)) && (!(data & (1 << 1)))) {
             if (write_count < 8) {
                 // we still need to set up the command byte for the transfer
                 command |= (data & 0x1) << write_count;
             } else {
                 if (data & (1 << 4)) {
                     // in this case the data direction is write
-                    InterpretWriteCommand(data);
+                    interpret_write_command(data);
                 } else {
                     // in this case the data direction is read
                     // preserve the io bit as we don't want to accidentally overwrite it with the new byte data
                     data &= ~1;
 
                     // update data when a command is executed
-                    data = InterpretReadCommand(data);
+                    data = interpret_read_command(data);
                 }
             }
             write_count++;
         } else if (!(data & (1 << 4))) {
             // if no bit transfer happens but we the data direction is read, then preserve the previous io bit
-            data = (data & ~1) | (RTC_REG & 0x1);
+            data = (data & ~1) | (rtc_register & 0x1);
         }
     } else {
         // otherwise the cs pinout was set from high to low, indicating a transfer ended
@@ -51,10 +57,10 @@ void RTC::WriteRTC(u8 data) {
         write_count = 0;
         command = 0;
     }
-    RTC_REG = data;
+    rtc_register = data;
 }
 
-u8 RTC::InterpretReadCommand(u8 data) {
+u8 RTC::interpret_read_command(u8 data) {
     // extract the specific command from the command byte
     u8 command_type = (command >> 4) & 0x7;
     switch (command_type) {
@@ -76,21 +82,21 @@ u8 RTC::InterpretReadCommand(u8 data) {
         current_time->tm_mon++;
         
         // update date time
-        date_time[0] = ConvertToBCD(current_time->tm_year);
-        date_time[1] = ConvertToBCD(current_time->tm_mon);
-        date_time[2] = ConvertToBCD(current_time->tm_mday);
-        date_time[3] = ConvertToBCD(current_time->tm_wday);
+        date_time[0] = convert_to_bcd(current_time->tm_year);
+        date_time[1] = convert_to_bcd(current_time->tm_mon);
+        date_time[2] = convert_to_bcd(current_time->tm_mday);
+        date_time[3] = convert_to_bcd(current_time->tm_wday);
 
         if (status_register1 & (1 << 1)) {
             // 24 hour mode
-            date_time[4] = ConvertToBCD(current_time->tm_hour);
+            date_time[4] = convert_to_bcd(current_time->tm_hour);
         } else {
             // 12 hour mode
-            date_time[4] = ConvertToBCD(current_time->tm_hour % 12);
+            date_time[4] = convert_to_bcd(current_time->tm_hour % 12);
         }
 
-        date_time[5] = ConvertToBCD(current_time->tm_min);
-        date_time[6] = ConvertToBCD(current_time->tm_sec);
+        date_time[5] = convert_to_bcd(current_time->tm_min);
+        date_time[6] = convert_to_bcd(current_time->tm_sec);
         
         // update bit 0
         // since each date time value is a byte, we can only use a different parameter byte every 8 write counts
@@ -112,14 +118,14 @@ u8 RTC::InterpretReadCommand(u8 data) {
         std::tm* current_time = std::localtime(&time);
         if (status_register1 & (1 << 1)) {
             // 24 hour mode
-            date_time[0] = ConvertToBCD(current_time->tm_hour);
+            date_time[0] = convert_to_bcd(current_time->tm_hour);
         } else {
             // 12 hour mode
-            date_time[0] = ConvertToBCD(current_time->tm_hour % 12);
+            date_time[0] = convert_to_bcd(current_time->tm_hour % 12);
         }
 
-        date_time[1] = ConvertToBCD(current_time->tm_min);
-        date_time[2] = ConvertToBCD(current_time->tm_sec);
+        date_time[1] = convert_to_bcd(current_time->tm_min);
+        date_time[2] = convert_to_bcd(current_time->tm_sec);
 
          // update bit 0
         // since each date time value is a byte, we can only use a different parameter byte every 8 write counts
@@ -133,7 +139,7 @@ u8 RTC::InterpretReadCommand(u8 data) {
     return data;
 }
 
-void RTC::InterpretWriteCommand(u8 data) {
+void RTC::interpret_write_command(u8 data) {
     // extract the specific command from the command byte
     u8 command_type = (command >> 4) & 0x7;
     switch (command_type) {
@@ -159,7 +165,7 @@ void RTC::InterpretWriteCommand(u8 data) {
     }
 }
 
-u8 RTC::ConvertToBCD(u8 data) {
+u8 RTC::convert_to_bcd(u8 data) {
     // the tens digit will be stored in the top 4 bits and the ones digit in the bottom 4 bits
     u8 result = ((data / 10) << 4) | ((data % 10));
 

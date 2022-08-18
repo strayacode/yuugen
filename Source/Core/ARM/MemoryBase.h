@@ -69,7 +69,7 @@ public:
         u64 bios_size = file.tellg();
 
         if (bios_size > size) {
-            log_fatal("[MemoryBase] bios has incorrect size! expected: %08x actual: %08x", size, bios_size);
+            log_fatal("[MemoryBase] bios has incorrect size! expected: %08x actual: %08llx", size, bios_size);
         }
 
         file.seekg(0, std::ios::beg);

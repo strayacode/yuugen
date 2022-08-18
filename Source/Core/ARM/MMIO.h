@@ -87,7 +87,8 @@ public:
     template <typename T, typename BackingT = T>
     WriteCallback<T> direct_write(BackingT* mmio, u32 mask = 0xFFFFFFFF) {
         return [mmio, mask](u32, T data) {
-            *mmio = data & mask;
+            // TODO: work out if this is the correct way to handle this
+            *mmio = (*mmio & ~mask) | (data & mask);
         };
     }
 

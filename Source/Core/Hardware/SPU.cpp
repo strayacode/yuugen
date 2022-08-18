@@ -1,7 +1,7 @@
 #include <algorithm>
 #include "Common/Log.h"
 #include "Common/Settings.h"
-#include "Core/Hardware/spu/spu.h"
+#include "Core/Hardware/SPU.h"
 #include "Core/Core.h"
 
 SPU::SPU(System& system) : system(system) {}
@@ -37,10 +37,30 @@ void SPU::reset() {
 }
 
 void SPU::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u8>(
+        0x04000500,
+        mmio.complex_read<u8>([this](u32) {
+            return soundcnt;
+        }),
+        mmio.complex_write<u8>([this](u32, u8 data) {
+            soundcnt = (soundcnt & ~0xff) | data;
+        })
+    );
+
+    mmio.register_mmio<u8>(
+        0x04000501,
+        mmio.complex_read<u8>([this](u32) {
+            return soundcnt >> 8;
+        }),
+        mmio.complex_write<u8>([this](u32, u8 data) {
+            soundcnt = (soundcnt & 0xff) | (data << 8);
+        })
+    );
+
     mmio.register_mmio<u16>(
         0x04000504,
-        mmio.direct_read<u16>(&soundbias, 0x3FF),
-        mmio.direct_write<u16>(&soundbias, 0x3FF)
+        mmio.direct_read<u16>(&soundbias, 0x3ff),
+        mmio.direct_write<u16>(&soundbias, 0x3ff)
     );
 }
 

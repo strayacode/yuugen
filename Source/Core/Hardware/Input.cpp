@@ -14,6 +14,12 @@ void Input::build_mmio(MMIO& mmio) {
         mmio.direct_read<u16>(&keyinput, 0x9ff),
         mmio.direct_write<u16>(&keyinput, 0x9ff)
     );
+
+    mmio.register_mmio<u16>(
+        0x04000136,
+        mmio.direct_read<u16>(&extkeyin),
+        mmio.invalid_write<u16>()
+    );
 }
 
 void Input::HandleInput(int button, bool pressed) {

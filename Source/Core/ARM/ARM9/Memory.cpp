@@ -224,9 +224,16 @@ void ARM9Memory::build_mmio() {
         mmio.direct_write<u8>(&system.postflg9, 0x3)
     );
 
+    mmio.register_mmio<u16>(
+        0x04000300,
+        mmio.direct_read<u16>(&system.postflg9, 0x3),
+        mmio.direct_write<u16>(&system.postflg9, 0x3)
+    );
+
     system.video_unit.build_mmio(mmio, Arch::ARMv5);
     system.ipc.build_mmio(mmio, Arch::ARMv5);
     system.dma[1].build_mmio(mmio, Arch::ARMv5);
+    system.cartridge.build_mmio(mmio, Arch::ARMv5);
     system.timers[1].build_mmio(mmio);
     system.cpu_core[1].build_mmio(mmio);
     system.input.build_mmio(mmio);

@@ -4,15 +4,15 @@
 #include "Core/ARM/ARM7/Memory.h"
 #include "Core/ARM/ARM9/Memory.h"
 #include "Core/Scheduler.h"
-#include "Core/Hardware/Cartridge/cartridge.h"
-#include "Core/Hardware/spi/spi.h"
+#include "Core/Hardware/Cartridge/Cartridge.h"
+#include "Core/Hardware/SPI.h"
 #include "Core/Hardware/cp15/cp15.h"
 #include "Core/Hardware/DMA.h"
 #include "Core/Hardware/Input.h"
 #include "Core/Hardware/IPC.h"
 #include "Core/Hardware/Timers.h"
-#include "Core/Hardware/spu/spu.h"
-#include "Core/Hardware/rtc/rtc.h"
+#include "Core/Hardware/SPU.h"
+#include "Core/Hardware/RTC.h"
 #include "Core/Hardware/MathsUnit.h"
 #include "Core/Hardware/wifi/wifi.h"
 #include "VideoCommon/VideoUnit.h"
@@ -30,8 +30,10 @@ public:
     void FirmwareBoot();
     void SetGamePath(std::string path);
     void RunFrame();
-    void WriteHALTCNT(u8 data);
+
+    void write_haltcnt(u8 data);
     void write_wramcnt(u8 data);
+    
     bool CartridgeAccessRights();
     void SetCPUCoreType(CPUCoreType type);
     std::string GetCPUCoreType();
@@ -59,8 +61,8 @@ public:
     u8 shared_wram[0x8000] = {};
 
     u8 wramcnt;
-    u8 POWCNT2;
-    u16 RCNT;
+    u8 powcnt2;
+    u16 rcnt;
     u8 HALTCNT;
     u16 exmemcnt;
     u8 postflg7;

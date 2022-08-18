@@ -1,10 +1,10 @@
-#include "Core/Hardware/Cartridge/cartridge.h"
+#include "Core/Hardware/Cartridge/Cartridge.h"
 #include "Core/Core.h"
 
 Cartridge::Cartridge(System& system) : system(system) {}
 
-void Cartridge::Reset() {
-    ROMCTRL = 0;
+void Cartridge::reset() {
+    romctrl = 0;
     AUXSPICNT = 0;
     AUXSPIDATA = 0;
     transfer_count = 0;
@@ -21,22 +21,34 @@ void Cartridge::Reset() {
     }
 }
 
+void Cartridge::build_mmio(MMIO& mmio, Arch arch) {
+    if (arch == Arch::ARMv5) {
+        mmio.register_mmio<u32>(
+            0x040001a4,
+            mmio.direct_read<u32>(&romctrl),
+            mmio.complex_write<u32>([this](u32, u32 data) {
+                write_romctrl(data);
+            })
+        );
+    }
+}
+
 void Cartridge::LoadRom(std::string rom_path) {
     loader.Load(rom_path);
 }
 
-void Cartridge::WriteROMCTRL(u32 data) {
-    u32 old_romctrl = ROMCTRL;
-    ROMCTRL = data;
+void Cartridge::write_romctrl(u32 data) {
+    u32 old_romctrl = romctrl;
+    romctrl = data;
     // setup a cartridge transfer if cartridge enable (bit 31) goes from 0 to 1
-    if (!(old_romctrl & (1 << 31)) && (ROMCTRL & (1 << 31))) {
+    if (!(old_romctrl & (1 << 31)) && (romctrl & (1 << 31))) {
         StartTransfer();
     }
 }
 
 void Cartridge::StartTransfer() {
-    // setup the transfer size as indicated by the recently set ROMCTRL
-    u8 block_size = (ROMCTRL >> 24) & 0x7;
+    // setup the transfer size as indicated by the recently set romctrl
+    u8 block_size = (romctrl >> 24) & 0x7;
 
     if (block_size == 0) {
         transfer_size = 0;
@@ -61,8 +73,8 @@ void Cartridge::StartTransfer() {
     if (transfer_size == 0) {
         // we won't need to read any data from the rom
         // indicate that the block is ready (empty block) and that no word is ready for reading yet
-        ROMCTRL &= ~(1 << 23);
-        ROMCTRL &= ~(1 << 31);
+        romctrl &= ~(1 << 23);
+        romctrl &= ~(1 << 31);
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         // TODO: are we meant to send interrupt to both cpus?
@@ -76,7 +88,7 @@ void Cartridge::StartTransfer() {
         transfer_count = 0;
 
         // indicate that a word is ready
-        ROMCTRL |= (1 << 23);
+        romctrl |= (1 << 23);
 
         // start a dma transfer to read from rom
         if (system.CartridgeAccessRights()) {
@@ -140,7 +152,7 @@ void Cartridge::InterpretDecryptedCommand() {
 u32 Cartridge::ReadData() {
     u32 data = 0xFFFFFFFF;
 
-    if (!(ROMCTRL & (1 << 23))) {
+    if (!(romctrl & (1 << 23))) {
         // if we are still busy with getting a word then just return 0xFFFFFFFF
         return data;
     }
@@ -185,8 +197,8 @@ u32 Cartridge::ReadData() {
 
     if (transfer_count == transfer_size) {
         // finished with the cartridge transfer so indicate that a block is ready and that a word is not ready
-        ROMCTRL &= ~(1 << 23);
-        ROMCTRL &= ~(1 << 31);
+        romctrl &= ~(1 << 23);
+        romctrl &= ~(1 << 31);
 
         // send a transfer ready interrupt if enabled in AUXSPICNT
         if (AUXSPICNT & (1 << 14)) {

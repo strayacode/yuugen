@@ -2,18 +2,18 @@
 
 #include <vector>
 #include "Common/Types.h"
+#include "Core/ARM/MMIO.h"
 
 class System;
 
 class SPI {
 public:
     SPI(System& system);
-    void Reset();
-    void WriteSPICNT(u16 data);
-    void WriteSPIDATA(u8 data);
-    auto ReadSPIDATA() -> u8;
 
-    void Transfer(u8 data);
+    void reset();
+    void build_mmio(MMIO& mmio);
+
+    void transfer(u8 data);
     void Deselect();
     void FirmwareTransfer(u8 data);
     void TouchscreenTransfer(u8 data);
@@ -24,8 +24,8 @@ public:
     void LoadFirmware();
     void LoadCalibrationPoints();
 
-    u16 SPICNT;
-    u8 SPIDATA;
+    u16 spicnt;
+    u8 spidata;
 
     // stores the command we need to interpret
     // this is only changed when writecount is 0 (e.g. when the chip gets deselected so thus the command is done)

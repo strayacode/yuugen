@@ -1,41 +1,42 @@
 #include <fstream>
 #include <iterator>
 #include "Common/Log.h"
-#include "Core/Hardware/spi/spi.h"
+#include "Core/Hardware/SPI.h"
 #include "Core/Core.h"
 
-SPI::SPI(System& system) : system(system) {
-    
-}
+SPI::SPI(System& system) : system(system) {}
 
-void SPI::Reset() {
+void SPI::reset() {
     firmware.clear();
 
     LoadFirmware();
     LoadCalibrationPoints();
 
-    SPICNT = 0;
-    SPIDATA = 0;
+    spicnt = 0;
+    spidata = 0;
 
     write_enable_latch = false;
     write_in_progress = false;
 }
 
-void SPI::WriteSPICNT(u16 data) {
-    SPICNT = (SPICNT & ~0xCF03) | (data & 0xCF03);
-}
+void SPI::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u16>(
+        0x040001c0,
+        mmio.direct_read<u16>(&spicnt),
+        mmio.direct_write<u16>(&spicnt, 0xcf03)
+    );
 
-auto SPI::ReadSPIDATA() -> u8 {
-    return SPIDATA;
-}
-
-void SPI::WriteSPIDATA(u8 data) {
-    // check if spi is enabled
-    if (SPICNT & (1 << 15)) {
-        Transfer(data);
-    } else {
-        SPIDATA = 0;
-    }
+    mmio.register_mmio<u16>(
+        0x040001c2,
+        mmio.direct_read<u16, u8>(&spidata),
+        mmio.complex_write<u16>([this](u32, u16 data) {
+            if (spicnt & (1 << 15)) {
+                transfer(data);
+            } else {
+                spidata = 0;
+            }
+        })
+    );
 }
 
 void SPI::DirectBoot() {
@@ -95,7 +96,7 @@ void SPI::LoadCalibrationPoints() {
     log_debug("[SPI] Touchscreen calibration points loaded successfully");
 }
 
-void SPI::Transfer(u8 data) {
+void SPI::transfer(u8 data) {
     if (write_count == 0) {
         // set the new command to the spidata
         command = data;
@@ -103,15 +104,15 @@ void SPI::Transfer(u8 data) {
         address = 0;
         // reset the spidata so that when we read a byte from firmware into it
         // we just have a fresh spidata
-        SPIDATA = 0;
+        spidata = 0;
     } else {
         // if the command has been set on the previous spidata write then we can now interpret the command
         // check device select to see which device is used for transfer
-        u8 device_select = (SPICNT >> 8) & 0x3;
+        u8 device_select = (spicnt >> 8) & 0x3;
         switch (device_select) {
         case 0:
             // just set spidata to 0
-            SPIDATA = 0;
+            spidata = 0;
             break;
         case 1:
             FirmwareTransfer(data);
@@ -125,7 +126,7 @@ void SPI::Transfer(u8 data) {
     }
 
     // keep device selected or deselect it depending on bit 11 of spicnt
-    if (SPICNT & (1 << 11)) {
+    if (spicnt & (1 << 11)) {
         // continue with the command
         write_count++;
     } else {
@@ -134,13 +135,13 @@ void SPI::Transfer(u8 data) {
     }
 
     // if enabled trigger a transfer finished irq
-    if (SPICNT & (1 << 14)) {
+    if (spicnt & (1 << 14)) {
         system.cpu_core[0].SendInterrupt(InterruptType::SPI);
     }
 }
 
 void SPI::FirmwareTransfer(u8 data) {
-    if (SPICNT & (1 << 10)) {
+    if (spicnt & (1 << 10)) {
         log_fatal("[SPI] Implement support for bugged 16-bit transfer size");
     }
 
@@ -162,15 +163,15 @@ void SPI::FirmwareTransfer(u8 data) {
             if (address >= 0x40000) {
                 log_fatal("undefined firmware address");
             }
-            SPIDATA = firmware[address];
+            spidata = firmware[address];
 
-            // increment the address after reading a byte into SPIDATA
-            address += (SPICNT & (1 << 10)) ? 2 : 1;
+            // increment the address after reading a byte into spidata
+            address += (spicnt & (1 << 10)) ? 2 : 1;
         }
         break;
     case 0x05:
         // read status register
-        SPIDATA = (write_in_progress ? 1 : 0) | (write_enable_latch ? (1 << 1) : 0);
+        spidata = (write_in_progress ? 1 : 0) | (write_enable_latch ? (1 << 1) : 0);
         break;
     default:
         log_fatal("implement support for firmware command %02x", command);
@@ -204,11 +205,11 @@ void SPI::TouchscreenTransfer(u8 data) {
                 output = touch_x << 3;
                 break;
             default:
-                SPIDATA = 0;
+                spidata = 0;
                 break;
             }
         }
     }
 
-    SPIDATA = value;
+    spidata = value;
 }

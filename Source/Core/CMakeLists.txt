@@ -11,14 +11,14 @@ add_library(core
     ARM/Disassembler/arm.cpp ARM/Disassembler/thumb.cpp
     ARM/Decoder/Decoder.h
     
-    Hardware/Cartridge/cartridge.h Hardware/Cartridge/cartridge.cpp
+    Hardware/Cartridge/Cartridge.h Hardware/Cartridge/Cartridge.cpp
     Hardware/Cartridge/loader_base.h 
     Hardware/Cartridge/nds_loader.h Hardware/Cartridge/nds_loader.cpp
     Hardware/Cartridge/backup/flash/flash.h Hardware/Cartridge/backup/flash/flash.cpp
     Hardware/Cartridge/backup/eeprom/eeprom.h Hardware/Cartridge/backup/eeprom/eeprom.cpp
     Hardware/Cartridge/backup/no_backup/no_backup.h Hardware/Cartridge/backup/no_backup/no_backup.cpp
     Hardware/Cartridge/backup/generic_backup.h Hardware/Cartridge/save_database.h
-    Hardware/spi/spi.h Hardware/spi/spi.cpp
+    Hardware/SPI.h Hardware/SPI.cpp
     Scheduler.h Scheduler.cpp
     Hardware/cp15/cp15.h Hardware/cp15/cp15.cpp
 
@@ -26,8 +26,8 @@ add_library(core
     Hardware/Input.h Hardware/Input.cpp
     Hardware/IPC.h Hardware/IPC.cpp
     Hardware/Timers.h Hardware/Timers.cpp
-    Hardware/spu/spu.h Hardware/spu/spu.cpp
-    Hardware/rtc/rtc.h Hardware/rtc/rtc.cpp
+    Hardware/SPU.h Hardware/SPU.cpp
+    Hardware/RTC.h Hardware/RTC.cpp
     Hardware/MathsUnit.h Hardware/MathsUnit.cpp
     Hardware/wifi/wifi.h Hardware/wifi/wifi.cpp
 )

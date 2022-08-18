@@ -1,10 +1,11 @@
 #pragma once
 
+#include <string>
+#include <string.h>
 #include "Common/Types.h"
 #include "Common/Log.h"
 #include "Core/Hardware/Cartridge/nds_loader.h"
-#include <string.h>
-#include <string>
+#include "Core/ARM/MMIO.h"
 
 // TODO: change this to an enum class
 enum CartridgeCommand {
@@ -34,13 +35,16 @@ class System;
 class Cartridge {
 public:
     Cartridge(System& system);
-    void Reset();
+
+    void reset();
+    void build_mmio(MMIO& mmio, Arch arch);
+
     void LoadRom(std::string rom_path);
 
     void DirectBoot();
     void FirmwareBoot();
 
-    void WriteROMCTRL(u32 data);
+    void write_romctrl(u32 data);
     void WriteAUXSPICNT(u16 data);
     void WriteAUXSPIDATA(u8 data);
 
@@ -66,7 +70,7 @@ public:
     u32 transfer_count;
     u32 transfer_size;
     u32 rom_position;
-    u32 ROMCTRL;
+    u32 romctrl;
     u16 AUXSPICNT;
     u16 AUXSPIDATA;
     u8 command_buffer[8];

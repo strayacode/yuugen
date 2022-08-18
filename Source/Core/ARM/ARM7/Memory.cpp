@@ -97,6 +97,10 @@ T ARM7Memory::slow_read(u32 addr) {
                 return system.ipc.read_ipcfiforecv(0);
             }
         }
+
+        if (Common::in_range(0x04800000, 0x04900000, addr)) {
+            return 0;
+        }
         
         log_warn("[ARM7Memory] unhandled mmio read %08x", addr);
 
@@ -124,7 +128,17 @@ void ARM7Memory::slow_write(u32 addr, T data) {
         // ignore all bios writes
         return;
     case 0x04:
-        mmio.write<T>(addr, data);
+        if (addr < 0x04000520) [[likely]] {
+            mmio.write<T>(addr, data);
+            return;
+        }
+
+        if (Common::in_range(0x04800000, 0x04900000, addr)) {
+            return;
+        }
+
+        log_warn("[ARM7Memory] unhandled mmio write %08x = %08x", addr, data);
+
         return;
     case 0x06:
         system.video_unit.vram.write_arm7<T>(addr, data);
@@ -137,6 +151,18 @@ void ARM7Memory::slow_write(u32 addr, T data) {
 }
 
 void ARM7Memory::build_mmio() {
+    mmio.register_mmio<u16>(
+        0x04000134,
+        mmio.direct_read<u16>(&system.rcnt),
+        mmio.direct_write<u16>(&system.rcnt)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000206,
+        mmio.invalid_read<u16>(),
+        mmio.stub_write<u16>()
+    );
+
     mmio.register_mmio<u8>(
         0x04000241,
         mmio.direct_read<u8>(&system.wramcnt),
@@ -149,12 +175,35 @@ void ARM7Memory::build_mmio() {
         mmio.direct_write<u8>(&system.postflg9, 0x1)
     );
 
+    mmio.register_mmio<u8>(
+        0x04000301,
+        mmio.invalid_read<u8>(),
+        mmio.complex_write<u8>([this](u32, u8 data) {
+            system.write_haltcnt(data);
+        })
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000300,
+        mmio.direct_read<u16>(&system.postflg9, 0x1),
+        mmio.direct_write<u16>(&system.postflg9, 0x1)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000304,
+        mmio.direct_read<u16>(&system.powcnt2, 0x3),
+        mmio.direct_write<u16>(&system.powcnt2, 0x3)
+    );
+
     system.video_unit.build_mmio(mmio, Arch::ARMv4);
     system.ipc.build_mmio(mmio, Arch::ARMv4);
     system.dma[0].build_mmio(mmio, Arch::ARMv4);
+    system.timers[0].build_mmio(mmio);
     system.spu.build_mmio(mmio);
     system.cpu_core[0].build_mmio(mmio);
     system.input.build_mmio(mmio);
+    system.spi.build_mmio(mmio);
+    system.rtc.build_mmio(mmio);
 
     log_debug("[ARM7Memory] mmio handlers registered");
 }
