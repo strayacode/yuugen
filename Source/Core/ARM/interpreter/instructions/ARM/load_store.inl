@@ -234,7 +234,7 @@ void arm_halfword_data_transfer() {
         break;
     case 0x3:
         if (load) {
-            regs.r[rd] = (s32)(s16)ReadHalf(address);
+            regs.r[rd] = sign_extend(ReadHalf(address), 16);
         } else if (arch == Arch::ARMv5) {
             // cpu locks up when rd is odd
             if (rd & 0x1) {

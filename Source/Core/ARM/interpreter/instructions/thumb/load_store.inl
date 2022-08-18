@@ -6,8 +6,8 @@ void thumb_load_pc() {
 
     // bit 1 of pc is always set to 0
     u32 address = (regs.r[15] & ~0x2) + immediate;
+
     regs.r[rd] = ReadWord(address);
-    
     regs.r[15] += 2;
 }
 
@@ -26,13 +26,13 @@ void thumb_load_store() {
             WriteHalf(address, regs.r[rd]);
             break;
         case 0x1:
-            regs.r[rd] = (s32)(s8)ReadByte(address);
+            regs.r[rd] = sign_extend(ReadByte(address), 8);
             break;
         case 0x2:
             regs.r[rd] = ReadHalf(address);
             break;
         case 0x3:
-            regs.r[rd] = (s32)(s16)ReadHalf(address);
+            regs.r[rd] = sign_extend(ReadHalf(address), 16);
             break;
         }    
     } else {
@@ -201,11 +201,11 @@ void thumb_load_store_multiple() {
         // if arm9 writeback if rn is the only register or not the last register in rlist
         // if arm7 then no writeback if rn in rlist
         if (arch == Arch::ARMv5) {
-            if (((instruction & 0xFF) == (unsigned int)(1 << rn)) || !(((instruction & 0xFF) >> rn) == 1)) {
+            if (((instruction & 0xFF) == (u32)(1 << rn)) || !(((instruction & 0xFF) >> rn) == 1)) {
                 regs.r[rn] = address;
             }
         } else {
-            if (!(instruction & (unsigned int)(1 << rn))) {
+            if (!(instruction & (u32)(1 << rn))) {
                 regs.r[rn] = address;
             }
         }

@@ -154,6 +154,7 @@ void ARM7Memory::build_mmio() {
     system.dma[0].build_mmio(mmio, Arch::ARMv4);
     system.spu.build_mmio(mmio);
     system.cpu_core[0].build_mmio(mmio);
+    system.input.build_mmio(mmio);
 
     log_debug("[ARM7Memory] mmio handlers registered");
 }

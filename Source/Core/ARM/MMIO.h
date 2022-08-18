@@ -18,7 +18,6 @@ public:
 
     template <typename T>
     T read(u32 addr) {
-        printf("[%s] mmio read %08x\n", get_arch(arch).c_str(), addr);
         auto handler = get_read_handler<T>(addr);
 
         if (!handler.mapped) {
@@ -30,7 +29,6 @@ public:
 
     template <typename T>
     void write(u32 addr, T data) {
-        printf("[%s] mmio write %08x = %08x\n", get_arch(arch).c_str(), addr, data);
         auto handler = get_write_handler<T>(addr);
 
         if (!handler.mapped) {
@@ -66,6 +64,13 @@ public:
         };
     }
 
+    template <typename T>
+    ReadCallback<T> stub_read() {
+        return [](u32) -> T {
+            return 0;
+        };
+    }
+
     // just fallthrough
     template <typename T>
     ReadCallback<T> complex_read(ReadCallback<T> callback) {
@@ -84,6 +89,11 @@ public:
         return [mmio, mask](u32, T data) {
             *mmio = data & mask;
         };
+    }
+
+    template <typename T>
+    WriteCallback<T> stub_write() {
+        return [](u32, T) {};
     }
 
     // just fallthrough
