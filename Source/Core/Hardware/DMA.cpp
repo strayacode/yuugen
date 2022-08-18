@@ -1,5 +1,5 @@
 #include <string>
-#include "Core/Hardware/dma/dma.h"
+#include "Core/Hardware/DMA.h"
 #include "Core/Core.h"
 
 DMA::DMA(System& system, int arch) : system(system), arch(arch) {}
@@ -7,7 +7,7 @@ DMA::DMA(System& system, int arch) : system(system), arch(arch) {}
 void DMA::reset() {
     for (int i = 0; i < 4; i++) {
         memset(&channel[i], 0, sizeof(DMAChannel));
-        DMAFILL[i] = 0;
+        dmafill[i] = 0;
     }
 
     for (int i = 0; i < 4; i++) {
@@ -59,6 +59,16 @@ void DMA::build_mmio(MMIO& mmio, Arch arch) {
                 write_dma_control(i, data);
             })
         );
+    }
+
+    if (arch == Arch::ARMv5) {
+        for (int i = 0; i < 4; i++) {
+            mmio.register_mmio<u32>(
+                0x040000e0 + (4 * i),
+                mmio.direct_read<u32>(&dmafill[i]),
+                mmio.direct_write<u32>(&dmafill[i])
+            );
+        }
     }
 }
 

@@ -22,8 +22,8 @@ void System::Reset() {
     video_unit.reset();
     dma[0].reset();
     dma[1].reset();
-    timers[0].Reset();
-    timers[1].Reset();
+    timers[0].reset();
+    timers[1].reset();
     cp15.Reset();
     spi.Reset();
     input.reset();

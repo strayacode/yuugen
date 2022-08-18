@@ -1,11 +1,11 @@
 #include "Common/format.h"
 #include "Common/Log.h"
-#include "Core/Hardware/timers/timers.h"
+#include "Core/Hardware/Timers.h"
 #include "Core/Core.h"
 
 Timers::Timers(System& system, int arch) : system(system), arch(arch) {}
 
-void Timers::Reset() {
+void Timers::reset() {
     for (int i = 0; i < 4; i++) {
         timer[i].control.data = 0;
         timer[i].counter = 0;
@@ -17,6 +17,32 @@ void Timers::Reset() {
         overflow_event[i] = system.scheduler.RegisterEvent(format("[ARM%d] Timer Overflow %d", arch == 1 ? 9 : 7, i), [this, i]() {
             overflow(i);
         });
+    }
+}
+
+void Timers::build_mmio(MMIO& mmio) {
+    int channel_size = 4;
+
+    for (int i = 0; i < 4; i++) {
+        mmio.register_mmio<u16>(
+            0x04000100 + (channel_size * i),
+            mmio.complex_read<u16>([this, i](u32) {
+                return read_counter(i);
+            }),
+            mmio.complex_write<u16>([this, i](u32, u16 data) {
+                write_counter(i, data);
+            })
+        );
+
+        mmio.register_mmio<u16>(
+            0x04000102 + (channel_size * i),
+            mmio.complex_read<u16>([this, i](u32) {
+                return read_control(i);
+            }),
+            mmio.complex_write<u16>([this, i](u32, u16 data) {
+                write_control(i, data);
+            })
+        );
     }
 }
 

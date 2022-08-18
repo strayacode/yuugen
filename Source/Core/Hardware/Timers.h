@@ -2,6 +2,7 @@
 
 #include "Common/Types.h"
 #include "Core/Scheduler.h"
+#include "Core/ARM/MMIO.h"
 
 class System;
 
@@ -9,7 +10,9 @@ class System;
 class Timers {
 public:
     Timers(System& system, int arch);
-    void Reset();
+    
+    void reset();
+    void build_mmio(MMIO& mmio);
 
     void write_counter(int channel, u16 data);
     void write_control(int channel, u16 data);

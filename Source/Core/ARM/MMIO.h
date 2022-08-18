@@ -18,6 +18,7 @@ public:
 
     template <typename T>
     T read(u32 addr) {
+        printf("[%s] mmio read %08x\n", get_arch(arch).c_str(), addr);
         auto handler = get_read_handler<T>(addr);
 
         if (!handler.mapped) {
@@ -29,6 +30,7 @@ public:
 
     template <typename T>
     void write(u32 addr, T data) {
+        printf("[%s] mmio write %08x = %08x\n", get_arch(arch).c_str(), addr, data);
         auto handler = get_write_handler<T>(addr);
 
         if (!handler.mapped) {

@@ -22,10 +22,10 @@ add_library(core
     Scheduler.h Scheduler.cpp
     Hardware/cp15/cp15.h Hardware/cp15/cp15.cpp
 
-    Hardware/dma/dma.h Hardware/dma/dma.cpp
+    Hardware/DMA.h Hardware/DMA.cpp
     Hardware/Input.h Hardware/Input.cpp
     Hardware/IPC.h Hardware/IPC.cpp
-    Hardware/timers/timers.h Hardware/timers/timers.cpp
+    Hardware/Timers.h Hardware/Timers.cpp
     Hardware/spu/spu.h Hardware/spu/spu.cpp
     Hardware/rtc/rtc.h Hardware/rtc/rtc.cpp
     Hardware/MathsUnit.h Hardware/MathsUnit.cpp

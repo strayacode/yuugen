@@ -37,7 +37,7 @@ public:
         u32 dmacnt;
     } channel[4];
 
-    u32 DMAFILL[4];
+    u32 dmafill[4];
 
     static constexpr int adjust_lut[2][4] = {
         {2, -2, 0, 2},

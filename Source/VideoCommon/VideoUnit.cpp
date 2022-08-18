@@ -48,6 +48,15 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
             mmio.direct_write<u16>(&dispstat[1], 0xffbf)
         );
 
+        mmio.register_mmio<u32>(
+            0x04000004,
+            mmio.invalid_read<u32>(),
+            mmio.complex_write<u32>([this](u32, u32 data) {
+                dispstat[1] = data & 0xffbf;
+                vcount = data >> 16;
+            })
+        );
+
         int masks[9] = {0x9b, 0x9b, 0x9f, 0x9f, 0x87, 0x9f, 0x9f, 0x83, 0x83};
 
         for (int i = 0; i < 10; i++) {
@@ -89,6 +98,12 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
 
         renderer_2d[0].build_mmio(mmio);
     } else {
+        mmio.register_mmio<u16>(
+            0x04000004,
+            mmio.direct_read<u16>(&dispstat[0], 0xffbf),
+            mmio.direct_write<u16>(&dispstat[0], 0xffbf)
+        );
+
         mmio.register_mmio<u8>(
             0x04000240,
             mmio.direct_read<u8>(&vram.vramstat),
