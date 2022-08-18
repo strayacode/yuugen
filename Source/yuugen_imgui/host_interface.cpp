@@ -266,28 +266,12 @@ void HostInterface::render_menu_bar() {
         }
 
         if (ImGui::BeginMenu("Debug")) {
-            if (ImGui::MenuItem("Cartridge", nullptr, cartridge_window)) { 
-                cartridge_window = !cartridge_window; 
+            if (ImGui::BeginMenu("NDS", false)) {
+
             }
 
-            if (ImGui::MenuItem("ARM7", nullptr, arm7_window)) { 
-                arm7_window = !arm7_window; 
-            }
-
-            if (ImGui::MenuItem("ARM9", nullptr, arm9_window)) { 
-                arm9_window = !arm9_window; 
-            }
-
-            if (ImGui::MenuItem("Scheduler", nullptr, scheduler_window)) { 
-                scheduler_window = !scheduler_window; 
-            }
-
-            if (ImGui::MenuItem("DMA", nullptr, dma_window)) { 
-                dma_window = !dma_window; 
-            }
-
-            if (ImGui::MenuItem("Demo Window", nullptr, demo_window)) { 
-                demo_window = !demo_window; 
+            if (ImGui::MenuItem("Demo Window", nullptr, &demo_window)) {
+                ImGui::ShowDemoWindow();
             }
 
             ImGui::EndMenu();
@@ -360,6 +344,7 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] = ImVec4(0.210f, 0.210f, 0.210f, 1.000f);
 }
 
 void HostInterface::CartridgeWindow() {
