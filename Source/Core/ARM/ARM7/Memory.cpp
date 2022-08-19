@@ -95,6 +95,8 @@ T ARM7Memory::slow_read(u32 addr) {
         if constexpr (sizeof(T) == 4) {
             if (addr == 0x04100000) {
                 return system.ipc.read_ipcfiforecv(0);
+            } else if (addr == 0x04100010) {
+                return system.cartridge.read_data();
             }
         }
 
@@ -128,7 +130,7 @@ void ARM7Memory::slow_write(u32 addr, T data) {
         // ignore all bios writes
         return;
     case 0x04:
-        if (addr < 0x04000520) [[likely]] {
+        if (addr < 0x04001084) [[likely]] {
             mmio.write<T>(addr, data);
             return;
         }
@@ -151,6 +153,24 @@ void ARM7Memory::slow_write(u32 addr, T data) {
 }
 
 void ARM7Memory::build_mmio() {
+    mmio.register_mmio<u32>(
+        0x04000120,
+        mmio.stub_read<u32>(),
+        mmio.stub_write<u32>()
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000128,
+        mmio.direct_read<u16>(&system.siocnt),
+        mmio.direct_write<u16>(&system.siocnt)
+    );
+
+    mmio.register_mmio<u32>(
+        0x04000128,
+        mmio.direct_read<u32, u16>(&system.siocnt),
+        mmio.direct_write<u32, u16>(&system.siocnt)
+    );
+
     mmio.register_mmio<u16>(
         0x04000134,
         mmio.direct_read<u16>(&system.rcnt),
@@ -195,9 +215,22 @@ void ARM7Memory::build_mmio() {
         mmio.direct_write<u16>(&system.powcnt2, 0x3)
     );
 
+    mmio.register_mmio<u32>(
+        0x04000308,
+        mmio.invalid_read<u32>(),
+        mmio.direct_write<u32>(&system.biosprot)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04001080,
+        mmio.stub_read<u16>(),
+        mmio.stub_write<u16>()
+    );
+
     system.video_unit.build_mmio(mmio, Arch::ARMv4);
     system.ipc.build_mmio(mmio, Arch::ARMv4);
     system.dma[0].build_mmio(mmio, Arch::ARMv4);
+    system.cartridge.build_mmio(mmio, Arch::ARMv4);
     system.timers[0].build_mmio(mmio);
     system.spu.build_mmio(mmio);
     system.cpu_core[0].build_mmio(mmio);

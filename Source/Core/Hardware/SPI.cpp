@@ -20,14 +20,59 @@ void SPI::reset() {
 }
 
 void SPI::build_mmio(MMIO& mmio) {
-    mmio.register_mmio<u16>(
-        0x040001c0,
-        mmio.direct_read<u16>(&spicnt),
-        mmio.direct_write<u16>(&spicnt, 0xcf03)
+    // TODO: handle key2 encryption later
+    mmio.register_mmio<u32>(
+        0x040001B0,
+        mmio.stub_read<u32>(),
+        mmio.stub_write<u32>()
+    );
+
+    mmio.register_mmio<u32>(
+        0x040001B4,
+        mmio.stub_read<u32>(),
+        mmio.stub_write<u32>()
     );
 
     mmio.register_mmio<u16>(
-        0x040001c2,
+        0x040001B8,
+        mmio.stub_read<u16>(),
+        mmio.stub_write<u16>()
+    );
+
+    mmio.register_mmio<u16>(
+        0x040001BA,
+        mmio.stub_read<u16>(),
+        mmio.stub_write<u16>()
+    );
+
+    mmio.register_mmio<u16>(
+        0x040001C0,
+        mmio.direct_read<u16>(&spicnt),
+        mmio.direct_write<u16>(&spicnt, 0xCF03)
+    );
+
+    mmio.register_mmio<u32>(
+        0x040001C0,
+        mmio.complex_read<u32>([this](u32) {
+            return (spidata << 16) | spicnt;
+        }),
+        mmio.invalid_write<u32>()
+    );
+
+    mmio.register_mmio<u8>(
+        0x040001C2,
+        mmio.direct_read<u8>(&spidata),
+        mmio.complex_write<u8>([this](u32, u8 data) {
+            if (spicnt & (1 << 15)) {
+                transfer(data);
+            } else {
+                spidata = 0;
+            }
+        })
+    );
+
+    mmio.register_mmio<u16>(
+        0x040001C2,
         mmio.direct_read<u16, u8>(&spidata),
         mmio.complex_write<u16>([this](u32, u16 data) {
             if (spicnt & (1 << 15)) {

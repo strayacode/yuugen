@@ -146,7 +146,7 @@ T ARM9Memory::slow_read(u32 addr) {
         break;
     case 0x04:
         // TODO: handle this more nicely later
-        if (addr < 0x04001080) [[likely]] {
+        if (addr < 0x04001084) [[likely]] {
             return mmio.read<T>(addr);
         }
         

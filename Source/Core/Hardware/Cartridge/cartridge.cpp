@@ -6,7 +6,7 @@ Cartridge::Cartridge(System& system) : system(system) {}
 void Cartridge::reset() {
     romctrl = 0;
     auxspicnt = 0;
-    AUXSPIDATA = 0;
+    auxspidata = 0;
     transfer_count = 0;
     transfer_size = 0;
     rom_position = 0;
@@ -23,29 +23,52 @@ void Cartridge::reset() {
 
 void Cartridge::build_mmio(MMIO& mmio, Arch arch) {
     if (arch == Arch::ARMv5) {
-        mmio.register_mmio<u8>(
-            0x040001a1,
-            mmio.invalid_read<u8>(),
-            mmio.complex_write<u8>([this](u32, u8 data) {
-                auxspicnt = (auxspicnt & 0xFF) | (data << 8);
-            })
-        );
-
         mmio.register_mmio<u32>(
-            0x040001a4,
-            mmio.direct_read<u32>(&romctrl),
+            0x040001A0,
+            mmio.invalid_read<u32>(),
             mmio.complex_write<u32>([this](u32, u32 data) {
-                write_romctrl(data);
+                auxspicnt = data & 0xFFFF;
+                write_auxspidata(data >> 16);
             })
+        );  
+    } else {
+        mmio.register_mmio<u16>(
+            0x040001A0,
+            mmio.direct_read<u16>(&auxspicnt),
+            mmio.direct_write<u16>(&auxspicnt)
         );
 
-        for (int i = 0; i < 8; i++) {
-            mmio.register_mmio<u8>(
-                0x040001a8 + i,
-                mmio.direct_read<u8>(&command_buffer[i]),
-                mmio.direct_write<u8>(&command_buffer[i])
-            );
-        }  
+        mmio.register_mmio<u16>(
+            0x040001A2,
+            mmio.direct_read<u16>(&auxspidata),
+            mmio.complex_write<u16>([this](u32, u16 data) {
+                write_auxspidata(data);
+            })
+        );
+    }
+
+    mmio.register_mmio<u8>(
+        0x040001A1,
+        mmio.invalid_read<u8>(),
+        mmio.complex_write<u8>([this](u32, u8 data) {
+            auxspicnt = (auxspicnt & 0xFF) | (data << 8);
+        })
+    );
+
+    mmio.register_mmio<u32>(
+        0x040001A4,
+        mmio.direct_read<u32>(&romctrl),
+        mmio.complex_write<u32>([this](u32, u32 data) {
+            write_romctrl(data);
+        })
+    );
+
+    for (int i = 0; i < 8; i++) {
+        mmio.register_mmio<u8>(
+            0x040001A8 + i,
+            mmio.direct_read<u8>(&command_buffer[i]),
+            mmio.direct_write<u8>(&command_buffer[i])
+        );
     }
 }
 
@@ -233,11 +256,7 @@ u32 Cartridge::read_data() {
     return data;
 }
 
-void Cartridge::WriteAUXSPICNT(u16 data) {
-    auxspicnt = data;
-}
-
-void Cartridge::WriteAUXSPIDATA(u8 data) {
+void Cartridge::write_auxspidata(u8 data) {
     // don't set if no backup exists
     if (loader.GetBackupSize() == 0) {
         return;
@@ -247,10 +266,10 @@ void Cartridge::WriteAUXSPIDATA(u8 data) {
         // interpret a new command
         loader.backup->ReceiveCommand(data);
 
-        AUXSPIDATA = 0;
+        auxspidata = 0;
     } else {
         // TODO: make this cleaner later
-        AUXSPIDATA = loader.backup->Transfer(data, loader.backup_write_count);
+        auxspidata = loader.backup->Transfer(data, loader.backup_write_count);
     }
     
     if (auxspicnt & (1 << 6)) {

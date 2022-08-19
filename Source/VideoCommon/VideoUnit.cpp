@@ -111,6 +111,30 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
             mmio.direct_write<u32, u16>(&powcnt1, 0x820F)
         );
 
+        mmio.register_mmio<u32>(
+            0x04001004,
+            mmio.invalid_read<u32>(),
+            mmio.stub_write<u32>()
+        );
+
+        mmio.register_mmio<u32>(
+            0x04001060,
+            mmio.invalid_read<u32>(),
+            mmio.stub_write<u32>()
+        );
+
+        mmio.register_mmio<u32>(
+            0x04001064,
+            mmio.invalid_read<u32>(),
+            mmio.stub_write<u32>()
+        );
+
+        mmio.register_mmio<u32>(
+            0x04001068,
+            mmio.invalid_read<u32>(),
+            mmio.stub_write<u32>()
+        );
+
         renderer_2d[0].build_mmio(mmio);
         renderer_2d[1].build_mmio(mmio);
         renderer_3d.build_mmio(mmio);

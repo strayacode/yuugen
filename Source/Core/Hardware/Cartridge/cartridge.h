@@ -45,8 +45,7 @@ public:
     void FirmwareBoot();
 
     void write_romctrl(u32 data);
-    void WriteAUXSPICNT(u16 data);
-    void WriteAUXSPIDATA(u8 data);
+    void write_auxspidata(u8 data);
 
     u32 read_data();
     void StartTransfer();
@@ -72,7 +71,7 @@ public:
     u32 rom_position;
     u32 romctrl;
     u16 auxspicnt;
-    u16 AUXSPIDATA;
+    u16 auxspidata;
     u8 command_buffer[8];
     u64 command;
     System& system;

@@ -65,8 +65,8 @@ public:
     u16 exmemcnt;
     u8 postflg7;
     u8 postflg9;
-    u32 BIOSPROT;
-    u16 SIOCNT;
+    u32 biosprot;
+    u16 siocnt;
 
     std::string rom_path;
     CPUCoreType core_type;

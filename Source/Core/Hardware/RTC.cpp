@@ -16,6 +16,14 @@ void RTC::reset() {
 }
 
 void RTC::build_mmio(MMIO& mmio) {
+    mmio.register_mmio<u8>(
+        0x04000138,
+        mmio.direct_read<u8>(&rtc_register),
+        mmio.complex_write<u8>([this](u32, u8 data) {
+            write_rtc(data);
+        })
+    );
+
     mmio.register_mmio<u16>(
         0x04000138,
         mmio.direct_read<u16, u8>(&rtc_register),

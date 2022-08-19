@@ -20,11 +20,9 @@ public:
     void reset();
     void build_mmio(MMIO& mmio);
 
-    u8 read_byte(u32 addr);
     u32 read_word(u32 addr);
 
     void write_byte(u32 addr, u8 data);
-    void write_half(u32 addr, u16 data);
     void write_word(u32 addr, u32 data);
 
     void write_soundcnt(int index, u32 data);

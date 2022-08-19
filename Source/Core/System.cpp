@@ -42,8 +42,8 @@ void System::Reset() {
     exmemcnt = 0;
     postflg7 = 0;
     postflg9 = 0;
-    BIOSPROT = 0;
-    SIOCNT = 0;
+    biosprot = 0;
+    siocnt = 0;
 
     cpu_core[0].Reset();
     cpu_core[1].Reset();

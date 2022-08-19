@@ -32,7 +32,7 @@ public:
         auto handler = get_write_handler<T>(addr);
 
         if (!handler.mapped) {
-            log_fatal("[MMIO] handle unmapped %s %lu-bit write %08x", get_arch(arch).c_str(), sizeof(T) * 8, addr);
+            log_fatal("[MMIO] handle unmapped %s %lu-bit write %08x = %08x", get_arch(arch).c_str(), sizeof(T) * 8, addr, data);
         }
 
         handler.callback(addr, data);
@@ -142,7 +142,7 @@ private:
         }
     }
 
-    static constexpr int NUM_MMIOS = 0x1080;
+    static constexpr int NUM_MMIOS = 0x1084;
 
     template <typename T>
     using ReadHandlers = std::array<ReadHandler<T>, NUM_MMIOS / sizeof(T)>;

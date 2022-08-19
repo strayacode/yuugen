@@ -34,6 +34,15 @@ void Timers::build_mmio(MMIO& mmio) {
             })
         );
 
+        mmio.register_mmio<u32>(
+            0x04000100 + (channel_size * i),
+            mmio.invalid_read<u32>(),
+            mmio.complex_write<u32>([this, i](u32, u32 data) {
+                write_counter(i, data);
+                write_control(i, data >> 16);
+            })
+        );
+
         mmio.register_mmio<u16>(
             0x04000102 + (channel_size * i),
             mmio.complex_read<u16>([this, i](u32) {
