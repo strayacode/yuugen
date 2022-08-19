@@ -40,6 +40,14 @@ void SPU::build_mmio(MMIO& mmio) {
     int channel_size = 16;
 
     for (int i = 0; i < 16; i++) {
+        mmio.register_mmio<u8>(
+            0x04000400 + (channel_size * i),
+            mmio.invalid_read<u8>(),
+            mmio.complex_write<u8>([this, i](u32, u8 data) {
+                channel[i].soundcnt = (channel[i].soundcnt & ~0x000000FF) | data;
+            })
+        );
+
         mmio.register_mmio<u16>(
             0x04000400 + (channel_size * i),
             mmio.invalid_read<u16>(),
@@ -193,24 +201,6 @@ u32 SPU::read_word(u32 addr) {
         return channel[index].soundcnt;
     default:
         log_fatal("[SPU] Unhandled address %08x", addr & 0xF);
-    }
-}
-
-void SPU::write_byte(u32 addr, u8 data) {
-    u8 index = (addr >> 4) & 0xF;
-    
-    switch (addr & 0xF) {
-    case 0x0:
-        channel[index].soundcnt = (channel[index].soundcnt & ~0x000000FF) | data;
-        break;
-    case 0x2:
-        channel[index].soundcnt = (channel[index].soundcnt & ~0x00FF0000) | (data << 16);
-        break;
-    case 0x3:
-        write_soundcnt(index, (channel[index].soundcnt & ~0xFF000000) | (data << 24));
-        break;
-    default:
-        log_fatal("part of sound channel %02x not handled yet", addr & 0xF);
     }
 }
 
