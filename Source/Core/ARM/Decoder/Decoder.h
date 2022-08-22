@@ -6,7 +6,7 @@
 #include <vector>
 #include <assert.h>
 #include "Common/Types.h"
-#include "Common/arithmetic.h"
+#include "Common/Bits.h"
 
 // general idea:
 // . have an arm and thumb lut where each item contains function pointer to the function we want to call
@@ -48,7 +48,7 @@ public:
         register_arm("000100100111", &D::arm_breakpoint);
         
         std::stable_sort(arm_list.begin(), arm_list.end(), [](InstructionInfo a, InstructionInfo b) {
-            return bit_count(a.mask) > bit_count(b.mask);
+            return Common::bit_count(a.mask) > Common::bit_count(b.mask);
         });
 
         for (u64 i = 0; i < arm_lut.size(); i++) {
@@ -84,7 +84,7 @@ public:
         register_thumb("10110000xx", &D::thumb_adjust_stack_pointer);
         
         std::stable_sort(thumb_list.begin(), thumb_list.end(), [](InstructionInfo a, InstructionInfo b) {
-            return bit_count(a.mask) > bit_count(b.mask);
+            return Common::bit_count(a.mask) > Common::bit_count(b.mask);
         });
 
         for (u64 i = 0; i < thumb_lut.size(); i++) {
@@ -124,7 +124,7 @@ public:
     template <typename T>
     T create_pattern_mask(std::string pattern) {
         T result = 0;
-        int n = num_bits<T>();
+        int n = Common::num_bits<T>();
         int i = 0;
 
         while (pattern[i] != '\0') {
@@ -143,7 +143,7 @@ public:
     template <typename T>
     T create_pattern_value(std::string pattern) {
         T result = 0;
-        int n = num_bits<T>();
+        int n = Common::num_bits<T>();
         int i = 0;
 
         while (pattern[i] != '\0') {
@@ -157,11 +157,6 @@ public:
         result >>= n - i;
 
         return result;
-    }
-
-    template <typename T>
-    int num_bits() {
-        return sizeof(T) * 8;
     }
 
 private:

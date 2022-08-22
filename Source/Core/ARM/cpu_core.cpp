@@ -195,7 +195,7 @@ u32 CPUCore::ReadWordRotate(u32 addr) {
 
     if (addr & 0x3) {
         int shift_amount = (addr & 0x3) * 8;
-        return_value = rotate_right(return_value, shift_amount);
+        return_value = Common::rotate_right(return_value, shift_amount);
     }
 
     return return_value;

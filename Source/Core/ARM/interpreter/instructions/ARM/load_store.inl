@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Common/arithmetic.h"
-
 void arm_psr_transfer() {
     const bool opcode = (instruction >> 21) & 0x1;
     const bool spsr = (instruction >> 22) & 0x1;
@@ -30,7 +28,7 @@ void arm_psr_transfer() {
             u32 immediate = instruction & 0xFF;
             u8 rotate_amount = ((instruction >> 8) & 0xF) << 1;
 
-            value = rotate_right(immediate, rotate_amount);
+            value = Common::rotate_right(immediate, rotate_amount);
         } else {
             value = regs.r[rm];
         }
@@ -162,7 +160,7 @@ u32 ARMGetShiftedRegisterSingleDataTransfer() {
             op2 = (GetConditionFlag(C_FLAG) << 31) | (regs.r[rm] >> 1);
         } else {
             // rotate right
-            op2 = rotate_right(regs.r[rm], shift_amount);
+            op2 = Common::rotate_right(regs.r[rm], shift_amount);
         }
         break;
     }
@@ -212,7 +210,7 @@ void arm_halfword_data_transfer() {
         break;
     case 0x2:
         if (load) {
-            regs.r[rd] = sign_extend(ReadByte(address), 8);
+            regs.r[rd] = Common::sign_extend<u32, 8>(ReadByte(address));
         } else if (arch == Arch::ARMv5) {
             // cpu locks up when rd is odd
             if (rd & 0x1) {
@@ -234,7 +232,7 @@ void arm_halfword_data_transfer() {
         break;
     case 0x3:
         if (load) {
-            regs.r[rd] = sign_extend(ReadHalf(address), 16);
+            regs.r[rd] = Common::sign_extend<u32, 16>(ReadHalf(address));
         } else if (arch == Arch::ARMv5) {
             // cpu locks up when rd is odd
             if (rd & 0x1) {

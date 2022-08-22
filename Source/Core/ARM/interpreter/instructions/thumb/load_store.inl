@@ -26,13 +26,13 @@ void thumb_load_store() {
             WriteHalf(address, regs.r[rd]);
             break;
         case 0x1:
-            regs.r[rd] = sign_extend(ReadByte(address), 8);
+            regs.r[rd] = Common::sign_extend<u32, 8>(ReadByte(address));
             break;
         case 0x2:
             regs.r[rd] = ReadHalf(address);
             break;
         case 0x3:
-            regs.r[rd] = sign_extend(ReadHalf(address), 16);
+            regs.r[rd] = Common::sign_extend<u32, 16>(ReadHalf(address));
             break;
         }    
     } else {
@@ -48,7 +48,7 @@ void thumb_load_store() {
 
             if (address & 0x3) {
                 int shift_amount = (address & 0x3) * 8;
-                regs.r[rd] = (regs.r[rd] << (32 - shift_amount)) | (regs.r[rd] >> shift_amount);
+                regs.r[rd] = Common::rotate_right(regs.r[rd], shift_amount);
             }
 
             break;

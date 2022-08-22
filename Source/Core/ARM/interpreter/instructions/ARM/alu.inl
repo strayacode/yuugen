@@ -16,7 +16,7 @@ void arm_data_processing() {
         u32 value = instruction & 0xFF;
         u8 shift_amount = ((instruction >> 8) & 0xF) << 1;
 
-        op2 = rotate_right(value, shift_amount);
+        op2 = Common::rotate_right(value, shift_amount);
         
         // carry flag is only affected if we have a non-zero shift amount
         if (shift_amount != 0) {
@@ -407,7 +407,7 @@ u32 ROR(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm) {
             result = (carry_flag << 31) | (op1 >> 1);
             carry_flag = op1 & 0x1;
         } else {
-            result = rotate_right(op1, shift_amount);
+            result = Common::rotate_right(op1, shift_amount);
             carry_flag = (op1 >> (shift_amount - 1)) & 0x1;
         }
     } else {
@@ -417,7 +417,7 @@ u32 ROR(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm) {
             result = op1;
             carry_flag = op1 >> 31;
         } else {
-            result = rotate_right(op1, shift_amount & 0x1F);
+            result = Common::rotate_right(op1, shift_amount & 0x1F);
             carry_flag = (op1 >> ((shift_amount & 0x1F) - 1)) & 0x1;
         }
     }
@@ -498,7 +498,7 @@ void arm_single_data_swap() {
 
     if (address & 0x3) {
         int shift_amount = (address & 0x3) * 8;
-        data = rotate_right(data, shift_amount);
+        data = Common::rotate_right(data, shift_amount);
     }
 
     if (byte) {
