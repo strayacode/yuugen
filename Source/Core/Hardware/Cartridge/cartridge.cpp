@@ -70,6 +70,31 @@ void Cartridge::build_mmio(MMIO& mmio, Arch arch) {
             mmio.direct_write<u8>(&command_buffer[i])
         );
     }
+
+    // TODO: handle key2 encryption later
+    mmio.register_mmio<u32>(
+        0x040001B0,
+        mmio.stub_read<u32>(),
+        mmio.stub_write<u32>()
+    );
+
+    mmio.register_mmio<u32>(
+        0x040001B4,
+        mmio.stub_read<u32>(),
+        mmio.stub_write<u32>()
+    );
+
+    mmio.register_mmio<u16>(
+        0x040001B8,
+        mmio.stub_read<u16>(),
+        mmio.stub_write<u16>()
+    );
+
+    mmio.register_mmio<u16>(
+        0x040001BA,
+        mmio.stub_read<u16>(),
+        mmio.stub_write<u16>()
+    );
 }
 
 void Cartridge::LoadRom(std::string rom_path) {

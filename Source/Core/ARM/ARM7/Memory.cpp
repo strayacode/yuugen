@@ -191,8 +191,8 @@ void ARM7Memory::build_mmio() {
 
     mmio.register_mmio<u8>(
         0x04000300,
-        mmio.direct_read<u8>(&system.postflg9, 0x1),
-        mmio.direct_write<u8>(&system.postflg9, 0x1)
+        mmio.direct_read<u8>(&system.postflg7, 0x1),
+        mmio.direct_write<u8>(&system.postflg7, 0x1)
     );
 
     mmio.register_mmio<u8>(
@@ -205,8 +205,8 @@ void ARM7Memory::build_mmio() {
 
     mmio.register_mmio<u16>(
         0x04000300,
-        mmio.direct_read<u16>(&system.postflg9, 0x1),
-        mmio.direct_write<u16>(&system.postflg9, 0x1)
+        mmio.direct_read<u16>(&system.postflg7, 0x1),
+        mmio.direct_write<u16>(&system.postflg7, 0x1)
     );
 
     mmio.register_mmio<u16>(

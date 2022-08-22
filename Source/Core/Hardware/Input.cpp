@@ -1,8 +1,8 @@
 #include "Core/Hardware/Input.h"
 
 void Input::reset() {
-    keyinput = 0x3ff;
-    extkeyin = 0x7f;
+    keyinput = 0x3FF;
+    extkeyin = 0x7F;
 
     point.x = 0;
     point.y = 0;
@@ -11,8 +11,8 @@ void Input::reset() {
 void Input::build_mmio(MMIO& mmio) {
     mmio.register_mmio<u16>(
         0x04000130,
-        mmio.direct_read<u16>(&keyinput, 0x9ff),
-        mmio.direct_write<u16>(&keyinput, 0x9ff)
+        mmio.direct_read<u16>(&keyinput, 0x3FF),
+        mmio.direct_write<u16>(&keyinput, 0x3FF)
     );
 
     mmio.register_mmio<u16>(
