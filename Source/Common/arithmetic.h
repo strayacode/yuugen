@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common/Types.h"
+
 #define rotate_right(data, shift_amount) ((data) >> (shift_amount)) | ((data) << (32 - (shift_amount)))
 
 template <typename T>
@@ -14,4 +16,9 @@ inline int bit_count(T data) {
     }
 
     return count;
+}
+
+inline u32 sign_extend(u32 value, int n) {
+    u32 mask = 1 << (n - 1);
+    return (value ^ mask) - mask;
 }

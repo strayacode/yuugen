@@ -71,13 +71,13 @@ public:
 
         if (get_bank_enabled(vramcnt[2])) {
             if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[2]) * 0x20000), 0x06020000 + (get_bank_offset(vramcnt[2]) * 0x20000), addr) && (get_bank_mst(vramcnt[2]) == 2)) {
-                return Common::read<T>(&bank_c[addr & 0x1FFFF], 0);
+                return Common::read<T>(&bank_c[addr & 0x1FFFF]);
             }
         }
 
         if (get_bank_enabled(vramcnt[3])) {
             if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[3]) * 0x20000), 0x06020000 + (get_bank_offset(vramcnt[3]) * 0x20000), addr) && (get_bank_mst(vramcnt[3]) == 2)) {
-                return Common::read<T>(&bank_d[addr & 0x1FFFF], 0);
+                return Common::read<T>(&bank_d[addr & 0x1FFFF]);
             }
         }
 
@@ -88,13 +88,13 @@ public:
     void write_arm7(u32 addr, T data) {
         if (get_bank_enabled(vramcnt[2])) {
             if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[2]) * 0x20000), 0x06020000 + (get_bank_offset(vramcnt[2]) * 0x20000), addr) && (get_bank_mst(vramcnt[2]) == 2)) {
-                Common::write<T>(&bank_c[addr & 0x1FFFF], 0, data);
+                Common::write<T>(&bank_c[addr & 0x1FFFF], data);
             }
         }
 
         if (get_bank_enabled(vramcnt[3])) {
             if (Common::in_range(0x06000000 + (get_bank_offset(vramcnt[3]) * 0x20000), 0x06020000 + (get_bank_offset(vramcnt[3]) * 0x20000), addr) && (get_bank_mst(vramcnt[3]) == 2)) {
-                Common::write<T>(&bank_d[addr & 0x1FFFF], 0, data);
+                Common::write<T>(&bank_d[addr & 0x1FFFF], data);
             }
         }
     }
@@ -105,7 +105,7 @@ public:
             // only lower 32kb are used
             // vram bank e can then hold all 4 8kb slots
             if (Common::in_range(0, 0x8000, addr) && (get_bank_mst(vramcnt[4]) == 4)) {
-                return Common::read<T>(&bank_e[addr & 0xFFFF], 0);
+                return Common::read<T>(&bank_e[addr & 0xFFFF]);
             }
         }
 
@@ -113,7 +113,7 @@ public:
             // we will either access slots 0-1 or 2-3 depending on ofs
             u32 offset = get_bank_offset(vramcnt[5]) & 0x1 ? 0x4000 : 0;
             if (Common::in_range(offset, 0x4000, addr) && (get_bank_mst(vramcnt[5]) == 4)) {
-                return Common::read<T>(&bank_f[addr & 0x3FFF], 0);
+                return Common::read<T>(&bank_f[addr & 0x3FFF]);
             }
         }
 
@@ -121,7 +121,7 @@ public:
             // we will either access slots 0-1 or 2-3 depending on ofs
             u32 offset = get_bank_offset(vramcnt[6]) & 0x1 ? 0x4000 : 0;
             if (Common::in_range(offset, 0x4000, addr) && (get_bank_mst(vramcnt[6]) == 4)) {
-                return Common::read<T>(&bank_g[addr & 0x3FFF], 0);
+                return Common::read<T>(&bank_g[addr & 0x3FFF]);
             }
         }
 
@@ -133,7 +133,7 @@ public:
         if (get_bank_enabled(vramcnt[7])) {
             // vram bank h can cover all slots 0-3
             if (Common::in_range(0, 0x8000, addr) && (get_bank_mst(vramcnt[7]) == 2)) {
-                return Common::read<T>(&bank_h[addr & 0x7FFF], 0);
+                return Common::read<T>(&bank_h[addr & 0x7FFF]);
             }
         }
 
@@ -145,14 +145,14 @@ public:
         // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
         if (get_bank_enabled(vramcnt[5])) {
             if (Common::in_range(0, 0x2000, addr) && (get_bank_mst(vramcnt[5]) == 5)) {
-                return Common::read<T>(&bank_f[addr & 0x1FFF], 0);
+                return Common::read<T>(&bank_f[addr & 0x1FFF]);
             }
         }
 
         if (get_bank_enabled(vramcnt[6])) {
             // we will either access slots 0-1 or 2-3 depending on ofs
             if (Common::in_range(0, 0x2000, addr) && (get_bank_mst(vramcnt[6]) == 5)) {
-                return Common::read<T>(&bank_g[addr & 0x1FFF], 0);
+                return Common::read<T>(&bank_g[addr & 0x1FFF]);
             }
         }
 
@@ -164,7 +164,7 @@ public:
         // only the lower 8kb of a vram bank is used, since for objs only one 8kb slot is used
         if (get_bank_enabled(vramcnt[8])) {
             if (Common::in_range(0, 0x2000, addr) && (get_bank_mst(vramcnt[8]) == 3)) {
-                return Common::read<T>(&bank_i[addr & 0x1FFF], 0);
+                return Common::read<T>(&bank_i[addr & 0x1FFF]);
             }
         }
 

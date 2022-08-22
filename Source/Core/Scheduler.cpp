@@ -1,7 +1,7 @@
 #include "Common/Log.h"
 #include "Core/Scheduler.h"
 
-void Scheduler::Reset() {
+void Scheduler::reset() {
     events.clear();
     current_time = 0;
     current_event_id = 0;

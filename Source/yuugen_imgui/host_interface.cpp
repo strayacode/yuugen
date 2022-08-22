@@ -10,7 +10,7 @@
 
 HostInterface::HostInterface() : 
     core([this](float fps) {
-        UpdateTitle(fps);
+        this->fps = fps;
     }) {
 }
 
@@ -41,6 +41,10 @@ bool HostInterface::initialise() {
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 13.0f);
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.DisplaySize = ImVec2(2500.0f, 1600.0f);
+    io.DisplayFramebufferScale = ImVec2(2500.0f, 1600.0f);
+
     SetupStyle();
     SDL_GetWindowSize(window, &window_width, &window_height);
 
@@ -132,14 +136,6 @@ void HostInterface::HandleInput() {
     }
 }
 
-void HostInterface::UpdateTitle(float fps) {
-    char window_title[60];
-    float percent_usage = (fps / 60.0f) * 100;
-    
-    snprintf(window_title, 60, "yuugen | %s | %0.2f FPS | %0.2f%s", core.system.GetCPUCoreType().c_str(), fps, percent_usage, "%");
-    SDL_SetWindowTitle(window, window_title);
-}
-
 void HostInterface::render_screens() {
     ImGuiIO& io = ImGui::GetIO();
     
@@ -175,9 +171,10 @@ void HostInterface::render_screens() {
     );
 }
 
-void HostInterface::render_menubar() {
+void HostInterface::render_menu_bar() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
+
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Load ROM")) {
@@ -269,28 +266,12 @@ void HostInterface::render_menubar() {
         }
 
         if (ImGui::BeginMenu("Debug")) {
-            if (ImGui::MenuItem("Cartridge", nullptr, cartridge_window)) { 
-                cartridge_window = !cartridge_window; 
+            if (ImGui::BeginMenu("NDS", false)) {
+
             }
 
-            if (ImGui::MenuItem("ARM7", nullptr, arm7_window)) { 
-                arm7_window = !arm7_window; 
-            }
-
-            if (ImGui::MenuItem("ARM9", nullptr, arm9_window)) { 
-                arm9_window = !arm9_window; 
-            }
-
-            if (ImGui::MenuItem("Scheduler", nullptr, scheduler_window)) { 
-                scheduler_window = !scheduler_window; 
-            }
-
-            if (ImGui::MenuItem("DMA", nullptr, dma_window)) { 
-                dma_window = !dma_window; 
-            }
-
-            if (ImGui::MenuItem("Demo Window", nullptr, demo_window)) { 
-                demo_window = !demo_window; 
+            if (ImGui::MenuItem("Demo Window", nullptr, &demo_window)) {
+                ImGui::ShowDemoWindow();
             }
 
             ImGui::EndMenu();
@@ -306,6 +287,15 @@ void HostInterface::render_menubar() {
             }
 
             ImGui::EndMenu();
+        }
+
+        if (core.GetState() == State::Running && fps != 0.0f) {
+            std::string fps_string = format("%.0f FPS | %.2f ms", fps, 1000.0f / fps);
+
+            auto pos = window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x;
+
+            ImGui::SetCursorPosX(pos);
+            ImGui::Text("%s", fps_string.c_str());
         }
 
         ImGui::EndMainMenuBar();
@@ -333,6 +323,9 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().GrabRounding = 4.0f;
     ImGui::GetStyle().ScrollbarSize = 10.0f;
     ImGui::GetStyle().ScrollbarRounding = 12.0f;
+    ImGui::GetStyle().WindowTitleAlign = ImVec2(0.50f, 0.50f);
+    ImGui::GetStyle().WindowMenuButtonPosition = ImGuiDir_None;
+    ImGui::GetStyle().FramePadding = ImVec2(4.0f, 2.0f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
@@ -345,12 +338,13 @@ void HostInterface::SetupStyle() {
     ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = ImVec4(0.349f, 0.500f, 0.910f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Tab] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_TabHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_TabActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TabHovered] = ImVec4(0.186f, 0.186f, 0.188f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_TabActive] = ImVec4(0.231f, 0.231f, 0.251f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBg] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] = ImVec4(0.210f, 0.210f, 0.210f, 1.000f);
 }
 
 void HostInterface::CartridgeWindow() {
@@ -369,12 +363,12 @@ void HostInterface::CartridgeWindow() {
     ImGui::End();
 }
 
-void HostInterface::ARMWindow(CPUArch arch) {
-    std::string name = arch == CPUArch::ARMv5 ? "ARM9" : "ARM7";
-    int index = arch == CPUArch::ARMv5 ? 1 : 0;
+void HostInterface::ARMWindow(Arch arch) {
+    std::string name = arch == Arch::ARMv5 ? "ARM9" : "ARM7";
+    int index = arch == Arch::ARMv5 ? 1 : 0;
 
     ImGui::Begin(name.c_str());
-    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable;
     if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
         if (ImGui::BeginTabItem("Registers")) {
             ImGui::EndTabItem();
@@ -486,7 +480,7 @@ void HostInterface::render() {
     ImGui::NewFrame();
 
     if (core.GetState() == State::Idle || !fullscreen) {
-        render_menubar();
+        render_menu_bar();
     }
 
     switch (window_type) {
@@ -506,11 +500,11 @@ void HostInterface::render() {
     }
 
     if (arm7_window) {
-        ARMWindow(CPUArch::ARMv4);
+        ARMWindow(Arch::ARMv4);
     }
 
     if (arm9_window) {
-        ARMWindow(CPUArch::ARMv5);
+        ARMWindow(Arch::ARMv5);
     }
 
     if (scheduler_window) {

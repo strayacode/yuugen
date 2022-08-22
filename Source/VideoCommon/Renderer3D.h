@@ -9,6 +9,7 @@
 #include "Common/Types.h"
 #include "Common/GPUTypes.h"
 #include "Core/Scheduler.h"
+#include "Core/ARM/MMIO.h"
 
 enum class GeometryEngineState {
     Halted,
@@ -48,6 +49,8 @@ public:
     Renderer3D(VideoUnit& video_unit);
 
     void reset();
+    void build_mmio(MMIO& mmio);
+
     virtual void render() = 0;
     const u32* get_framebuffer() { return framebuffer.data(); }
     Vertex normalise_vertex(Vertex vertex);

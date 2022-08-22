@@ -2,33 +2,33 @@ add_library(core
     Core.h Core.cpp
     System.h System.cpp
 
-    arm/memory_base.h arm/cpu_registers.h
-    arm/cpu_core.h arm/cpu_core.cpp
-    arm/arm7/memory.h arm/arm7/memory.cpp
-    arm/arm9/memory.h arm/arm9/memory.cpp
-    arm/Disassembler/Disassembler.h arm/Disassembler/Disassembler.cpp
-    arm/Disassembler/arm.cpp arm/Disassembler/thumb.cpp
-    arm/Decoder/Decoder.h
+    ARM/MemoryBase.h ARM/MMIO.h
+    ARM/ARMTypes.h ARM/ARMTypes.cpp
+    ARM/cpu_core.h ARM/cpu_core.cpp
+    ARM/ARM7/Memory.h ARM/ARM7/Memory.cpp
+    ARM/ARM9/Memory.h ARM/ARM9/Memory.cpp
+    ARM/Disassembler/Disassembler.h ARM/Disassembler/Disassembler.cpp
+    ARM/Disassembler/arm.cpp ARM/Disassembler/thumb.cpp
+    ARM/Decoder/Decoder.h
     
-    HW/cartridge/cartridge.h HW/cartridge/cartridge.cpp
-    HW/cartridge/loader_base.h 
-    HW/cartridge/nds_loader.h HW/cartridge/nds_loader.cpp
-    HW/cartridge/backup/flash/flash.h HW/cartridge/backup/flash/flash.cpp
-    HW/cartridge/backup/eeprom/eeprom.h HW/cartridge/backup/eeprom/eeprom.cpp
-    HW/cartridge/backup/no_backup/no_backup.h HW/cartridge/backup/no_backup/no_backup.cpp
-    HW/cartridge/backup/generic_backup.h HW/cartridge/save_database.h
-    HW/spi/spi.h HW/spi/spi.cpp
+    Hardware/Cartridge/Cartridge.h Hardware/Cartridge/Cartridge.cpp
+    Hardware/Cartridge/loader_base.h 
+    Hardware/Cartridge/nds_loader.h Hardware/Cartridge/nds_loader.cpp
+    Hardware/Cartridge/backup/flash/flash.h Hardware/Cartridge/backup/flash/flash.cpp
+    Hardware/Cartridge/backup/eeprom/eeprom.h Hardware/Cartridge/backup/eeprom/eeprom.cpp
+    Hardware/Cartridge/backup/no_backup/no_backup.h Hardware/Cartridge/backup/no_backup/no_backup.cpp
+    Hardware/Cartridge/backup/generic_backup.h Hardware/Cartridge/save_database.h
+    Hardware/SPI.h Hardware/SPI.cpp
     Scheduler.h Scheduler.cpp
-    HW/cp15/cp15.h HW/cp15/cp15.cpp
+    Hardware/cp15/cp15.h Hardware/cp15/cp15.cpp
 
-    HW/dma/dma.h HW/dma/dma.cpp
-    HW/input/input.h HW/input/input.cpp
-    HW/ipc/ipc.h HW/ipc/ipc.cpp
-    HW/timers/timers.h HW/timers/timers.cpp
-    HW/spu/spu.h HW/spu/spu.cpp
-    HW/rtc/rtc.h HW/rtc/rtc.cpp
-    HW/maths_unit/maths_unit.h HW/maths_unit/maths_unit.cpp
-    HW/wifi/wifi.h HW/wifi/wifi.cpp
+    Hardware/DMA.h Hardware/DMA.cpp
+    Hardware/Input.h Hardware/Input.cpp
+    Hardware/IPC.h Hardware/IPC.cpp
+    Hardware/Timers.h Hardware/Timers.cpp
+    Hardware/SPU.h Hardware/SPU.cpp
+    Hardware/RTC.h Hardware/RTC.cpp
+    Hardware/MathsUnit.h Hardware/MathsUnit.cpp
 )
 
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")

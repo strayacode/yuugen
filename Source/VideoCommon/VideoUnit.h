@@ -7,7 +7,10 @@
 #include "VideoCommon/Renderer2D.h"
 #include "VideoCommon/Renderer3D.h"
 #include "VideoCommon/VRAM.h"
+#include "VideoBackends2D/Software/SoftwareRenderer2D.h"
+#include "VideoBackends3D/Software/SoftwareRenderer3D.h"
 #include "Core/Scheduler.h"
+#include "Core/ARM/MMIO.h"
 
 enum class RendererType {
     Software,
@@ -24,9 +27,10 @@ class VideoUnit {
 public:
     VideoUnit(System& system);
     ~VideoUnit();
-    void reset();
 
-    void create_renderers(RendererType type);
+    void reset();
+    void build_mmio(MMIO& mmio, Arch arch);
+
     const u32* get_framebuffer(Screen screen);
 
     enum class ThreadState {
@@ -41,8 +45,8 @@ public:
     void start_render_thread();
     void stop_render_thread();
 
-    std::unique_ptr<Renderer2D> renderer_2d[2];
-    std::unique_ptr<Renderer3D> renderer_3d;
+    SoftwareRenderer2D renderer_2d[2];
+    SoftwareRenderer3D renderer_3d;
 
     // shared mmio
     u16 powcnt1 = 0;

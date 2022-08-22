@@ -33,7 +33,7 @@ void SoftwareRenderer2D::compose_pixel(int x, int line) {
     }
 
     // set the initial pixel to be the colour at palette index 0 (the backdrop colour)
-    u16 pixel = Common::read<u16>(palette_ram, 0);
+    u16 pixel = Common::read<u16>(palette_ram);
 
     u8 priority = 3;
     for (int i = 3; i >= 0; i--) {

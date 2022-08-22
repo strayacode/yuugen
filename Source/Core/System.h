@@ -1,20 +1,19 @@
 #pragma once
 
-#include "Core/arm/cpu_core.h"
-#include "Core/arm/arm7/memory.h"
-#include "Core/arm/arm9/memory.h"
+#include "Core/ARM/cpu_core.h"
+#include "Core/ARM/ARM7/Memory.h"
+#include "Core/ARM/ARM9/Memory.h"
 #include "Core/Scheduler.h"
-#include "Core/HW/cartridge/cartridge.h"
-#include "Core/HW/spi/spi.h"
-#include "Core/HW/cp15/cp15.h"
-#include "Core/HW/dma/dma.h"
-#include "Core/HW/input/input.h"
-#include "Core/HW/ipc/ipc.h"
-#include "Core/HW/timers/timers.h"
-#include "Core/HW/spu/spu.h"
-#include "Core/HW/rtc/rtc.h"
-#include "Core/HW/maths_unit/maths_unit.h"
-#include "Core/HW/wifi/wifi.h"
+#include "Core/Hardware/Cartridge/Cartridge.h"
+#include "Core/Hardware/SPI.h"
+#include "Core/Hardware/cp15/cp15.h"
+#include "Core/Hardware/DMA.h"
+#include "Core/Hardware/Input.h"
+#include "Core/Hardware/IPC.h"
+#include "Core/Hardware/Timers.h"
+#include "Core/Hardware/SPU.h"
+#include "Core/Hardware/RTC.h"
+#include "Core/Hardware/MathsUnit.h"
 #include "VideoCommon/VideoUnit.h"
 
 enum class CPUCoreType {
@@ -30,12 +29,15 @@ public:
     void FirmwareBoot();
     void SetGamePath(std::string path);
     void RunFrame();
-    void WriteHALTCNT(u8 data);
+
+    void write_haltcnt(u8 data);
     void write_wramcnt(u8 data);
+    
     bool CartridgeAccessRights();
     void SetCPUCoreType(CPUCoreType type);
     std::string GetCPUCoreType();
 
+    VideoUnit video_unit;
     ARM7Memory arm7_memory;
     ARM9Memory arm9_memory;
 
@@ -50,8 +52,6 @@ public:
     SPU spu;
     RTC rtc;
     MathsUnit maths_unit;
-    Wifi wifi;
-    VideoUnit video_unit;
 
     CPUCore cpu_core[2];
 
@@ -59,14 +59,14 @@ public:
     u8 shared_wram[0x8000] = {};
 
     u8 wramcnt;
-    u8 POWCNT2;
-    u16 RCNT;
+    u8 powcnt2;
+    u16 rcnt;
     u8 HALTCNT;
-    u16 EXMEMCNT;
-    u8 POSTFLG7;
-    u8 POSTFLG9;
-    u32 BIOSPROT;
-    u16 SIOCNT;
+    u16 exmemcnt;
+    u8 postflg7;
+    u8 postflg9;
+    u32 biosprot;
+    u16 siocnt;
 
     std::string rom_path;
     CPUCoreType core_type;

@@ -8,7 +8,7 @@
 #include "Common/GamesList.h"
 #include "VideoCommon/GLWindow.h"
 #include "Core/Core.h"
-#include "Core/arm/Disassembler/Disassembler.h"
+#include "Core/ARM/Disassembler/Disassembler.h"
 #include <memory>
 #include <vector>
 #include <array>
@@ -28,12 +28,11 @@ public:
     void Run();
     void Shutdown();
     void HandleInput();
-    void UpdateTitle(float fps);
     void SetupStyle();
     void CartridgeWindow();
     
     // the arch argument specifies whether to render window for arm7 or arm9
-    void ARMWindow(CPUArch arch);
+    void ARMWindow(Arch arch);
     void SchedulerWindow();
     void DMAWindow();
 
@@ -62,7 +61,7 @@ public:
     int disassembly_size = 15;
 
     ImVec2 scaled_dimensions;
-    static constexpr float menubar_height = 19;
+    static constexpr float menubar_height = 18;
     double center_pos = 0;
     int window_width = 0;
     int window_height = 0;
@@ -77,7 +76,7 @@ private:
     void render_games_list_window();
     void render_settings_window();
     void render_screens();
-    void render_menubar();
+    void render_menu_bar();
     void reset_title();
 
     void boot_game(std::string path);
@@ -105,4 +104,6 @@ private:
     bool settings_window = false;
 
     OnScreenDisplay osd;
+
+    float fps;
 };
