@@ -7,9 +7,15 @@ add_library(core
     ARM/cpu_core.h ARM/cpu_core.cpp
     ARM/ARM7/Memory.h ARM/ARM7/Memory.cpp
     ARM/ARM9/Memory.h ARM/ARM9/Memory.cpp
+    ARM/ARM7/Coprocessor.h
+    ARM/ARM9/Coprocessor.h
     ARM/Disassembler/Disassembler.h ARM/Disassembler/Disassembler.cpp
     ARM/Disassembler/arm.cpp ARM/Disassembler/thumb.cpp
     ARM/Decoder/Decoder.h
+    ARM/CPU.h ARM/CPU.cpp
+    ARM/ExecutorInterface.h
+    ARM/CoprocessorBase.h
+    ARM/Interpreter/Interpreter.h ARM/Interpreter/Interpreter.cpp
     
     Hardware/Cartridge/Cartridge.h Hardware/Cartridge/Cartridge.cpp
     Hardware/Cartridge/loader_base.h 

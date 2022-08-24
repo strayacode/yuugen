@@ -120,12 +120,12 @@ public:
     void arm_coprocessor_register_transfer();
     void unknown_instruction();
 
-    #include "interpreter/instructions/ARM/alu.inl"
-    #include "interpreter/instructions/ARM/branch.inl"
-    #include "interpreter/instructions/ARM/load_store.inl"
-    #include "interpreter/instructions/thumb/alu.inl"
-    #include "interpreter/instructions/thumb/branch.inl"
-    #include "interpreter/instructions/thumb/load_store.inl"
+    #include "Interpreter/instructions/ARM/alu.inl"
+    #include "Interpreter/instructions/ARM/branch.inl"
+    #include "Interpreter/instructions/ARM/load_store.inl"
+    #include "Interpreter/instructions/thumb/alu.inl"
+    #include "Interpreter/instructions/thumb/branch.inl"
+    #include "Interpreter/instructions/thumb/load_store.inl"
 
     u8 ReadByte(u32 addr);
     u16 ReadHalf(u32 addr);

@@ -14,6 +14,7 @@
 class MemoryBase {
 public:
     MemoryBase(Arch arch) : mmio(arch) {}
+    virtual ~MemoryBase() = default;
 
     template <typename T>
     T read(u32 addr) {
