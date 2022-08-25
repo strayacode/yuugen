@@ -9,10 +9,10 @@
 CPU::CPU(System& system, Arch arch) {
     if (arch == Arch::ARMv5) {
         m_memory = std::make_unique<ARM9Memory>(system);
-        m_coprocessor = std::make_unique<ARM9Coprocessor>(system); 
+        m_coprocessor = std::make_unique<ARM9Coprocessor>(*this); 
     } else {
         m_memory = std::make_unique<ARM7Memory>(system);
-        m_coprocessor = std::make_unique<ARM7Coprocessor>(system);
+        m_coprocessor = std::make_unique<ARM7Coprocessor>();
     }
 }
 

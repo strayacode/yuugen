@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <array>
 #include "Common/Types.h"
 #include "Core/ARM/ExecutorInterface.h"
 #include "Core/ARM/MemoryBase.h"
@@ -25,9 +26,23 @@ public:
     
     inline MemoryBase& memory() { return *m_memory; }
     inline CoprocessorBase& coprocessor() { return *m_coprocessor; }
-    
+
 private:
     std::unique_ptr<ExecutorInterface> m_executor;
     std::unique_ptr<MemoryBase> m_memory;
     std::unique_ptr<CoprocessorBase> m_coprocessor;
+
+    union StatusRegister {
+        struct {
+            u32 : 32;
+        };
+
+        u32 data;
+    };
+
+    // general purpose registers
+    std::array<u32, 16> m_gpr;
+
+    // current process status register
+    StatusRegister m_cpsr;
 };

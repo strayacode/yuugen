@@ -11,6 +11,12 @@ public:
     void run(u64 target) override;
 
 private:
-    CPU& cpu;
+    template <typename T>
+    T read(u32 addr);
+
+    template <typename T>
+    void write(u32 addr, T data);
+
+    CPU& m_cpu;
 };
 
