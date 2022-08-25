@@ -133,18 +133,18 @@ u32 ARM9Coprocessor::dtcm_size() {
    return 512 << (m_dtcm_control >> 1); 
 }
 
-bool CP15::itcm_is_readable() {
+bool ARM9Coprocessor::itcm_is_readable() {
     return !(m_control & (1 << 19)) && (m_control & (1 << 18));
 }
 
-bool CP15::itcm_is_writeable() {
+bool ARM9Coprocessor::itcm_is_writeable() {
     return (m_control & (1 << 18));
 }
 
-bool CP15::dtcm_is_readable() {
+bool ARM9Coprocessor::dtcm_is_readable() {
     return !(m_control & (1 << 17)) && (m_control & (1 << 16));
 }
 
-bool CP15::dtcm_is_writeable() {
+bool ARM9Coprocessor::dtcm_is_writeable() {
     return (m_control & (1 << 16));
 }
