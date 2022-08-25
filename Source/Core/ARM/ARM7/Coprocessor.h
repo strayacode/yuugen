@@ -4,7 +4,7 @@
 
 class ARM7Coprocessor : public CoprocessorBase {
 public:
-    ARM7Coprocessor();
+    ARM7Coprocessor() = default;
 
     u32 get_exception_base() override;
 

@@ -59,8 +59,8 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 data) {
         m_control = data;
 
         // update the arm9 memory map as r/w permissions may have changed
-        cpu.memory().update_memory_map(itcm_base(), itcm_size());
-        cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
+        m_cpu.memory().update_memory_map(itcm_base(), itcm_size());
+        m_cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
         break;
     case 0x020000:
     case 0x020001:
@@ -77,7 +77,7 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 data) {
     case 0x060700:
         break;
     case 0x070004:
-        cpu.halt();
+        m_cpu.halt();
         break;
     case 0x070500:
     case 0x070501:
@@ -92,27 +92,59 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 data) {
         break;
     case 0x090100:
         // unmap old dtcm region
-        cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
+        m_cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
         
         m_dtcm_control = data;
 
         // remap with new dtcm region
-        cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
+        m_cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
 
         log_debug("[ARM9Coprocessor] dtcm base: %08x dtcm size: %08x", dtcm_base(), dtcm_size());
         break;
     case 0x090101: {
         // unmap old itcm region
-        cpu.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
+        m_cpu.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
         
         m_itcm_control = data;
 
         // remap with new itcm region
-        cpu.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
+        m_cpu.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
 
         log_debug("[ARM9Coprocessor] itcm base: %08x itcm size: %08x", itcm_base(), itcm_size());
         break;
     default:
         log_fatal("[ARM9Coprocessor] undefined register write c%d, c%d, c%d with data %08x", cn, cm, cp, data);
     }
+}
+
+u32 ARM9Coprocessor::itcm_base() {
+    return 0;
+}
+
+u32 ARM9Coprocessor::itcm_size() {
+   return 512 << ((m_itcm_control >> 1) & 0x1F); 
+}
+
+u32 ARM9Coprocessor::dtcm_base() {
+    return ((m_dtcm_control >> 12) & 0xFFFFF) << 12;
+}
+
+u32 ARM9Coprocessor::dtcm_size() {
+   return 512 << (m_dtcm_control >> 1); 
+}
+
+bool CP15::itcm_is_readable() {
+    return !(m_control & (1 << 19)) && (m_control & (1 << 18));
+}
+
+bool CP15::itcm_is_writeable() {
+    return (m_control & (1 << 18));
+}
+
+bool CP15::dtcm_is_readable() {
+    return !(m_control & (1 << 17)) && (m_control & (1 << 16));
+}
+
+bool CP15::dtcm_is_writeable() {
+    return (m_control & (1 << 16));
 }
