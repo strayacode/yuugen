@@ -4,11 +4,10 @@
 #include "Common/Types.h"
 #include "Common/Log.h"
 #include "Common/Callback.h"
+#include "Core/ARM/CPUTypes.h"
 
 class MMIO {
 public:
-    MMIO(Arch arch) : arch(arch) {}
-
     template <typename T>
     using ReadCallback = Common::Callback<T(u32)>;
 
@@ -155,6 +154,4 @@ private:
     WriteHandlers<u8> write8;
     WriteHandlers<u16> write16;
     WriteHandlers<u32> write32;
-
-    Arch arch;
 };

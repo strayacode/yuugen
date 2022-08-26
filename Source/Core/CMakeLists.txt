@@ -4,6 +4,7 @@ add_library(core
     Scheduler.h Scheduler.cpp
 
     ARM/MemoryBase.h ARM/MMIO.h
+    ARM/CPUTypes.h
     ARM/ARM7/Memory.h ARM/ARM7/Memory.cpp
     ARM/ARM9/Memory.h ARM/ARM9/Memory.cpp
     ARM/ARM7/Coprocessor.h ARM/ARM7/Coprocessor.cpp

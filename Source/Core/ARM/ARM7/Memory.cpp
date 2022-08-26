@@ -2,7 +2,7 @@
 #include "Core/Core.h"
 #include "Core/ARM/ARM7/Memory.h"
 
-ARM7Memory::ARM7Memory(System& system) : MemoryBase(Arch::ARMv4), system(system) {
+ARM7Memory::ARM7Memory(System& system) : system(system) {
     bios = load_bios<0x4000>("../bios/bios7.bin");
 
     build_mmio();

@@ -4,7 +4,7 @@
 #include "Core/Core.h"
 #include "Core/ARM/ARM9/Memory.h"
 
-ARM9Memory::ARM9Memory(System& system) : MemoryBase(Arch::ARMv5), system(system) {
+ARM9Memory::ARM9Memory(System& system) : system(system) {
     bios = load_bios<0x8000>("../bios/bios9.bin");
 
     build_mmio();

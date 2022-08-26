@@ -11,11 +11,6 @@ enum class CPUBackend {
     Interpreter,
 };
 
-enum class Arch {
-    ARMv4 = 0,
-    ARMv5 = 1,
-};
-
 enum class InterruptType {
     VBlank = 0,
     HBlank = 1,
