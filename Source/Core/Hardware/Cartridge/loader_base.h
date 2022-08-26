@@ -14,6 +14,8 @@ public:
         Reset();
     }
 
+    virtual ~LoaderBase() = default;
+
     void Reset() {
         backup_size = 0;
         backup_type = 0;

@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Core/ARM/cpu_core.h"
-#include "Core/ARM/ARM7/Memory.h"
-#include "Core/ARM/ARM9/Memory.h"
+#include <array>
+#include "Core/ARM/ARM7/ARM7.h"
+#include "Core/ARM/ARM9/ARM9.h"
 #include "Core/Scheduler.h"
 #include "Core/Hardware/Cartridge/Cartridge.h"
 #include "Core/Hardware/SPI.h"
-#include "Core/Hardware/cp15/cp15.h"
 #include "Core/Hardware/DMA.h"
 #include "Core/Hardware/Input.h"
 #include "Core/Hardware/IPC.h"
@@ -15,10 +14,6 @@
 #include "Core/Hardware/RTC.h"
 #include "Core/Hardware/MathsUnit.h"
 #include "VideoCommon/VideoUnit.h"
-
-enum class CPUCoreType {
-    Interpreter,
-};
 
 class System {
 public:
@@ -32,19 +27,20 @@ public:
 
     void write_haltcnt(u8 data);
     void write_wramcnt(u8 data);
-    
-    bool CartridgeAccessRights();
-    void SetCPUCoreType(CPUCoreType type);
-    std::string GetCPUCoreType();
 
+    bool CartridgeAccessRights();
+
+    // get a reference to a cpu based on an id
+    // (0 = arm7, 1 = arm9)
+    inline CPU& cpu(int cpu) {
+        return cpu ? arm9.cpu() : arm7.cpu();
+    }
+    
     VideoUnit video_unit;
-    ARM7Memory arm7_memory;
-    ARM9Memory arm9_memory;
 
     Scheduler scheduler;
     Cartridge cartridge;
     SPI spi;
-    CP15 cp15;
     DMA dma[2];
     Input input;
     IPC ipc;
@@ -53,10 +49,11 @@ public:
     RTC rtc;
     MathsUnit maths_unit;
 
-    CPUCore cpu_core[2];
+    ARM7 arm7;
+    ARM9 arm9;
 
-    u8 main_memory[0x400000] = {};
-    u8 shared_wram[0x8000] = {};
+    std::array<u8, 0x400000> main_memory;
+    std::array<u8, 0x8000> shared_wram;
 
     u8 wramcnt;
     u8 powcnt2;
@@ -69,5 +66,4 @@ public:
     u16 siocnt;
 
     std::string rom_path;
-    CPUCoreType core_type;
 };

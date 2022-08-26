@@ -2,16 +2,16 @@
 
 Interpreter::Interpreter(CPU& cpu) : m_cpu(cpu) {}
 
-void Interpreter::run(u64 target) {
+u64 Interpreter::run(u64 target) {
 
 }
 
 template <typename T>
 T Interpreter::read(u32 addr) {
-    return m_cpu.memory().read<T>(addr);
+    return m_cpu.m_memory.read<T>(addr);
 }
 
 template <typename T>
 void Interpreter::write(u32 addr, T data) {
-    m_cpu.memory().write<T>(addr, data);
+    m_cpu.m_memory.write<T>(addr, data);
 }

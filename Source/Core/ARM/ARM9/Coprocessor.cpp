@@ -1,7 +1,7 @@
 #include "Core/ARM/ARM9/Coprocessor.h"
-#include "Core/ARM/CPU.h"
+#include "Core/System.h"
 
-ARM9Coprocessor::ARM9Coprocessor(CPU& cpu) : m_cpu(cpu) {}
+ARM9Coprocessor::ARM9Coprocessor(System& system) : m_system(system) {}
 
 void ARM9Coprocessor::reset() {
     m_control = 0;
@@ -59,8 +59,8 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 data) {
         m_control = data;
 
         // update the arm9 memory map as r/w permissions may have changed
-        m_cpu.memory().update_memory_map(itcm_base(), itcm_size());
-        m_cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
+        m_system.arm9.memory().update_memory_map(itcm_base(), itcm_size());
+        m_system.arm9.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
         break;
     case 0x020000:
     case 0x020001:
@@ -77,7 +77,7 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 data) {
     case 0x060700:
         break;
     case 0x070004:
-        m_cpu.halt();
+        m_system.arm9.cpu().halt();
         break;
     case 0x070500:
     case 0x070501:
@@ -92,23 +92,23 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 data) {
         break;
     case 0x090100:
         // unmap old dtcm region
-        m_cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
+        m_system.arm9.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
         
         m_dtcm_control = data;
 
         // remap with new dtcm region
-        m_cpu.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
+        m_system.arm9.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
 
         log_debug("[ARM9Coprocessor] dtcm base: %08x dtcm size: %08x", dtcm_base(), dtcm_size());
         break;
-    case 0x090101: {
+    case 0x090101:
         // unmap old itcm region
-        m_cpu.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
+        m_system.arm9.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
         
         m_itcm_control = data;
 
         // remap with new itcm region
-        m_cpu.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
+        m_system.arm9.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
 
         log_debug("[ARM9Coprocessor] itcm base: %08x itcm size: %08x", itcm_base(), itcm_size());
         break;

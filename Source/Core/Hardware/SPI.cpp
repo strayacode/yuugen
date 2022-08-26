@@ -62,7 +62,7 @@ void SPI::build_mmio(MMIO& mmio) {
 void SPI::DirectBoot() {
     // write user settings 1 (0x70 in length) to address 0x027FFC80 in main memory
     for (u32 i = 0; i < 0x70; i++) {
-        system.arm9_memory.write<u8>(0x027FFC80 + i, firmware[0x3FF00 + i]);
+        system.arm9.memory().write<u8>(0x027FFC80 + i, firmware[0x3FF00 + i]);
     }
 }
 
@@ -156,7 +156,7 @@ void SPI::transfer(u8 data) {
 
     // if enabled trigger a transfer finished irq
     if (spicnt & (1 << 14)) {
-        system.cpu_core[0].SendInterrupt(InterruptType::SPI);
+        system.arm7.cpu().send_interrupt(InterruptType::SPI);
     }
 }
 

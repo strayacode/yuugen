@@ -188,7 +188,7 @@ void VideoUnit::render_scanline_start() {
         dispstat[i] |= 1 << 1;
 
         if (dispstat[i] & (1 << 4)) {
-            system.cpu_core[i].SendInterrupt(InterruptType::HBlank);
+            system.cpu(i).send_interrupt(InterruptType::HBlank);
         }
     }
 
@@ -228,7 +228,7 @@ void VideoUnit::render_scanline_end() {
             dispstat[i] |= 1;
 
             if (dispstat[i] & (1 << 3)) {
-                system.cpu_core[i].SendInterrupt(InterruptType::VBlank);
+                system.cpu(i).send_interrupt(InterruptType::VBlank);
             }
 
             system.dma[i].Trigger(1);
@@ -243,7 +243,7 @@ void VideoUnit::render_scanline_end() {
             dispstat[i] |= (1 << 2);
 
             if (dispstat[i] & (1 << 5)) {
-                system.cpu_core[i].SendInterrupt(InterruptType::VCounter);
+                system.cpu(i).send_interrupt(InterruptType::VCounter);
             }
 
         } else if (dispstat[i] & (1 << 2)) {

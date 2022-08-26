@@ -23,10 +23,10 @@ void ARM9Memory::update_memory_map(u32 low_addr, u32 high_addr) {
         // get the pagetable index
         int index = addr >> PAGE_BITS;
 
-        if (system.cp15.GetITCMReadEnabled() && (addr < system.cp15.GetITCMSize())) {
-            read_page_table[index] = &system.cp15.itcm[addr & 0x7FFF];
-        } else if (system.cp15.GetDTCMReadEnabled() && Common::in_range(system.cp15.GetDTCMBase(), system.cp15.GetDTCMBase() + system.cp15.GetDTCMSize(), addr)) {
-            read_page_table[index] = &system.cp15.dtcm[(addr - system.cp15.GetDTCMBase()) & 0x3FFF];
+        if (system.arm9.coprocessor().itcm_is_readable() && (addr < system.arm9.coprocessor().itcm_size())) {
+            read_page_table[index] = &system.arm9.coprocessor().itcm()[addr & 0x7FFF];
+        } else if (system.arm9.coprocessor().dtcm_is_readable() && Common::in_range(system.arm9.coprocessor().dtcm_base(), system.arm9.coprocessor().dtcm_base() + system.arm9.coprocessor().dtcm_size(), addr)) {
+            read_page_table[index] = &system.arm9.coprocessor().dtcm()[(addr - system.arm9.coprocessor().dtcm_base()) & 0x3FFF];
         } else {
             switch (addr >> 24) {
             case 0x02:
@@ -69,10 +69,10 @@ void ARM9Memory::update_memory_map(u32 low_addr, u32 high_addr) {
         // get the pagetable index
         int index = addr >> PAGE_BITS;
 
-        if (system.cp15.GetITCMWriteEnabled() && (addr < system.cp15.GetITCMSize())) {
-            write_page_table[index] = &system.cp15.itcm[addr & 0x7FFF];
-        } else if (system.cp15.GetDTCMWriteEnabled() && Common::in_range(system.cp15.GetDTCMBase(), system.cp15.GetDTCMBase() + system.cp15.GetDTCMSize(), addr)) {
-            write_page_table[index] = &system.cp15.dtcm[(addr - system.cp15.GetDTCMBase()) & 0x3FFF];
+        if (system.arm9.coprocessor().itcm_is_writeable() && (addr < system.arm9.coprocessor().itcm_size())) {
+            write_page_table[index] = &system.arm9.coprocessor().itcm()[addr & 0x7FFF];
+        } else if (system.arm9.coprocessor().dtcm_is_writeable() && Common::in_range(system.arm9.coprocessor().dtcm_base(), system.arm9.coprocessor().dtcm_base() + system.arm9.coprocessor().dtcm_size(), addr)) {
+            write_page_table[index] = &system.arm9.coprocessor().dtcm()[(addr - system.arm9.coprocessor().dtcm_base()) & 0x3FFF];
         } else {
             switch (addr >> 24) {
             case 0x02:
@@ -237,7 +237,7 @@ void ARM9Memory::build_mmio() {
     system.dma[1].build_mmio(mmio, Arch::ARMv5);
     system.cartridge.build_mmio(mmio, Arch::ARMv5);
     system.timers[1].build_mmio(mmio);
-    system.cpu_core[1].build_mmio(mmio);
+    system.arm9.cpu().build_mmio(mmio);
     system.input.build_mmio(mmio);
     system.maths_unit.build_mmio(mmio);
 

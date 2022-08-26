@@ -233,7 +233,7 @@ void ARM7Memory::build_mmio() {
     system.cartridge.build_mmio(mmio, Arch::ARMv4);
     system.timers[0].build_mmio(mmio);
     system.spu.build_mmio(mmio);
-    system.cpu_core[0].build_mmio(mmio);
+    system.arm7.cpu().build_mmio(mmio);
     system.input.build_mmio(mmio);
     system.spi.build_mmio(mmio);
     system.rtc.build_mmio(mmio);

@@ -244,7 +244,7 @@ void SPU::run_channel(int index) {
     switch (format) {
     case 0x2:
         // read in the adpcm header
-        channel[index].adpcm_header = system.arm7_memory.read<u32>(channel[index].internal_address);
+        channel[index].adpcm_header = system.arm7.memory().read<u32>(channel[index].internal_address);
         channel[index].adpcm_value = (s16)channel[index].adpcm_header;
         channel[index].adpcm_index = std::min((channel[index].adpcm_header >> 16) & 0x7F, 88U);
         channel[index].internal_address += 4;
@@ -272,11 +272,11 @@ u32 SPU::generate_samples() {
 
         switch (format) {
         case 0x0:
-            data = static_cast<s8>(system.arm7_memory.read<u8>(channel[i].internal_address)) << 8;
+            data = static_cast<s8>(system.arm7.memory().read<u8>(channel[i].internal_address)) << 8;
             data_size = 1;
             break;
         case 0x1:
-            data = static_cast<s16>(system.arm7_memory.read<u16>(channel[i].internal_address));
+            data = static_cast<s16>(system.arm7.memory().read<u16>(channel[i].internal_address));
             data_size = 2;
             break;
         case 0x2:
@@ -299,7 +299,7 @@ u32 SPU::generate_samples() {
 
                 if (format == 2) {
                     // decode adpcm data
-                    u8 adpcm_data = system.arm7_memory.read<u8>(channel[i].internal_address);
+                    u8 adpcm_data = system.arm7.memory().read<u8>(channel[i].internal_address);
 
                     // each sample is 4-bit
                     if (channel[i].adpcm_second_sample) {

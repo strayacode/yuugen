@@ -4,11 +4,11 @@
 #include "Common/Types.h"
 #include "Core/ARM/CoprocessorBase.h"
 
-class CPU;
+class System;
 
 class ARM9Coprocessor : public CoprocessorBase {
 public:
-    ARM9Coprocessor(CPU& cpu);
+    ARM9Coprocessor(System& system);
 
     void reset();
     void direct_boot();
@@ -28,6 +28,9 @@ public:
     bool dtcm_is_readable();
     bool dtcm_is_writeable();
 
+    std::array<u8, 0x8000>& itcm() { return m_itcm; }
+    std::array<u8, 0x4000>& dtcm() { return m_dtcm; }
+
 private:
     u32 m_control = 0;
     u32 m_itcm_control = 0;
@@ -36,5 +39,5 @@ private:
     std::array<u8, 0x8000> m_itcm;
     std::array<u8, 0x4000> m_dtcm;
 
-    CPU& m_cpu;
+    System& m_system;
 };

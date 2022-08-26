@@ -50,7 +50,7 @@ void IPC::write_ipcsync(int cpu, u16 data) {
     ipcsync[remote].input = ipcsync[cpu].output;
 
     if (ipcsync[cpu].send_irq && ipcsync[remote].enable_irq) {
-        system.cpu_core[remote].SendInterrupt(InterruptType::IPCSync);
+        system.cpu(remote).send_interrupt(InterruptType::IPCSync);
     }
 }
 
@@ -71,16 +71,16 @@ void IPC::write_ipcfifocnt(int cpu, u16 data) {
         ipcfifocnt[remote].receive_fifo_full = false;
 
         if (ipcfifocnt[cpu].send_fifo_empty_irq) {
-            system.cpu_core[cpu].SendInterrupt(InterruptType::IPCSendEmpty);
+            system.cpu(cpu).send_interrupt(InterruptType::IPCSendEmpty);
         }
     }
 
     if (!old_send_fifo_empty_irq && ipcfifocnt[cpu].send_fifo_empty_irq && ipcfifocnt[cpu].send_fifo_empty) {
-        system.cpu_core[cpu].SendInterrupt(InterruptType::IPCSendEmpty);
+        system.cpu(cpu).send_interrupt(InterruptType::IPCSendEmpty);
     }
 
     if (!old_receive_fifo_empty_irq && ipcfifocnt[cpu].receive_fifo_empty_irq && ipcfifocnt[cpu].receive_fifo_empty) {
-        system.cpu_core[cpu].SendInterrupt(InterruptType::IPCReceiveNonEmpty);
+        system.cpu(cpu).send_interrupt(InterruptType::IPCReceiveNonEmpty);
     }
 
     if (data & (1 << 14)) {
@@ -107,7 +107,7 @@ u32 IPC::read_ipcfiforecv(int cpu) {
                 ipcfifocnt[cpu].receive_fifo_empty = true;
                 
                 if (ipcfifocnt[remote].send_fifo_empty_irq) {
-                    system.cpu_core[remote].SendInterrupt(InterruptType::IPCSendEmpty);
+                    system.cpu(remote).send_interrupt(InterruptType::IPCSendEmpty);
                 }
             } else if (fifo[remote].size() == 15) {
                 ipcfifocnt[remote].send_fifo_full = false;
@@ -133,7 +133,7 @@ void IPC::write_send_fifo(int cpu, u32 data) {
                 ipcfifocnt[remote].receive_fifo_empty = false;
 
                 if (ipcfifocnt[remote].receive_fifo_empty_irq) {
-                    system.cpu_core[remote].SendInterrupt(InterruptType::IPCReceiveNonEmpty);
+                    system.cpu(remote).send_interrupt(InterruptType::IPCReceiveNonEmpty);
                 }
             } else if (fifo[cpu].size() == 16) {
                 ipcfifocnt[cpu].send_fifo_full = true;

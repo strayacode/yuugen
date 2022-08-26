@@ -85,9 +85,9 @@ void DMA::Transfer(int channel_index) {
         // loop through all the data units specified by internal length
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
             if (arch == 1) {
-                system.arm9_memory.write<u32>(channel[channel_index].internal_destination, system.arm9_memory.read<u32>(channel[channel_index].internal_source));
+                system.arm9.memory().write<u32>(channel[channel_index].internal_destination, system.arm9.memory().read<u32>(channel[channel_index].internal_source));
             } else {
-                system.arm7_memory.write<u32>(channel[channel_index].internal_destination, system.arm7_memory.read<u32>(channel[channel_index].internal_source));
+                system.arm7.memory().write<u32>(channel[channel_index].internal_destination, system.arm7.memory().read<u32>(channel[channel_index].internal_source));
             }
 
             channel[channel_index].internal_source += source_adjust;
@@ -100,9 +100,9 @@ void DMA::Transfer(int channel_index) {
         // halfword transfer
         for (u32 j = 0; j < channel[channel_index].internal_length; j++) {
             if (arch == 1) {
-                system.arm9_memory.write<u16>(channel[channel_index].internal_destination, system.arm9_memory.read<u16>(channel[channel_index].internal_source));
+                system.arm9.memory().write<u16>(channel[channel_index].internal_destination, system.arm9.memory().read<u16>(channel[channel_index].internal_source));
             } else {
-                system.arm7_memory.write<u16>(channel[channel_index].internal_destination, system.arm7_memory.read<u16>(channel[channel_index].internal_source));
+                system.arm7.memory().write<u16>(channel[channel_index].internal_destination, system.arm7.memory().read<u16>(channel[channel_index].internal_source));
             }
 
             channel[channel_index].internal_source += source_adjust;
@@ -117,16 +117,16 @@ void DMA::Transfer(int channel_index) {
     if (channel[channel_index].dmacnt & (1 << 30)) {
         switch (channel_index) {
         case 0:
-            system.cpu_core[arch].SendInterrupt(InterruptType::DMA0);
+            system.cpu(arch).send_interrupt(InterruptType::DMA0);
             break;
         case 1:
-            system.cpu_core[arch].SendInterrupt(InterruptType::DMA1);
+            system.cpu(arch).send_interrupt(InterruptType::DMA1);
             break;
         case 2:
-            system.cpu_core[arch].SendInterrupt(InterruptType::DMA2);
+            system.cpu(arch).send_interrupt(InterruptType::DMA2);
             break;
         case 3:
-            system.cpu_core[arch].SendInterrupt(InterruptType::DMA3);
+            system.cpu(arch).send_interrupt(InterruptType::DMA3);
             break;
         }
     }

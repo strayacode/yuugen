@@ -8,7 +8,7 @@ class Interpreter final : public ExecutorInterface {
 public:
     Interpreter(CPU& cpu);
 
-    void run(u64 target) override;
+    u64 run(u64 target) override;
 
 private:
     template <typename T>

@@ -157,7 +157,7 @@ void CPUCore::FirmwareBoot() {
     ARMFlushPipeline();
 }
     
-void CPUCore::SendInterrupt(InterruptType interrupt_type) {
+void CPUCore::send_interrupt(InterruptType interrupt_type) {
     // set the appropriate bit in IF
     irf |= (1 << static_cast<int>(interrupt_type));
     

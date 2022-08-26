@@ -4,5 +4,8 @@
 
 struct ExecutorInterface {
     virtual ~ExecutorInterface() = default;
-    virtual void run(u64 target) = 0;
+
+    // runs the executor until target,
+    // and returns the number of cycles executed
+    virtual u64 run(u64 target) = 0;
 };

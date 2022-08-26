@@ -98,7 +98,7 @@ public:
 
     void DirectBoot(u32 entrypoint);
     void FirmwareBoot();
-    void SendInterrupt(InterruptType interrupt_type);
+    void send_interrupt(InterruptType interrupt_type);
     void Halt();
     bool Halted();
     void ARMFlushPipeline();

@@ -143,8 +143,8 @@ void Cartridge::StartTransfer() {
         // send a transfer ready interrupt if enabled in auxspicnt
         // TODO: are we meant to send interrupt to both cpus?
         if (auxspicnt & (1 << 14)) {
-            system.cpu_core[0].SendInterrupt(InterruptType::CartridgeTransfer);
-            system.cpu_core[1].SendInterrupt(InterruptType::CartridgeTransfer);
+            system.arm7.cpu().send_interrupt(InterruptType::CartridgeTransfer);
+            system.arm9.cpu().send_interrupt(InterruptType::CartridgeTransfer);
         }
     } else {
         // since we are starting a new transfer transfer_count must start at 0
@@ -266,8 +266,8 @@ u32 Cartridge::read_data() {
 
         // send a transfer ready interrupt if enabled in auxspicnt
         if (auxspicnt & (1 << 14)) {
-            system.cpu_core[0].SendInterrupt(InterruptType::CartridgeTransfer);
-            system.cpu_core[1].SendInterrupt(InterruptType::CartridgeTransfer);
+            system.arm7.cpu().send_interrupt(InterruptType::CartridgeTransfer);
+            system.arm9.cpu().send_interrupt(InterruptType::CartridgeTransfer);
         }
     } else {
         // trigger another nds cartridge dma
@@ -309,17 +309,17 @@ void Cartridge::write_auxspidata(u8 data) {
 void Cartridge::DirectBoot() {
     // first transfer the cartridge header (this is taken from rom address 0 and loaded into main memory at address 0x27FFE00)
     for (u32 i = 0; i < 0x170; i++) {
-        system.arm9_memory.write<u8>(0x027FFE00 + i, *loader.GetPointer(i));
+        system.arm9.memory().write<u8>(0x027FFE00 + i, *loader.GetPointer(i));
     }
 
     // next transfer the arm9 code
     for (u32 i = 0; i < loader.GetARM9Size(); i++) {
-        system.arm9_memory.write<u8>(loader.GetARM9RAMAddress() + i, *loader.GetPointer(loader.GetARM9Offset() + i));
+        system.arm9.memory().write<u8>(loader.GetARM9RAMAddress() + i, *loader.GetPointer(loader.GetARM9Offset() + i));
     }
 
     // finally transfer the arm7 code
     for (u32 i = 0; i < loader.GetARM7Size(); i++) {
-        system.arm7_memory.write<u8>(loader.GetARM7RAMAddress() + i, *loader.GetPointer(loader.GetARM7Offset() + i));
+        system.arm7.memory().write<u8>(loader.GetARM7RAMAddress() + i, *loader.GetPointer(loader.GetARM7Offset() + i));
     }
 
     log_debug("[Cartridge] Data transferred into memory");
@@ -410,7 +410,7 @@ u64 Cartridge::Encrypt64(u64 data) {
 void Cartridge::InitKeyCode(u32 level, u32 modulo) {
     // copy the key1 buffer from the arm7 bios
     for (int i = 0; i < 0x412; i++) {
-        key1_buffer[i] = system.arm7_memory.read<u32>(0x30 + (i * 4));
+        key1_buffer[i] = system.arm7.memory().read<u32>(0x30 + (i * 4));
     }
 
     key1_code[0] = loader.GetGamecode();
