@@ -77,12 +77,19 @@ void CPUBase::direct_boot(u32 entrypoint) {
     // enter system mode
     m_cpsr.data = 0xDF;
     switch_mode(MODE_SYS);
-
     arm_flush_pipeline();
 }
 
 void CPUBase::firmware_boot() {
-
+    if (m_arch == Arch::ARMv5) {
+        m_gpr[15] = 0xFFFF0000;
+    } else {
+        m_gpr[15] = 0x00000000;
+    }
+    
+    m_cpsr.data = 0xD3;
+    switch_mode(MODE_SVC);
+    arm_flush_pipeline();
 }
 
 void CPUBase::send_interrupt(InterruptType interrupt_type) {
@@ -106,5 +113,66 @@ bool CPUBase::is_halted() {
 }
 
 void CPUBase::switch_mode(u8 mode) {
+    mode &= 0x1F;
 
+    int old_bank = bank(m_cpsr.mode);
+    int new_bank = bank(mode);
+
+    m_cpsr.mode = mode;
+
+    // no need to bank switch if no change in banks used
+    if (old_bank == new_bank) {
+        return;
+    }
+
+    if (old_bank == BANK_FIQ || new_bank == BANK_FIQ) {
+        for (int i = 0; i < 7; i++) {
+            m_gpr_banked[old_bank][i] = m_gpr[i + 8];
+        }
+
+        for (int i = 0; i < 7; i++) {
+            m_gpr[i + 8] = m_gpr_banked[new_bank][i];
+        }
+    } else {
+        m_gpr_banked[old_bank][5] = m_gpr[13];
+        m_gpr_banked[old_bank][6] = m_gpr[14];
+
+        m_gpr[13] = m_gpr_banked[new_bank][5];
+        m_gpr[14] = m_gpr_banked[new_bank][6];
+    }
+}
+
+bool CPUBase::is_arm() {
+    return !m_cpsr.t;
+}
+
+bool CPUBase::is_privileged() {
+    return m_cpsr.mode != MODE_USR;
+}
+
+bool CPUBase::has_spsr() {
+    return (m_cpsr.mode != MODE_USR && m_cpsr.mode != MODE_SYS);
+}
+
+u32 CPUBase::spsr() {
+    return m_spsr_banked[bank(m_cpsr.mode)].data;
+}
+
+int CPUBase::bank(u8 mode) {
+    switch (mode) {
+    case MODE_USR: case MODE_SYS:
+        return BANK_USR;
+    case MODE_FIQ:
+        return BANK_FIQ;
+    case MODE_IRQ:
+        return BANK_IRQ;
+    case MODE_SVC:
+        return BANK_SVC;
+    case MODE_ABT:
+        return BANK_ABT;
+    case MODE_UND:
+        return BANK_UND;
+    default:
+        log_fatal("[CPUBase] mode %02x doesn't have a bank", mode);
+    }
 }

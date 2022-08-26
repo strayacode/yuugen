@@ -13,10 +13,12 @@ add_library(core
     ARM/ARM9/ARM9.h ARM/ARM9/ARM9.cpp
     ARM/Disassembler/Disassembler.h ARM/Disassembler/Disassembler.cpp
     ARM/Disassembler/arm.cpp ARM/Disassembler/thumb.cpp
-    ARM/Decoder/Decoder.h
+    ARM/Decoder.h
     ARM/CPUBase.h ARM/CPUBase.cpp
     ARM/CoprocessorBase.h
     ARM/Interpreter/Interpreter.h ARM/Interpreter/Interpreter.cpp
+    ARM/Interpreter/Instructions/ALU.cpp ARM/Interpreter/Instructions/Branch.cpp
+    ARM/Interpreter/Instructions/Transfer.cpp
     
     Hardware/Cartridge/Cartridge.h Hardware/Cartridge/Cartridge.cpp
     Hardware/Cartridge/loader_base.h 

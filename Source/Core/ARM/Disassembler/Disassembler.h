@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "Core/ARM/Decoder/Decoder.h"
+#include "Core/ARM/Decoder.h"
 
 class Disassembler {
 public:

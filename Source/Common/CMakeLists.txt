@@ -1,5 +1,6 @@
 add_library(common
-    Types.h Log.h
+    Types.h
+    Log.h
     log_file.h log_file.cpp
     lut_helpers.h
     Bits.h

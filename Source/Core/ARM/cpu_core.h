@@ -4,7 +4,7 @@
 #include "Common/log_file.h"
 #include "Common/Bits.h"
 #include "Core/ARM/MemoryBase.h"
-#include "Core/ARM/Decoder/Decoder.h"
+#include "Core/ARM/Decoder.h"
 #include "Core/ARM/MMIO.h"
 #include "Core/ARM/ARMTypes.h"
 

@@ -53,6 +53,25 @@ enum Bank {
     BANK_UND = 5,
 };
 
+enum Condition {
+    CONDITION_EQ = 0,
+    CONDITION_NE = 1,
+    CONDITION_CS = 2,
+    CONDITION_CC = 3,
+    CONDITION_MI = 4,
+    CONDITION_PL = 5,
+    CONDITION_VS = 6,
+    CONDITION_VC = 7,
+    CONDITION_HI = 8,
+    CONDITION_LS = 9,
+    CONDITION_GE = 10,
+    CONDITION_LT = 11,
+    CONDITION_GT = 12,
+    CONDITION_LE = 13,
+    CONDITION_AL = 14,
+    CONDITION_NV = 15,
+};
+
 class CPUBase {
 public:
     CPUBase(MemoryBase& memory, CoprocessorBase& coprocessor, Arch arch);
@@ -76,6 +95,12 @@ public:
 
 private:
     void switch_mode(u8 mode);
+    bool is_arm();
+
+    bool is_privileged();
+    bool has_spsr();
+    u32 spsr();
+    int bank(u8 mode);
 
     friend class Interpreter;
 
