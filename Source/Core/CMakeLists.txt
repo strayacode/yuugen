@@ -14,8 +14,7 @@ add_library(core
     ARM/Disassembler/Disassembler.h ARM/Disassembler/Disassembler.cpp
     ARM/Disassembler/arm.cpp ARM/Disassembler/thumb.cpp
     ARM/Decoder/Decoder.h
-    ARM/CPU.h ARM/CPU.cpp
-    ARM/ExecutorInterface.h
+    ARM/CPUBase.h ARM/CPUBase.cpp
     ARM/CoprocessorBase.h
     ARM/Interpreter/Interpreter.h ARM/Interpreter/Interpreter.cpp
     

@@ -1,17 +1,32 @@
-#include "Core/ARM/CPU.h"
+#include "Core/ARM/CPUBase.h"
 #include "Core/ARM/ARM7/Memory.h"
 #include "Core/ARM/ARM7/Coprocessor.h"
 #include "Core/ARM/ARM9/Memory.h"
 #include "Core/ARM/ARM9/Coprocessor.h"
 #include "Core/ARM/Interpreter/Interpreter.h"
 
-CPU::CPU(MemoryBase& memory, CoprocessorBase& coprocessor, Arch arch) : m_memory(memory), m_coprocessor(coprocessor), m_arch(arch) {}
+CPUBase::CPUBase(MemoryBase& memory, CoprocessorBase& coprocessor, Arch arch) : m_memory(memory), m_coprocessor(coprocessor), m_arch(arch) {}
 
-void CPU::reset() {
+void CPUBase::reset() {
+    m_gpr.fill(0);
 
+    for (int i = 0; i < 6; i++) {
+        m_gpr_banked[i].fill(0);
+        m_spsr_banked[i].data = 0;
+    }
+
+    m_cpsr.data = 0xD3;
+    switch_mode(MODE_SVC);
+
+    m_ime = 0;
+    m_ie = 0;
+    m_irf = 0;
+    m_halted = false;
+
+    m_timestamp = 0;
 }
 
-void CPU::build_mmio(MMIO& mmio) {
+void CPUBase::build_mmio(MMIO& mmio) {
     mmio.register_mmio<u8>(
         0x04000208,
         mmio.direct_read<u8>(&m_ime, 0x1),
@@ -45,37 +60,32 @@ void CPU::build_mmio(MMIO& mmio) {
     );
 }
 
-void CPU::direct_boot(u32 entrypoint) {
+void CPUBase::direct_boot(u32 entrypoint) {
+    m_gpr[12] = m_gpr[14] = m_gpr[15] = entrypoint;
 
-}
-
-void CPU::firmware_boot() {
-
-}
-
-void CPU::run(u64 target) {
-    while (m_timestamp < target) {
-        if (m_halted) {
-            m_timestamp = target;
-            return;
-        }
-
-        m_timestamp += m_executor->run(target);
+    // armv4/armv5 specific
+    if (m_arch == Arch::ARMv4) {
+        m_gpr[13] = 0x0380FD80;
+        m_gpr_banked[BANK_IRQ][5] = 0x0380FF80;
+        m_gpr_banked[BANK_SVC][5] = 0x0380FFC0;
+    } else if (m_arch == Arch::ARMv5) {
+        m_gpr[13] = 0x03002F7C;
+        m_gpr_banked[BANK_IRQ][5] = 0x03003F80;
+        m_gpr_banked[BANK_SVC][5] = 0x03003FC0;
     }
+
+    // enter system mode
+    m_cpsr.data = 0xDF;
+    switch_mode(MODE_SYS);
+
+    arm_flush_pipeline();
 }
 
-void CPU::select_executor(ExecutorType executor_type) {
-    switch (executor_type) {
-    case ExecutorType::Interpreter:
-        m_executor = std::make_unique<Interpreter>(*this);
-        break;
-    default:
-        log_fatal("[CPU] handle unknown executor");
-    }
+void CPUBase::firmware_boot() {
+
 }
 
-
-void CPU::send_interrupt(InterruptType interrupt_type) {
+void CPUBase::send_interrupt(InterruptType interrupt_type) {
     m_irf |= (1 << static_cast<int>(interrupt_type));
 
     if (m_ie & (1 << static_cast<int>(interrupt_type))) {
@@ -87,10 +97,14 @@ void CPU::send_interrupt(InterruptType interrupt_type) {
     }
 }
 
-void CPU::halt() {
+void CPUBase::halt() {
     m_halted = true;
 }
 
-bool CPU::is_halted() {
+bool CPUBase::is_halted() {
     return m_halted;
+}
+
+void CPUBase::switch_mode(u8 mode) {
+
 }

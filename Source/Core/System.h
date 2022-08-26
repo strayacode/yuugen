@@ -32,7 +32,7 @@ public:
 
     // get a reference to a cpu based on an id
     // (0 = arm7, 1 = arm9)
-    inline CPU& cpu(int cpu) {
+    inline CPUBase& cpu(int cpu) {
         return cpu ? arm9.cpu() : arm7.cpu();
     }
     

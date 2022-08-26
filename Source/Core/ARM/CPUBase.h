@@ -3,13 +3,12 @@
 #include <memory>
 #include <array>
 #include "Common/Types.h"
-#include "Core/ARM/ExecutorInterface.h"
 #include "Core/ARM/MemoryBase.h"
 #include "Core/ARM/CoprocessorBase.h"
 #include "Core/ARM/ARMTypes.h"
 #include "Core/ARM/MMIO.h"
 
-enum class ExecutorType {
+enum class CPUBackend {
     Interpreter,
 };
 
@@ -35,34 +34,66 @@ enum class InterruptType {
     SPI = 23,  
 };
 
-class Interpreter;
+enum Mode {
+    MODE_USR = 0x10,
+    MODE_FIQ = 0x11,
+    MODE_IRQ = 0x12,
+    MODE_SVC = 0x13,
+    MODE_ABT = 0x17,
+    MODE_UND = 0x1B,
+    MODE_SYS = 0x1F, // "privileged" user mode
+};
 
-// TODO: have the CPU class inherit the ExecutorInterface
-class CPU {
+enum Bank {
+    BANK_USR = 0,
+    BANK_FIQ = 1,
+    BANK_IRQ = 2,
+    BANK_SVC = 3,
+    BANK_ABT = 4,
+    BANK_UND = 5,
+};
+
+class CPUBase {
 public:
-    CPU(MemoryBase& memory, CoprocessorBase&, Arch arch);
+    CPUBase(MemoryBase& memory, CoprocessorBase& coprocessor, Arch arch);
+
+    virtual ~CPUBase() = default;
+
+    // runs the backend until target
+    virtual void run(u64 target) = 0;
+
+    virtual void arm_flush_pipeline() = 0;
+    virtual void thumb_flush_pipeline() = 0;
 
     void reset();
     void build_mmio(MMIO& mmio);
     void direct_boot(u32 entrypoint);
     void firmware_boot();
-    void run(u64 target); 
-    void select_executor(ExecutorType executor_type);
     
     void send_interrupt(InterruptType interrupt_type);
     void halt();
     bool is_halted();
 
 private:
+    void switch_mode(u8 mode);
+
     friend class Interpreter;
 
-    std::unique_ptr<ExecutorInterface> m_executor;
     MemoryBase& m_memory;
     CoprocessorBase& m_coprocessor;
 
     union StatusRegister {
         struct {
-            u32 : 32;
+            u8 mode : 5;
+            bool t : 1;
+            bool f : 1;
+            bool i : 1;
+            u32 : 19;
+            bool q : 1;
+            bool v : 1;
+            bool c : 1;
+            bool z : 1;
+            bool n : 1;
         };
 
         u32 data;

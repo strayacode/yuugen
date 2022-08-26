@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Common/Types.h"
-#include "Core/ARM/ExecutorInterface.h"
-#include "Core/ARM/CPU.h"
+#include "Core/ARM/CPUBase.h"
 
-class Interpreter final : public ExecutorInterface {
+class System;
+
+class Interpreter final : public CPUBase {
 public:
-    Interpreter(CPU& cpu);
+    Interpreter(MemoryBase& memory, CoprocessorBase& coprocessor, Arch arch);
 
-    u64 run(u64 target) override;
+    void run(u64 target) override;
 
 private:
     template <typename T>
@@ -17,6 +18,9 @@ private:
     template <typename T>
     void write(u32 addr, T data);
 
-    CPU& m_cpu;
+    void arm_flush_pipeline() override;
+    void thumb_flush_pipeline() override;
+
+    std::array<u32, 2> m_pipeline;
 };
 

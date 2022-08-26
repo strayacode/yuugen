@@ -8,8 +8,8 @@ System::System()
     timers {Timers(*this, 0), Timers(*this, 1)},
     spu(*this),
     arm7(*this), arm9(*this) {
-    arm7.cpu().select_executor(ExecutorType::Interpreter);
-    arm9.cpu().select_executor(ExecutorType::Interpreter);
+    arm7.select_backend(CPUBackend::Interpreter);
+    arm9.select_backend(CPUBackend::Interpreter);
 }
 
 void System::Reset() {
