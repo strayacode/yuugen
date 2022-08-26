@@ -5,11 +5,15 @@
 #include "Common/Types.h"
 #include "Core/ARM/MemoryBase.h"
 #include "Core/ARM/CoprocessorBase.h"
-#include "Core/ARM/ARMTypes.h"
 #include "Core/ARM/MMIO.h"
 
 enum class CPUBackend {
     Interpreter,
+};
+
+enum class Arch {
+    ARMv4 = 0,
+    ARMv5 = 1,
 };
 
 enum class InterruptType {
