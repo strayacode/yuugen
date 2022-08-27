@@ -1,4 +1,5 @@
 #include "Common/Bits.h"
+#include "Common/log_file.h"
 #include "Core/ARM/Interpreter/Interpreter.h"
 
 void Interpreter::arm_halfword_data_transfer() {
@@ -334,6 +335,8 @@ void Interpreter::arm_single_data_transfer() {
             arm_flush_pipeline();
         }
     }
+
+    LogFile::Get().Log("ldm/stm r%d = %08x\n", rn, m_gpr[rn]);
 }
 
 u32 Interpreter::arm_get_shifted_register_single_data_transfer() {
