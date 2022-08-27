@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 option(LTO "Enable link time optimisations" ON)
+option(CPU_DEBUG "Enable CPU debugging" OFF)
 
 add_compile_options(
     -Wall
@@ -32,6 +33,11 @@ endif()
 if(LTO)
     message(STATUS "Using link time optimisations")
     add_compile_options(-flto)
+endif()
+
+if(CPU_DEBUG)
+    message(STATUS "CPU debugging enabled")
+    add_definitions(-DCPU_DEBUG)
 endif()
 
 add_subdirectory(Source)

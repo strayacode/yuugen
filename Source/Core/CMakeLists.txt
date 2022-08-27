@@ -19,6 +19,7 @@ add_library(core
     ARM/Interpreter/Interpreter.h ARM/Interpreter/Interpreter.cpp
     ARM/Interpreter/Instructions/ALU.cpp ARM/Interpreter/Instructions/Branch.cpp
     ARM/Interpreter/Instructions/Transfer.cpp
+    ARM/Watchpoints.h ARM/Watchpoints.cpp
     
     Hardware/Cartridge/Cartridge.h Hardware/Cartridge/Cartridge.cpp
     Hardware/Cartridge/loader_base.h 

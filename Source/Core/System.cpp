@@ -88,28 +88,36 @@ void System::SetGamePath(std::string path) {
 }
 
 void System::RunFrame() {
-    u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
+    while (running) {
+        u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
 
-    while (scheduler.GetCurrentTime() < frame_end_time) {
-        if (!arm7.cpu().is_halted() || !arm9.cpu().is_halted()) {
-            u64 cycles = std::min(static_cast<u64>(16), scheduler.GetEventTime() - scheduler.GetCurrentTime());
-            u64 arm7_target = scheduler.GetCurrentTime() + cycles;
-            u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
-            
-            // run the arm9 until the next scheduled event
-            arm9.cpu().run(arm9_target);
+        while (scheduler.GetCurrentTime() < frame_end_time) {
+            if (!arm7.cpu().is_halted() || !arm9.cpu().is_halted()) {
+                u64 cycles = std::min(static_cast<u64>(16), scheduler.GetEventTime() - scheduler.GetCurrentTime());
+                u64 arm7_target = scheduler.GetCurrentTime() + cycles;
+                u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
+                
+                // run the arm9 until the next scheduled event
+                if (!arm9.cpu().run(arm9_target)) {
+                    running = false;
+                    return;
+                }
 
-            // let the arm7 catch up
-            arm7.cpu().run(arm7_target);
+                // let the arm7 catch up
+                if(!arm7.cpu().run(arm7_target)) {
+                    running = false;
+                    return;
+                }
 
-            // advance the scheduler
-            scheduler.Tick(cycles);
-        } else {
-            // if both cpus are halted we can just advance to the next event
-            scheduler.set_current_time(scheduler.GetEventTime());
+                // advance the scheduler
+                scheduler.Tick(cycles);
+            } else {
+                // if both cpus are halted we can just advance to the next event
+                scheduler.set_current_time(scheduler.GetEventTime());
+            }
+
+            scheduler.RunEvents();
         }
-
-        scheduler.RunEvents();
     }
 }
 

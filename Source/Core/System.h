@@ -66,4 +66,6 @@ public:
     u16 siocnt;
 
     std::string rom_path;
+
+    bool running = true;
 };

@@ -30,6 +30,7 @@ public:
     void HandleInput();
     void SetupStyle();
     void CartridgeWindow();
+    void ARMWindow(Arch arch);
     void DMAWindow();
 
     void render();

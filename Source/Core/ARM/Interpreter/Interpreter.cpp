@@ -9,15 +9,24 @@ Interpreter::Interpreter(MemoryBase& memory, CoprocessorBase& coprocessor, Arch 
     generate_condition_table();
 }
 
-void Interpreter::run(u64 target) {
+bool Interpreter::run(u64 target) {
     while (m_timestamp < target) {
         if (m_halted) {
             m_timestamp = target;
-            return;
+            return true;
         }
+
+#ifdef CPU_DEBUG
+        // 037f9a58
+        if (m_watchpoints.contains(m_gpr[15])) {
+            return false;
+        }
+#endif
 
         m_timestamp += single_step();
     }
+
+    return true;
 }
 
 u64 Interpreter::single_step() {

@@ -6,6 +6,7 @@
 #include "Core/ARM/MemoryBase.h"
 #include "Core/ARM/CoprocessorBase.h"
 #include "Core/ARM/MMIO.h"
+#include "Core/ARM/Watchpoints.h"
 
 enum class CPUBackend {
     Interpreter,
@@ -78,7 +79,7 @@ public:
     virtual ~CPUBase() = default;
 
     // runs the backend until target
-    virtual void run(u64 target) = 0;
+    virtual bool run(u64 target) = 0;
 
     virtual void arm_flush_pipeline() = 0;
     virtual void thumb_flush_pipeline() = 0;
@@ -92,7 +93,7 @@ public:
     void halt();
     bool is_halted();
 
-private:
+// private:
     void switch_mode(u8 mode);
     bool is_arm();
 
@@ -106,6 +107,7 @@ private:
 
     MemoryBase& m_memory;
     CoprocessorBase& m_coprocessor;
+    Watchpoints m_watchpoints;
 
     union StatusRegister {
         struct {
