@@ -30,10 +30,6 @@ public:
     void HandleInput();
     void SetupStyle();
     void CartridgeWindow();
-    
-    // the arch argument specifies whether to render window for arm7 or arm9
-    void ARMWindow(Arch arch);
-    void SchedulerWindow();
     void DMAWindow();
 
     void render();

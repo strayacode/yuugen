@@ -94,7 +94,62 @@ void Interpreter::arm_halfword_data_transfer() {
 }
 
 void Interpreter::arm_psr_transfer() {
-    todo();
+    const bool opcode = (m_instruction >> 21) & 0x1;
+    const bool spsr = (m_instruction >> 22) & 0x1;
+    u8 rm = m_instruction & 0xF;
+
+    if (opcode) {
+        // msr
+        u8 immediate = (m_instruction >> 25) & 0x1;
+        u32 value = 0;
+
+        u32 mask = 0;
+        if (m_instruction & (1 << 16)) {
+            mask |= 0x000000FF;
+        }
+        if (m_instruction & (1 << 17)) {
+            mask |= 0x0000FF00;
+        }
+        if (m_instruction & (1 << 18)) {
+            mask |= 0x00FF0000;
+        }
+        if (m_instruction & (1 << 19)) {
+            mask |= 0xFF000000;
+        }
+
+        if (immediate) {
+            u32 immediate = m_instruction & 0xFF;
+            u8 rotate_amount = ((m_instruction >> 8) & 0xF) << 1;
+
+            value = Common::rotate_right(immediate, rotate_amount);
+        } else {
+            value = m_gpr[rm];
+        }
+
+        // TODO: check later
+        if (spsr) {
+            if (has_spsr()) {
+                set_spsr((get_spsr() & ~mask) | (value & mask));
+            }
+        } else {
+            if (m_instruction & (1 << 16) && is_privileged()) {
+                switch_mode(value & 0x1F);
+            }
+
+            m_cpsr.data = (m_cpsr.data & ~mask) | (value & mask);
+        }
+    } else {
+        // mrs
+        u8 rd = (m_instruction >> 12) & 0xF;
+
+        if (spsr) {
+            m_gpr[rd] = get_spsr();
+        } else {
+            m_gpr[rd] = m_cpsr.data;
+        }
+    }
+    
+    m_gpr[15] += 4;
 }
 
 void Interpreter::arm_block_data_transfer() {

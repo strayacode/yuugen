@@ -154,8 +154,12 @@ bool CPUBase::has_spsr() {
     return (m_cpsr.mode != MODE_USR && m_cpsr.mode != MODE_SYS);
 }
 
-u32 CPUBase::spsr() {
+u32 CPUBase::get_spsr() {
     return m_spsr_banked[bank(m_cpsr.mode)].data;
+}
+
+void CPUBase::set_spsr(u32 data) {
+    m_spsr_banked[bank(m_cpsr.mode)].data = data;
 }
 
 int CPUBase::bank(u8 mode) {

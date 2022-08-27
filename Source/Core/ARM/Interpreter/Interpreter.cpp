@@ -1,4 +1,5 @@
 #include "Common/Bits.h"
+#include "Common/log_file.h"
 #include "Core/ARM/Interpreter/Interpreter.h"
 #include "Core/ARM/Decoder.h"
 
@@ -23,6 +24,8 @@ u64 Interpreter::single_step() {
     if (m_ime && (m_ie & m_irf) && !m_cpsr.i) {
         handle_interrupt();
     }
+
+    log_state();
 
     // the instruction decoded previously is now executed
     m_instruction = m_pipeline[0];
@@ -176,3 +179,11 @@ bool Interpreter::evaluate_condition(u32 condition) {
 void Interpreter::unknown_instruction() {
     log_fatal("[Interpreter] Instruction %08x is unimplemented at r15 = %08x", m_instruction, m_gpr[15]);
 } 
+
+void Interpreter::log_state() {
+    for (int i = 0; i < 16; i++) {
+        LogFile::Get().Log("%08x ", m_gpr[i]);
+    }
+
+    LogFile::Get().Log("%08x\n", m_instruction);
+}

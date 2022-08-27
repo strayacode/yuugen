@@ -152,7 +152,7 @@ void Interpreter::arm_data_processing() {
         if (set_flags) {
             // store the current spsr in cpsr only if in privileged mode
             if (is_privileged()) {
-                u32 current_spsr = spsr();
+                u32 current_spsr = get_spsr();
                 
                 switch_mode(current_spsr & 0x1F);
                 m_cpsr.data = current_spsr;

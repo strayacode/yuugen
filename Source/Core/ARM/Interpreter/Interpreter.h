@@ -105,6 +105,8 @@ private:
     void generate_condition_table();
     bool evaluate_condition(u32 condition);
 
+    void log_state();
+
     // pipeline state
     std::array<u32, 2> m_pipeline;
 

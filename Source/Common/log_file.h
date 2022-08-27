@@ -32,6 +32,6 @@ public:
 private:
     LogFile() {};
 
-    FILE* fp = fopen("../../log-stuff/yuugen.log", "w");
+    FILE* fp = fopen("yuugen.log", "w");
     static LogFile instance;
 };

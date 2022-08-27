@@ -447,15 +447,6 @@ void HostInterface::CartridgeWindow() {
 //     ImGui::End();
 // }
 
-void HostInterface::SchedulerWindow() {
-    ImGui::Begin("Scheduler");
-    ImGui::Text("Current Time: %ld", core.system.scheduler.GetCurrentTime());
-    for (Event event : core.system.scheduler.GetEvents()) {
-        ImGui::Text("%s +%ld", event.type->name.c_str(), event.time - core.system.scheduler.GetCurrentTime());
-    }
-    ImGui::End();
-}
-
 void HostInterface::DMAWindow() {
     ImGui::Begin("DMA");
     
@@ -497,18 +488,6 @@ void HostInterface::render() {
 
     if (cartridge_window) {
         CartridgeWindow();
-    }
-
-    // if (arm7_window) {
-    //     ARMWindow(Arch::ARMv4);
-    // }
-
-    // if (arm9_window) {
-    //     ARMWindow(Arch::ARMv5);
-    // }
-
-    if (scheduler_window) {
-        SchedulerWindow();
     }
 
     if (dma_window) {

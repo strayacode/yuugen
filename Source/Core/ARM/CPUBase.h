@@ -98,7 +98,8 @@ private:
 
     bool is_privileged();
     bool has_spsr();
-    u32 spsr();
+    u32 get_spsr();
+    void set_spsr(u32 data);
     int bank(u8 mode);
 
     friend class Interpreter;
