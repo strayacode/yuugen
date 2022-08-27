@@ -9,18 +9,16 @@ void Interpreter::arm_branch_link_maybe_exchange() {
 }
 
 void Interpreter::arm_branch_exchange() {
-    const bool link = (m_instruction >> 24) & 0x1;
-    u32 offset = ((m_instruction & (1 << 23)) ? 0xFC000000 : 0) | ((m_instruction & 0xFFFFFF) << 2);
-    
-    if (link) {
-        // store the address of the instruction after the current instruction in the link register
-        m_gpr[14] = m_gpr[15] - 4;
+    u8 rm = m_instruction & 0xF;
+    if (m_gpr[rm] & 0x1) {
+        // switch to thumb mode execution
+        m_cpsr.t = true;
+        m_gpr[15] = m_gpr[rm] & ~1;
+        thumb_flush_pipeline();
+    } else {
+        m_gpr[15] = m_gpr[rm] & ~3;
+        arm_flush_pipeline();
     }
-    
-    // r15 is at instruction address + 8
-    m_gpr[15] += offset;
-
-    arm_flush_pipeline();
 }
 
 void Interpreter::arm_branch_link() {
