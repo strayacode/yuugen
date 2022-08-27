@@ -25,11 +25,9 @@ u64 Interpreter::single_step() {
         handle_interrupt();
     }
 
-    log_state();
-
     // the instruction decoded previously is now executed
     m_instruction = m_pipeline[0];
-    
+
     // the instruction fetched previously is now decoded
     m_pipeline[0] = m_pipeline[1];
 

@@ -4,13 +4,100 @@
 
 ARM7Memory::ARM7Memory(System& system) : system(system) {
     bios = load_bios<0x4000>("../bios/bios7.bin");
-
-    build_mmio();
 }
 
 void ARM7Memory::reset() {
     update_memory_map(0, 0xFFFFFFFF);
     memset(arm7_wram, 0, 0x10000);
+}
+
+void ARM7Memory::build_mmio() {
+    mmio.register_mmio<u32>(
+        0x04000120,
+        mmio.stub_read<u32>(),
+        mmio.stub_write<u32>()
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000128,
+        mmio.direct_read<u16>(&system.siocnt),
+        mmio.direct_write<u16>(&system.siocnt)
+    );
+
+    mmio.register_mmio<u32>(
+        0x04000128,
+        mmio.direct_read<u32, u16>(&system.siocnt),
+        mmio.direct_write<u32, u16>(&system.siocnt)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000134,
+        mmio.direct_read<u16>(&system.rcnt),
+        mmio.direct_write<u16>(&system.rcnt)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000206,
+        mmio.invalid_read<u16>(),
+        mmio.stub_write<u16>()
+    );
+
+    mmio.register_mmio<u8>(
+        0x04000241,
+        mmio.direct_read<u8>(&system.wramcnt),
+        mmio.invalid_write<u8>()
+    );
+
+    mmio.register_mmio<u8>(
+        0x04000300,
+        mmio.direct_read<u8>(&system.postflg7, 0x1),
+        mmio.direct_write<u8>(&system.postflg7, 0x1)
+    );
+
+    mmio.register_mmio<u8>(
+        0x04000301,
+        mmio.invalid_read<u8>(),
+        mmio.complex_write<u8>([this](u32, u8 data) {
+            system.write_haltcnt(data);
+        })
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000300,
+        mmio.direct_read<u16>(&system.postflg7, 0x1),
+        mmio.direct_write<u16>(&system.postflg7, 0x1)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000304,
+        mmio.direct_read<u16>(&system.powcnt2, 0x3),
+        mmio.direct_write<u16>(&system.powcnt2, 0x3)
+    );
+
+    mmio.register_mmio<u32>(
+        0x04000308,
+        mmio.invalid_read<u32>(),
+        mmio.direct_write<u32>(&system.biosprot)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04001080,
+        mmio.stub_read<u16>(),
+        mmio.stub_write<u16>()
+    );
+
+    system.video_unit.build_mmio(mmio, Arch::ARMv4);
+    system.ipc.build_mmio(mmio, Arch::ARMv4);
+    system.dma[0].build_mmio(mmio, Arch::ARMv4);
+    system.cartridge.build_mmio(mmio, Arch::ARMv4);
+    system.timers[0].build_mmio(mmio);
+    system.spu.build_mmio(mmio);
+    system.arm7.cpu().build_mmio(mmio);
+    system.input.build_mmio(mmio);
+    system.spi.build_mmio(mmio);
+    system.rtc.build_mmio(mmio);
+
+    log_debug("[ARM7Memory] mmio handlers registered");
 }
 
 void ARM7Memory::update_memory_map(u32 low_addr, u32 high_addr) {
@@ -150,93 +237,4 @@ void ARM7Memory::slow_write(u32 addr, T data) {
     }
 
     log_fatal("[ARM7Memory] handle %lu-bit write %08x = %08x", sizeof(T) * 8, addr, data);
-}
-
-void ARM7Memory::build_mmio() {
-    mmio.register_mmio<u32>(
-        0x04000120,
-        mmio.stub_read<u32>(),
-        mmio.stub_write<u32>()
-    );
-
-    mmio.register_mmio<u16>(
-        0x04000128,
-        mmio.direct_read<u16>(&system.siocnt),
-        mmio.direct_write<u16>(&system.siocnt)
-    );
-
-    mmio.register_mmio<u32>(
-        0x04000128,
-        mmio.direct_read<u32, u16>(&system.siocnt),
-        mmio.direct_write<u32, u16>(&system.siocnt)
-    );
-
-    mmio.register_mmio<u16>(
-        0x04000134,
-        mmio.direct_read<u16>(&system.rcnt),
-        mmio.direct_write<u16>(&system.rcnt)
-    );
-
-    mmio.register_mmio<u16>(
-        0x04000206,
-        mmio.invalid_read<u16>(),
-        mmio.stub_write<u16>()
-    );
-
-    mmio.register_mmio<u8>(
-        0x04000241,
-        mmio.direct_read<u8>(&system.wramcnt),
-        mmio.invalid_write<u8>()
-    );
-
-    mmio.register_mmio<u8>(
-        0x04000300,
-        mmio.direct_read<u8>(&system.postflg7, 0x1),
-        mmio.direct_write<u8>(&system.postflg7, 0x1)
-    );
-
-    mmio.register_mmio<u8>(
-        0x04000301,
-        mmio.invalid_read<u8>(),
-        mmio.complex_write<u8>([this](u32, u8 data) {
-            system.write_haltcnt(data);
-        })
-    );
-
-    mmio.register_mmio<u16>(
-        0x04000300,
-        mmio.direct_read<u16>(&system.postflg7, 0x1),
-        mmio.direct_write<u16>(&system.postflg7, 0x1)
-    );
-
-    mmio.register_mmio<u16>(
-        0x04000304,
-        mmio.direct_read<u16>(&system.powcnt2, 0x3),
-        mmio.direct_write<u16>(&system.powcnt2, 0x3)
-    );
-
-    mmio.register_mmio<u32>(
-        0x04000308,
-        mmio.invalid_read<u32>(),
-        mmio.direct_write<u32>(&system.biosprot)
-    );
-
-    mmio.register_mmio<u16>(
-        0x04001080,
-        mmio.stub_read<u16>(),
-        mmio.stub_write<u16>()
-    );
-
-    system.video_unit.build_mmio(mmio, Arch::ARMv4);
-    system.ipc.build_mmio(mmio, Arch::ARMv4);
-    system.dma[0].build_mmio(mmio, Arch::ARMv4);
-    system.cartridge.build_mmio(mmio, Arch::ARMv4);
-    system.timers[0].build_mmio(mmio);
-    system.spu.build_mmio(mmio);
-    system.arm7.cpu().build_mmio(mmio);
-    system.input.build_mmio(mmio);
-    system.spi.build_mmio(mmio);
-    system.rtc.build_mmio(mmio);
-
-    log_debug("[ARM7Memory] mmio handlers registered");
 }

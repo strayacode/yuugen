@@ -10,6 +10,9 @@ System::System()
     arm7(*this), arm9(*this) {
     arm7.select_backend(CPUBackend::Interpreter);
     arm9.select_backend(CPUBackend::Interpreter);
+
+    arm7.memory().build_mmio();
+    arm9.memory().build_mmio();
 }
 
 void System::Reset() {

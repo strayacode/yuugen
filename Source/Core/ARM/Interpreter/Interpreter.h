@@ -35,29 +35,29 @@ public:
     void arm_signed_halfword_multiply();
     void arm_breakpoint();
 
-    // arm instruction helpers
-    u32 arm_mov(u32 op2, u8 set_flags);
-    u32 arm_mvn(u32 op2, u8 set_flags);
-    void arm_teq(u32 op1, u32 op2);
-    void arm_cmp(u32 op1, u32 op2);
-    void arm_cmn(u32 op1, u32 op2);
-    void arm_tst(u32 op1, u32 op2);
-    u32 arm_add(u32 op1, u32 op2, u8 set_flags);
-    u32 arm_adc(u32 op1, u32 op2, u8 set_flags);
-    u32 arm_sbc(u32 op1, u32 op2, u8 set_flags);
-    u32 arm_eor(u32 op1, u32 op2, u8 set_flags);
-    u32 arm_sub(u32 op1, u32 op2, u8 set_flags);
-    u32 arm_orr(u32 op1, u32 op2, u8 set_flags);
-    u32 arm_bic(u32 op1, u32 op2, u8 set_flags);
-    u32 arm_and(u32 op1, u32 op2, u8 set_flags);
-
+    // arm helpers
     u32 arm_get_shifted_register_data_processing(u32 op2, u8 shift_type, u8 shift_amount, u8& carry_flag, bool shift_imm);
-    u32 arm_lsl(u32 op1, u8 shift_amount, u8& carry_flag);
-    u32 arm_lsr(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm);
-    u32 arm_asr(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm);
-    u32 arm_ror(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm);
-
     u32 arm_get_shifted_register_single_data_transfer();
+
+    // alu helpers
+    u32 alu_mov(u32 op2, u8 set_flags);
+    u32 alu_mvn(u32 op2, u8 set_flags);
+    void alu_teq(u32 op1, u32 op2);
+    void alu_cmp(u32 op1, u32 op2);
+    void alu_cmn(u32 op1, u32 op2);
+    void alu_tst(u32 op1, u32 op2);
+    u32 alu_add(u32 op1, u32 op2, u8 set_flags);
+    u32 alu_adc(u32 op1, u32 op2, u8 set_flags);
+    u32 alu_sbc(u32 op1, u32 op2, u8 set_flags);
+    u32 alu_eor(u32 op1, u32 op2, u8 set_flags);
+    u32 alu_sub(u32 op1, u32 op2, u8 set_flags);
+    u32 alu_orr(u32 op1, u32 op2, u8 set_flags);
+    u32 alu_bic(u32 op1, u32 op2, u8 set_flags);
+    u32 alu_and(u32 op1, u32 op2, u8 set_flags);
+    u32 alu_lsl(u32 op1, u8 shift_amount, u8& carry_flag);
+    u32 alu_lsr(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm);
+    u32 alu_asr(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm);
+    u32 alu_ror(u32 op1, u8 shift_amount, u8& carry_flag, bool shift_imm);
 
     // thumb instruction handlers
     void thumb_alu_immediate();

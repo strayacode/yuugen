@@ -10,6 +10,7 @@ public:
     ARM9Memory(System& system);
 
     void reset();
+    void build_mmio();
     void update_memory_map(u32 low_addr, u32 high_addr);
 
     u8 slow_read_byte(u32 addr) override;
@@ -26,8 +27,6 @@ private:
 
     template <typename T>
     void slow_write(u32 addr, T data);
-
-    void build_mmio();
 
     System& system;
     std::array<u8, 0x8000> bios;

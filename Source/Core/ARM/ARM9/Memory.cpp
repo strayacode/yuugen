@@ -6,12 +6,49 @@
 
 ARM9Memory::ARM9Memory(System& system) : system(system) {
     bios = load_bios<0x8000>("../bios/bios9.bin");
-
-    build_mmio();
 }
 
 void ARM9Memory::reset() {
     update_memory_map(0, 0xFFFFFFFF);
+}
+
+void ARM9Memory::build_mmio() {
+    mmio.register_mmio<u16>(
+        0x04000204,
+        mmio.direct_read<u16>(&system.exmemcnt),
+        mmio.direct_write<u16>(&system.exmemcnt)
+    );
+
+    mmio.register_mmio<u8>(
+        0x04000247,
+        mmio.invalid_read<u8>(),
+        mmio.complex_write<u8>([this](u32, u8 data) {
+            system.write_wramcnt(data);
+        })
+    );
+
+    mmio.register_mmio<u8>(
+        0x04000300,
+        mmio.direct_read<u8>(&system.postflg9, 0x3),
+        mmio.direct_write<u8>(&system.postflg9, 0x3)
+    );
+
+    mmio.register_mmio<u16>(
+        0x04000300,
+        mmio.direct_read<u16>(&system.postflg9, 0x3),
+        mmio.direct_write<u16>(&system.postflg9, 0x3)
+    );
+
+    system.video_unit.build_mmio(mmio, Arch::ARMv5);
+    system.ipc.build_mmio(mmio, Arch::ARMv5);
+    system.dma[1].build_mmio(mmio, Arch::ARMv5);
+    system.cartridge.build_mmio(mmio, Arch::ARMv5);
+    system.timers[1].build_mmio(mmio);
+    system.arm9.cpu().build_mmio(mmio);
+    system.input.build_mmio(mmio);
+    system.maths_unit.build_mmio(mmio);
+
+    log_debug("[ARM9Memory] mmio handlers registered");
 }
 
 void ARM9Memory::update_memory_map(u32 low_addr, u32 high_addr) {
@@ -203,43 +240,4 @@ void ARM9Memory::slow_write(u32 addr, T data) {
     }
 
     log_fatal("ARM9: handle %lu-bit write %08x = %08x", sizeof(T) * 8, addr, data);
-}
-
-void ARM9Memory::build_mmio() {
-    mmio.register_mmio<u16>(
-        0x04000204,
-        mmio.direct_read<u16>(&system.exmemcnt),
-        mmio.direct_write<u16>(&system.exmemcnt)
-    );
-
-    mmio.register_mmio<u8>(
-        0x04000247,
-        mmio.invalid_read<u8>(),
-        mmio.complex_write<u8>([this](u32, u8 data) {
-            system.write_wramcnt(data);
-        })
-    );
-
-    mmio.register_mmio<u8>(
-        0x04000300,
-        mmio.direct_read<u8>(&system.postflg9, 0x3),
-        mmio.direct_write<u8>(&system.postflg9, 0x3)
-    );
-
-    mmio.register_mmio<u16>(
-        0x04000300,
-        mmio.direct_read<u16>(&system.postflg9, 0x3),
-        mmio.direct_write<u16>(&system.postflg9, 0x3)
-    );
-
-    system.video_unit.build_mmio(mmio, Arch::ARMv5);
-    system.ipc.build_mmio(mmio, Arch::ARMv5);
-    system.dma[1].build_mmio(mmio, Arch::ARMv5);
-    system.cartridge.build_mmio(mmio, Arch::ARMv5);
-    system.timers[1].build_mmio(mmio);
-    system.arm9.cpu().build_mmio(mmio);
-    system.input.build_mmio(mmio);
-    system.maths_unit.build_mmio(mmio);
-
-    log_debug("[ARM9Memory] mmio handlers registered");
 }

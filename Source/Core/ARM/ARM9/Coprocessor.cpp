@@ -42,6 +42,7 @@ u32 ARM9Coprocessor::read(u32 cn, u32 cm, u32 cp) {
     case 0x060500:
     case 0x060600:
     case 0x060700:
+        return 0;
     case 0x010000:
         return m_control;
     case 0x090100:
@@ -90,28 +91,32 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 data) {
     case 0x070E01:
     case 0x070E02:
         break;
-    case 0x090100:
-        // unmap old dtcm region
-        m_system.arm9.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
-        
+    case 0x090100: {
+        u32 old_dtcm_base = dtcm_base();
+        u32 old_dtcm_size = dtcm_size();
+
         m_dtcm_control = data;
+
+        // unmap old dtcm region
+        m_system.arm9.memory().update_memory_map(old_dtcm_base, old_dtcm_base + old_dtcm_size);
 
         // remap with new dtcm region
         m_system.arm9.memory().update_memory_map(dtcm_base(), dtcm_base() + dtcm_size());
 
         log_debug("[ARM9Coprocessor] dtcm base: %08x dtcm size: %08x", dtcm_base(), dtcm_size());
         break;
-    case 0x090101:
-        // unmap old itcm region
-        m_system.arm9.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
-        
+    }
+    case 0x090101: {
+        u32 old_itcm_size = itcm_size();
+
         m_itcm_control = data;
 
         // remap with new itcm region
-        m_system.arm9.memory().update_memory_map(itcm_base(), itcm_base() + itcm_size());
+        m_system.arm9.memory().update_memory_map(0, std::max(old_itcm_size, itcm_size()));
 
         log_debug("[ARM9Coprocessor] itcm base: %08x itcm size: %08x", itcm_base(), itcm_size());
         break;
+    }
     default:
         log_fatal("[ARM9Coprocessor] undefined register write c%d, c%d, c%d with data %08x", cn, cm, cp, data);
     }
