@@ -9,7 +9,7 @@ System::System(UpdateFunction update_fps)
     timers {Timers(*this, 0), Timers(*this, 1)},
     spu(*this),
     arm7(*this), arm9(*this),
-    m_emu_thread([this]() {
+    m_emulator_thread([this]() {
         if (m_state == State::Running) {
             run_frame();
         }
@@ -58,6 +58,8 @@ void System::reset() {
 
     arm7.cpu().reset();
     arm9.cpu().reset();
+
+    frame_end_time = scheduler.GetCurrentTime() + 560190;
 }
 
 void System::start() {
@@ -71,7 +73,7 @@ void System::start() {
 }
 
 void System::shutdown() {
-    m_emu_thread.Stop();
+    m_emulator_thread.Stop();
 }
 
 void System::direct_boot() {
@@ -107,8 +109,6 @@ void System::firmware_boot() {
 }
 
 void System::run_frame() {
-    u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
-
     while (scheduler.GetCurrentTime() < frame_end_time) {
         if (!arm7.cpu().is_halted() || !arm9.cpu().is_halted()) {
             u64 cycles = std::min(static_cast<u64>(16), scheduler.GetEventTime() - scheduler.GetCurrentTime());
@@ -136,6 +136,9 @@ void System::run_frame() {
 
         scheduler.RunEvents();
     }
+
+    // calculate end time for next frame
+    frame_end_time = scheduler.GetCurrentTime() + 560190;
 }
 
 void System::set_state(State state) {
@@ -146,7 +149,7 @@ void System::set_state(State state) {
     case State::Running:
         if (old_state == State::Idle) {
             start();
-            m_emu_thread.Start();
+            m_emulator_thread.Start();
         }
 
         m_audio_interface->SetState(AudioState::Playing);
@@ -166,7 +169,7 @@ void System::set_state(State state) {
         break;
     case State::Idle:
         m_audio_interface->SetState(AudioState::Idle);
-        m_emu_thread.Stop();
+        m_emulator_thread.Stop();
 
         if (Settings::Get().threaded_2d) {
             video_unit.stop_render_thread();
@@ -189,10 +192,10 @@ void System::boot(std::string game_path) {
 void System::toggle_framelimiter() {
     if (m_state == State::Running) {
         set_state(State::Paused);
-        m_emu_thread.toggle_framelimiter();
+        m_emulator_thread.toggle_framelimiter();
         set_state(State::Running);
     } else {
-        m_emu_thread.toggle_framelimiter();
+        m_emulator_thread.toggle_framelimiter();
     }
 }
 

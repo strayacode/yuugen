@@ -90,6 +90,12 @@ void HostInterface::HandleInput() {
         } else if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
             bool key_pressed = event.type == SDL_KEYDOWN;
             switch (event.key.keysym.sym) {
+            case SDLK_SPACE:
+                if (key_pressed && m_system.state() != State::Idle) {
+                    toggle_pause();
+                }
+
+                break;
             case SDLK_d:
                 m_system.input.HandleInput(BUTTON_A, key_pressed);
                 break;
@@ -227,24 +233,18 @@ void HostInterface::render_menu_bar() {
                 m_system.toggle_framelimiter();
             }
 
-            if (ImGui::MenuItem("Pause")) {
-                if (m_system.state() == State::Running) {
-                    m_system.set_state(State::Paused);
-                    osd.add_message("Emulation Paused");
-                } else {
-                    m_system.set_state(State::Running);
-                    osd.add_message("Emulation Resumed");
-                }
+            if (ImGui::MenuItem(m_system.state() == State::Running ? "Pause" : "Resume", NULL, false, m_system.state() != State::Idle)) {
+                toggle_pause();
             }
 
-            if (ImGui::MenuItem("Stop")) {
+            if (ImGui::MenuItem("Stop", NULL, false, m_system.state() != State::Idle)) {
                 osd.add_message("Emulation Stopped");
                 window_type = WindowType::GamesList;
                 reset_title();
                 m_system.set_state(State::Idle);
             }
 
-            if (ImGui::MenuItem("Restart")) {
+            if (ImGui::MenuItem("Restart", NULL, false, m_system.state() != State::Idle)) {
                 osd.add_message("Emulation Restarted");
                 m_system.set_state(State::Idle);
                 m_system.set_state(State::Running);
@@ -301,6 +301,13 @@ void HostInterface::render_menu_bar() {
 
             ImGui::SetCursorPosX(pos);
             ImGui::Text("%s", fps_string.c_str());
+        } else if (m_system.state() == State::Paused) {
+            std::string fps_string = "Paused";
+
+            auto pos = window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x;
+
+            ImGui::SetCursorPosX(pos);
+            ImGui::TextColored(ImVec4(1, 1, 0, 1), "%s", fps_string.c_str());
         }
 
         ImGui::EndMainMenuBar();
@@ -699,4 +706,14 @@ void HostInterface::take_screenshot() {
     path += filename;
     
     stbi_write_png(path.c_str(), 256, 384, 4, screenshot_data.data(), 256 * 4);
+}
+
+void HostInterface::toggle_pause() {
+    if (m_system.state() == State::Running) {
+        m_system.set_state(State::Paused);
+        osd.add_message("Emulation Paused");
+    } else {
+        m_system.set_state(State::Running);
+        osd.add_message("Emulation Resumed");
+    }
 }

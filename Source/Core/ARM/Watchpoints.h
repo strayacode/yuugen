@@ -12,6 +12,8 @@ enum class WatchpointType {
 struct Watchpoint {
     WatchpointType type;
     u32 addr;
+    bool enabled;
+    bool auto_remove;
 };
 
 // an abstraction for handling watchpoints for the arm7 and arm9

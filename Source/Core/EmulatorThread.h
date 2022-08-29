@@ -3,16 +3,15 @@
 #include <thread>
 #include <chrono>
 #include <ratio>
-#include <stdio.h>
 #include <functional>
 
 using RunFunction = std::function<void()>;
 using UpdateFunction = std::function<void(float fps)>;
 
-class EmuThread {
+class EmulatorThread {
 public:
-    EmuThread(RunFunction run_frame, UpdateFunction update_fps);
-    ~EmuThread();
+    EmulatorThread(RunFunction run_frame, UpdateFunction update_fps);
+    ~EmulatorThread();
     void Start();
     void Reset();
     void Run();

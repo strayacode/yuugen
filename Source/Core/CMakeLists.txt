@@ -1,6 +1,7 @@
 add_library(core
     System.h System.cpp
     Scheduler.h Scheduler.cpp
+    EmulatorThread.h EmulatorThread.cpp
 
     ARM/MemoryBase.h ARM/MMIO.h
     ARM/CPUTypes.h
@@ -37,5 +38,9 @@ add_library(core
     Hardware/MathsUnit.h Hardware/MathsUnit.cpp    
 )
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(core PRIVATE Threads::Threads)
+
 include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC common videocommon yuugen_common audiocommon)
+target_link_libraries(core PUBLIC common videocommon audiocommon)

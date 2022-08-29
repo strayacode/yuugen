@@ -81,6 +81,8 @@ private:
 
     void take_screenshot();
 
+    void toggle_pause();
+
     Disassembler disassembler;
 
     enum class WindowType {

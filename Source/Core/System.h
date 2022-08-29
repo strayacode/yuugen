@@ -7,6 +7,7 @@
 #include "Core/ARM/ARM7/ARM7.h"
 #include "Core/ARM/ARM9/ARM9.h"
 #include "Core/Scheduler.h"
+#include "Core/EmulatorThread.h"
 #include "Core/Hardware/Cartridge/Cartridge.h"
 #include "Core/Hardware/SPI.h"
 #include "Core/Hardware/DMA.h"
@@ -19,7 +20,6 @@
 #include "VideoCommon/VideoUnit.h"
 #include "AudioCommon/AudioInterface.h"
 #include "AudioCommon/SDLAudioInterface.h"
-#include "yuugen_common/emu_thread.h"
 
 enum class BootMode {
     Direct,
@@ -61,7 +61,7 @@ public:
         return cpu ? arm9.cpu() : arm7.cpu();
     }
 
-    bool framelimiter_enabled() { return m_emu_thread.framelimiter_enabled(); }
+    bool framelimiter_enabled() { return m_emulator_thread.framelimiter_enabled(); }
 
     State state() { return m_state; }
     BootMode boot_mode() { return m_boot_mode; }
@@ -97,8 +97,10 @@ public:
 private:
     BootMode m_boot_mode = BootMode::Direct;
     State m_state = State::Idle;
-    EmuThread m_emu_thread;
+    EmulatorThread m_emulator_thread;
     std::shared_ptr<AudioInterface> m_audio_interface;
 
     std::string m_game_path;
+
+    u64 frame_end_time = 0;
 };

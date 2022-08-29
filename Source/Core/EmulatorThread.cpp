@@ -1,14 +1,12 @@
-#include "yuugen_common/emu_thread.h"
+#include "Core/EmulatorThread.h"
 
-EmuThread::EmuThread(RunFunction run_frame, UpdateFunction update_fps) : run_frame(run_frame), update_fps(update_fps) {
+EmulatorThread::EmulatorThread(RunFunction run_frame, UpdateFunction update_fps) : run_frame(run_frame), update_fps(update_fps) {}
 
-}
-
-EmuThread::~EmuThread() {
+EmulatorThread::~EmulatorThread() {
     Stop();
 }
 
-void EmuThread::Start() {
+void EmulatorThread::Start() {
     running = true;
 
     thread = std::thread{[this]() {
@@ -16,11 +14,11 @@ void EmuThread::Start() {
     }};
 }
 
-void EmuThread::Reset() {
+void EmulatorThread::Reset() {
     frames = 0;
 }
 
-void EmuThread::Run() {
+void EmulatorThread::Run() {
     auto frame_end = std::chrono::system_clock::now() + frame{1};
     auto fps_update = std::chrono::system_clock::now();
     while (running) {
@@ -42,7 +40,7 @@ void EmuThread::Run() {
     }
 }
  
-void EmuThread::Stop() {
+void EmulatorThread::Stop() {
     if (!running) {
         return;
     }
@@ -53,14 +51,14 @@ void EmuThread::Stop() {
     thread.join();
 }
 
-bool EmuThread::IsActive() {
+bool EmulatorThread::IsActive() {
     return running;
 }
 
-int EmuThread::GetFPS() {
+int EmulatorThread::GetFPS() {
     return frames;
 }
 
-void EmuThread::toggle_framelimiter() {
+void EmulatorThread::toggle_framelimiter() {
     framelimiter = !framelimiter;
 }
