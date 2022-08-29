@@ -8,9 +8,11 @@
 using RunFunction = std::function<void()>;
 using UpdateFunction = std::function<void(float fps)>;
 
+class System;
+
 class EmulatorThread {
 public:
-    EmulatorThread(RunFunction run_frame, UpdateFunction update_fps);
+    EmulatorThread(System& system, RunFunction run_frame, UpdateFunction update_fps);
     ~EmulatorThread();
     void Start();
     void Reset();
@@ -25,13 +27,16 @@ public:
 
     using frame = std::chrono::duration<int, std::ratio<1, 60>>;
 
-    RunFunction run_frame;
-    UpdateFunction update_fps;
+    
 
 private:
     int frames = 0;
     bool running = false;
     bool framelimiter = false;
+
+    System& m_system;
+    RunFunction run_frame;
+    UpdateFunction update_fps;
 
     static constexpr int update_interval = 1000;
 };

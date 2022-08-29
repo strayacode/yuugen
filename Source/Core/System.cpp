@@ -9,7 +9,7 @@ System::System(UpdateFunction update_fps)
     timers {Timers(*this, 0), Timers(*this, 1)},
     spu(*this),
     arm7(*this), arm9(*this),
-    m_emulator_thread([this]() {
+    m_emulator_thread(*this, [this]() {
         if (m_state == State::Running) {
             run_frame();
         }

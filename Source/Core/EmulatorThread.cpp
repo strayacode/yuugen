@@ -1,6 +1,7 @@
 #include "Core/EmulatorThread.h"
+#include "Core/System.h"
 
-EmulatorThread::EmulatorThread(RunFunction run_frame, UpdateFunction update_fps) : run_frame(run_frame), update_fps(update_fps) {}
+EmulatorThread::EmulatorThread(System& system, RunFunction run_frame, UpdateFunction update_fps) : m_system(system), run_frame(run_frame), update_fps(update_fps) {}
 
 EmulatorThread::~EmulatorThread() {
     Stop();
@@ -23,12 +24,15 @@ void EmulatorThread::Run() {
     auto fps_update = std::chrono::system_clock::now();
     while (running) {
         run_frame();
-        frames++;
 
-        if (std::chrono::system_clock::now() - fps_update >= std::chrono::milliseconds(update_interval)) {
-            update_fps(frames * (1000.0f / update_interval));
-            frames = 0;
-            fps_update = std::chrono::system_clock::now();
+        if (m_system.state() == State::Running) {
+            frames++;
+        
+            if (std::chrono::system_clock::now() - fps_update >= std::chrono::milliseconds(update_interval)) {
+                update_fps(frames * (1000.0f / update_interval));
+                frames = 0;
+                fps_update = std::chrono::system_clock::now();
+            }
         }
 
         if (framelimiter) {
