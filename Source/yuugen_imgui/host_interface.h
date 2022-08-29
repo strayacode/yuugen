@@ -7,7 +7,7 @@
 #include "Common/Log.h"
 #include "Common/GamesList.h"
 #include "VideoCommon/GLWindow.h"
-#include "Core/Core.h"
+#include "Core/System.h"
 #include "Core/ARM/Disassembler/Disassembler.h"
 #include <memory>
 #include <vector>
@@ -36,8 +36,6 @@ public:
     void render();
 
     bool running = true;
-
-    Core core;
 
     SDL_Window* window;
     SDL_GLContext gl_context;
@@ -102,5 +100,7 @@ private:
 
     OnScreenDisplay osd;
 
-    float fps;
+    float m_fps;
+
+    System m_system;
 };

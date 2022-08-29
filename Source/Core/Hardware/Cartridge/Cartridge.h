@@ -39,7 +39,7 @@ public:
     void reset();
     void build_mmio(MMIO& mmio, Arch arch);
 
-    void LoadRom(std::string rom_path);
+    void load(std::string& game_path);
 
     void DirectBoot();
     void FirmwareBoot();

@@ -9,8 +9,10 @@
 #include "host_interface.h"
 
 HostInterface::HostInterface() : 
-    core([this](float fps) {
-        this->fps = fps;
+    m_system([this](float fps) {
+        if (m_system.state() == State::Running) {
+            m_fps = fps;
+        }
     }) {
 }
 
@@ -89,34 +91,34 @@ void HostInterface::HandleInput() {
             bool key_pressed = event.type == SDL_KEYDOWN;
             switch (event.key.keysym.sym) {
             case SDLK_d:
-                core.system.input.HandleInput(BUTTON_A, key_pressed);
+                m_system.input.HandleInput(BUTTON_A, key_pressed);
                 break;
             case SDLK_s:
-                core.system.input.HandleInput(BUTTON_B, key_pressed);
+                m_system.input.HandleInput(BUTTON_B, key_pressed);
                 break;
             case SDLK_RSHIFT:
-                core.system.input.HandleInput(BUTTON_SELECT, key_pressed);
+                m_system.input.HandleInput(BUTTON_SELECT, key_pressed);
                 break;
             case SDLK_RETURN:
-                core.system.input.HandleInput(BUTTON_START, key_pressed);
+                m_system.input.HandleInput(BUTTON_START, key_pressed);
                 break;
             case SDLK_RIGHT:
-                core.system.input.HandleInput(BUTTON_RIGHT, key_pressed);
+                m_system.input.HandleInput(BUTTON_RIGHT, key_pressed);
                 break;
             case SDLK_LEFT:
-                core.system.input.HandleInput(BUTTON_LEFT, key_pressed);
+                m_system.input.HandleInput(BUTTON_LEFT, key_pressed);
                 break;
             case SDLK_UP:
-                core.system.input.HandleInput(BUTTON_UP, key_pressed);
+                m_system.input.HandleInput(BUTTON_UP, key_pressed);
                 break;
             case SDLK_DOWN:
-                core.system.input.HandleInput(BUTTON_DOWN, key_pressed);
+                m_system.input.HandleInput(BUTTON_DOWN, key_pressed);
                 break;
             case SDLK_e:
-                core.system.input.HandleInput(BUTTON_R, key_pressed);
+                m_system.input.HandleInput(BUTTON_R, key_pressed);
                 break;
             case SDLK_w:
-                core.system.input.HandleInput(BUTTON_L, key_pressed);
+                m_system.input.HandleInput(BUTTON_L, key_pressed);
                 break;
             case SDLK_ESCAPE:
                 set_fullscreen(false);
@@ -129,8 +131,8 @@ void HostInterface::HandleInput() {
             if ((x >= 0 && x < 256) && (y >= 0 && y < 192) && event.button.button == SDL_BUTTON_LEFT) {
                 // only do a touchscreen event if it occurs in the bottom screen
                 bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
-                core.system.input.SetTouch(button_pressed);
-                core.system.input.SetPoint(x, y);
+                m_system.input.SetTouch(button_pressed);
+                m_system.input.SetPoint(x, y);
             }
         }
     }
@@ -141,8 +143,8 @@ void HostInterface::render_screens() {
     
     SDL_ShowCursor(Settings::Get().hide_cursor && (fullscreen || (io.MousePos.y > menubar_height)) ? SDL_DISABLE : SDL_ENABLE);
 
-    top_screen.render(core.system.video_unit.get_framebuffer(Screen::Top));
-    bottom_screen.render(core.system.video_unit.get_framebuffer(Screen::Bottom));
+    top_screen.render(m_system.video_unit.get_framebuffer(Screen::Top));
+    bottom_screen.render(m_system.video_unit.get_framebuffer(Screen::Bottom));
 
     const double scale_x = (double)window_width / 256;
     const double scale_y = (double)window_height / 384;
@@ -188,7 +190,7 @@ void HostInterface::render_menu_bar() {
             if (ImGui::MenuItem("Power Off")) {
                 window_type = WindowType::GamesList;
                 reset_title();
-                core.SetState(State::Idle);
+                m_system.set_state(State::Idle);
             }
 
             if (ImGui::MenuItem("Quit")) {
@@ -199,21 +201,21 @@ void HostInterface::render_menu_bar() {
 
         if (ImGui::BeginMenu("Emulation")) {
             if (ImGui::BeginMenu("Boot Mode")) {
-                bool direct_boot = core.GetBootMode() == BootMode::Direct;
+                bool direct_boot = m_system.boot_mode() == BootMode::Direct;
                 bool firmware_boot = !direct_boot;
 
                 if (ImGui::MenuItem("Direct", "", &direct_boot)) {
-                    core.SetBootMode(BootMode::Direct);
+                    m_system.set_boot_mode(BootMode::Direct);
                 }
 
                 if (ImGui::MenuItem("Firmware", "", &firmware_boot)) {
-                    core.SetBootMode(BootMode::Firmware);
+                    m_system.set_boot_mode(BootMode::Firmware);
                 }
 
                 ImGui::EndMenu();
             }
 
-            bool framelimiter_enabled = core.framelimiter_enabled();
+            bool framelimiter_enabled = m_system.framelimiter_enabled();
 
             if (ImGui::MenuItem("Toggle Framelimiter", "", &framelimiter_enabled)) {
                 if (framelimiter_enabled) {
@@ -222,15 +224,15 @@ void HostInterface::render_menu_bar() {
                     osd.add_message("Framelimiter Off");
                 }
                 
-                core.ToggleFramelimiter();
+                m_system.toggle_framelimiter();
             }
 
             if (ImGui::MenuItem("Pause")) {
-                if (core.GetState() == State::Running) {
-                    core.SetState(State::Paused);
+                if (m_system.state() == State::Running) {
+                    m_system.set_state(State::Paused);
                     osd.add_message("Emulation Paused");
                 } else {
-                    core.SetState(State::Running);
+                    m_system.set_state(State::Running);
                     osd.add_message("Emulation Resumed");
                 }
             }
@@ -239,13 +241,13 @@ void HostInterface::render_menu_bar() {
                 osd.add_message("Emulation Stopped");
                 window_type = WindowType::GamesList;
                 reset_title();
-                core.SetState(State::Idle);
+                m_system.set_state(State::Idle);
             }
 
             if (ImGui::MenuItem("Restart")) {
                 osd.add_message("Emulation Restarted");
-                core.SetState(State::Idle);
-                core.SetState(State::Running);
+                m_system.set_state(State::Idle);
+                m_system.set_state(State::Running);
             }
 
             ImGui::Separator();
@@ -292,8 +294,8 @@ void HostInterface::render_menu_bar() {
             ImGui::EndMenu();
         }
 
-        if (core.GetState() == State::Running && fps != 0.0f) {
-            std::string fps_string = format("%.0f FPS | %.2f ms", fps, 1000.0f / fps);
+        if (m_system.state() == State::Running && m_fps != 0.0f) {
+            std::string fps_string = format("%.0f FPS | %.2f ms", m_fps, 1000.0f / m_fps);
 
             auto pos = window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x;
 
@@ -352,24 +354,24 @@ void HostInterface::SetupStyle() {
 
 void HostInterface::CartridgeWindow() {
     ImGui::Begin("Cartridge");
-    ImGui::Text("%s", core.system.cartridge.loader.header.game_title);
+    ImGui::Text("%s", m_system.cartridge.loader.header.game_title);
     ImGui::Text("ARM7");
-    ImGui::Text("Offset: 0x%08x", core.system.cartridge.loader.GetARM7Offset());
-    ImGui::Text("Entrypoint: 0x%08x", core.system.cartridge.loader.GetARM7Entrypoint());
-    ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.loader.GetARM7RAMAddress());
-    ImGui::Text("Size: 0x%08x", core.system.cartridge.loader.GetARM7Size());
+    ImGui::Text("Offset: 0x%08x", m_system.cartridge.loader.GetARM7Offset());
+    ImGui::Text("Entrypoint: 0x%08x", m_system.cartridge.loader.GetARM7Entrypoint());
+    ImGui::Text("RAM Address: 0x%08x", m_system.cartridge.loader.GetARM7RAMAddress());
+    ImGui::Text("Size: 0x%08x", m_system.cartridge.loader.GetARM7Size());
     ImGui::Text("ARM9");
-    ImGui::Text("Offset: 0x%08x", core.system.cartridge.loader.GetARM9Offset());
-    ImGui::Text("Entrypoint: 0x%08x", core.system.cartridge.loader.GetARM9Entrypoint());
-    ImGui::Text("RAM Address: 0x%08x", core.system.cartridge.loader.GetARM9RAMAddress());
-    ImGui::Text("Size: 0x%08x", core.system.cartridge.loader.GetARM9Size());
+    ImGui::Text("Offset: 0x%08x", m_system.cartridge.loader.GetARM9Offset());
+    ImGui::Text("Entrypoint: 0x%08x", m_system.cartridge.loader.GetARM9Entrypoint());
+    ImGui::Text("RAM Address: 0x%08x", m_system.cartridge.loader.GetARM9RAMAddress());
+    ImGui::Text("Size: 0x%08x", m_system.cartridge.loader.GetARM9Size());
     ImGui::End();
 }
 
 void HostInterface::ARMWindow(Arch arch) {
     std::string name = arch == Arch::ARMv5 ? "ARM9" : "ARM7";
     int index = arch == Arch::ARMv5 ? 1 : 0;
-    CPUBase& cpu = core.system.cpu(index);
+    CPUBase& cpu = m_system.cpu(index);
 
     ImGui::Begin(name.c_str());
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable;
@@ -412,14 +414,14 @@ void HostInterface::ARMWindow(Arch arch) {
 
             ImGui::Text("Number of Instructions: %d", disassembly_size);
 
-            if (core.GetState() != State::Idle) {
-                int increment = core.system.cpu(index).is_arm() ? 4 : 2;
-                u32 pc = core.system.cpu(index).m_gpr[15];
+            if (m_system.state() != State::Idle) {
+                int increment = m_system.cpu(index).is_arm() ? 4 : 2;
+                u32 pc = m_system.cpu(index).m_gpr[15];
                 u32 addr = pc - ((disassembly_size - 1) / 2) * increment;
                 
-                if (core.system.cpu(index).is_arm()) {
+                if (m_system.cpu(index).is_arm()) {
                     for (int i = 0; i < disassembly_size; i++) {
-                        u32 instruction = arch == Arch::ARMv5 ? core.system.arm9.memory().read<u32>(addr) : core.system.arm7.memory().read<u32>(addr);
+                        u32 instruction = arch == Arch::ARMv5 ? m_system.arm9.memory().read<u32>(addr) : m_system.arm7.memory().read<u32>(addr);
                         if (addr == pc) {
                             ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
                             ImGui::SameLine(67);
@@ -438,7 +440,7 @@ void HostInterface::ARMWindow(Arch arch) {
                     }
                 } else {
                     for (int i = 0; i < disassembly_size; i++) {
-                        u32 instruction = arch == Arch::ARMv5 ? core.system.arm9.memory().read<u16>(addr) : core.system.arm7.memory().read<u16>(addr);
+                        u32 instruction = arch == Arch::ARMv5 ? m_system.arm9.memory().read<u16>(addr) : m_system.arm7.memory().read<u16>(addr);
                         if (addr == pc) {
                             ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
                             ImGui::SameLine(67);
@@ -472,14 +474,14 @@ void HostInterface::DMAWindow() {
     
     for (int i = 0; i < 4; i++) {
         ImGui::Text("DMA7 Channel %d", i);
-        ImGui::Text("Source Address: %08x", core.system.dma[0].channel[i].source);
-        ImGui::Text("Destination Address: %08x", core.system.dma[0].channel[i].destination);
+        ImGui::Text("Source Address: %08x", m_system.dma[0].channel[i].source);
+        ImGui::Text("Destination Address: %08x", m_system.dma[0].channel[i].destination);
     }
 
     for (int i = 0; i < 4; i++) {
         ImGui::Text("DMA9 Channel %d", i);
-        ImGui::Text("Source Address: %08x", core.system.dma[1].channel[i].source);
-        ImGui::Text("Destination Address: %08x", core.system.dma[1].channel[i].destination);
+        ImGui::Text("Source Address: %08x", m_system.dma[1].channel[i].source);
+        ImGui::Text("Destination Address: %08x", m_system.dma[1].channel[i].destination);
     }
 
     ImGui::End();
@@ -490,7 +492,7 @@ void HostInterface::render() {
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    if (core.GetState() == State::Idle || !fullscreen) {
+    if (m_system.state() == State::Idle || !fullscreen) {
         render_menu_bar();
     }
 
@@ -650,13 +652,18 @@ void HostInterface::reset_title() {
 
 void HostInterface::boot_game(std::string path) {
     window_type = WindowType::Game;
-    core.BootGame(path);
+    m_system.boot(path);
     set_fullscreen(Settings::Get().fullscreen_on_game_launch);
 }
 
 void HostInterface::boot_firmware() {
     window_type = WindowType::Game;
-    core.BootFirmware();
+    BootMode old_boot_mode = m_system.boot_mode();
+
+    m_system.set_boot_mode(BootMode::Firmware);
+    m_system.boot();
+    m_system.set_boot_mode(old_boot_mode);
+
     set_fullscreen(Settings::Get().fullscreen_on_game_launch);
 }
 
@@ -667,8 +674,8 @@ void HostInterface::set_fullscreen(bool value) {
 
 void HostInterface::take_screenshot() {
     // first combine the top and bottom framebuffer into a std::array
-    const u32* top_framebuffer = core.system.video_unit.get_framebuffer(Screen::Top);
-    const u32* bottom_framebuffer = core.system.video_unit.get_framebuffer(Screen::Bottom);
+    const u32* top_framebuffer = m_system.video_unit.get_framebuffer(Screen::Top);
+    const u32* bottom_framebuffer = m_system.video_unit.get_framebuffer(Screen::Bottom);
     std::array<u32, 256 * 192 * 2> screenshot_data;
 
     std::mutex screenshot_copy_mutex;

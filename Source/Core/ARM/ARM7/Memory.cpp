@@ -1,5 +1,5 @@
 #include "Common/Memory.h"
-#include "Core/Core.h"
+#include "Core/System.h"
 #include "Core/ARM/ARM7/Memory.h"
 
 ARM7Memory::ARM7Memory(System& system) : system(system) {

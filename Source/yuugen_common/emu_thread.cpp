@@ -61,6 +61,6 @@ int EmuThread::GetFPS() {
     return frames;
 }
 
-void EmuThread::ToggleFramelimiter() {
+void EmuThread::toggle_framelimiter() {
     framelimiter = !framelimiter;
 }

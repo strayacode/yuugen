@@ -1,7 +1,7 @@
 #include <cassert>
 #include "Common/Log.h"
 #include "Common/Memory.h"
-#include "Core/Core.h"
+#include "Core/System.h"
 #include "Core/ARM/ARM9/Memory.h"
 
 ARM9Memory::ARM9Memory(System& system) : system(system) {

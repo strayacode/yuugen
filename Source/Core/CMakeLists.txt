@@ -1,5 +1,4 @@
 add_library(core
-    Core.h Core.cpp
     System.h System.cpp
     Scheduler.h Scheduler.cpp
 

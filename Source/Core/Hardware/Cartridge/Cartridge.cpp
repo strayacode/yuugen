@@ -1,5 +1,5 @@
 #include "Core/Hardware/Cartridge/Cartridge.h"
-#include "Core/Core.h"
+#include "Core/System.h"
 
 Cartridge::Cartridge(System& system) : system(system) {}
 
@@ -97,8 +97,8 @@ void Cartridge::build_mmio(MMIO& mmio, Arch arch) {
     );
 }
 
-void Cartridge::LoadRom(std::string rom_path) {
-    loader.Load(rom_path);
+void Cartridge::load(std::string& game_path) {
+    loader.Load(game_path);
 }
 
 void Cartridge::write_romctrl(u32 data) {
@@ -155,7 +155,7 @@ void Cartridge::StartTransfer() {
         romctrl |= (1 << 23);
 
         // start a dma transfer to read from rom
-        if (system.CartridgeAccessRights()) {
+        if (system.cartridge_access_rights()) {
             system.dma[1].Trigger(5);
         } else {
             system.dma[0].Trigger(2);
@@ -271,7 +271,7 @@ u32 Cartridge::read_data() {
         }
     } else {
         // trigger another nds cartridge dma
-        if (system.CartridgeAccessRights()) {
+        if (system.cartridge_access_rights()) {
             system.dma[1].Trigger(5);
         } else {
             system.dma[0].Trigger(2);

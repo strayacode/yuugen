@@ -1,6 +1,6 @@
 #include <string>
 #include "Core/Hardware/DMA.h"
-#include "Core/Core.h"
+#include "Core/System.h"
 
 DMA::DMA(System& system, int arch) : system(system), arch(arch) {}
 

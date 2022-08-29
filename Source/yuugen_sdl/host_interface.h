@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Core/Core.h>
+
 #include <string>
 #include <chrono>
 #include <SDL2/SDL.h>
 #include "Common/Log.h"
 #include "Common/Types.h"
+#include "Core/System.h"
 
 class HostInterface {
 public:
