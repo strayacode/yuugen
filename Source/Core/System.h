@@ -45,6 +45,10 @@ public:
     void direct_boot();
     void firmware_boot();
     void run_frame();
+
+    // single step the whole system
+    void single_step();
+    
     void set_state(State state);
     void set_boot_mode(BootMode boot_mode);
     void boot(std::string game_path = "");

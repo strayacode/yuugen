@@ -15,5 +15,11 @@ void HostInterface::render_registers_window(Arch arch) {
 
     ImGui::PopFont();
 
+    if (cpu.m_halted) {
+        ImGui::Text("State: Halted");
+    } else {
+        ImGui::Text("State: Running");
+    }
+
     ImGui::End();
 }

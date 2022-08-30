@@ -141,6 +141,27 @@ void System::run_frame() {
     frame_end_time = scheduler.GetCurrentTime() + 560190;
 }
 
+void System::single_step() {
+    u64 cycles = 1;
+    u64 arm7_target = scheduler.GetCurrentTime() + cycles;
+    u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
+    
+    // run the arm9 until the next scheduled event
+    if (!arm9.cpu().run(arm9_target)) {
+        set_state(State::Paused);
+        return;
+    }
+
+    // let the arm7 catch up
+    if (!arm7.cpu().run(arm7_target)) {
+        set_state(State::Paused);
+        return;
+    }
+
+    // advance the scheduler
+    scheduler.Tick(cycles);
+}
+
 void System::set_state(State state) {
     State old_state = m_state;
     m_state = state;

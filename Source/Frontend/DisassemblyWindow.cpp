@@ -25,6 +25,12 @@ void HostInterface::render_disassembly_window(Arch arch) {
 
     ImGui::Text("Number of Instructions: %d", disassembly_size);
 
+    ImGui::SameLine();
+
+    if (ImGui::Button("Step System")) {
+        m_system.single_step();
+    }
+
     if (m_system.state() != State::Idle) {
         int increment = cpu.is_arm() ? 4 : 2;
         u32 pc = cpu.m_gpr[15];
