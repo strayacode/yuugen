@@ -195,7 +195,6 @@ void HostInterface::render_menu_bar() {
 
             if (ImGui::MenuItem("Power Off")) {
                 window_type = WindowType::GamesList;
-                reset_title();
                 m_system.set_state(State::Idle);
             }
 
@@ -240,7 +239,6 @@ void HostInterface::render_menu_bar() {
             if (ImGui::MenuItem("Stop", NULL, false, m_system.state() != State::Idle)) {
                 osd.add_message("Emulation Stopped");
                 window_type = WindowType::GamesList;
-                reset_title();
                 m_system.set_state(State::Idle);
             }
 
@@ -255,8 +253,6 @@ void HostInterface::render_menu_bar() {
             if (ImGui::MenuItem("Settings")) {
                 settings_window = !settings_window;
                 // window_type = WindowType::Settings;
-                // reset_title();
-
             }
 
             if (ImGui::MenuItem("Take Screenshot")) {
@@ -375,107 +371,6 @@ void HostInterface::CartridgeWindow() {
     ImGui::End();
 }
 
-void HostInterface::ARMWindow(Arch arch) {
-    std::string name = arch == Arch::ARMv5 ? "ARM9" : "ARM7";
-    int index = arch == Arch::ARMv5 ? 1 : 0;
-    CPUBase& cpu = m_system.cpu(index);
-
-    ImGui::Begin(name.c_str());
-    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable;
-    if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
-        if (ImGui::BeginTabItem("Registers")) {
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem("Watchpoints")) {
-            static u32 watchpoint_addr = 0;
-            ImGui::InputScalar("Watchpoint Address", ImGuiDataType_U32, &watchpoint_addr, nullptr, nullptr, "%08X", ImGuiInputTextFlags_CharsHexadecimal);
-
-            if (ImGui::Button("Add")) {
-                cpu.m_watchpoints.add(watchpoint_addr);
-            }
-
-            for (auto& watchpoint : cpu.m_watchpoints.get()) {
-                ImGui::Text("%08x", watchpoint.addr);
-            }
-
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem("Disassembly")) {
-            if (ImGui::Button("+")) {
-                disassembly_size++;
-            }
-
-            ImGui::SameLine();
-
-            if (ImGui::Button("-")) {
-                disassembly_size--;
-            }
-
-            ImGui::SameLine();
-
-            if (disassembly_size < 0) {
-                disassembly_size = 0;
-            }
-
-            ImGui::Text("Number of Instructions: %d", disassembly_size);
-
-            if (m_system.state() != State::Idle) {
-                int increment = m_system.cpu(index).is_arm() ? 4 : 2;
-                u32 pc = m_system.cpu(index).m_gpr[15];
-                u32 addr = pc - ((disassembly_size - 1) / 2) * increment;
-                
-                if (m_system.cpu(index).is_arm()) {
-                    for (int i = 0; i < disassembly_size; i++) {
-                        u32 instruction = arch == Arch::ARMv5 ? m_system.arm9.memory().read<u32>(addr) : m_system.arm7.memory().read<u32>(addr);
-                        if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
-                            ImGui::SameLine(67);
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
-                            ImGui::SameLine(125);
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", disassembler.disassemble_arm(instruction).c_str());
-                        } else {
-                            ImGui::Text("%08X:", addr);
-                            ImGui::SameLine(67);
-                            ImGui::Text("%08X", instruction);
-                            ImGui::SameLine(125);
-                            ImGui::Text("%s", disassembler.disassemble_arm(instruction).c_str());
-                        }
-                        
-                        addr += increment;
-                    }
-                } else {
-                    for (int i = 0; i < disassembly_size; i++) {
-                        u32 instruction = arch == Arch::ARMv5 ? m_system.arm9.memory().read<u16>(addr) : m_system.arm7.memory().read<u16>(addr);
-                        if (addr == pc) {
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
-                            ImGui::SameLine(67);
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
-                            ImGui::SameLine(125);
-                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", disassembler.disassemble_thumb(instruction).c_str());
-                        } else {
-                            ImGui::Text("%08X:", addr);
-                            ImGui::SameLine(67);
-                            ImGui::Text("%08X", instruction);
-                            ImGui::SameLine(125);
-                            ImGui::Text("%s", disassembler.disassemble_thumb(instruction).c_str());
-                        }
-
-                        addr += increment;
-                    }
-                }
-            }
-
-            ImGui::EndTabItem();
-        }
-
-        ImGui::EndTabBar();
-    }
-    
-    ImGui::End();
-}
-
 void HostInterface::DMAWindow() {
     ImGui::Begin("DMA");
     
@@ -503,16 +398,21 @@ void HostInterface::render() {
         render_menu_bar();
     }
 
-    switch (window_type) {
-    case WindowType::GamesList:
-        render_games_list_window();
-        break;
-    case WindowType::Game:
-        render_screens();
-        break;
-    // case WindowType::Settings:
-    //     render_settings_window();
-    //     break;
+    if (Settings::Get().debugging) {
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+        render_display_window();
+    } else {
+        switch (window_type) {
+        case WindowType::GamesList:
+            render_games_list_window();
+            break;
+        case WindowType::Game:
+            render_screens();
+            break;
+        // case WindowType::Settings:
+        //     render_settings_window();
+        //     break;
+        }
     }
 
     if (cartridge_window) {
@@ -524,11 +424,11 @@ void HostInterface::render() {
     }
 
     if (arm7_window) {
-        ARMWindow(Arch::ARMv4);
+        render_arm_window(Arch::ARMv4);
     }
 
     if (arm9_window) {
-        ARMWindow(Arch::ARMv5);
+        render_arm_window(Arch::ARMv5);
     }
 
     if (demo_window) {
@@ -653,8 +553,141 @@ void HostInterface::render_settings_window() {
     ImGui::End();
 }
 
-void HostInterface::reset_title() {
-    SDL_SetWindowTitle(window, "yuugen");
+void HostInterface::render_display_window() {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+
+    ImGui::Begin("Display");
+
+    top_screen.render(m_system.video_unit.get_framebuffer(Screen::Top));
+    bottom_screen.render(m_system.video_unit.get_framebuffer(Screen::Bottom));
+
+    int width = ImGui::GetContentRegionAvail().x;
+    int height = ImGui::GetContentRegionAvail().y;
+
+    const double scale_x = (double)width / 256;
+    const double scale_y = (double)height / 384;
+    const double scale = scale_x < scale_y ? scale_x : scale_y;
+
+    scaled_dimensions = ImVec2(256 * scale, 192 * scale);
+
+    double padding_x = (width - scaled_dimensions.x) / 2;
+
+    ImGui::SetCursorPosX(padding_x);
+
+    ImGui::Image(
+        (void*)(intptr_t)top_screen.get_texture(),
+        ImVec2(scaled_dimensions.x, scaled_dimensions.y)
+    );
+
+    ImGui::SetCursorPosX(padding_x);
+    
+    ImGui::Image(
+        (void*)(intptr_t)bottom_screen.get_texture(),
+        ImVec2(scaled_dimensions.x, scaled_dimensions.y)
+    );
+
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
+}
+
+void HostInterface::render_arm_window(Arch arch) {
+    std::string name = arch == Arch::ARMv5 ? "ARM9" : "ARM7";
+    int index = arch == Arch::ARMv5 ? 1 : 0;
+    CPUBase& cpu = m_system.cpu(index);
+
+    ImGui::Begin(name.c_str());
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable;
+    if (ImGui::BeginTabBar("ARMTabs", tab_bar_flags)) {
+        if (ImGui::BeginTabItem("Registers")) {
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Watchpoints")) {
+            static u32 watchpoint_addr = 0;
+            ImGui::InputScalar("Watchpoint Address", ImGuiDataType_U32, &watchpoint_addr, nullptr, nullptr, "%08X", ImGuiInputTextFlags_CharsHexadecimal);
+
+            if (ImGui::Button("Add")) {
+                cpu.m_watchpoints.add(watchpoint_addr);
+            }
+
+            for (auto& watchpoint : cpu.m_watchpoints.get()) {
+                ImGui::Text("%08x", watchpoint.addr);
+            }
+
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Disassembly")) {
+            if (ImGui::Button("+")) {
+                disassembly_size++;
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("-")) {
+                disassembly_size--;
+            }
+
+            ImGui::SameLine();
+
+            if (disassembly_size < 0) {
+                disassembly_size = 0;
+            }
+
+            ImGui::Text("Number of Instructions: %d", disassembly_size);
+
+            if (m_system.state() != State::Idle) {
+                int increment = m_system.cpu(index).is_arm() ? 4 : 2;
+                u32 pc = m_system.cpu(index).m_gpr[15];
+                u32 addr = pc - ((disassembly_size - 1) / 2) * increment;
+                
+                if (m_system.cpu(index).is_arm()) {
+                    for (int i = 0; i < disassembly_size; i++) {
+                        u32 instruction = arch == Arch::ARMv5 ? m_system.arm9.memory().read<u32>(addr) : m_system.arm7.memory().read<u32>(addr);
+                        if (addr == pc) {
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
+                            ImGui::SameLine(67);
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
+                            ImGui::SameLine(125);
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", disassembler.disassemble_arm(instruction).c_str());
+                        } else {
+                            ImGui::Text("%08X:", addr);
+                            ImGui::SameLine(67);
+                            ImGui::Text("%08X", instruction);
+                            ImGui::SameLine(125);
+                            ImGui::Text("%s", disassembler.disassemble_arm(instruction).c_str());
+                        }
+                        
+                        addr += increment;
+                    }
+                } else {
+                    for (int i = 0; i < disassembly_size; i++) {
+                        u32 instruction = arch == Arch::ARMv5 ? m_system.arm9.memory().read<u16>(addr) : m_system.arm7.memory().read<u16>(addr);
+                        if (addr == pc) {
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X:", addr);
+                            ImGui::SameLine(67);
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%08X", instruction);
+                            ImGui::SameLine(125);
+                            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", disassembler.disassemble_thumb(instruction).c_str());
+                        } else {
+                            ImGui::Text("%08X:", addr);
+                            ImGui::SameLine(67);
+                            ImGui::Text("%08X", instruction);
+                            ImGui::SameLine(125);
+                            ImGui::Text("%s", disassembler.disassemble_thumb(instruction).c_str());
+                        }
+
+                        addr += increment;
+                    }
+                }
+            }
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
 }
 
 void HostInterface::boot_game(std::string path) {

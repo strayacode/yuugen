@@ -30,7 +30,6 @@ public:
     void HandleInput();
     void SetupStyle();
     void CartridgeWindow();
-    void ARMWindow(Arch arch);
     void DMAWindow();
 
     void render();
@@ -70,10 +69,12 @@ private:
     
     void render_games_list_window();
     void render_settings_window();
+    void render_display_window();
+    void render_arm_window(Arch arch);
+
     void render_screens();
     void render_menu_bar();
-    void reset_title();
-
+    
     void boot_game(std::string path);
     void boot_firmware();
 
