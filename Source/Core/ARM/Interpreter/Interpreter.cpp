@@ -29,9 +29,19 @@ bool Interpreter::run(u64 target) {
     return true;
 }
 
+bool debug = false;
+
 u64 Interpreter::single_step() {
     if (m_ime && (m_ie & m_irf) && !m_cpsr.i) {
         handle_interrupt();
+    }
+
+    if (m_gpr[15] == 0x037f9a58) {
+        debug = true;
+    }
+
+    if (debug) {
+        log_state();
     }
 
     // the instruction decoded previously is now executed
