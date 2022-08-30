@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include <memory>
-#include "host_interface.h"
+#include "Frontend/HostInterface.h"
 
 int main() {
     std::unique_ptr<HostInterface> host_interface = std::make_unique<HostInterface>();

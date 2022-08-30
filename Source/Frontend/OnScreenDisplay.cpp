@@ -1,7 +1,7 @@
 #include "imgui/imgui.h"
 #include "Common/Types.h"
 #include "Common/format.h"
-#include "yuugen_imgui/OnScreenDisplay.h"
+#include "Frontend/OnScreenDisplay.h"
 
 OnScreenDisplay::OnScreenDisplay() {
     messages.clear();

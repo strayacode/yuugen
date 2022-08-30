@@ -3,22 +3,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <memory>
+#include <vector>
+#include <array>
 #include "Common/Types.h"
 #include "Common/Log.h"
 #include "Common/GamesList.h"
 #include "VideoCommon/GLWindow.h"
 #include "Core/System.h"
 #include "Core/ARM/Disassembler/Disassembler.h"
-#include <memory>
-#include <vector>
-#include <array>
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imfilebrowser.h"
-#include "yuugen_imgui/OnScreenDisplay.h"
-#include <SDL.h>
-#include <SDL_opengl.h>
+#include "Frontend/OnScreenDisplay.h"
 
 class HostInterface {
 public:
@@ -46,6 +44,7 @@ public:
     GLuint textures[2];
 
     bool cartridge_window = false;
+    bool arm7_watchpoints_window = false;
     bool arm7_window = false;
     bool arm9_window = false;
     bool scheduler_window = false;
@@ -70,7 +69,9 @@ private:
     void render_games_list_window();
     void render_settings_window();
     void render_display_window();
-    void render_arm_window(Arch arch);
+    void render_registers_window(Arch arch);
+    void render_disassembly_window(Arch arch);
+    void render_watchpoints_window(Arch arch);
 
     void render_screens();
     void render_menu_bar();
@@ -106,4 +107,6 @@ private:
     float m_fps;
 
     System m_system;
+    
+    ImFont* m_debugger_font = nullptr;
 };

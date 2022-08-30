@@ -1,3 +1,11 @@
+set(SOURCES
+    main.cpp
+    HostInterface.h HostInterface.cpp
+    OnScreenDisplay.h OnScreenDisplay.cpp
+    WatchpointsWindow.cpp DisassemblyWindow.cpp
+    RegistersWindow.cpp
+)
+
 set(IMGUI_SOURCES
     imgui/imconfig.h
     imgui/imgui.cpp
@@ -17,7 +25,7 @@ set(IMGUI_SOURCES
     imgui/imgui_impl_sdl.h
 )
 
-add_executable(yuugen main.cpp host_interface.cpp OnScreenDisplay.cpp ${IMGUI_SOURCES})
+add_executable(yuugen ${SOURCES} ${IMGUI_SOURCES})
 
 find_package(SDL2 REQUIRED)
 
