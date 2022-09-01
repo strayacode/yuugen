@@ -29,19 +29,13 @@ bool Interpreter::run(u64 target) {
     return true;
 }
 
-bool debug = false;
-
 u64 Interpreter::single_step() {
     if (m_ime && (m_ie & m_irf) && !m_cpsr.i) {
         handle_interrupt();
     }
 
     if (m_gpr[15] == 0x037f9a58) {
-        debug = true;
-    }
-
-    if (debug) {
-        log_state();
+        m_debug = true;
     }
 
     // the instruction decoded previously is now executed
@@ -55,6 +49,10 @@ u64 Interpreter::single_step() {
         m_pipeline[1] = read_word(m_gpr[15]);
     } else {
         m_pipeline[1] = read_half(m_gpr[15]);
+    }
+
+    if (m_debug) {
+        log_state();
     }
 
     if (is_arm()) {

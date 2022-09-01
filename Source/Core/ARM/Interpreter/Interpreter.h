@@ -115,5 +115,7 @@ private:
 
     // condition lut to precompute all condition evaluations
     std::array<std::array<bool, 16>, 16> m_condition_table;
+
+    bool m_debug = false;
 };
 
