@@ -18,8 +18,7 @@ public:
     void Reset();
     void Run();
     void Stop();
-    bool IsActive();
-    int GetFPS();
+    
     void toggle_framelimiter();
     bool framelimiter_enabled() { return framelimiter; }
 

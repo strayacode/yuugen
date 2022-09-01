@@ -23,24 +23,28 @@ void EmulatorThread::Run() {
     auto frame_end = std::chrono::system_clock::now() + frame{1};
     auto fps_update = std::chrono::system_clock::now();
     while (running) {
-        run_frame();
-
         if (m_system.state() == State::Running) {
+            // printf("%ld %ld\n", std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count(), std::chrono::duration_cast<std::chrono::milliseconds>(frame_end.time_since_epoch()).count());
+            run_frame();
             frames++;
-        
+
             if (std::chrono::system_clock::now() - fps_update >= std::chrono::milliseconds(update_interval)) {
                 update_fps(frames * (1000.0f / update_interval));
                 frames = 0;
                 fps_update = std::chrono::system_clock::now();
             }
-        }
 
-        if (framelimiter) {
-            // block the execution of the emulator thread until 1 / 60 of a second has passed
-            std::this_thread::sleep_until(frame_end);
-        }
+            if (framelimiter) {
+                // block the execution of the emulator thread until 1 / 60 of a second has passed
+                std::this_thread::sleep_until(frame_end);
 
-        frame_end += frame{1};
+                frame_end += frame{1};
+            } else {
+                frame_end = std::chrono::system_clock::now() + frame{1};
+            }
+
+            
+        }
     }
 }
  
@@ -53,14 +57,6 @@ void EmulatorThread::Stop() {
     running = false;
 
     thread.join();
-}
-
-bool EmulatorThread::IsActive() {
-    return running;
-}
-
-int EmulatorThread::GetFPS() {
-    return frames;
 }
 
 void EmulatorThread::toggle_framelimiter() {

@@ -10,9 +10,7 @@ System::System(UpdateFunction update_fps)
     spu(*this),
     arm7(*this), arm9(*this),
     m_emulator_thread(*this, [this]() {
-        if (m_state == State::Running) {
-            run_frame();
-        }
+        run_frame();
     }, update_fps) {
     arm7.select_backend(CPUBackend::Interpreter);
     arm9.select_backend(CPUBackend::Interpreter);
@@ -211,13 +209,7 @@ void System::boot(std::string game_path) {
 }
 
 void System::toggle_framelimiter() {
-    if (m_state == State::Running) {
-        set_state(State::Paused);
-        m_emulator_thread.toggle_framelimiter();
-        set_state(State::Running);
-    } else {
-        m_emulator_thread.toggle_framelimiter();
-    }
+    m_emulator_thread.toggle_framelimiter();
 }
 
 void System::write_haltcnt(u8 data) {
