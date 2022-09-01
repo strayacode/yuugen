@@ -17,8 +17,14 @@ public:
     bool fullscreen_on_game_launch = false;
     bool hide_cursor = false;
     bool threaded_2d = false;
-    bool debugging = true;
+    
     int volume = 100;
+
+#ifdef CPU_DEBUG
+    bool debugging = true;
+#else
+    bool debugging = false;
+#endif
 
 private:
     Settings() {
