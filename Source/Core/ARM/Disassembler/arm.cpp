@@ -1,7 +1,7 @@
 #include "Common/Types.h"
 #include "Common/format.h"
-#include "Common/arithmetic.h"
 #include "Common/Log.h"
+#include "Common/Bits.h"
 #include "Core/ARM/Disassembler/Disassembler.h"
 
 std::string Disassembler::arm_branch_link_maybe_exchange(u32 instruction) {
@@ -193,7 +193,7 @@ std::string Disassembler::arm_psr_transfer(u32 instruction) {
             u32 immediate = instruction & 0xFF;
             u8 rotate_amount = ((instruction >> 8) & 0xF) << 1;
 
-            return format("msr %s, #0x%08x", mask.c_str(), rotate_right(immediate, rotate_amount));
+            return format("msr %s, #0x%08x", mask.c_str(), Common::rotate_right(immediate, rotate_amount));
         } else {
             return format("msr %s, r%d", mask.c_str(), rm);
         }
@@ -348,7 +348,7 @@ std::string Disassembler::arm_data_processing_get_op2(u32 instruction) {
         u32 immediate = instruction & 0xFF;
         u8 shift_amount = ((instruction >> 8) & 0xF) << 1;
 
-        return format("#0x%08x", rotate_right(immediate, shift_amount));
+        return format("#0x%08x", Common::rotate_right(immediate, shift_amount));
     } else {
         u8 rm = instruction & 0xF;
         

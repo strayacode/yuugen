@@ -1,7 +1,7 @@
 #include "Common/format.h"
 #include "Common/Log.h"
 #include "Core/Hardware/Timers.h"
-#include "Core/Core.h"
+#include "Core/System.h"
 
 Timers::Timers(System& system, int arch) : system(system), arch(arch) {}
 
@@ -86,7 +86,7 @@ void Timers::overflow(int channel) {
     timer[channel].counter = timer[channel].reload_value;
 
     if (timer[channel].control.irq) {
-        system.cpu_core[arch].SendInterrupt(static_cast<InterruptType>(static_cast<int>(InterruptType::Timer0) + channel));
+        system.cpu(arch).send_interrupt(static_cast<InterruptType>(static_cast<int>(InterruptType::Timer0) + channel));
     }
 
     // reactivate the timer if count up mode disabled

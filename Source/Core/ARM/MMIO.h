@@ -4,12 +4,10 @@
 #include "Common/Types.h"
 #include "Common/Log.h"
 #include "Common/Callback.h"
-#include "Core/ARM/ARMTypes.h"
+#include "Core/ARM/CPUTypes.h"
 
 class MMIO {
 public:
-    MMIO(Arch arch) : arch(arch) {}
-
     template <typename T>
     using ReadCallback = Common::Callback<T(u32)>;
 
@@ -21,7 +19,7 @@ public:
         auto handler = get_read_handler<T>(addr);
 
         if (!handler.mapped) {
-            log_fatal("[MMIO] handle unmapped %s %lu-bit read %08x", get_arch(arch).c_str(), sizeof(T) * 8, addr);
+            log_fatal("[MMIO] handle unmapped %lu-bit read %08x", sizeof(T) * 8, addr);
         }
 
         return handler.callback(addr);
@@ -32,7 +30,7 @@ public:
         auto handler = get_write_handler<T>(addr);
 
         if (!handler.mapped) {
-            log_fatal("[MMIO] handle unmapped %s %lu-bit write %08x = %08x", get_arch(arch).c_str(), sizeof(T) * 8, addr, data);
+            log_fatal("[MMIO] handle unmapped %lu-bit write %08x = %08x", sizeof(T) * 8, addr, data);
         }
 
         handler.callback(addr, data);
@@ -156,6 +154,4 @@ private:
     WriteHandlers<u8> write8;
     WriteHandlers<u16> write16;
     WriteHandlers<u32> write32;
-
-    Arch arch;
 };

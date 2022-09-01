@@ -410,13 +410,13 @@ void Renderer3D::check_gxfifo_interrupt() {
     case 1:
         // trigger interrupt if fifo is less than half full
         if (fifo.size() < 128) {
-            video_unit.system.cpu_core[1].SendInterrupt(InterruptType::GXFIFO);
+            video_unit.system.arm9.cpu().send_interrupt(InterruptType::GXFIFO);
         }
         break;
     case 2:
         // trigger interrupt if fifo is empty
         if (fifo.size() == 0) {
-            video_unit.system.cpu_core[1].SendInterrupt(InterruptType::GXFIFO);
+            video_unit.system.arm9.cpu().send_interrupt(InterruptType::GXFIFO);
         }
         break;
     }

@@ -1,8 +1,9 @@
 add_library(common
-    Types.h Log.h
+    Types.h
+    Log.h
     log_file.h log_file.cpp
     lut_helpers.h
-    arithmetic.h
+    Bits.h
     circular_buffer.h
     memory_mapped_file.h
     format.h

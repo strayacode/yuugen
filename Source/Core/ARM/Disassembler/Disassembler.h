@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "Core/ARM/Decoder/Decoder.h"
+#include "Core/ARM/Decoder.h"
 
 class Disassembler {
 public:
@@ -9,6 +9,7 @@ public:
     std::string disassemble_arm(u32 instruction);
     std::string disassemble_thumb(u16 instruction);
     std::string unknown_instruction(u32 instruction);
+    std::string register_name(int reg);
 
     std::string arm_branch_link_maybe_exchange(u32 instruction);
     std::string arm_branch_exchange(u32 instruction);
@@ -35,7 +36,6 @@ public:
     std::string arm_data_processing_only_destination(u32 instruction, std::string opcode);
     std::string arm_data_processing_only_operand(u32 instruction, std::string opcode);
     std::string arm_single_data_transfer_get_address(u32 instruction);
-
 
     std::string thumb_alu_immediate(u32 instruction);
     std::string thumb_branch_link_offset(u32 instruction);

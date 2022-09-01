@@ -1,30 +1,39 @@
 #include <algorithm>
+#include "Common/Settings.h"
 #include "Core/System.h"
 
-System::System() 
-    :video_unit(*this), arm7_memory(*this), arm9_memory(*this), cartridge(*this),
-    spi(*this), cp15(*this), 
+System::System(UpdateFunction update_fps) 
+    :video_unit(*this), cartridge(*this),
+    spi(*this),
     dma {DMA(*this, 0), DMA(*this, 1)}, ipc(*this), 
     timers {Timers(*this, 0), Timers(*this, 1)},
     spu(*this),
-    cpu_core {CPUCore(arm7_memory, Arch::ARMv4, nullptr), CPUCore(arm9_memory, Arch::ARMv5, &cp15)} {
-    SetCPUCoreType(CPUCoreType::Interpreter);
+    arm7(*this), arm9(*this),
+    m_emulator_thread(*this, [this]() {
+        run_frame();
+    }, update_fps) {
+    arm7.select_backend(CPUBackend::Interpreter);
+    arm9.select_backend(CPUBackend::Interpreter);
+
+    arm7.memory().build_mmio();
+    arm9.memory().build_mmio();
+
+    m_audio_interface = std::make_shared<SDLAudioInterface>();
+    spu.set_audio_interface(m_audio_interface);
 }
 
-void System::Reset() {
-    SetCPUCoreType(CPUCoreType::Interpreter);
-    
-    arm7_memory.reset();
-    arm9_memory.reset();
+void System::reset() {
+    arm7.memory().reset();
+    arm9.memory().reset();
     scheduler.reset();
     cartridge.reset();
-    cartridge.LoadRom(rom_path);
+    cartridge.load(m_game_path);
     video_unit.reset();
     dma[0].reset();
     dma[1].reset();
     timers[0].reset();
     timers[1].reset();
-    cp15.Reset();
+    arm9.coprocessor().reset();
     spi.reset();
     input.reset();
     ipc.reset();
@@ -32,9 +41,9 @@ void System::Reset() {
     spu.reset();
     rtc.reset();
 
-    memset(main_memory, 0, 0x400000);
-    memset(shared_wram, 0, 0x8000);
-
+    main_memory.fill(0);
+    shared_wram.fill(0);
+    
     wramcnt = 0;
     powcnt2 = 0;
     rcnt = 0;
@@ -45,59 +54,76 @@ void System::Reset() {
     biosprot = 0;
     siocnt = 0;
 
-    cpu_core[0].Reset();
-    cpu_core[1].Reset();
+    arm7.cpu().reset();
+    arm9.cpu().reset();
+
+    frame_end_time = scheduler.GetCurrentTime() + 560190;
 }
 
-void System::DirectBoot() {
-    cp15.DirectBoot();
+void System::start() {
+    reset();
 
-    arm7_memory.write<u16>(0x04000134, 0x8000); // rcnt
-    arm9_memory.write<u8>(0x04000247, 0x03); // wramcnt
-    arm9_memory.write<u8>(0x04000300, 0x01); // POSTFLG (ARM9)
-    arm7_memory.write<u8>(0x04000300, 0x01); // POSTFLG (ARM7)
-    arm9_memory.write<u16>(0x04000304, 0x0001); // POWCNT1
-    arm7_memory.write<u16>(0x04000504, 0x0200); // SOUNDBIAS
-    arm9_memory.write<u32>(0x027ff800, 0x00001fc2); // Chip ID 1
-    arm9_memory.write<u32>(0x027ff804, 0x00001fc2); // Chip ID 2
-    arm9_memory.write<u16>(0x027ff850, 0x5835); // ARM7 BIOS CRC
-    arm9_memory.write<u16>(0x027ff880, 0x0007); // Message from ARM9 to ARM7
-    arm9_memory.write<u16>(0x027ff884, 0x0006); // ARM7 boot task
-    arm9_memory.write<u32>(0x027ffc00, 0x00001fc2); // Copy of chip ID 1
-    arm9_memory.write<u32>(0x027ffc04, 0x00001fc2); // Copy of chip ID 2
-    arm9_memory.write<u16>(0x027ffc10, 0x5835); // Copy of ARM7 BIOS CRC
-    arm9_memory.write<u16>(0x027ffc40, 0x0001); // Boot indicator
+    if (m_boot_mode == BootMode::Firmware) {
+        firmware_boot();
+    } else {
+        direct_boot();
+    }
+}
+
+void System::shutdown() {
+    m_emulator_thread.Stop();
+}
+
+void System::direct_boot() {
+    arm9.coprocessor().direct_boot();
+
+    // TODO: make a direct_boot function for ARM7Memory and ARM9Memory
+    arm7.memory().write<u16>(0x04000134, 0x8000); // rcnt
+    arm9.memory().write<u8>(0x04000247, 0x03); // wramcnt
+    arm9.memory().write<u8>(0x04000300, 0x01); // POSTFLG (ARM9)
+    arm7.memory().write<u8>(0x04000300, 0x01); // POSTFLG (ARM7)
+    arm9.memory().write<u16>(0x04000304, 0x0001); // POWCNT1
+    arm7.memory().write<u16>(0x04000504, 0x0200); // SOUNDBIAS
+    arm9.memory().write<u32>(0x027FF800, 0x00001FC2); // Chip ID 1
+    arm9.memory().write<u32>(0x027FF804, 0x00001FC2); // Chip ID 2
+    arm9.memory().write<u16>(0x027FF850, 0x5835); // ARM7 BIOS CRC
+    arm9.memory().write<u16>(0x027FF880, 0x0007); // Message from ARM9 to ARM7
+    arm9.memory().write<u16>(0x027FF884, 0x0006); // ARM7 boot task
+    arm9.memory().write<u32>(0x027FFC00, 0x00001FC2); // Copy of chip ID 1
+    arm9.memory().write<u32>(0x027FFC04, 0x00001FC2); // Copy of chip ID 2
+    arm9.memory().write<u16>(0x027FFC10, 0x5835); // Copy of ARM7 BIOS CRC
+    arm9.memory().write<u16>(0x027FFC40, 0x0001); // Boot indicator
 
     cartridge.DirectBoot();
-    cpu_core[0].DirectBoot(cartridge.loader.GetARM7Entrypoint());
-    cpu_core[1].DirectBoot(cartridge.loader.GetARM9Entrypoint());    
+    arm7.cpu().direct_boot(cartridge.loader.GetARM7Entrypoint());
+    arm9.cpu().direct_boot(cartridge.loader.GetARM9Entrypoint());    
     spi.DirectBoot();
 }
 
-void System::FirmwareBoot() {
-    cpu_core[0].FirmwareBoot();
-    cpu_core[1].FirmwareBoot();
+void System::firmware_boot() {
+    arm7.cpu().firmware_boot();
+    arm9.cpu().firmware_boot();
     cartridge.FirmwareBoot();
 }
 
-void System::SetGamePath(std::string path) {
-    rom_path = path;
-}
-
-void System::RunFrame() {
-    u64 frame_end_time = scheduler.GetCurrentTime() + 560190;
-
+void System::run_frame() {
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        if (!cpu_core[0].Halted() || !cpu_core[1].Halted()) {
+        if (!arm7.cpu().is_halted() || !arm9.cpu().is_halted()) {
             u64 cycles = std::min(static_cast<u64>(16), scheduler.GetEventTime() - scheduler.GetCurrentTime());
             u64 arm7_target = scheduler.GetCurrentTime() + cycles;
             u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
             
             // run the arm9 until the next scheduled event
-            cpu_core[1].run(arm9_target);
+            if (!arm9.cpu().run(arm9_target)) {
+                set_state(State::Paused);
+                return;
+            }
 
             // let the arm7 catch up
-            cpu_core[0].run(arm7_target);
+            if (!arm7.cpu().run(arm7_target)) {
+                set_state(State::Paused);
+                return;
+            }
 
             // advance the scheduler
             scheduler.Tick(cycles);
@@ -108,6 +134,82 @@ void System::RunFrame() {
 
         scheduler.RunEvents();
     }
+
+    // calculate end time for next frame
+    frame_end_time = scheduler.GetCurrentTime() + 560190;
+}
+
+void System::single_step() {
+    u64 cycles = 1;
+    u64 arm7_target = scheduler.GetCurrentTime() + cycles;
+    u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
+    
+    // run the arm9 until the next scheduled event
+    if (!arm9.cpu().run(arm9_target)) {
+        set_state(State::Paused);
+        return;
+    }
+
+    // let the arm7 catch up
+    if (!arm7.cpu().run(arm7_target)) {
+        set_state(State::Paused);
+        return;
+    }
+
+    // advance the scheduler
+    scheduler.Tick(cycles);
+}
+
+void System::set_state(State state) {
+    State old_state = m_state;
+    m_state = state;
+
+    switch (state) {
+    case State::Running:
+        if (old_state == State::Idle) {
+            start();
+            m_emulator_thread.Start();
+        }
+
+        m_audio_interface->SetState(AudioState::Playing);
+
+        if (Settings::Get().threaded_2d) {
+            video_unit.start_render_thread();
+        }
+
+        break;
+    case State::Paused:
+        m_audio_interface->SetState(AudioState::Paused);
+
+        if (Settings::Get().threaded_2d) {
+            video_unit.stop_render_thread();
+        }
+
+        break;
+    case State::Idle:
+        m_audio_interface->SetState(AudioState::Idle);
+        m_emulator_thread.Stop();
+
+        if (Settings::Get().threaded_2d) {
+            video_unit.stop_render_thread();
+        }
+
+        break;
+    }
+}
+
+void System::set_boot_mode(BootMode boot_mode) {
+    m_boot_mode = boot_mode;
+}
+
+void System::boot(std::string game_path) {
+    set_state(State::Idle);
+    m_game_path = game_path;
+    set_state(State::Running);
+}
+
+void System::toggle_framelimiter() {
+    m_emulator_thread.toggle_framelimiter();
 }
 
 void System::write_haltcnt(u8 data) {
@@ -118,7 +220,7 @@ void System::write_haltcnt(u8 data) {
     // check bits 6..7 to see what to do
     switch (power_down_mode) {
     case 2:
-        cpu_core[0].Halt();
+        arm7.cpu().halt();
         break;
     case 3:
         log_warn("unhandled request for sleep mode");
@@ -133,23 +235,15 @@ void System::write_wramcnt(u8 data) {
     wramcnt = data & 0x3;
 
     // now we must update the memory map for the shared wram space specifically
-    arm7_memory.update_memory_map(0x03000000, 0x04000000);
-    arm9_memory.update_memory_map(0x03000000, 0x04000000);
+    arm7.memory().update_memory_map(0x03000000, 0x04000000);
+    arm9.memory().update_memory_map(0x03000000, 0x04000000);
 }
 
-bool System::CartridgeAccessRights() {
+bool System::cartridge_access_rights() {
     // check which cpu has access to the nds cartridge
     if (exmemcnt & (1 << 11)) {
         return false; // 0 = ARMv4
     } else {
         return true; // 1 = ARMv5
     }
-}
-
-void System::SetCPUCoreType(CPUCoreType type) {
-    core_type = type;
-}
-
-std::string System::GetCPUCoreType() {
-    return "Interpreter";
 }

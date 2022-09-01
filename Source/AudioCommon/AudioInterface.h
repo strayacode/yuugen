@@ -12,6 +12,8 @@ typedef void (*AudioCallback)(void* userdata, s16* stream, int len);
 
 class AudioInterface {
 public:
+    virtual ~AudioInterface() = default;
+
     void configure(void* userdata, int sample_rate, int buffer_size, AudioCallback callback) {
         this->userdata = userdata;
         this->sample_rate = sample_rate;
