@@ -1,11 +1,11 @@
 #pragma once
 
-#include <functional>
 #include <vector>
 #include <string>
 #include "Common/Types.h"
+#include "Common/Callback.h"
 
-using SchedulerCallback = std::function<void()>;
+using SchedulerCallback = Common::Callback<void()>;
 
 struct EventType {
     std::string name;
@@ -32,10 +32,11 @@ public:
     u64 GetCurrentTime() const;
     u64 GetEventTime() const;
     void set_current_time(u64 data);
-    std::vector<Event>& GetEvents();
+
+    std::vector<Event>& events() { return m_events; }
     
 private:
-    std::vector<Event> events;
+    std::vector<Event> m_events;
     u64 current_time;
     int current_event_id;
 };

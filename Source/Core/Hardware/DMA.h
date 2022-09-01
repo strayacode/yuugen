@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <string.h>
 #include "Common/Log.h"
 #include "Common/Types.h"

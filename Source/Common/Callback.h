@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <cassert>
 #include "Common/Types.h"
+#include "Common/Log.h"
 
 namespace Common {
 
@@ -17,10 +18,10 @@ public:
     Callback() = default;
 
     template <typename Func>
-    Callback(Func&& func) {
+    Callback(Func func) {
         static_assert(sizeof(Func) <= N, "Not enough space for lambda state");
 
-        new (state) Func(func);
+        new (state) Func(static_cast<Func&&>(func));
 
         fn = [](void* ptr, Args... args) -> Return {
             return (*reinterpret_cast<Func*>(ptr))(std::forward<Args>(args)...);
