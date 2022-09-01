@@ -47,7 +47,7 @@ void System::reset() {
     wramcnt = 0;
     powcnt2 = 0;
     rcnt = 0;
-    HALTCNT = 0;
+    haltcnt = 0;
     exmemcnt = 0;
     postflg7 = 0;
     postflg9 = 0;
@@ -71,7 +71,7 @@ void System::start() {
 }
 
 void System::shutdown() {
-    m_emulator_thread.Stop();
+    m_emulator_thread.stop();
 }
 
 void System::direct_boot() {
@@ -168,7 +168,7 @@ void System::set_state(State state) {
     case State::Running:
         if (old_state == State::Idle) {
             start();
-            m_emulator_thread.Start();
+            m_emulator_thread.start();
         }
 
         m_audio_interface->SetState(AudioState::Playing);
@@ -188,7 +188,7 @@ void System::set_state(State state) {
         break;
     case State::Idle:
         m_audio_interface->SetState(AudioState::Idle);
-        m_emulator_thread.Stop();
+        m_emulator_thread.stop();
 
         if (Settings::Get().threaded_2d) {
             video_unit.stop_render_thread();
@@ -213,9 +213,9 @@ void System::toggle_framelimiter() {
 }
 
 void System::write_haltcnt(u8 data) {
-    HALTCNT = data & 0xC0;
+    haltcnt = data & 0xC0;
 
-    u8 power_down_mode = (HALTCNT >> 6) & 0x3;
+    u8 power_down_mode = (haltcnt >> 6) & 0x3;
 
     // check bits 6..7 to see what to do
     switch (power_down_mode) {

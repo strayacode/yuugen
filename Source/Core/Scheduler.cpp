@@ -2,7 +2,7 @@
 #include "Core/Scheduler.h"
 
 void Scheduler::reset() {
-    events.clear();
+    m_events.clear();
     current_time = 0;
     current_event_id = 0;
 }
@@ -16,9 +16,9 @@ void Scheduler::ResetCurrentTime() {
 }
 
 void Scheduler::RunEvents() {
-    while (events.size() > 0 && events[0].time <= GetCurrentTime()) {
-        events[0].type->callback();
-        events.erase(events.begin());
+    while (m_events.size() > 0 && m_events[0].time <= GetCurrentTime()) {
+        m_events[0].type->callback();
+        m_events.erase(m_events.begin());
     }
 }
 
@@ -27,26 +27,26 @@ void Scheduler::AddEvent(u64 delay, EventType* type) {
     Event event{time, type};
     int index = CalculateEventIndex(event);
 
-    events.insert(events.begin() + index, event);
+    m_events.insert(m_events.begin() + index, event);
 }
 
 void Scheduler::CancelEvent(EventType* type) {
     // TODO: assert that there can't be 2 events with the same id
-    for (u64 i = 0; i < events.size(); i++) {
-        if (events[i].type->id == type->id) {
-            events.erase(events.begin() + i);
+    for (u64 i = 0; i < m_events.size(); i++) {
+        if (m_events[i].type->id == type->id) {
+            m_events.erase(m_events.begin() + i);
         }
     }
 }
 
 int Scheduler::CalculateEventIndex(Event& event) {
     int lower_bound = 0;
-    int upper_bound = events.size() - 1;
+    int upper_bound = m_events.size() - 1;
    
     while (lower_bound <= upper_bound) {
         int mid = (lower_bound + upper_bound) / 2;
 
-        if (event.time > events[mid].time) {
+        if (event.time > m_events[mid].time) {
             lower_bound = mid + 1;
         } else {
             upper_bound = mid - 1;
@@ -71,13 +71,9 @@ u64 Scheduler::GetCurrentTime() const {
 }
 
 u64 Scheduler::GetEventTime() const {
-    return events[0].time;
+    return m_events[0].time;
 }
 
 void Scheduler::set_current_time(u64 data) {
     current_time = data;
-}
-
-std::vector<Event>& Scheduler::GetEvents() {
-    return events;
 }

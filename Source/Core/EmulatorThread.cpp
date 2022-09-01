@@ -4,27 +4,26 @@
 EmulatorThread::EmulatorThread(System& system, RunFunction run_frame, UpdateFunction update_fps) : m_system(system), run_frame(run_frame), update_fps(update_fps) {}
 
 EmulatorThread::~EmulatorThread() {
-    Stop();
+    stop();
 }
 
-void EmulatorThread::Start() {
+void EmulatorThread::start() {
     running = true;
 
     thread = std::thread{[this]() {
-        Run();
+        run();
     }};
 }
 
-void EmulatorThread::Reset() {
+void EmulatorThread::reset() {
     frames = 0;
 }
 
-void EmulatorThread::Run() {
+void EmulatorThread::run() {
     auto frame_end = std::chrono::system_clock::now() + frame{1};
     auto fps_update = std::chrono::system_clock::now();
     while (running) {
         if (m_system.state() == State::Running) {
-            // printf("%ld %ld\n", std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count(), std::chrono::duration_cast<std::chrono::milliseconds>(frame_end.time_since_epoch()).count());
             run_frame();
             frames++;
 
@@ -42,13 +41,11 @@ void EmulatorThread::Run() {
             } else {
                 frame_end = std::chrono::system_clock::now() + frame{1};
             }
-
-            
         }
     }
 }
  
-void EmulatorThread::Stop() {
+void EmulatorThread::stop() {
     if (!running) {
         return;
     }

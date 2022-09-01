@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <functional>
 #include <string>
 #include <memory>
 #include "Core/ARM/ARM7/ARM7.h"
@@ -31,8 +30,6 @@ enum class State {
     Paused,
     Idle,
 };
-
-using UpdateFunction = std::function<void(float fps)>;
 
 class System {
 public:
@@ -91,7 +88,7 @@ public:
     u8 wramcnt;
     u8 powcnt2;
     u16 rcnt;
-    u8 HALTCNT;
+    u8 haltcnt;
     u16 exmemcnt;
     u8 postflg7;
     u8 postflg9;

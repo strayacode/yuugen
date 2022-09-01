@@ -3,10 +3,10 @@
 #include <thread>
 #include <chrono>
 #include <ratio>
-#include <functional>
+#include "Common/Callback.h"
 
-using RunFunction = std::function<void()>;
-using UpdateFunction = std::function<void(float fps)>;
+using RunFunction = Common::Callback<void()>;
+using UpdateFunction = Common::Callback<void(float fps)>;
 
 class System;
 
@@ -14,10 +14,11 @@ class EmulatorThread {
 public:
     EmulatorThread(System& system, RunFunction run_frame, UpdateFunction update_fps);
     ~EmulatorThread();
-    void Start();
-    void Reset();
-    void Run();
-    void Stop();
+
+    void start();
+    void reset();
+    void run();
+    void stop();
     
     void toggle_framelimiter();
     bool framelimiter_enabled() { return framelimiter; }
