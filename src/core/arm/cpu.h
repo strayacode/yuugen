@@ -1,0 +1,68 @@
+#pragma once
+
+#include "common/types.h"
+
+namespace core::arm {
+
+enum Reg : int {
+    R0 = 0,
+    R1 = 1,
+    R2 = 2,
+    R3 = 3,
+    R4 = 4,
+    R5 = 5,
+    R6 = 6,
+    R7 = 7,
+    R8 = 8,
+    R9 = 9,
+    R10 = 10,
+    R11 = 11,
+    R12 = 12,
+    R13 = 13,
+    R14 = 14,
+    R15 = 15,
+    SP = R13,
+    LR = R14,
+    PC = R15,
+};
+
+enum class Bank : u8 {
+    USR = 0,
+    FIQ = 1,
+    IRQ = 2,
+    SVC = 3,
+    ABT = 4,
+    UND = 5,
+};
+
+enum class Condition : u8 {
+    EQ = 0,
+    NE = 1,
+    CS = 2,
+    CC = 3,
+    MI = 4,
+    PL = 5,
+    VS = 6,
+    VC = 7,
+    HI = 8,
+    LS = 9,
+    GE = 10,
+    LT = 11,
+    GT = 12,
+    LE = 13,
+    AL = 14,
+    NV = 15,
+};
+
+enum class Backend {
+    Interpreter,
+    CachedInterpreter,
+    Recompiler,
+};
+
+struct CPU {
+    virtual ~CPU() = default;
+    virtual void run(int cycles) = 0;
+};
+
+} // namespace core::arm

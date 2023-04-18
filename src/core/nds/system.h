@@ -2,6 +2,8 @@
 
 #include "core/system.h"
 #include "core/nds/config.h"
+#include "core/nds/arm7/arm7.h"
+#include "core/nds/arm9/arm9.h"
 #include "core/nds/hardware/cartridge/cartridge.h"
 
 namespace core::nds {
@@ -13,8 +15,12 @@ public:
     void run_frame() override;
     void reset() override;
 
-private:
+    ARM7 arm7;
+    ARM9 arm9;
     Cartridge cartridge;
+
+private:
+    void direct_boot();
 };
 
 } // namespace core::nds

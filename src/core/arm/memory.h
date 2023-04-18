@@ -9,7 +9,7 @@ namespace core::arm {
 // this class will be used as a base class which both the arm7 and arm9 implement
 class Memory {
 public:
-    virtual ~Memory() = 0;
+    virtual ~Memory() = default;
 
     template <typename T, Bus bus>
     T read(u32 addr) {

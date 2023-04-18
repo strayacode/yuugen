@@ -5,9 +5,17 @@
 
 namespace core::nds {
 
+class System;
+
 class Cartridge {
 public:
+    Cartridge(System& system);
+
     void load(const std::string& path);
+    void direct_boot();
+
+    u32 get_arm7_entrypoint() { return header.arm7_entrypoint; }
+    u32 get_arm9_entrypoint() { return header.arm9_entrypoint; }
 
 private:
     void load_header();
@@ -33,6 +41,7 @@ private:
 
     Header header;
     common::MemoryMappedFile memory_mapped_file;
+    System& system;
 };
 
 } // namespace core::nds

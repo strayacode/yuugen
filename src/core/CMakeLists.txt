@@ -6,9 +6,18 @@ add_library(core
     arm/coprocessor.h
     arm/fastmem.h arm/virtual_page_table.h
     arm/memory.h
+    arm/cpu.h arm/state.h
+    arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
 
     nds/system.h nds/system.cpp
     nds/config.h
+
+    nds/arm7/arm7.h nds/arm7/arm7.cpp
+    nds/arm7/memory.h nds/arm7/memory.cpp
+
+    nds/arm9/arm9.h nds/arm9/arm9.cpp
+    nds/arm9/memory.h nds/arm9/memory.cpp
+
     nds/hardware/cartridge/cartridge.h nds/hardware/cartridge/cartridge.cpp
 )
 

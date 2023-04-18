@@ -1,12 +1,19 @@
 #include "common/memory.h"
 #include "common/logger.h"
 #include "core/nds/hardware/cartridge/cartridge.h"
+#include "core/nds/system.h"
 
 namespace core::nds {
+
+Cartridge::Cartridge(System& system) : system(system) {}
 
 void Cartridge::load(const std::string& path) {
     memory_mapped_file.load(path);
     load_header();
+}
+
+void Cartridge::direct_boot() {
+
 }
 
 void Cartridge::load_header() {
