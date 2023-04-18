@@ -2,6 +2,7 @@
 
 #include "core/system.h"
 #include "core/nds/config.h"
+#include "core/nds/hardware/cartridge/cartridge.h"
 
 namespace core::nds {
 
@@ -13,6 +14,7 @@ public:
     void reset() override;
 
 private:
+    Cartridge cartridge;
 };
 
 } // namespace core::nds

@@ -1,9 +1,22 @@
 #pragma once
 
-// this class will be in the form of a 2 level page table, to save on space
-// since a large chunk of the 32-bit address space gets unused, it will be more memory efficient to do 2 levels
+namespace core::arm {
+
+enum class Bus {
+    // for instructions
+    Code,
+
+    // for regular data that gets read by instructions
+    Data,
+
+    // for components other than the cpu (e.g. DMA)
+    System,
+};
+
 class Fastmem {
 public:
 
 private:
 };
+
+} // namespace core::arm

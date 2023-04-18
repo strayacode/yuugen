@@ -3,7 +3,7 @@
 namespace core::nds {
 
 System::System(Config config) {
-    
+    cartridge.load(config.game_path);
 }
 
 void System::run_frame() {

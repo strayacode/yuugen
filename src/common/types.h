@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <type_traits>
 
 using u8 = std::uint8_t;
 using s8 = std::uint8_t;
@@ -12,3 +13,11 @@ using u64 = std::uint64_t;
 using s64 = std::int64_t;
 using f32 = float;
 using f64 = double;
+
+template <typename T, typename... Args> 
+struct is_one_of {
+  static constexpr bool value = (... || std::is_same_v<T, Args>);
+};
+
+template <typename T, typename... Args>
+inline constexpr bool is_one_of_v = is_one_of<T, Args...>::value;

@@ -1,21 +1,28 @@
 #pragma once
 
+#include <cstdio>
+#include "common/string.h"
+
 class Logger {
 public:
-    void debug() {
-
+    template <typename... Args>
+    void debug(const char* pattern, Args... args) {
+        std::printf("[DEBUG] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
 
-    void info() {
-
+    template <typename... Args>
+    void info(const char* pattern, Args... args) {
+        std::printf("[INFO] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
 
-    void warn() {
-
+    template <typename... Args>
+    void warn(const char* pattern, Args... args) {
+        std::printf("[WARN] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
 
-    void error() {
-
+    template <typename... Args>
+    void error(const char* pattern, Args... args) {
+        std::printf("[ERROR] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
 
 private:

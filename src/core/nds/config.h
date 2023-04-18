@@ -10,7 +10,7 @@ enum class BootMode {
 };
 
 struct Config {
-    const std::string& game_path;
+    std::string game_path;
     BootMode boot_mode;
 };
 

@@ -5,15 +5,17 @@
 
 namespace common {
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
+
 template<typename... Args>
-std::string format(const std::string& format, Args... args) {
-    int size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;
-
-    std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size);
-
-    std::snprintf(buffer.get(), size, format.c_str(), args...);
-    return std::string(buffer.get(), buffer.get() + size - 1);
+std::string format(const char* pattern, Args... args) {
+    char buffer[0x10000];
+    std::snprintf(buffer, sizeof(buffer), pattern, std::forward<Args>(args)...);
+    return std::string(buffer);
 }
+
+#pragma clang diagnostic pop
 
 std::string to_lower(std::string str);
 

@@ -2,8 +2,14 @@ add_library(core
     core.h core.cpp
     system.h
 
+    arm/config.h
+    arm/coprocessor.h
+    arm/fastmem.h arm/virtual_page_table.h
+    arm/memory.h
+
     nds/system.h nds/system.cpp
     nds/config.h
+    nds/hardware/cartridge/cartridge.h nds/hardware/cartridge/cartridge.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
