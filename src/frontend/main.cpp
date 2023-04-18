@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        logger.error("incorrect amount of arguments supplied");
+        logger.error("main: incorrect amount of arguments supplied");
         return 0;
     }
 
