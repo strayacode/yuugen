@@ -5,6 +5,7 @@
 #include "core/nds/arm7/arm7.h"
 #include "core/nds/arm9/arm9.h"
 #include "core/nds/hardware/cartridge/cartridge.h"
+#include "core/scheduler.h"
 
 namespace core::nds {
 
@@ -18,6 +19,7 @@ public:
     ARM7 arm7;
     ARM9 arm9;
     Cartridge cartridge;
+    Scheduler scheduler;
 
 private:
     void direct_boot();

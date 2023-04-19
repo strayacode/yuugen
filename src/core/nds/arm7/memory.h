@@ -19,8 +19,6 @@ public:
     void system_write_half(u32 addr, u16 value) override;
     void system_write_word(u32 addr, u32 value) override;
 
-    void direct_boot();
-
 private:
     System& system;
 };

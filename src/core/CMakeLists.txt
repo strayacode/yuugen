@@ -1,8 +1,9 @@
 add_library(core
     core.h core.cpp
+    scheduler.h scheduler.cpp
     system.h
 
-    arm/config.h
+    arm/arch.h
     arm/coprocessor.h
     arm/fastmem.h arm/virtual_page_table.h
     arm/memory.h
@@ -14,9 +15,11 @@ add_library(core
 
     nds/arm7/arm7.h nds/arm7/arm7.cpp
     nds/arm7/memory.h nds/arm7/memory.cpp
+    nds/arm7/coprocessor.h nds/arm7/coprocessor.cpp
 
     nds/arm9/arm9.h nds/arm9/arm9.cpp
     nds/arm9/memory.h nds/arm9/memory.cpp
+    nds/arm9/coprocessor.h nds/arm9/coprocessor.cpp
 
     nds/hardware/cartridge/cartridge.h nds/hardware/cartridge/cartridge.cpp
 )

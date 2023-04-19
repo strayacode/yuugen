@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/types.h"
+#include "core/arm/state.h"
 
 namespace core::arm {
 
@@ -26,7 +27,7 @@ enum Reg : int {
     PC = R15,
 };
 
-enum class Bank : u8 {
+enum Bank : u8 {
     USR = 0,
     FIQ = 1,
     IRQ = 2,
@@ -60,9 +61,16 @@ enum class Backend {
     Recompiler,
 };
 
-struct CPU {
+class CPU {
+public:
     virtual ~CPU() = default;
+    virtual void reset() = 0;
     virtual void run(int cycles) = 0;
+    virtual void jump_to(u32 addr) = 0;
+    virtual void set_mode(Mode mode) = 0;
+    State& get_state() { return state; }
+
+    State state;
 };
 
 } // namespace core::arm
