@@ -13,7 +13,24 @@ void Cartridge::load(const std::string& path) {
 }
 
 void Cartridge::direct_boot() {
+    using Bus = arm::Bus;
 
+    // transfer the cartridge header
+    for (u32 i = 0; i < 0x170; i++) {
+        system.arm9.get_memory().write<u8, Bus::System>(0x027ffe00 + i, *memory_mapped_file.get_pointer(i));
+    }
+
+    // transfer the arm9 code
+    for (u32 i = 0; i < header.arm9_size; i++) {
+        system.arm9.get_memory().write<u8, Bus::System>(header.arm9_ram_address + i, *memory_mapped_file.get_pointer(header.arm9_offset + i));
+    }
+
+    // transfer the arm7 code
+    for (u32 i = 0; i < header.arm7_size; i++) {
+        system.arm7.get_memory().write<u8, Bus::System>(header.arm7_ram_address + i, *memory_mapped_file.get_pointer(header.arm7_offset + i));
+    }
+
+    logger.debug("Cartridge: cartridge data transferred into memory");
 }
 
 void Cartridge::load_header() {

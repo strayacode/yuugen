@@ -2,6 +2,8 @@
 
 namespace core::arm {
 
+static Decoder<Interpreter> decoder;
+
 Interpreter::Interpreter(Arch arch, Memory& memory, Coprocessor& coprocessor) : arch(arch), memory(memory), coprocessor(coprocessor) {}
 
 void Interpreter::reset() {
@@ -19,7 +21,30 @@ void Interpreter::reset() {
 }
 
 void Interpreter::run(int cycles) {
-    
+    while (cycles--) {
+        // TODO: handle interrupts in a nice way
+
+        instruction = pipeline[0];
+        pipeline[0] = pipeline[1];
+
+        if (state.cpsr.t) {
+            state.gpr[15] &= ~0x1;
+            pipeline[1] = memory.read<u16, Bus::Code>(state.gpr[15]);
+
+            auto handler = decoder.get_thumb_handler(instruction);
+            (this->*handler)();
+        } else {
+            state.gpr[15] &= ~0x3;
+            pipeline[1] = memory.read<u32, Bus::Code>(state.gpr[15]);
+
+            // if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
+            //     auto handler = decoder.get_arm_handler(instruction);
+            //     (this->*handler)();
+            // } else {
+            //     state.gpr[15] += 4;
+            // }
+        }
+    }
 }
 
 void Interpreter::jump_to(u32 addr) {
