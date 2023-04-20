@@ -9,7 +9,9 @@ add_library(core
     arm/memory.h
     arm/cpu.h arm/state.h
     arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
-    arm/decoder.h
+    arm/interpreter/instructions/alu.cpp arm/interpreter/instructions/branch.cpp
+    arm/interpreter/instructions/transfer.cpp
+    arm/decoder.h arm/instructions.h
 
     nds/system.h nds/system.cpp
     nds/config.h

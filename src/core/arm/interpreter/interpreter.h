@@ -6,6 +6,7 @@
 #include "core/arm/memory.h"
 #include "core/arm/coprocessor.h"
 #include "core/arm/decoder.h"
+#include "core/arm/instructions.h"
 
 namespace core::arm {
 
@@ -18,6 +19,7 @@ public:
     void jump_to(u32 addr) override;
     void set_mode(Mode mode) override;
 
+    // arm instruction handlers
     void arm_branch_link_maybe_exchange();
     void arm_branch_exchange();
     void arm_count_leading_zeroes();
@@ -39,6 +41,30 @@ public:
     void arm_signed_halfword_word_multiply();
     void arm_signed_halfword_multiply();
     void arm_breakpoint();
+
+    // alu helpers
+    u32 barrel_shifter(u32 value, ShiftType shift_type, int amount, bool& carry, bool imm);
+    u32 alu_mov(u32 op2, bool set_flags);
+    u32 alu_mvn(u32 op2, bool set_flags);
+    void alu_teq(u32 op1, u32 op2);
+    void alu_cmp(u32 op1, u32 op2);
+    void alu_cmn(u32 op1, u32 op2);
+    void alu_tst(u32 op1, u32 op2);
+    u32 alu_add(u32 op1, u32 op2, bool set_flags);
+    u32 alu_adc(u32 op1, u32 op2, bool set_flags);
+    u32 alu_sbc(u32 op1, u32 op2, bool set_flags);
+    u32 alu_eor(u32 op1, u32 op2, bool set_flags);
+    u32 alu_sub(u32 op1, u32 op2, bool set_flags);
+    u32 alu_orr(u32 op1, u32 op2, bool set_flags);
+    u32 alu_bic(u32 op1, u32 op2, bool set_flags);
+    u32 alu_and(u32 op1, u32 op2, bool set_flags);
+    u32 alu_lsl(u32 value, int amount, bool& carry);
+    u32 alu_lsr(u32 value, int amount, bool& carry, bool imm);
+    u32 alu_asr(u32 value, int amount, bool& carry, bool imm);
+    u32 alu_ror(u32 value, int amount, bool& carry, bool imm);
+
+    // TODO: remove this
+    u32 arm_get_shifted_register_single_data_transfer();
 
     // thumb instruction handlers
     void thumb_alu_immediate();
@@ -64,17 +90,23 @@ public:
     void thumb_add_sp_pc();
     void thumb_adjust_stack_pointer();
 
-    void unknown_instruction();
+    void illegal_instruction();
 
 private:
     void arm_flush_pipeline();
     void thumb_flush_pipeline();
+
+    void generate_condition_table();
+    bool evaluate_condition(Condition condition);
+
+    Bank get_bank(Mode mode);
 
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;
     std::array<u32, 2> pipeline;
     u32 instruction;
+    std::array<std::array<bool, 16>, 16> condition_table;
 };
 
 } // namespace core::arm

@@ -9,7 +9,7 @@
 
 namespace core::arm {
 
-template <typename D, typename Callback = decltype(&D::unknown_instruction)>
+template <typename D, typename Callback = decltype(&D::illegal_instruction)>
 class Decoder {
 public:
     struct InstructionInfo {
@@ -19,8 +19,8 @@ public:
     };
 
     Decoder() {
-        arm_lut.fill(&D::unknown_instruction);
-        thumb_lut.fill(&D::unknown_instruction);
+        arm_lut.fill(&D::illegal_instruction);
+        thumb_lut.fill(&D::illegal_instruction);
 
         register_arm("101xxxxxxxxx", &D::arm_branch_link_maybe_exchange);
         register_arm("000100100001", &D::arm_branch_exchange);

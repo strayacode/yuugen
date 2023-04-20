@@ -36,7 +36,7 @@ enum Bank : u8 {
     UND = 5,
 };
 
-enum class Condition : u8 {
+enum Condition : u8 {
     EQ = 0,
     NE = 1,
     CS = 2,
