@@ -204,4 +204,89 @@ struct ARMSignedMultiplyWord {
     bool y;
 };
 
+struct ARMSignedMultiplyAccumulateLong {
+    static ARMSignedMultiplyAccumulateLong decode(u32 instruction){
+        ARMSignedMultiplyAccumulateLong opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rd = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.x = common::get_bit<5>(instruction);
+        opcode.y = common::get_bit<6>(instruction);
+        return opcode;
+    }
+
+    Reg rm;
+    Reg rs;
+    Reg rn;
+    Reg rd;
+    bool x;
+    bool y;
+};
+
+struct ARMBranchExchange {
+    static ARMBranchExchange decode(u32 instruction) {
+        ARMBranchExchange opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        return opcode;
+    }
+
+    Reg rm;
+};
+
+struct ARMBranchLink {
+    static ARMBranchLink decode(u32 instruction) {
+        ARMBranchLink opcode;
+        opcode.link = common::get_bit<24>(instruction);
+        opcode.offset = common::sign_extend<s32, 24>(common::get_field<0, 24>(instruction)) << 2;
+        return opcode;
+    }
+
+    bool link;
+    u32 offset;
+};
+
+struct ARMBranchLinkExchange {
+    static ARMBranchLinkExchange decode(u32 instruction) {
+        ARMBranchLinkExchange opcode;
+        opcode.offset = (common::sign_extend<s32, 24>(common::get_field<0, 24>(instruction)) << 2) | (common::get_bit<24>(instruction) << 1);
+        return opcode;
+    }
+
+    u32 offset;
+};
+
+struct ARMHalfwordDataTransfer {
+    static ARMHalfwordDataTransfer decode(u32 instruction) {
+        ARMHalfwordDataTransfer opcode;
+        opcode.load = common::get_bit<20>(instruction);
+        opcode.writeback = common::get_bit<21>(instruction);
+        opcode.imm = common::get_bit<22>(instruction);
+        opcode.up = common::get_bit<23>(instruction);
+        opcode.pre = common::get_bit<24>(instruction);
+        opcode.half = common::get_bit<5>(instruction);
+        opcode.sign = common::get_bit<6>(instruction);
+        opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.rhs.imm = ((instruction >> 4) & 0xf0) | (instruction & 0xf);
+        opcode.rhs.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        return opcode;
+    }
+
+    bool load;
+    bool writeback;
+    bool imm;
+    bool up;
+    bool pre;
+    bool half;
+    bool sign;
+    Reg rd;
+    Reg rn;
+
+    union {
+        u32 imm;
+        Reg rm;
+    } rhs;
+};
+
 } // namespace core::arm
