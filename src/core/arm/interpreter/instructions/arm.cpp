@@ -166,7 +166,7 @@ void Interpreter::arm_multiply_long() {
     }
 
     if (opcode.accumulate) {
-        result += static_cast<s64>((static_cast<u64>(state.gpr[opcode.rdhi] << 32)) | static_cast<u64>(state.gpr[opcode.rdlo]));
+        result += static_cast<s64>((static_cast<u64>(state.gpr[opcode.rdhi]) << 32) | static_cast<u64>(state.gpr[opcode.rdlo]));
     }
 
     if (opcode.set_flags) {
@@ -202,17 +202,7 @@ void Interpreter::arm_count_leading_zeroes() {
     }
 
     auto opcode = ARMCountLeadingZeroes::decode(instruction);
-    u32 data = state.gpr[opcode.rm];
-
-    // TODO: make this a helper function in bits.h
-    u32 count = 0;
-
-    while (data != 0) {
-        data >>= 1;
-        count++;
-    }
-
-    state.gpr[opcode.rd] = 32 - count;
+    state.gpr[opcode.rd] = common::countl_zeroes(state.gpr[opcode.rm]);
     state.gpr[15] += 4;
 }
 
@@ -221,109 +211,42 @@ void Interpreter::arm_saturating_add_subtract() {
         return;
     }
 
-    u8 rm = instruction & 0xF;
-    u8 rd = (instruction >> 12) & 0xF;
-    u8 rn = (instruction >> 16) & 0xF;
-    u8 opcode = (instruction >> 20) & 0xF;
+    auto opcode = ARMSaturatingAddSubtract::decode(instruction);
+    u32 lhs = state.gpr[opcode.rm];
+    u32 rhs = state.gpr[opcode.rn];
 
-    u32 result = 0;
-
-    switch (opcode) {
-    case 0x0:
-        result = state.gpr[rm] + state.gpr[rn];
-        if ((~(state.gpr[rm] ^ state.gpr[rn]) & (state.gpr[rn] ^ result)) >> 31) {
-            // set q flag
-            state.cpsr.q = true;
-
-            // saturate the result
-            // this approach avoids an if else statement
-            result = 0x80000000 - (result >> 31);
-        }
-        break;
-    case 0x2:
-        result = state.gpr[rm] - state.gpr[rn];
-        if (((state.gpr[rm] ^ state.gpr[rn]) & (state.gpr[rm] ^ result)) >> 31) {
-            // set q flag
-            state.cpsr.q = true;
-
-            // since a signed overflow occured with saturated arithmetic, we set the result to the max value
-            // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
-            // if greater than the largest positive value (2^31 - 1)
-            // saturate the result
-            // this approach avoids an if else statement
-            result = 0x80000000 - (result >> 31);
-        }
-
-        break;
-    case 0x4: {
-        result = state.gpr[rn] * 2;
-
-        if ((state.gpr[rn] ^ result) >> 31) {
-            // if the last bit has changed then we know a signed overflow occured
-            state.cpsr.q = true;
-
-            // saturate the result
-            // this approach avoids an if else statement
-            result = 0x80000000 - (result >> 31);
-        }
-
-        u32 old_result = result;
-        result += state.gpr[rm];
-        if ((~(old_result ^ state.gpr[rm]) & (state.gpr[rm] ^ result)) >> 31) {
-            // set q flag
-            state.cpsr.q = true;
-
-            // since a signed overflow occured with saturated arithmetic, we set the result to the max value
-            // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
-            // if greater than the largest positive value (2^31 - 1)
-            // saturate the result
-            // this approach avoids an if else statement
-            result = 0x80000000 - (result >> 31);
-        }
-
-        break;
-    }
-    case 0x6: {
-        result = state.gpr[rn] * 2;
-
-        if ((state.gpr[rn] ^ result) >> 31) {
-            // set q flag
-            state.cpsr.q = true;
-
-            // since a signed overflow occured with saturated arithmetic, we set the result to the max value
-            // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
-            // if greater than the largest positive value (2^31 - 1)
-            // saturate the result
-            // this approach avoids an if else statement
-            result = 0x80000000 - (result >> 31);
-        }
-
-        u32 old_result = result;
-        // now subtract rm
-        result = state.gpr[rm] - result;
-        if (((state.gpr[rm] ^ old_result) & (state.gpr[rm] ^ result)) >> 31) {
-            // set q flag
-            state.cpsr.q = true;
-
-            // since a signed overflow occured with saturated arithmetic, we set the result to the max value
-            // according to if its the max negative value (-2^31, 0x80000000) or positive value (2^31 - 1, 0x7FFFFFFF)
-            // if greater than the largest positive value (2^31 - 1)
-            // saturate the result
-            // this approach avoids an if else statement
-            result = 0x80000000 - (result >> 31);
-        }
-
-        break;
-    }
-    default:
-        logger.error("handle opcode %d", opcode);
-    }
-    
-    if (rd == 15) {
+    if (opcode.rd == 15) {
         logger.todo("Interpreter: handle rd == 15 in arm_saturating_add_subtract");
     }
 
-    state.gpr[rd] = result;
+    if (opcode.double_rhs) {
+        u32 result = rhs * 2;
+        if ((rhs ^ result) >> 31) {
+            state.cpsr.q = true;
+            result = 0x80000000 - (result >> 31);
+        }
+
+        rhs = result;
+    }
+
+    if (opcode.sub) {
+        u32 result = lhs - rhs;
+        if (calculate_add_overflow(lhs, rhs, result)) {
+            state.cpsr.q = true;
+            result = 0x80000000 - (result >> 31);
+        }
+
+        state.gpr[opcode.rd] = result;
+    } else {
+        u32 result = lhs + rhs;
+        if (calculate_sub_overflow(lhs, rhs, result)) {
+            state.cpsr.q = true;
+            result = 0x80000000 - (result >> 31);
+        }
+
+        state.gpr[opcode.rd] = result;
+    }
+
     state.gpr[15] += 4;
 }
 

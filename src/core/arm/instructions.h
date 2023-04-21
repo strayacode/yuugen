@@ -144,4 +144,22 @@ struct ARMCountLeadingZeroes {
     Reg rd;
 };
 
+struct ARMSaturatingAddSubtract {
+    static ARMSaturatingAddSubtract decode(u32 instruction) {
+        ARMSaturatingAddSubtract opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.sub = common::get_bit<21>(instruction);
+        opcode.double_rhs = common::get_bit<22>(instruction);
+        return opcode;
+    }
+
+    Reg rm;
+    Reg rd;
+    Reg rn;
+    bool double_rhs;
+    bool sub;
+};
+
 } // namespace core::arm
