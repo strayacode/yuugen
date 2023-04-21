@@ -34,18 +34,20 @@ struct ARMDataProcessing {
     };
 
     static ARMDataProcessing decode(u32 instruction) {
-        set_flags = common::get_bit(instruction, 20);
-        imm = common::get_bit(instruction, 25);
-        rd = static_cast<Reg>(common::get_field(instruction, 12, 4));
-        rn = static_cast<Reg>(common::get_field(instruction, 16, 4));
-        opcode = static_cast<Opcode>(common::get_field(instruction, 21, 4));
-        rhs.imm.shift = common::get_field(instruction, 8, 4) * 2;
-        rhs.imm.rotated = common::rotate_right(instruction & 0xff, rhs.imm.shift);
-        rhs.reg.rm = static_cast<Reg>(common::get_field(instruction, 0, 4));
-        rhs.reg.shift_type = static_cast<ShiftType>(common::get_field(instruction, 5, 2));
-        rhs.reg.imm = !common::get_bit(instruction, 4);
-        rhs.reg.amount.rs = static_cast<Reg>(common::get_field(instruction, 8, 4));
-        rhs.reg.amount.imm = common::get_field(instruction, 7, 5);
+        ARMDataProcessing opcode;
+        opcode.set_flags = common::get_bit<20>(instruction);
+        opcode.imm = common::get_bit<25>(instruction);
+        opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.opcode = static_cast<Opcode>(common::get_field<21, 4>(instruction));
+        opcode.rhs.imm.shift = common::get_field<8, 4>(instruction) * 2;
+        opcode.rhs.imm.rotated = common::rotate_right(instruction & 0xff, opcode.rhs.imm.shift);
+        opcode.rhs.reg.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rhs.reg.shift_type = static_cast<ShiftType>(common::get_field<5, 2>(instruction));
+        opcode.rhs.reg.imm = !common::get_bit<4>(instruction);
+        opcode.rhs.reg.amount.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
+        opcode.rhs.reg.amount.imm = common::get_field<7, 5>(instruction);
+        return opcode;
     }
 
     bool set_flags;
@@ -63,12 +65,83 @@ struct ARMDataProcessing {
         struct {
             Reg rm;
             ShiftType shift_type;
+            bool imm;
             union {
                 Reg rs; // shift by a value specified in a register
                 u8 imm; // shift by a value specified in an immediate
             } amount;
         } reg;
     } rhs;
+};
+
+struct ARMMultiply {
+    static ARMMultiply decode(u32 instruction) {
+        ARMMultiply opcode;
+        opcode.set_flags = common::get_bit<20>(instruction);
+        opcode.accumulate = common::get_bit<21>(instruction);
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rd = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        return opcode;
+    }
+
+    bool set_flags;
+    bool accumulate;
+    Reg rm;
+    Reg rs;
+    Reg rn;
+    Reg rd;
+};
+
+struct ARMMultiplyLong {
+    static ARMMultiplyLong decode(u32 instruction) {
+        ARMMultiplyLong opcode;
+        opcode.set_flags = common::get_bit<20>(instruction);
+        opcode.accumulate = common::get_bit<21>(instruction);
+        opcode.sign = common::get_bit<22>(instruction);
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
+        opcode.rdlo = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rdhi = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        return opcode;
+    }
+
+    bool set_flags;
+    bool accumulate;
+    bool sign;
+    Reg rm;
+    Reg rs;
+    Reg rdlo;
+    Reg rdhi;
+};
+
+struct ARMSingleDataSwap {
+    static ARMSingleDataSwap decode(u32 instruction) {
+        ARMSingleDataSwap opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.byte = common::get_bit<22>(instruction);
+        return opcode;
+    }
+
+    Reg rm;
+    Reg rd;
+    Reg rn;
+    bool byte;
+};
+
+struct ARMCountLeadingZeroes {
+    static ARMCountLeadingZeroes decode(u32 instruction) {
+        ARMCountLeadingZeroes opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        return opcode;
+    }
+
+    Reg rm;
+    Reg rd;
 };
 
 } // namespace core::arm

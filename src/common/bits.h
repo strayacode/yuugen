@@ -51,13 +51,13 @@ inline T rotate_right(T value, int amount) {
     return (value >> amount) | (value << (n - amount));
 }
 
-template <typename T, typename U = bool>
-inline U get_bit(T value, int bit) {
+template <int bit, typename T, typename U = bool>
+inline U get_bit(T value) {
   return static_cast<U>((value >> bit) & 0x1);
 }
 
-template <typename T, typename U = T>
-inline U get_field(T value, int start, int size) {
+template <int start, int size, typename T, typename U = T>
+inline U get_field(T value) {
   return static_cast<U>((value >> start)) & ~(static_cast<T>(-1) << size);
 }
 

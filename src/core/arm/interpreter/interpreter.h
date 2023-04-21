@@ -42,30 +42,6 @@ public:
     void arm_signed_halfword_multiply();
     void arm_breakpoint();
 
-    // alu helpers
-    u32 barrel_shifter(u32 value, ShiftType shift_type, int amount, bool& carry, bool imm);
-    u32 alu_mov(u32 op2, bool set_flags);
-    u32 alu_mvn(u32 op2, bool set_flags);
-    void alu_teq(u32 op1, u32 op2);
-    void alu_cmp(u32 op1, u32 op2);
-    void alu_cmn(u32 op1, u32 op2);
-    void alu_tst(u32 op1, u32 op2);
-    u32 alu_add(u32 op1, u32 op2, bool set_flags);
-    u32 alu_adc(u32 op1, u32 op2, bool set_flags);
-    u32 alu_sbc(u32 op1, u32 op2, bool set_flags);
-    u32 alu_eor(u32 op1, u32 op2, bool set_flags);
-    u32 alu_sub(u32 op1, u32 op2, bool set_flags);
-    u32 alu_orr(u32 op1, u32 op2, bool set_flags);
-    u32 alu_bic(u32 op1, u32 op2, bool set_flags);
-    u32 alu_and(u32 op1, u32 op2, bool set_flags);
-    u32 alu_lsl(u32 value, int amount, bool& carry);
-    u32 alu_lsr(u32 value, int amount, bool& carry, bool imm);
-    u32 alu_asr(u32 value, int amount, bool& carry, bool imm);
-    u32 alu_ror(u32 value, int amount, bool& carry, bool imm);
-
-    // TODO: remove this
-    u32 arm_get_shifted_register_single_data_transfer();
-
     // thumb instruction handlers
     void thumb_alu_immediate();
     void thumb_branch_link_offset();
@@ -100,6 +76,43 @@ private:
     bool evaluate_condition(Condition condition);
 
     Bank get_bank(Mode mode);
+
+    void set_nz(u32 result);
+
+    // alu helpers
+    u32 barrel_shifter(u32 value, ShiftType shift_type, int amount, bool& carry, bool imm);
+    u32 alu_mov(u32 op2, bool set_flags);
+    u32 alu_mvn(u32 op2, bool set_flags);
+    void alu_teq(u32 op1, u32 op2);
+    void alu_cmp(u32 op1, u32 op2);
+    void alu_cmn(u32 op1, u32 op2);
+    void alu_tst(u32 op1, u32 op2);
+    u32 alu_add(u32 op1, u32 op2, bool set_flags);
+    u32 alu_adc(u32 op1, u32 op2, bool set_flags);
+    u32 alu_sbc(u32 op1, u32 op2, bool set_flags);
+    u32 alu_eor(u32 op1, u32 op2, bool set_flags);
+    u32 alu_sub(u32 op1, u32 op2, bool set_flags);
+    u32 alu_orr(u32 op1, u32 op2, bool set_flags);
+    u32 alu_bic(u32 op1, u32 op2, bool set_flags);
+    u32 alu_and(u32 op1, u32 op2, bool set_flags);
+    u32 alu_lsl(u32 value, int amount, bool& carry);
+    u32 alu_lsr(u32 value, int amount, bool& carry, bool imm);
+    u32 alu_asr(u32 value, int amount, bool& carry, bool imm);
+    u32 alu_ror(u32 value, int amount, bool& carry, bool imm);
+
+    u16 code_read_half(u32 addr);
+    u32 code_read_word(u32 addr);
+    u8 read_byte(u32 addr);
+    u16 read_half(u32 addr);
+    u32 read_word(u32 addr);
+    u32 read_word_rotate(u32 addr);
+
+    void write_byte(u32 addr, u8 data);
+    void write_half(u32 addr, u16 data);
+    void write_word(u32 addr, u32 data);
+
+    bool calculate_add_overflow(u32 op1, u32 op2, u32 result);
+    bool calculate_sub_overflow(u32 op1, u32 op2, u32 result);
 
     Arch arch;
     Memory& memory;

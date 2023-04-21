@@ -19,7 +19,6 @@ void Interpreter::reset() {
 
     state.cpsr.data = 0xd3;
     set_mode(Mode::SVC);
-
     pipeline.fill(0);
 }
 
@@ -95,15 +94,15 @@ void Interpreter::illegal_instruction() {
 
 void Interpreter::arm_flush_pipeline() {
     state.gpr[15] &= ~3;
-    pipeline[0] = memory.read<u32, Bus::Code>(state.gpr[15]);
-    pipeline[1] = memory.read<u32, Bus::Code>(state.gpr[15] + 4);
+    pipeline[0] = code_read_word(state.gpr[15]);
+    pipeline[1] = code_read_word(state.gpr[15] + 4);
     state.gpr[15] += 8;
 }
 
 void Interpreter::thumb_flush_pipeline() {
     state.gpr[15] &= ~1;
-    pipeline[0] = memory.read<u16, Bus::Code>(state.gpr[15]);
-    pipeline[1] = memory.read<u16, Bus::Code>(state.gpr[15] + 2);
+    pipeline[0] = code_read_half(state.gpr[15]);
+    pipeline[1] = code_read_half(state.gpr[15] + 2);
     state.gpr[15] += 4;
 }
 
@@ -160,6 +159,57 @@ Bank Interpreter::get_bank(Mode mode) {
     default:
         logger.error("Interpreter: mode %02x doesn't have a bank", static_cast<u8>(mode));
     }
+}
+
+void Interpreter::set_nz(u32 result) {
+    state.cpsr.n = result >> 31;
+    state.cpsr.z = result == 0;
+}
+
+u16 Interpreter::code_read_half(u32 addr) {
+    return memory.read<u16, Bus::Code>(addr);
+}
+
+u32 Interpreter::code_read_word(u32 addr) {
+    return memory.read<u32, Bus::Code>(addr);
+}
+
+u8 Interpreter::read_byte(u32 addr) {
+    return memory.read<u8, Bus::Data>(addr);
+}
+
+u16 Interpreter::read_half(u32 addr) {
+    return memory.read<u16, Bus::Data>(addr);
+}
+
+u32 Interpreter::read_word(u32 addr) {
+    return memory.read<u32, Bus::Data>(addr);
+}
+
+u32 Interpreter::read_word_rotate(u32 addr) {
+    u32 value = memory.read<u32, Bus::Data>(addr);
+    int amount = (addr & 0x3) * 8;
+    return common::rotate_right(value, amount);
+}
+
+void Interpreter::write_byte(u32 addr, u8 data) {
+    memory.write<u8, Bus::Data>(addr, data);
+}
+
+void Interpreter::write_half(u32 addr, u16 data) {
+    memory.write<u16, Bus::Data>(addr, data);
+}
+
+void Interpreter::write_word(u32 addr, u32 data) {
+    memory.write<u32, Bus::Data>(addr, data);
+}
+
+bool Interpreter::calculate_add_overflow(u32 op1, u32 op2, u32 result) {
+    return (~(op1 ^ op2) & (op2 ^ result)) >> 31;
+}
+
+bool Interpreter::calculate_sub_overflow(u32 op1, u32 op2, u32 result) {
+    return ((op1 ^ op2) & (op1 ^ result)) >> 31;
 }
 
 } // namespace core::arm
