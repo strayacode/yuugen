@@ -21,10 +21,10 @@ public:
     ARM7Coprocessor& get_coprocessor() { return coprocessor; }
 
 private:
+    System& system;
     ARM7Memory memory;
     ARM7Coprocessor coprocessor;
     std::unique_ptr<arm::CPU> cpu;
-    System& system;
 };
 
 } // namespace core::nds

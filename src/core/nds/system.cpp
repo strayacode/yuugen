@@ -31,6 +31,9 @@ void System::reset() {
     scheduler.reset();
     arm7.reset();
     arm9.reset();
+
+    main_memory.fill(0);
+    shared_wram.fill(0);
 }
 
 void System::direct_boot() {

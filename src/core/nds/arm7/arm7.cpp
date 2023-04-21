@@ -8,6 +8,7 @@ namespace core::nds {
 ARM7::ARM7(System& system) : system(system), memory(system) {}
 
 void ARM7::reset() {
+    memory.reset();
     cpu->reset();
 }
 

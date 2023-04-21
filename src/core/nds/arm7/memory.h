@@ -11,6 +11,9 @@ class ARM7Memory : public arm::Memory {
 public:
     ARM7Memory(System& system);
 
+    void reset();
+    void update_memory_map();
+
     u8 system_read_byte(u32 addr) override;
     u16 system_read_half(u32 addr) override;
     u32 system_read_word(u32 addr) override;

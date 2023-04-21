@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include "core/system.h"
 #include "core/nds/config.h"
 #include "core/nds/arm7/arm7.h"
@@ -20,6 +21,8 @@ public:
     ARM9 arm9;
     Cartridge cartridge;
     Scheduler scheduler;
+    std::array<u8, 0x400000> main_memory;
+    std::array<u8, 0x8000> shared_wram;
 
 private:
     void direct_boot();
