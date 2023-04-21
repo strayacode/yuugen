@@ -24,6 +24,7 @@ private:
     ARM7Memory memory;
     ARM7Coprocessor coprocessor;
     std::unique_ptr<arm::CPU> cpu;
+    System& system;
 };
 
 } // namespace core::nds

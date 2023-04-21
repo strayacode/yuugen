@@ -1,3 +1,4 @@
+#include "common/logger.h"
 #include "core/core.h"
 #include "core/nds/system.h"
 
@@ -12,9 +13,11 @@ void Core::start() {
     config.game_path = game_path;
     config.boot_mode = nds::BootMode::Direct;
     system = std::make_unique<nds::System>(config);
-    
-    // TODO: start thread to call run_frame
-    system->run_frame();
+    state = State::Running;
+
+    emulator_thread = std::thread{[this]() {
+        system->run_frame();
+    }};
 }
 
 } // namespace core

@@ -18,7 +18,9 @@ System::System(Config config) : arm7(*this), arm9(*this), cartridge(*this) {
 void System::run_frame() {
     auto frame_end = scheduler.get_current_time() + 560190;
     while (scheduler.get_current_time() < frame_end) {
+        logger.debug("run arm7");
         arm7.run(1);
+        logger.debug("run arm9");
         arm9.run(2);
         scheduler.tick(1);
         scheduler.run_events();

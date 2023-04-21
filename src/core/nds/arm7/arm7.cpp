@@ -5,7 +5,7 @@
 
 namespace core::nds {
 
-ARM7::ARM7(System& system) : memory(system) {}
+ARM7::ARM7(System& system) : system(system), memory(system) {}
 
 void ARM7::reset() {
     cpu->reset();
@@ -31,7 +31,17 @@ void ARM7::direct_boot() {
     memory.write<u8, Bus::Data>(0x04000300, 0x01); // postflg (arm7)
     memory.write<u16, Bus::Data>(0x04000504, 0x0200); // soundbias
 
+    cpu->jump_to(system.cartridge.get_arm7_entrypoint());
 
+    auto& state = cpu->get_state();
+    state.gpr[12] = state.gpr[14] = state.gpr[15];
+    state.gpr[13] = 0x0380fd80;
+    state.gpr_banked[arm::Bank::IRQ][5] = 0x0380ff80;
+    state.gpr_banked[arm::Bank::SVC][5] = 0x0380ffc0;
+
+    // enter system mode
+    state.cpsr.data = 0xdf;
+    cpu->set_mode(arm::Mode::SYS);
 }
 
 } // namespace core::nds
