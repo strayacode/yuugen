@@ -348,10 +348,38 @@ struct ARMBlockDataTransfer {
 struct ARMSingleDataTransfer {
     static ARMSingleDataTransfer decode(u32 instruction) {
         ARMSingleDataTransfer opcode;
+        opcode.load = common::get_bit<20>(instruction);
+        opcode.writeback = common::get_bit<21>(instruction);
+        opcode.byte = common::get_bit<22>(instruction);
+        opcode.up = common::get_bit<23>(instruction);
+        opcode.pre = common::get_bit<24>(instruction);
+        opcode.imm = !common::get_bit<25>(instruction);
+        opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.rhs.imm = common::get_field<0, 12>(instruction);
+        opcode.rhs.reg.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rhs.reg.shift_type = static_cast<ShiftType>(common::get_field<5, 2>(instruction));
+        opcode.rhs.reg.amount = common::get_field<7, 5>(instruction);
         return opcode;
     }
 
+    bool load;
+    bool writeback;
+    bool byte;
+    bool up;
+    bool pre;
+    bool imm;
+    Reg rd;
+    Reg rn;
 
+    union {
+        u32 imm;
+        struct {
+            Reg rm;
+            ShiftType shift_type;
+            int amount;
+        } reg;
+    } rhs;
 };
 
 struct ARMCoprocessorRegisterTransfer {

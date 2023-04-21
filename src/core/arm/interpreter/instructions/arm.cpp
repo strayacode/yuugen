@@ -650,68 +650,60 @@ void Interpreter::arm_block_data_transfer() {
 }
 
 void Interpreter::arm_single_data_transfer() {
-    // const bool load = (m_instruction >> 20) & 0x1;
-    // const bool writeback = (m_instruction >> 21) & 0x1;
-    // const bool byte = (m_instruction >> 22) & 0x1;
-    // const bool up = (m_instruction >> 23) & 0x1;
-    // const bool pre = (m_instruction >> 24) & 0x1;
-    // const bool shifted_register = (m_instruction >> 25) & 0x1;
-    // u8 rd = (m_instruction >> 12) & 0xF;
-    // u8 rn = (m_instruction >> 16) & 0xF;
+    auto opcode = ARMSingleDataTransfer::decode(instruction);
+    u32 op2 = 0;
+    u32 addr = state.gpr[opcode.rn];
+    bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
 
-    // u32 op2 = 0;
-    // u32 address = m_gpr[rn];
+    if (opcode.imm) {
+        op2 = opcode.rhs.imm;
+    } else {
+        bool carry = state.cpsr.c;
+        op2 = barrel_shifter(state.gpr[opcode.rhs.reg.rm], opcode.rhs.reg.shift_type, opcode.rhs.reg.amount, carry, true);
+    }
 
-    // if (shifted_register) {
-    //     op2 = arm_get_shifted_register_single_data_transfer();
-    // } else {
-    //     op2 = m_instruction & 0xFFF;
-    // }
+    if (!opcode.up) {
+        op2 *= -1;
+    }
 
-    // if (!up) {
-    //     op2 *= -1;
-    // }
+    if (opcode.pre) {
+        addr += op2;
+    }
 
-    // if (pre) {
-    //     address += op2;
-    // }
+    state.gpr[15] += 4;
 
-    // // increment r15 by 4 since if we are writing r15 it must be r15 + 12.
-    // // however if we are loading into r15 this increment won't matter as well
-    // m_gpr[15] += 4;
+    if (opcode.load) {
+        if (opcode.byte) {
+            state.gpr[opcode.rd] = read_byte(addr);
+        } else {
+            state.gpr[opcode.rd] = read_word_rotate(addr);
+        }
+    } else {
+        if (opcode.byte) {
+            write_byte(addr, state.gpr[opcode.rd]);
+        } else {
+            write_word(addr, state.gpr[opcode.rd]);
+        }
+    }
 
-    // if (load) {
-    //     if (byte) {
-    //         m_gpr[rd] = read_byte(address);
-    //     } else {
-    //         m_gpr[rd] = read_word_rotate(address);
-    //     }
-    // } else {
-    //     if (byte) {
-    //         write_byte(address, m_gpr[rd]);
-    //     } else {
-    //         write_word(address, m_gpr[rd]);
-    //     }
-    // }
+    if (do_writeback) {
+        if (!opcode.pre) {
+            state.gpr[opcode.rn] += op2;
+        } else if (opcode.writeback) {
+            state.gpr[opcode.rn] = addr;
+        }
+    }
 
-    // if (!load || rd != rn) {
-    //     if (!pre) {
-    //         m_gpr[rn] += op2;
-    //     } else if (writeback) {
-    //         m_gpr[rn] = address;
-    //     }
-    // }
-
-    // if (load && rd == 15) {
-    //     if ((m_arch == Arch::ARMv5) && (m_gpr[15] & 1)) {
-    //         m_cpsr.t = true;
-    //         m_gpr[15] &= ~1;
-    //         thumb_flush_pipeline();
-    //     } else {
-    //         m_gpr[15] &= ~3;
-    //         arm_flush_pipeline();
-    //     }
-    // }
+    if (opcode.load && opcode.rd == 15) {
+        if ((arch == Arch::ARMv5) && (state.gpr[15] & 0x1)) {
+            state.cpsr.t = true;
+            state.gpr[15] &= ~0x1;
+            thumb_flush_pipeline();
+        } else {
+            state.gpr[15] &= ~0x3;
+            arm_flush_pipeline();
+        }
+    }
 }
 
 void Interpreter::arm_coprocessor_register_transfer() {
