@@ -64,6 +64,10 @@ void Interpreter::set_mode(Mode mode) {
     auto old_bank = get_bank(state.cpsr.mode);
     auto new_bank = get_bank(mode);
 
+    if (new_bank == Bank::USR) {
+        logger.warn("Interpreter: handle spsr in user/system mode");
+    }
+
     state.cpsr.mode = mode;
 
     // no need to bank switch if no change in banks used

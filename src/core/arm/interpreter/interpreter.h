@@ -31,7 +31,8 @@ public:
     void arm_saturating_add_subtract();
     void arm_multiply_long();
     void arm_halfword_data_transfer();
-    void arm_psr_transfer();
+    void arm_status_load();
+    void arm_status_store();
     void arm_block_data_transfer();
     void arm_single_data_transfer();
     void arm_data_processing();

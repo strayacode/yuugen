@@ -289,4 +289,51 @@ struct ARMHalfwordDataTransfer {
     } rhs;
 };
 
+struct ARMStatusLoad {
+    static ARMStatusLoad decode(u32 instruction) {
+        ARMStatusLoad opcode;
+        opcode.spsr = common::get_bit<22>(instruction);
+        opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        return opcode;
+    }
+
+    bool spsr;
+    Reg rd;
+};
+
+struct ARMStatusStore {
+    static ARMStatusStore decode(u32 instruction) {
+        ARMStatusStore opcode;
+        opcode.spsr = common::get_bit<22>(instruction);
+        opcode.imm = common::get_bit<25>(instruction);
+
+        if (common::get_bit<16>(instruction)) {
+            opcode.mask |= 0x000000ff;
+        }
+        if (common::get_bit<17>(instruction)) {
+            opcode.mask |= 0x0000ff00;
+        }
+        if (common::get_bit<18>(instruction)) {
+            opcode.mask |= 0x00ff0000;
+        }
+        if (common::get_bit<19>(instruction)) {
+            opcode.mask |= 0xff000000;
+        }
+
+        int amount = common::get_field<8, 4>(instruction) << 1;
+        opcode.rhs.rotated = common::rotate_right(instruction & 0xff, amount);
+        opcode.rhs.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        return opcode;
+    }
+
+    bool spsr;
+    bool imm;
+    u32 mask;
+    
+    union {
+        u32 rotated;
+        Reg rm;
+    } rhs;
+};
+
 } // namespace core::arm

@@ -495,63 +495,39 @@ void Interpreter::arm_halfword_data_transfer() {
     }
 }
 
-void Interpreter::arm_psr_transfer() {
-    // const bool opcode = (m_instruction >> 21) & 0x1;
-    // const bool spsr = (m_instruction >> 22) & 0x1;
-    // u8 rm = m_instruction & 0xF;
+void Interpreter::arm_status_load() {
+    auto opcode = ARMStatusLoad::decode(instruction);
+    if (opcode.spsr) {
+        state.gpr[opcode.rd] = state.spsr_banked[get_bank(state.cpsr.mode)].data;
+    } else {
+        state.gpr[opcode.rd] = state.cpsr.data;
+    }
+    state.gpr[15] += 4;
+}
 
-    // if (opcode) {
-    //     // msr
-    //     u8 immediate = (m_instruction >> 25) & 0x1;
-    //     u32 value = 0;
-
-    //     u32 mask = 0;
-    //     if (m_instruction & (1 << 16)) {
-    //         mask |= 0x000000FF;
-    //     }
-    //     if (m_instruction & (1 << 17)) {
-    //         mask |= 0x0000FF00;
-    //     }
-    //     if (m_instruction & (1 << 18)) {
-    //         mask |= 0x00FF0000;
-    //     }
-    //     if (m_instruction & (1 << 19)) {
-    //         mask |= 0xFF000000;
-    //     }
-
-    //     if (immediate) {
-    //         u32 immediate = m_instruction & 0xFF;
-    //         u8 rotate_amount = ((m_instruction >> 8) & 0xF) << 1;
-
-    //         value = Common::rotate_right(immediate, rotate_amount);
-    //     } else {
-    //         value = m_gpr[rm];
-    //     }
-
-    //     // TODO: check later
-    //     if (spsr) {
-    //         if (has_spsr()) {
-    //             set_spsr((get_spsr() & ~mask) | (value & mask));
-    //         }
-    //     } else {
-    //         if (m_instruction & (1 << 16) && is_privileged()) {
-    //             switch_mode(value & 0x1F);
-    //         }
-
-    //         m_cpsr.data = (m_cpsr.data & ~mask) | (value & mask);
-    //     }
-    // } else {
-    //     // mrs
-    //     u8 rd = (m_instruction >> 12) & 0xF;
-
-    //     if (spsr) {
-    //         m_gpr[rd] = get_spsr();
-    //     } else {
-    //         m_gpr[rd] = m_cpsr.data;
-    //     }
-    // }
+void Interpreter::arm_status_store() {
+    auto opcode = ARMStatusStore::decode(instruction);
     
-    // m_gpr[15] += 4;
+    u32 value = 0;
+    if (opcode.imm) {
+        value = opcode.rhs.rotated;
+    } else {
+        value = state.gpr[opcode.rhs.rm];
+    }
+
+    // TODO: deal with loading and store in user/system mode
+    if (opcode.spsr) {
+        u32 result = (state.spsr_banked[get_bank(state.cpsr.mode)].data & ~opcode.mask) | (value & opcode.mask);
+        state.spsr_banked[get_bank(state.cpsr.mode)].data = result;
+    } else {
+        if (common::get_bit<16>(instruction)) {
+            set_mode(static_cast<Mode>(value & 0x1f));
+        }
+
+        state.cpsr.data = (state.cpsr.data & ~opcode.mask) | (value & opcode.mask);
+    }
+
+    state.gpr[15] += 4;
 }
 
 void Interpreter::arm_block_data_transfer() {
