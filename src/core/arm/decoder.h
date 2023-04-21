@@ -37,9 +37,9 @@ public:
         register_arm("00xxxxxxxxxx", &D::arm_data_processing);
         register_arm("1110xxxxxxx1", &D::arm_coprocessor_register_transfer);
         register_arm("1111xxxxxxxx", &D::arm_software_interrupt);
-        register_arm("000101001xx0", &D::arm_signed_halfword_accumulate_long);
-        register_arm("000100101xx0", &D::arm_signed_halfword_word_multiply);
-        register_arm("00010xx01xx0", &D::arm_signed_halfword_multiply);
+        register_arm("000101001xx0", &D::arm_signed_multiply_accumulate_long);
+        register_arm("000100101xx0", &D::arm_signed_multiply_word);
+        register_arm("00010xx01xx0", &D::arm_signed_multiply);
         register_arm("000100100111", &D::arm_breakpoint);
         
         std::stable_sort(arm_list.begin(), arm_list.end(), [](InstructionInfo a, InstructionInfo b) {

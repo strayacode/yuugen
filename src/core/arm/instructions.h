@@ -162,4 +162,46 @@ struct ARMSaturatingAddSubtract {
     bool sub;
 };
 
+struct ARMSignedMultiply {
+    static ARMSignedMultiply decode(u32 instruction) {
+        ARMSignedMultiply opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rd = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.accumulate = common::get_field<21, 3>(instruction) == 0;
+        opcode.x = common::get_bit<5>(instruction);
+        opcode.y = common::get_bit<6>(instruction);
+        return opcode;
+    }
+
+    Reg rm;
+    Reg rs;
+    Reg rn;
+    Reg rd;
+    bool accumulate;
+    bool x;
+    bool y;
+};
+
+struct ARMSignedMultiplyWord {
+    static ARMSignedMultiplyWord decode(u32 instruction){
+        ARMSignedMultiplyWord opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.rd = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.accumulate = !common::get_bit<5>(instruction);
+        opcode.y = common::get_bit<6>(instruction);
+        return opcode;
+    }
+
+    Reg rm;
+    Reg rs;
+    Reg rn;
+    Reg rd;
+    bool accumulate;
+    bool y;
+};
+
 } // namespace core::arm

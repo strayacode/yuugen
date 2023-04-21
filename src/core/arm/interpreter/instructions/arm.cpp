@@ -250,93 +250,71 @@ void Interpreter::arm_saturating_add_subtract() {
     state.gpr[15] += 4;
 }
 
-void Interpreter::arm_signed_halfword_multiply() {
+void Interpreter::arm_signed_multiply() {
     if (arch == Arch::ARMv4) {
         return;
     }
 
-    if (((instruction >> 21) & 0xF) == 0xA) {
-        logger.todo("Interpreter: handle case in arm_signed_halfword_multiply");
-    }
+    auto opcode = ARMSignedMultiply::decode(instruction);
+    s16 lhs;
+    s16 rhs;
 
-    bool accumulate = ((instruction >> 21) & 0x3) == 0;
-    u8 op1 = instruction & 0xF;
-    u8 op2 = (instruction >> 8) & 0xF;
-    u8 op3 = (instruction >> 12) & 0xF;
-    u8 op4 = (instruction >> 16) & 0xF;
-
-    bool x = instruction & (1 << 5);
-    bool y = instruction & (1 << 6);
-
-    s16 result1;
-    s16 result2;
-
-    if (x) {
-        result1 = (s16)(state.gpr[op1] >> 16);
+    if (opcode.x) {
+        lhs = static_cast<s16>(state.gpr[opcode.rm] >> 16);
     } else {
-        result1 = (s16)state.gpr[op1];
+        lhs = static_cast<s16>(state.gpr[opcode.rm]);
     }
 
-    if (y) {
-        result2 = (s16)(state.gpr[op2] >> 16);
+    if (opcode.y) {
+        rhs = static_cast<s16>(state.gpr[opcode.rs] >> 16);
     } else {
-        result2 = (s16)state.gpr[op2];
+        rhs = static_cast<s16>(state.gpr[opcode.rs]);
     }
 
-    u32 result = result1 * result2;
+    u32 result = lhs * rhs;
 
-    if (accumulate) {
-        u32 operand = state.gpr[op3];
+    if (opcode.accumulate) {
+        u32 operand = state.gpr[opcode.rn];
+        state.gpr[opcode.rd] = result + operand;
 
-        state.gpr[op4] = result + operand;
-
-        if ((~(result ^ operand) & (operand ^ state.gpr[op4])) >> 31) {
+        if (calculate_add_overflow(result, operand, state.gpr[opcode.rd])) {
             state.cpsr.q = true;
         }
     } else {
-        state.gpr[op4] = result;
+        state.gpr[opcode.rd] = result;
     }
 
     state.gpr[15] += 4;
 }
 
-void Interpreter::arm_signed_halfword_word_multiply() {
+void Interpreter::arm_signed_multiply_word() {
     if (arch == Arch::ARMv4) {
         return;
     }
 
-    u8 op1 = instruction & 0xF;
-    u8 op2 = (instruction >> 8) & 0xF;
-    u8 op3 = (instruction >> 12) & 0xF;
-    u8 op4 = (instruction >> 16) & 0xF;
-
-    bool x = instruction & (1 << 5);
-    bool y = instruction & (1 << 6);
-
+    auto opcode = ARMSignedMultiplyWord::decode(instruction);
     u32 result;
-
-    if (y) {
-        result = ((s32)state.gpr[op1] * (s16)(state.gpr[op2] >> 16)) >> 16;
+    if (opcode.y) {
+        result = (static_cast<s32>(state.gpr[opcode.rm]) * static_cast<s16>(state.gpr[opcode.rs] >> 16)) >> 16;
     } else {
-        result = ((s32)state.gpr[op1] * (s16)state.gpr[op2]) >> 16;
+        result = (static_cast<s32>(state.gpr[opcode.rm]) * static_cast<s16>(state.gpr[opcode.rs])) >> 16;
     }
 
-    if (!x) {
-        u32 operand = state.gpr[op3];
+    if (opcode.accumulate) {
+        u32 operand = state.gpr[opcode.rn];
+        state.gpr[opcode.rd] = result + operand;
 
-        state.gpr[op4] = result + operand;
-
-        if ((~(result ^ operand) & (operand ^ state.gpr[op4])) >> 31) {
+        if (calculate_add_overflow(result, operand, state.gpr[opcode.rd])) {
             state.cpsr.q = true;
         }
     } else {
-        state.gpr[op4] = result;
+        state.gpr[opcode.rd] = result;
     }
 
     state.gpr[15] += 4;
 }
 
-void Interpreter::arm_signed_halfword_accumulate_long() {
+void Interpreter::arm_signed_multiply_accumulate_long() {
     if (arch == Arch::ARMv4) {
         return;
     }

@@ -37,9 +37,9 @@ public:
     void arm_data_processing();
     void arm_coprocessor_register_transfer();
     void arm_software_interrupt();
-    void arm_signed_halfword_accumulate_long();
-    void arm_signed_halfword_word_multiply();
-    void arm_signed_halfword_multiply();
+    void arm_signed_multiply_accumulate_long();
+    void arm_signed_multiply_word();
+    void arm_signed_multiply();
     void arm_breakpoint();
 
     // thumb instruction handlers
