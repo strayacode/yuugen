@@ -336,4 +336,40 @@ struct ARMStatusStore {
     } rhs;
 };
 
+struct ARMBlockDataTransfer {
+    static ARMBlockDataTransfer decode(u32 instruction) {
+        ARMBlockDataTransfer opcode;
+        return opcode;
+    }
+
+
+};
+
+struct ARMSingleDataTransfer {
+    static ARMSingleDataTransfer decode(u32 instruction) {
+        ARMSingleDataTransfer opcode;
+        return opcode;
+    }
+
+
+};
+
+struct ARMCoprocessorRegisterTransfer {
+    static ARMCoprocessorRegisterTransfer decode(u32 instruction) {
+        ARMCoprocessorRegisterTransfer opcode;
+        opcode.crm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        opcode.crn = static_cast<Reg>(common::get_field<16, 4>(instruction));
+        opcode.cp = common::get_field<5, 3>(instruction);
+        opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
+        opcode.load = common::get_bit<20>(instruction);
+        return opcode;
+    }
+
+    Reg crm;
+    Reg crn;
+    u8 cp;
+    Reg rd;
+    bool load;
+};
+
 } // namespace core::arm

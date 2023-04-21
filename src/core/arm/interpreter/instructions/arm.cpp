@@ -715,26 +715,24 @@ void Interpreter::arm_single_data_transfer() {
 }
 
 void Interpreter::arm_coprocessor_register_transfer() {
-    // if (m_arch == Arch::ARMv4) {
-    //     return;
-    // }
+    if (arch == Arch::ARMv4) {
+        logger.warn("Interpreter: arm_coprocessor_register_transfer executed by arm7");
+        return;
+    }
 
-    // u8 crm = m_instruction & 0xF;
-    // u8 crn = (m_instruction >> 16) & 0xF;
-    // u8 opcode2 = (m_instruction >> 5) & 0x7;
-    // u8 rd = (m_instruction >> 12) & 0xF;
+    auto opcode = ARMCoprocessorRegisterTransfer::decode(instruction);
 
-    // if (m_instruction & (1 << 20)) {
-    //     m_gpr[rd] = m_coprocessor.read(crn, crm, opcode2);
+    if (opcode.rd == 15) {
+        logger.error("Interpreter: handle rd == 15 in arm_coprocessor_register_transfer");
+    }
 
-    //     if (rd == 15) {
-    //         todo();
-    //     }
-    // } else {
-    //     m_coprocessor.write(crn, crm, opcode2, m_gpr[rd]);
-    // }
+    if (opcode.load) {
+        state.gpr[opcode.rd] = coprocessor.read(opcode.crn, opcode.crm, opcode.cp);
+    } else {
+        coprocessor.write(opcode.crn, opcode.crm, opcode.cp, state.gpr[opcode.rd]);
+    }
 
-    // m_gpr[15] += 4;
+    state.gpr[15] += 4;
 }
 
 } // namespace core::arm
