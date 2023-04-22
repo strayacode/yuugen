@@ -15,6 +15,9 @@ enum class Bus {
 
     // for components other than the cpu (e.g. DMA)
     System,
+
+    CodeAndData,
+    All,
 };
 
 enum RegionAttributes : u8 {
@@ -66,13 +69,23 @@ public:
     }
 
     template <Bus B>
-    void map(u32 addr, u8* pointer, RegionAttributes attributes) {
+    void map(u32 base, u32 end, u8* pointer, u32 mask, RegionAttributes attributes) {
         if (attributes & RegionAttributes::Read) {
-            get_read_table<B>().map(addr, pointer);
+            if constexpr (B == Bus::All) {
+                get_read_table<Bus::System>().map(base, end, pointer, mask);
+                get_read_table<Bus::CodeAndData>().map(base, end, pointer, mask);
+            } else {
+                get_read_table<B>().map(base, end, pointer, mask);
+            }
         }
 
         if (attributes & RegionAttributes::Write) {
-            get_write_table<B>().map(addr, pointer);
+            if constexpr (B == Bus::All) {
+                get_write_table<Bus::System>().map(base, end, pointer, mask);
+                get_write_table<Bus::CodeAndData>().map(base, end, pointer, mask);
+            } else {
+                get_write_table<B>().map(base, end, pointer, mask);
+            }
         }
     }
 
@@ -87,12 +100,12 @@ public:
 private:
     template <typename T, Bus B>
     u8* get_read_pointer(u32 addr) {
-        return get_read_table<B>().get_pointer<T>(addr);
+        return get_read_table<B>().template get_pointer<T>(addr);
     }
 
     template <typename T, Bus B>
     u8* get_write_pointer(u32 addr) {
-        return get_write_table<B>().get_pointer<T>(addr);
+        return get_write_table<B>().template get_pointer<T>(addr);
     }
 
     template <Bus B>

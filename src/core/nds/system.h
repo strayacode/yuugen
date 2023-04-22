@@ -23,6 +23,7 @@ public:
     Scheduler scheduler;
     std::array<u8, 0x400000> main_memory;
     std::array<u8, 0x8000> shared_wram;
+    u8 wramcnt;
 
 private:
     void direct_boot();

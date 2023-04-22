@@ -23,6 +23,7 @@ void Interpreter::reset() {
 }
 
 void Interpreter::run(int cycles) {
+    logger.info("start");
     while (cycles--) {
         // TODO: handle interrupts in a nice way
         instruction = pipeline[0];

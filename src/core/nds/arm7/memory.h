@@ -24,6 +24,7 @@ public:
 
 private:
     System& system;
+    std::array<u8, 0x10000> arm7_wram;
 };
 
 } // namespace core::nds

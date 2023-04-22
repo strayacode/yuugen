@@ -13,12 +13,12 @@ class VirtualPageTable {
 public:
     template <typename T>
     u8* get_pointer(u32 addr) {
-        auto& l1_entry = page_table[addr >> L1_SHIFT];
+        auto& l1_entry = page_table[get_l1_index(addr)];
         if (!l1_entry) {
             return nullptr;
         }
 
-        auto& l2_entry = (*l1_entry)[(addr >> L2_SHIFT) & L2_MASK];
+        auto& l2_entry = (*l1_entry)[get_l2_index(addr)];
         if (!l2_entry) {
             return nullptr;
         }
@@ -27,7 +27,28 @@ public:
         return static_cast<u8*>(l2_entry + offset);
     }
 
+    void map(u32 base, u32 end, u8* pointer, u32 mask) {
+        for (u32 addr = base; addr < end; addr += PAGE_SIZE) {
+            auto& l1_entry = page_table[get_l1_index(addr)];
+            if (!l1_entry) {
+                l1_entry = std::make_unique<std::array<L2Entry, L2_SIZE>>();
+            }
+
+            auto& l2_entry = (*l1_entry)[get_l2_index(addr)];
+            u32 offset = addr & mask;
+            l2_entry = pointer + offset;
+        }
+    }
+
 private:
+    int get_l1_index(u32 addr) {
+        return addr >> L1_SHIFT;
+    }
+
+    int get_l2_index(u32 addr) {
+        return (addr >> L2_SHIFT) & L2_MASK;
+    }
+
     static constexpr int PAGE_SIZE = 1 << N;
     static constexpr u32 PAGE_MASK = PAGE_SIZE - 1;
     static constexpr int L1_BITS = (32 - N) / 2;

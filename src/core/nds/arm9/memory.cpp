@@ -7,12 +7,13 @@ namespace core::nds {
 ARM9Memory::ARM9Memory(System& system) : system(system) {}
 
 void ARM9Memory::reset() {
-    
+    using Bus = arm::Bus;
+    using RegionAttributes = arm::RegionAttributes;
+    map<Bus::All>(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, RegionAttributes::ReadWrite);
 }
 
 void ARM9Memory::update_memory_map() {
-    using Bus = arm::Bus;
-    map<Bus::Code>()
+    
 }
 
 u8 ARM9Memory::system_read_byte(u32 addr) {

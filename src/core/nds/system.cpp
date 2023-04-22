@@ -34,6 +34,7 @@ void System::reset() {
 
     main_memory.fill(0);
     shared_wram.fill(0);
+    wramcnt = 0;
 }
 
 void System::direct_boot() {

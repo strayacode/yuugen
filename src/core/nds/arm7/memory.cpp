@@ -7,7 +7,9 @@ namespace core::nds {
 ARM7Memory::ARM7Memory(System& system) : system(system) {}
 
 void ARM7Memory::reset() {
-
+    arm7_wram.fill(0);
+    map<arm::Bus::All>(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
+    map<arm::Bus::All>(0x03800000, 0x04000000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
 }
 
 void ARM7Memory::update_memory_map() {
