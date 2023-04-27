@@ -44,4 +44,29 @@ void System::direct_boot() {
     logger.debug("System: direct booted successfully");
 }
 
+void System::write_wramcnt(u8 data) {
+    wramcnt = data & 0x3;
+
+    // switch (wramcnt) {
+    // case 0x0:
+    //     arm7.get_memory().map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
+    //     arm7.get_memory().map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
+    //     break;
+    // case 0x1:
+    //     arm7.get_memory().map<arm::Bus::All>(0x03000000, 0x03800000, shared_wram.data(), 0x3fff, arm::RegionAttributes::ReadWrite);
+    //     arm7.get_memory().map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
+    //     break;
+    // case 0x2:
+    //     arm7.get_memory().map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data() + 0x4000, 0x3fff, arm::RegionAttributes::ReadWrite);
+    //     arm7.get_memory().map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
+    //     break;
+    // case 0x3:
+    //     arm7.get_memory().map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
+    //     arm7.get_memory().map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
+    //     break;
+    // }
+    // arm7.memory().update_memory_map(0x03000000, 0x04000000);
+    // arm9.memory().update_memory_map(0x03000000, 0x04000000);
+}
+
 } // namespace core::nds

@@ -339,10 +339,25 @@ struct ARMStatusStore {
 struct ARMBlockDataTransfer {
     static ARMBlockDataTransfer decode(u32 instruction) {
         ARMBlockDataTransfer opcode;
+        opcode.rlist = common::get_field<0, 16>(instruction);
+        opcode.r15_in_rlist = common::get_bit<15>(instruction);
+        opcode.load = common::get_bit<20>(instruction);
+        opcode.writeback = common::get_bit<21>(instruction);
+        opcode.psr = common::get_bit<22>(instruction);
+        opcode.up = common::get_bit<23>(instruction);
+        opcode.pre = common::get_bit<24>(instruction);
+        opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
         return opcode;
     }
 
-
+    u16 rlist;
+    bool r15_in_rlist;
+    bool load;
+    bool writeback;
+    bool psr;
+    bool up;
+    bool pre;
+    Reg rn;
 };
 
 struct ARMSingleDataTransfer {

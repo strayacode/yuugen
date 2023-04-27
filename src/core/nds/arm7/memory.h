@@ -12,7 +12,7 @@ public:
     ARM7Memory(System& system);
 
     void reset();
-    void update_memory_map();
+    void map_wram_region();
 
     u8 system_read_byte(u32 addr) override;
     u16 system_read_half(u32 addr) override;

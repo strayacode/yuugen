@@ -531,122 +531,104 @@ void Interpreter::arm_status_store() {
 }
 
 void Interpreter::arm_block_data_transfer() {
-    // const bool load = (m_instruction >> 20) & 0x1;
-    // const bool writeback = (m_instruction >> 21) & 0x1;
-    // const bool load_psr = (m_instruction >> 22) & 0x1;
-    // const bool up = (m_instruction >> 23) & 0x1;
-    // bool pre = (m_instruction >> 24) & 0x1;
-    // u8 rn = (m_instruction >> 16) & 0xF;
-    // u8 r15_in_rlist = (m_instruction >> 15) & 0x1;
-    // u32 address = m_gpr[rn];
-    // u8 old_mode = m_cpsr.mode;
-    // u16 rlist = m_instruction & 0xFFFF;
-    // int first = 0;
-    // int bytes = 0;
-    // u32 new_base = 0;
+    auto opcode = ARMBlockDataTransfer::decode(instruction);
+    u32 addr = state.gpr[opcode.rn];
+    Mode old_mode = state.cpsr.mode;
+    int first = 0;
+    int bytes = 0;
+    u32 new_base = 0;
 
-    // if (rlist != 0) {
-    //     for (int i = 15; i >= 0; i--) {
-    //         if (rlist & (1 << i)) {
-    //             first = i;
-    //             bytes += 4;
-    //         }
-    //     }
-    // } else {
-    //     // handle empty rlist
-    //     bytes = 0x40;
+    if (opcode.rlist != 0) {
+        for (int i = 15; i >= 0; i--) {
+            if (opcode.rlist & (1 << i)) {
+                first = i;
+                bytes += 4;
+            }
+        }
+    } else {
+        bytes = 0x40;
+        if (arch == Arch::ARMv4) {
+            opcode.rlist = 1 << 15;
+            opcode.r15_in_rlist = true;
+        }
+    }
 
-    //     if (m_arch == Arch::ARMv4) {
-    //         // only r15 gets transferred
-    //         rlist = 1 << 15;
-    //         r15_in_rlist = true;
-    //     }
-    // }
+    if (opcode.up) {
+        new_base = addr + bytes;
+    } else {
+        opcode.pre = !opcode.pre;
+        addr -= bytes;
+        new_base = addr;
+    }
 
-    // if (up) {
-    //     new_base = address + bytes;
-    // } else {
-    //     pre = !pre;
-    //     address -= bytes;
-    //     new_base = address;
-    // }
+    state.gpr[15] += 4;
 
-    // // increment r15 before doing transfer because if r15 in rlist and stm is used,
-    // // the value written is the address of the stm instruction + 12
-    // m_gpr[15] += 4;
+    // stm armv4: store old base if rb is first in rlist, otherwise store new base
+    // stm armv5: always store old base
+    if (opcode.writeback && !opcode.load) {
+        if ((arch == Arch::ARMv4) && (first != opcode.rn)) {
+            state.gpr[opcode.rn] = new_base;
+        }
+    }
 
-    // // stm armv4: store old base if rb is first in rlist, otherwise store new base
-    // // stm armv5: always store old base
-    // if (writeback && !load) {
-    //     if ((m_arch == Arch::ARMv4) && (first != rn)) {
-    //         m_gpr[rn] = new_base;
-    //     }
-    // }
+    bool user_switch_mode = opcode.psr && (!opcode.load || !opcode.r15_in_rlist);
+    if (user_switch_mode) {
+        set_mode(Mode::USR);
+    }
 
-    // // make sure to only do user bank transfer if r15 is not in rlist or instruction is not ldm
-    // // ~(A and B) = ~A or ~B
-    // bool user_switch_mode = load_psr && (!load || !r15_in_rlist);
+    for (int i = first; i < 16; i++) {
+        if (!(opcode.rlist & (1 << i))) {
+            continue;
+        }
 
-    // if (user_switch_mode) {
-    //     switch_mode(MODE_USR);
-    // }
+        if (opcode.pre) {
+            addr += 4;
+        }
 
-    // // registers are transferred in order from lowest to highest
-    // for (int i = first; i < 16; i++) {
-    //     if (!(rlist & (1 << i))) {
-    //         continue;
-    //     }
+        if (opcode.load) {
+            state.gpr[i] = read_word(addr);
+        } else {
+            write_word(addr, state.gpr[i]);
+        }
 
-    //     if (pre) {
-    //         address += 4;
-    //     }
+        if (!opcode.pre) {
+            addr += 4;
+        } 
+    }
 
-    //     if (load) {
-    //         m_gpr[i] = read_word(address);
-    //     } else {
-    //         write_word(address, m_gpr[i]);
-    //     }
+    if (opcode.writeback) {
+        // ldm armv4: writeback if rn is not in rlist
+        // ldm armv5: writeback if rn is only register or not the last register in rlist
+        if (opcode.load) {
+            if (arch == Arch::ARMv5) {
+                if ((opcode.rlist == (1 << opcode.rn)) || !((opcode.rlist >> opcode.rn) == 1)) {
+                    state.gpr[opcode.rn] = new_base;
+                }
+            } else {
+                if (!(opcode.rlist & (1 << opcode.rn))) {
+                    state.gpr[opcode.rn] = new_base;
+                }
+            }
+        } else {
+            state.gpr[opcode.rn] = new_base;
+        }
+    } 
 
-    //     if (!pre) {
-    //         address += 4;
-    //     } 
-    // }
+    if (user_switch_mode) {
+        set_mode(old_mode);
+        if (opcode.load && opcode.r15_in_rlist) {
+            logger.todo("Interpreter: handle loading into r15 in user mode");
+        }
+    }
 
-    // if (writeback) {
-    //     // ldm armv4: writeback if rb is not in rlist
-    //     // ldm armv5: writeback if rb is only register or not the last register in rlist
-    //     if (load) {
-    //         if (m_arch == Arch::ARMv5) {
-    //             if ((rlist == (1 << rn)) || !((rlist >> rn) == 1)) {
-    //                 m_gpr[rn] = new_base;
-    //             }
-    //         } else {
-    //             if (!(rlist & (1 << rn))) {
-    //                 m_gpr[rn] = new_base;
-    //             }
-    //         }
-    //     } else {
-    //         m_gpr[rn] = new_base;
-    //     }
-    // } 
-
-    // if (user_switch_mode) {
-    //     // switch back to old mode at the end if user bank transfer
-    //     switch_mode(old_mode);
-
-    //     if (load && r15_in_rlist) {
-    //         todo();
-    //     }
-    // }
-
-    // if (load && r15_in_rlist) {
-    //     if ((m_arch == Arch::ARMv5) && (m_gpr[15] & 0x1)) {
-    //         m_cpsr.t = true;
-    //         thumb_flush_pipeline();
-    //     } else {
-    //         arm_flush_pipeline();
-    //     }
-    // }
+    if (opcode.load && opcode.r15_in_rlist) {
+        if ((arch == Arch::ARMv5) && (state.gpr[15] & 0x1)) {
+            state.cpsr.t = true;
+            thumb_flush_pipeline();
+        } else {
+            arm_flush_pipeline();
+        }
+    }
 }
 
 void Interpreter::arm_single_data_transfer() {

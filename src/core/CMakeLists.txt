@@ -5,7 +5,7 @@ add_library(core
 
     arm/arch.h
     arm/coprocessor.h
-    arm/fastmem.h arm/virtual_page_table.h
+    arm/virtual_page_table.h
     arm/memory.h
     arm/cpu.h arm/state.h
     arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp

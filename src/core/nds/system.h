@@ -17,6 +17,8 @@ public:
     void run_frame() override;
     void reset() override;
 
+    void write_wramcnt(u8 data);
+
     ARM7 arm7;
     ARM9 arm9;
     Cartridge cartridge;
