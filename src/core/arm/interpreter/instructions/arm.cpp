@@ -115,21 +115,6 @@ void Interpreter::arm_data_processing() {
 
     if (opcode.rd == 15) {
         if (opcode.set_flags) {
-            // // store the current spsr in cpsr only if in privileged mode
-            // if (is_privileged()) {
-            //     u32 current_spsr = get_spsr();
-                
-            //     switch_mode(current_spsr & 0x1F);
-            //     state.cpsr.data = current_spsr;
-            // } else {
-            //     logger.error("[ARM] Loading spsr into cpsr in non-privileged mode is undefined behaviour");
-            // }
-
-            // if (is_arm()) {
-            //     arm_flush_pipeline();
-            // } else {
-            //     thumb_flush_pipeline();
-            // }
             logger.error("Interpreter: handle rd == 15 and S == 1");
         } else {
             arm_flush_pipeline();

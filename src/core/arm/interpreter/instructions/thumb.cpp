@@ -5,228 +5,221 @@
 namespace core::arm {
 
 void Interpreter::thumb_add_subtract() {
-    u8 rn = (instruction >> 6) & 0x7;
-    u8 rs = (instruction >> 3) & 0x7;
-    u8 rd = instruction & 0x7;
+    auto opcode = ThumbAddSubtract::decode(instruction);
+    u32 lhs = state.gpr[opcode.rs];
+    u32 rhs = opcode.immediate ? opcode.rn : state.gpr[opcode.rn];
 
-    bool immediate = instruction & (1 << 10);
-    bool sub = instruction & (1 << 9);
-
-    u32 op1 = state.gpr[rs];
-    u32 op2 = immediate ? rn : state.gpr[rn];
-
-    if (sub) {
-        state.gpr[rd] = alu_sub(op1, op2, true);
+    if (opcode.sub) {
+        state.gpr[opcode.rd] = alu_sub(lhs, rhs, true);
     } else {
-        state.gpr[rd] = alu_add(op1, op2, true);
+        state.gpr[opcode.rd] = alu_add(lhs, rhs, true);
     }
 
     state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_shift_immediate() {
-    u8 rd = instruction & 0x7;
-    u8 rs = (instruction >> 3) & 0x7;
+    // u8 rd = instruction & 0x7;
+    // u8 rs = (instruction >> 3) & 0x7;
 
-    u8 shift_amount = (instruction >> 6) & 0x1F;
-    u8 shift_type = (instruction >> 11) & 0x3;
+    // u8 shift_amount = (instruction >> 6) & 0x1F;
+    // u8 shift_type = (instruction >> 11) & 0x3;
 
-    u8 carry = state.cpsr.c;
+    // u8 carry = state.cpsr.c;
 
-    switch (shift_type) {
-    case 0x0:
-        if (shift_amount != 0) {
-            carry = (state.gpr[rs] >> (32 - shift_amount)) & 0x1;
-        }
+    // switch (shift_type) {
+    // case 0x0:
+    //     if (shift_amount != 0) {
+    //         carry = (state.gpr[rs] >> (32 - shift_amount)) & 0x1;
+    //     }
 
-        state.gpr[rd] = state.gpr[rs] << shift_amount;
-        break;
-    case 0x1:
-        if (shift_amount == 0) {
-            carry = state.gpr[rs] >> 31;
-            state.gpr[rd] = 0;
-        } else {
-            carry = (state.gpr[rs] >> (shift_amount - 1)) & 0x1;
-            state.gpr[rd] = state.gpr[rs] >> shift_amount;
-        } 
-        break;
-    case 0x2: {
-        u32 msb = state.gpr[rs] >> 31;
+    //     state.gpr[rd] = state.gpr[rs] << shift_amount;
+    //     break;
+    // case 0x1:
+    //     if (shift_amount == 0) {
+    //         carry = state.gpr[rs] >> 31;
+    //         state.gpr[rd] = 0;
+    //     } else {
+    //         carry = (state.gpr[rs] >> (shift_amount - 1)) & 0x1;
+    //         state.gpr[rd] = state.gpr[rs] >> shift_amount;
+    //     } 
+    //     break;
+    // case 0x2: {
+    //     u32 msb = state.gpr[rs] >> 31;
 
-        if (shift_amount == 0) {
-            carry = state.gpr[rd] >> 31;
-            state.gpr[rd] = 0xFFFFFFFF * msb;
-        } else {
-            carry = (state.gpr[rs] >> (shift_amount - 1)) & 0x1;
-            state.gpr[rd] = (state.gpr[rs] >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
-        }
-        break;
-    }
-    case 0x3:
-        logger.error("[Interpreter] incorrect opcode %08x", instruction);
-    }
+    //     if (shift_amount == 0) {
+    //         carry = state.gpr[rd] >> 31;
+    //         state.gpr[rd] = 0xFFFFFFFF * msb;
+    //     } else {
+    //         carry = (state.gpr[rs] >> (shift_amount - 1)) & 0x1;
+    //         state.gpr[rd] = (state.gpr[rs] >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
+    //     }
+    //     break;
+    // }
+    // case 0x3:
+    //     logger.error("[Interpreter] incorrect opcode %08x", instruction);
+    // }
 
-    state.cpsr.c = carry;
-    state.cpsr.z = state.gpr[rd] == 0;
-    state.cpsr.n = state.gpr[rd] >> 31;
+    // state.cpsr.c = carry;
+    // state.cpsr.z = state.gpr[rd] == 0;
+    // state.cpsr.n = state.gpr[rd] >> 31;
 
-    state.gpr[15] += 2;
+    // state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_alu_immediate() {
-    u8 immediate = instruction & 0xFF;
-    u8 rd = (instruction >> 8) & 0x7;
-    u8 opcode = (instruction >> 11) & 0x3;
+    // u8 immediate = instruction & 0xFF;
+    // u8 rd = (instruction >> 8) & 0x7;
+    // u8 opcode = (instruction >> 11) & 0x3;
 
-    switch (opcode) {
-    case 0x0:
-        state.gpr[rd] = immediate;
-        state.cpsr.n = false;
-        state.cpsr.z = state.gpr[rd] == 0;
-        break;
-    case 0x1:
-        alu_cmp(state.gpr[rd], immediate);
-        break;
-    case 0x2:
-        state.gpr[rd] = alu_add(state.gpr[rd], immediate, true);
-        break;
-    case 0x3:
-        state.gpr[rd] = alu_sub(state.gpr[rd], immediate, true);
-        break;
-    default:
-        logger.error("handle opcode %d", opcode);
-    }
+    // switch (opcode) {
+    // case 0x0:
+    //     state.gpr[rd] = immediate;
+    //     state.cpsr.n = false;
+    //     state.cpsr.z = state.gpr[rd] == 0;
+    //     break;
+    // case 0x1:
+    //     alu_cmp(state.gpr[rd], immediate);
+    //     break;
+    // case 0x2:
+    //     state.gpr[rd] = alu_add(state.gpr[rd], immediate, true);
+    //     break;
+    // case 0x3:
+    //     state.gpr[rd] = alu_sub(state.gpr[rd], immediate, true);
+    //     break;
+    // default:
+    //     logger.error("handle opcode %d", opcode);
+    // }
 
-    state.gpr[15] += 2;
+    // state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_data_processing_register() {
-    u8 rd = instruction & 0x7;
-    u8 rs = (instruction >> 3) & 0x7;
-    u8 opcode = (instruction >> 6) & 0xF;
-    bool carry = state.cpsr.c;
+    // u8 rd = instruction & 0x7;
+    // u8 rs = (instruction >> 3) & 0x7;
+    // u8 opcode = (instruction >> 6) & 0xF;
+    // bool carry = state.cpsr.c;
 
-    switch (opcode) {
-    case 0x0:
-        state.gpr[rd] = alu_and(state.gpr[rd], state.gpr[rs], true);
-        break;
-    case 0x1:
-        state.gpr[rd] = alu_eor(state.gpr[rd], state.gpr[rs], true);
-        break;
-    case 0x2:
-        state.gpr[rd] = alu_lsl(state.gpr[rd], state.gpr[rs] & 0xFF, carry);
-        state.cpsr.c = carry;
-        state.cpsr.n = state.gpr[rd] >> 31;
-        state.cpsr.z = state.gpr[rd] == 0;
-        break;
-    case 0x3:
-        state.gpr[rd] = alu_lsr(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
-        state.cpsr.c = carry;
-        state.cpsr.n = state.gpr[rd] >> 31;
-        state.cpsr.z = state.gpr[rd] == 0;
-        break;
-    case 0x4:
-        state.gpr[rd] = alu_asr(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
-        state.cpsr.c = carry;
-        state.cpsr.n = state.gpr[rd] >> 31;
-        state.cpsr.z = state.gpr[rd] == 0;
-        break;
-    case 0x5:
-        state.gpr[rd] = alu_adc(state.gpr[rd], state.gpr[rs], true);
-        break;
-    case 0x6:
-        state.gpr[rd] = alu_sbc(state.gpr[rd], state.gpr[rs], true);
-        break;
-    case 0x7:
-        state.gpr[rd] = alu_ror(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
-        state.cpsr.c = carry;
-        state.cpsr.n = state.gpr[rd] >> 31;
-        state.cpsr.z = state.gpr[rd] == 0;
-        break;
-    case 0x8:
-        alu_tst(state.gpr[rd], state.gpr[rs]);
-        break;
-    case 0x9:
-        state.gpr[rd] = alu_sub(0, state.gpr[rs], true);
-        break;
-    case 0xA:
-        alu_cmp(state.gpr[rd], state.gpr[rs]);
-        break;
-    case 0xB:
-        alu_cmn(state.gpr[rd], state.gpr[rs]);
-        break;
-    case 0xC:
-        state.gpr[rd] = alu_orr(state.gpr[rd], state.gpr[rs], true);
-        break;
-    case 0xD:
-        state.gpr[rd] *= state.gpr[rs];
+    // switch (opcode) {
+    // case 0x0:
+    //     state.gpr[rd] = alu_and(state.gpr[rd], state.gpr[rs], true);
+    //     break;
+    // case 0x1:
+    //     state.gpr[rd] = alu_eor(state.gpr[rd], state.gpr[rs], true);
+    //     break;
+    // case 0x2:
+    //     state.gpr[rd] = alu_lsl(state.gpr[rd], state.gpr[rs] & 0xFF, carry);
+    //     state.cpsr.c = carry;
+    //     state.cpsr.n = state.gpr[rd] >> 31;
+    //     state.cpsr.z = state.gpr[rd] == 0;
+    //     break;
+    // case 0x3:
+    //     state.gpr[rd] = alu_lsr(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
+    //     state.cpsr.c = carry;
+    //     state.cpsr.n = state.gpr[rd] >> 31;
+    //     state.cpsr.z = state.gpr[rd] == 0;
+    //     break;
+    // case 0x4:
+    //     state.gpr[rd] = alu_asr(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
+    //     state.cpsr.c = carry;
+    //     state.cpsr.n = state.gpr[rd] >> 31;
+    //     state.cpsr.z = state.gpr[rd] == 0;
+    //     break;
+    // case 0x5:
+    //     state.gpr[rd] = alu_adc(state.gpr[rd], state.gpr[rs], true);
+    //     break;
+    // case 0x6:
+    //     state.gpr[rd] = alu_sbc(state.gpr[rd], state.gpr[rs], true);
+    //     break;
+    // case 0x7:
+    //     state.gpr[rd] = alu_ror(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
+    //     state.cpsr.c = carry;
+    //     state.cpsr.n = state.gpr[rd] >> 31;
+    //     state.cpsr.z = state.gpr[rd] == 0;
+    //     break;
+    // case 0x8:
+    //     alu_tst(state.gpr[rd], state.gpr[rs]);
+    //     break;
+    // case 0x9:
+    //     state.gpr[rd] = alu_sub(0, state.gpr[rs], true);
+    //     break;
+    // case 0xA:
+    //     alu_cmp(state.gpr[rd], state.gpr[rs]);
+    //     break;
+    // case 0xB:
+    //     alu_cmn(state.gpr[rd], state.gpr[rs]);
+    //     break;
+    // case 0xC:
+    //     state.gpr[rd] = alu_orr(state.gpr[rd], state.gpr[rs], true);
+    //     break;
+    // case 0xD:
+    //     state.gpr[rd] *= state.gpr[rs];
 
-        state.cpsr.n = state.gpr[rd] >> 31;
-        state.cpsr.z = state.gpr[rd] == 0;
-        break;
-    case 0xE:
-        state.gpr[rd] = alu_bic(state.gpr[rd], state.gpr[rs], true);
-        break;
-    case 0xF:
-        state.gpr[rd] = alu_mvn(state.gpr[rs], true);
-        break;
-    }
+    //     state.cpsr.n = state.gpr[rd] >> 31;
+    //     state.cpsr.z = state.gpr[rd] == 0;
+    //     break;
+    // case 0xE:
+    //     state.gpr[rd] = alu_bic(state.gpr[rd], state.gpr[rs], true);
+    //     break;
+    // case 0xF:
+    //     state.gpr[rd] = alu_mvn(state.gpr[rs], true);
+    //     break;
+    // }
 
-    state.gpr[15] += 2;
+    // state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_special_data_processing() {
-    u8 rd = ((instruction & (1 << 7)) >> 4) | (instruction & 0x7);
-    u8 rs = (instruction >> 3) & 0xF;
+    // u8 rd = ((instruction & (1 << 7)) >> 4) | (instruction & 0x7);
+    // u8 rs = (instruction >> 3) & 0xF;
 
-    u8 opcode = (instruction >> 8) & 0x3;
+    // u8 opcode = (instruction >> 8) & 0x3;
 
-    switch (opcode) {
-    case 0x0:
-        state.gpr[rd] += state.gpr[rs];
-        if (rd == 15) {
-            thumb_flush_pipeline();
-        } else {
-            state.gpr[15] += 2;    
-        }
+    // switch (opcode) {
+    // case 0x0:
+    //     state.gpr[rd] += state.gpr[rs];
+    //     if (rd == 15) {
+    //         thumb_flush_pipeline();
+    //     } else {
+    //         state.gpr[15] += 2;    
+    //     }
 
-        break;
-    case 0x1:
-        alu_cmp(state.gpr[rd], state.gpr[rs]);
-        state.gpr[15] += 2;
-        break;
-    case 0x2:
-        state.gpr[rd] = state.gpr[rs];
-        if (rd == 15) {
-            thumb_flush_pipeline();
-        } else {
-            state.gpr[15] += 2;
-        }
+    //     break;
+    // case 0x1:
+    //     alu_cmp(state.gpr[rd], state.gpr[rs]);
+    //     state.gpr[15] += 2;
+    //     break;
+    // case 0x2:
+    //     state.gpr[rd] = state.gpr[rs];
+    //     if (rd == 15) {
+    //         thumb_flush_pipeline();
+    //     } else {
+    //         state.gpr[15] += 2;
+    //     }
 
-        break;
-    default:
-        logger.error("handle opcode %d", opcode);
-    }
+    //     break;
+    // default:
+    //     logger.error("handle opcode %d", opcode);
+    // }
 }
 
 void Interpreter::thumb_adjust_stack_pointer() {
-    u32 immediate = (instruction & 0x7F) << 2;
-
-    // need to check bit 7 to check if we subtract or add from sp
-    state.gpr[13] = state.gpr[13] + ((instruction & (1 << 7)) ? - immediate : immediate);
-
+    auto opcode = ThumbAdjustStackPointer::decode(instruction);
+    if (opcode.sub) {
+        state.gpr[13] -= opcode.imm;
+    } else {
+        state.gpr[13] += opcode.imm;
+    }
+    
     state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_add_sp_pc() {
-    u32 immediate = (instruction & 0xFF) << 2;
-    u8 rd = (instruction >> 8) & 0x7;
-    bool sp = instruction & (1 << 11);
-
-    if (sp) {
-        state.gpr[rd] = state.gpr[13] + immediate;
+    auto opcode = ThumbAddSPPC::decode(instruction);
+    if (opcode.sp) {
+        state.gpr[opcode.rd] = state.gpr[13] + opcode.imm;
     } else {
-        state.gpr[rd] = (state.gpr[15] & ~0x2) + immediate;
+        state.gpr[opcode.rd] = (state.gpr[15] & ~0x2) + opcode.imm;
     }
 
     state.gpr[15] += 2;

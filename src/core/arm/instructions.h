@@ -415,4 +415,192 @@ struct ARMCoprocessorRegisterTransfer {
     bool load;
 };
 
+struct ThumbAddSubtract {
+    static ThumbAddSubtract decode(u16 instruction) {
+        ThumbAddSubtract opcode;
+        opcode.rd = static_cast<Reg>(common::get_field<0, 3>(instruction));
+        opcode.rs = static_cast<Reg>(common::get_field<3, 3>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<6, 3>(instruction));
+        opcode.sub = common::get_bit<9>(instruction);
+        opcode.imm = common::get_bit<10>(instruction);
+        return opcode;
+    }
+
+    Reg rd;
+    Reg rs;
+    Reg rn;
+    bool sub;
+    bool imm;
+};
+
+struct ThumbShiftImmediate {
+    static ThumbShiftImmediate decode(u16 instruction) {
+        ThumbShiftImmediate opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbALUImmediate {
+    static ThumbALUImmediate decode(u16 instruction) {
+        ThumbALUImmediate opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbDataProcessing {
+    static ThumbDataProcessing decode(u16 instruction) {
+        ThumbDataProcessing opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbDataProcessingSpecial {
+    static ThumbDataProcessingSpecial decode(u16 instruction) {
+        ThumbDataProcessingSpecial opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbAdjustStackPointer {
+    static ThumbAdjustStackPointer decode(u16 instruction) {
+        ThumbAdjustStackPointer opcode;
+        opcode.imm = common::get_field<0, 7>(instruction) << 2;
+        opcode.sub = common::get_bit<7>(instruction);
+        return opcode;
+    }
+
+    u32 imm;
+    bool sub;
+};
+
+struct ThumbAddSPPC {
+    static ThumbAddSPPC decode(u16 instruction) {
+        ThumbAddSPPC opcode;
+        opcode.imm = common::get_field<0, 8>(instruction) << 2;
+        opcode.rd = static_cast<Reg>(common::get_field<8, 3>(instruction));
+        opcode.sp = common::get_bit<11>(instruction);
+        return opcode;
+    }
+
+    u32 imm;
+    Reg rd;
+    bool sp;
+};
+
+struct ThumbBranchExchange {
+    static ThumbBranchExchange decode(u16 instruction) {
+        ThumbBranchExchange opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbBranchLinkExchange {
+    static ThumbBranchLinkExchange decode(u16 instruction) {
+        ThumbBranchLinkExchange opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbBranchLinkSetup {
+    static ThumbBranchLinkSetup decode(u16 instruction) {
+        ThumbBranchLinkSetup opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbBranchLinkOffset {
+    static ThumbBranchLinkOffset decode(u16 instruction) {
+        ThumbBranchLinkOffset opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbBranchLinkExchangeOffset {
+    static ThumbBranchLinkExchangeOffset decode(u16 instruction) {
+        ThumbBranchLinkExchangeOffset opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbBranch {
+    static ThumbBranch decode(u16 instruction) {
+        ThumbBranch opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbBranchConditional {
+    static ThumbBranchConditional decode(u16 instruction) {
+        ThumbBranchConditional opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbLoadPC {
+    static ThumbLoadPC decode(u16 instruction) {
+        ThumbLoadPC opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbLoadStore {
+    static ThumbLoadStore decode(u16 instruction) {
+        ThumbLoadStore opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbLoadStoreImmediate {
+    static ThumbLoadStoreImmediate decode(u16 instruction) {
+        ThumbLoadStoreImmediate opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbPushPop {
+    static ThumbPushPop decode(u16 instruction) {
+        ThumbPushPop opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbLoadStoreSPRelative {
+    static ThumbLoadStoreSPRelative decode(u16 instruction) {
+        ThumbLoadStoreSPRelative opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbLoadStoreHalfword {
+    static ThumbLoadStoreHalfword decode(u16 instruction) {
+        ThumbLoadStoreHalfword opcode;
+        return opcode;
+    }
+
+};
+
+struct ThumbLoadStoreMultiple {
+    static ThumbLoadStoreMultiple decode(u16 instruction) {
+        ThumbLoadStoreMultiple opcode;
+        return opcode;
+    }
+
+};
+
 } // namespace core::arm
