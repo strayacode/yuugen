@@ -7,7 +7,7 @@ namespace core::arm {
 void Interpreter::thumb_add_subtract() {
     auto opcode = ThumbAddSubtract::decode(instruction);
     u32 lhs = state.gpr[opcode.rs];
-    u32 rhs = opcode.immediate ? opcode.rn : state.gpr[opcode.rn];
+    u32 rhs = opcode.imm ? opcode.rn : state.gpr[opcode.rn];
 
     if (opcode.sub) {
         state.gpr[opcode.rd] = alu_sub(lhs, rhs, true);
@@ -19,79 +19,35 @@ void Interpreter::thumb_add_subtract() {
 }
 
 void Interpreter::thumb_shift_immediate() {
-    // u8 rd = instruction & 0x7;
-    // u8 rs = (instruction >> 3) & 0x7;
+    auto opcode = ThumbShiftImmediate::decode(instruction);
+    bool carry = state.cpsr.c;
 
-    // u8 shift_amount = (instruction >> 6) & 0x1F;
-    // u8 shift_type = (instruction >> 11) & 0x3;
-
-    // u8 carry = state.cpsr.c;
-
-    // switch (shift_type) {
-    // case 0x0:
-    //     if (shift_amount != 0) {
-    //         carry = (state.gpr[rs] >> (32 - shift_amount)) & 0x1;
-    //     }
-
-    //     state.gpr[rd] = state.gpr[rs] << shift_amount;
-    //     break;
-    // case 0x1:
-    //     if (shift_amount == 0) {
-    //         carry = state.gpr[rs] >> 31;
-    //         state.gpr[rd] = 0;
-    //     } else {
-    //         carry = (state.gpr[rs] >> (shift_amount - 1)) & 0x1;
-    //         state.gpr[rd] = state.gpr[rs] >> shift_amount;
-    //     } 
-    //     break;
-    // case 0x2: {
-    //     u32 msb = state.gpr[rs] >> 31;
-
-    //     if (shift_amount == 0) {
-    //         carry = state.gpr[rd] >> 31;
-    //         state.gpr[rd] = 0xFFFFFFFF * msb;
-    //     } else {
-    //         carry = (state.gpr[rs] >> (shift_amount - 1)) & 0x1;
-    //         state.gpr[rd] = (state.gpr[rs] >> shift_amount) | ((0xFFFFFFFF * msb) << (32 - shift_amount));
-    //     }
-    //     break;
-    // }
-    // case 0x3:
-    //     logger.error("[Interpreter] incorrect opcode %08x", instruction);
-    // }
-
-    // state.cpsr.c = carry;
-    // state.cpsr.z = state.gpr[rd] == 0;
-    // state.cpsr.n = state.gpr[rd] >> 31;
-
-    // state.gpr[15] += 2;
+    state.gpr[opcode.rd] = barrel_shifter(state.gpr[opcode.rs], opcode.shift_type, opcode.amount, carry, true);
+    state.cpsr.c = carry;
+    set_nz(state.gpr[opcode.rd]);
+    state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_alu_immediate() {
-    // u8 immediate = instruction & 0xFF;
-    // u8 rd = (instruction >> 8) & 0x7;
-    // u8 opcode = (instruction >> 11) & 0x3;
+    auto opcode = ThumbALUImmediate::decode(instruction);
+    switch (opcode.opcode) {
+    case ThumbALUImmediate::MOV:
+        state.gpr[opcode.rd] = opcode.imm;
+        state.cpsr.n = false;
+        state.cpsr.z = opcode.imm == 0;
+        break;
+    case 0x1:
+        alu_cmp(state.gpr[opcode.rd], opcode.imm);
+        break;
+    case 0x2:
+        state.gpr[opcode.rd] = alu_add(state.gpr[opcode.rd], opcode.imm, true);
+        break;
+    case 0x3:
+        state.gpr[opcode.rd] = alu_sub(state.gpr[opcode.rd], opcode.imm, true);
+        break;
+    }
 
-    // switch (opcode) {
-    // case 0x0:
-    //     state.gpr[rd] = immediate;
-    //     state.cpsr.n = false;
-    //     state.cpsr.z = state.gpr[rd] == 0;
-    //     break;
-    // case 0x1:
-    //     alu_cmp(state.gpr[rd], immediate);
-    //     break;
-    // case 0x2:
-    //     state.gpr[rd] = alu_add(state.gpr[rd], immediate, true);
-    //     break;
-    // case 0x3:
-    //     state.gpr[rd] = alu_sub(state.gpr[rd], immediate, true);
-    //     break;
-    // default:
-    //     logger.error("handle opcode %d", opcode);
-    // }
-
-    // state.gpr[15] += 2;
+    state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_data_processing_register() {
@@ -226,18 +182,15 @@ void Interpreter::thumb_add_sp_pc() {
 }
 
 void Interpreter::thumb_branch_exchange() {
-    // u8 rm = (instruction >> 3) & 0xF;
-    // if (state.gpr[rm] & 0x1) {
-    //     // just load rm into r15 normally in thumb
-    //     state.gpr[15] = state.gpr[rm] & ~1;
-    //     thumb_flush_pipeline();
-    // } else {
-    //     // switch to arm state
-    //     // clear bit 5 in cpsr
-    //     state.cpsr.t = false;
-    //     state.gpr[15] = state.gpr[rm] & ~3;
-    //     arm_flush_pipeline();
-    // }
+    auto opcode = ThumbBranchExchange::decode(instruction);
+    if (state.gpr[opcode.rm] & 0x1) {
+        state.gpr[15] = state.gpr[opcode.rm] & ~0x1;
+        thumb_flush_pipeline();
+    } else {
+        state.cpsr.t = false;
+        state.gpr[15] = state.gpr[opcode.rm] & ~0x3;
+        arm_flush_pipeline();
+    }
 }
 
 void Interpreter::thumb_branch_link_exchange() {
@@ -294,10 +247,9 @@ void Interpreter::thumb_branch_link_exchange_offset() {
 }
 
 void Interpreter::thumb_branch() {
-    // u32 offset = ((instruction & (1 << 10)) ? 0xFFFFF000 : 0) | ((instruction & 0x7FF) << 1);
-    
-    // state.gpr[15] += offset;
-    // thumb_flush_pipeline();
+    auto opcode = ThumbBranch::decode(instruction);
+    state.gpr[15] += opcode.offset;
+    thumb_flush_pipeline();
 }
 
 void Interpreter::thumb_branch_conditional() {
@@ -313,28 +265,21 @@ void Interpreter::thumb_branch_conditional() {
 }
 
 void Interpreter::thumb_software_interrupt() {
-    // state.spsr_banked[BANK_SVC].data = state.cpsr.data;
+    state.spsr_banked[Bank::SVC].data = state.cpsr.data;
+    set_mode(Mode::SVC);
 
-    // switch_mode(MODE_SVC);
-
-    // state.cpsr.t = false;
-    // state.cpsr.i = true;
-    // state.gpr[14] = state.gpr[15] - 2;
-
-    // // jump to the exception base in the bios
-    // state.gpr[15] = coprocessor.get_exception_base() + 0x08;
-    // arm_flush_pipeline();
+    state.cpsr.t = false;
+    state.cpsr.i = true;
+    state.gpr[14] = state.gpr[15] - 2;
+    state.gpr[15] = coprocessor.get_exception_base() + 0x08;
+    arm_flush_pipeline();
 }
 
 void Interpreter::thumb_load_pc() {
-    // u32 immediate = (m_instruction & 0xFF) << 2;
-    // u8 rd = (m_instruction >> 8) & 0x7;
-
-    // // bit 1 of pc is always set to 0
-    // u32 address = (m_gpr[15] & ~0x2) + immediate;
-    // m_gpr[rd] = read_word(address);
-    
-    // m_gpr[15] += 2;
+    auto opcode = ThumbLoadPC::decode(instruction);
+    u32 addr = (state.gpr[15] & ~0x2) + opcode.imm;
+    state.gpr[opcode.rd] = read_word(addr);
+    state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_load_store() {
@@ -492,20 +437,15 @@ void Interpreter::thumb_load_store_sp_relative() {
 }
 
 void Interpreter::thumb_load_store_halfword() {
-    // u8 rd = m_instruction & 0x7;
-    // u8 rn = (m_instruction >> 3) & 0x7;
-    // u32 immediate = (m_instruction >> 6) & 0x1F;
-    // u32 address = m_gpr[rn] + (immediate << 1);
+    auto opcode = ThumbLoadStoreHalfword::decode(instruction);
+    u32 addr = state.gpr[opcode.rn] + (opcode.imm << 1);
+    if (opcode.load) {
+        state.gpr[opcode.rd] = read_half(addr);
+    } else {
+        write_half(addr, state.gpr[opcode.rd]);
+    }
 
-    // bool load = m_instruction & (1 << 11);
-
-    // if (load) {
-    //     m_gpr[rd] = read_half(address);
-    // } else {
-    //     write_half(address, m_gpr[rd]);
-    // }
-
-    // m_gpr[15] += 2;
+    state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_load_store_multiple() {

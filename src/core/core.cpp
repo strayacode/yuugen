@@ -15,9 +15,9 @@ void Core::start() {
     system = std::make_unique<nds::System>(config);
     state = State::Running;
 
-    emulator_thread = std::thread{[this]() {
+    // emulator_thread = std::thread{[this]() {
         system->run_frame();
-    }};
+    // }};
 }
 
 } // namespace core

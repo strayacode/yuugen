@@ -436,17 +436,38 @@ struct ThumbAddSubtract {
 struct ThumbShiftImmediate {
     static ThumbShiftImmediate decode(u16 instruction) {
         ThumbShiftImmediate opcode;
+        opcode.rd = static_cast<Reg>(common::get_field<0, 3>(instruction));
+        opcode.rs = static_cast<Reg>(common::get_field<3, 3>(instruction));
+        opcode.amount = common::get_field<6, 5>(instruction);
+        opcode.shift_type = static_cast<ShiftType>(common::get_field<11, 2>(instruction));
         return opcode;
     }
 
+    Reg rd;
+    Reg rs;
+    int amount;
+    ShiftType shift_type;
 };
 
 struct ThumbALUImmediate {
+    enum Opcode {
+        MOV,
+        CMP,
+        ADD,
+        SUB,
+    };
+
     static ThumbALUImmediate decode(u16 instruction) {
         ThumbALUImmediate opcode;
+        opcode.imm = common::get_field<0, 8>(instruction);
+        opcode.rd = static_cast<Reg>(common::get_field<8, 3>(instruction));
+        opcode.opcode = static_cast<Opcode>(common::get_field<11, 2>(instruction));
         return opcode;
     }
 
+    u8 imm;
+    Reg rd;
+    Opcode opcode;
 };
 
 struct ThumbDataProcessing {
@@ -494,9 +515,11 @@ struct ThumbAddSPPC {
 struct ThumbBranchExchange {
     static ThumbBranchExchange decode(u16 instruction) {
         ThumbBranchExchange opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<3, 4>(instruction));
         return opcode;
     }
 
+    Reg rm;
 };
 
 struct ThumbBranchLinkExchange {
@@ -534,9 +557,11 @@ struct ThumbBranchLinkExchangeOffset {
 struct ThumbBranch {
     static ThumbBranch decode(u16 instruction) {
         ThumbBranch opcode;
+        opcode.offset = common::sign_extend<s32, 10>(instruction) | (common::get_field<0, 11>(instruction) << 1);
         return opcode;
     }
 
+    u32 offset;
 };
 
 struct ThumbBranchConditional {
@@ -544,15 +569,18 @@ struct ThumbBranchConditional {
         ThumbBranchConditional opcode;
         return opcode;
     }
-
 };
 
 struct ThumbLoadPC {
     static ThumbLoadPC decode(u16 instruction) {
         ThumbLoadPC opcode;
+        opcode.imm = common::get_field<0, 8>(instruction) << 2;
+        opcode.rd = static_cast<Reg>(common::get_field<8, 3>(instruction));
         return opcode;
     }
 
+    u32 imm;
+    Reg rd;
 };
 
 struct ThumbLoadStore {
@@ -590,9 +618,17 @@ struct ThumbLoadStoreSPRelative {
 struct ThumbLoadStoreHalfword {
     static ThumbLoadStoreHalfword decode(u16 instruction) {
         ThumbLoadStoreHalfword opcode;
+        opcode.rd = static_cast<Reg>(common::get_field<0, 3>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<3, 3>(instruction));
+        opcode.imm = common::get_field<6, 5>(instruction);
+        opcode.load = common::get_bit<11>(instruction);
         return opcode;
     }
 
+    Reg rd;
+    Reg rn;
+    u32 imm;
+    bool load;
 };
 
 struct ThumbLoadStoreMultiple {
