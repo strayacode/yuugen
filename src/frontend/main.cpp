@@ -1,14 +1,7 @@
-#include "common/logger.h"
-#include "core/core.h"
+#include "frontend/application.h"
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        logger.error("main: incorrect amount of arguments supplied");
-        return 0;
-    }
-
-    core::Core core;
-    core.set_game_path(argv[1]);
-    core.start();
+int main() {
+    Application application;
+    application.start();
     return 0;
 }
