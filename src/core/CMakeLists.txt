@@ -11,6 +11,8 @@ add_library(core
     arm/interpreter/interpreter.h arm/interpreter/interpreter.cpp
     arm/interpreter/instructions/alu.cpp arm/interpreter/instructions/arm.cpp
     arm/interpreter/instructions/thumb.cpp
+    arm/disassembler/disassembler.h arm/disassembler/disassembler.cpp
+    arm/disassembler/arm.cpp arm/disassembler/thumb.cpp
     arm/decoder.h arm/instructions.h
 
     nds/system.h nds/system.cpp

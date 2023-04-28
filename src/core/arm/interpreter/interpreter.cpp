@@ -1,9 +1,11 @@
 #include "common/logger.h"
 #include "core/arm/interpreter/interpreter.h"
+#include "core/arm/disassembler/disassembler.h"
 
 namespace core::arm {
 
 static Decoder<Interpreter> decoder;
+static Disassembler disassembler;
 
 Interpreter::Interpreter(Arch arch, Memory& memory, Coprocessor& coprocessor) : arch(arch), memory(memory), coprocessor(coprocessor) {
     generate_condition_table();
@@ -23,24 +25,23 @@ void Interpreter::reset() {
 }
 
 void Interpreter::run(int cycles) {
-    logger.info("start");
     while (cycles--) {
         // TODO: handle interrupts in a nice way
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
 
-        logger.info("instruction %08x at r15 = %08x", instruction, state.gpr[15]);
-
         if (state.cpsr.t) {
             state.gpr[15] &= ~0x1;
             pipeline[1] = memory.read<u16, Bus::Code>(state.gpr[15]);
 
+            logger.debug("Interpreter: (%08x, %s) at r15 = %08x", instruction, disassembler.disassemble_thumb(instruction).c_str(), state.gpr[15]);
             auto handler = decoder.get_thumb_handler(instruction);
             (this->*handler)();
         } else {
             state.gpr[15] &= ~0x3;
             pipeline[1] = memory.read<u32, Bus::Code>(state.gpr[15]);
 
+            logger.info("Interpreter: (%08x, %s) at r15 = %08x", instruction, disassembler.disassemble_arm(instruction).c_str(), state.gpr[15]);
             if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
                 auto handler = decoder.get_arm_handler(instruction);
                 (this->*handler)();

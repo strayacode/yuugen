@@ -40,13 +40,18 @@ struct ARMDataProcessing {
         opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
         opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
         opcode.opcode = static_cast<Opcode>(common::get_field<21, 4>(instruction));
-        opcode.rhs.imm.shift = common::get_field<8, 4>(instruction) * 2;
-        opcode.rhs.imm.rotated = common::rotate_right(instruction & 0xff, opcode.rhs.imm.shift);
-        opcode.rhs.reg.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
-        opcode.rhs.reg.shift_type = static_cast<ShiftType>(common::get_field<5, 2>(instruction));
-        opcode.rhs.reg.imm = !common::get_bit<4>(instruction);
-        opcode.rhs.reg.amount.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
-        opcode.rhs.reg.amount.imm = common::get_field<7, 5>(instruction);
+
+        if (opcode.imm) {
+            opcode.rhs.imm.shift = common::get_field<8, 4>(instruction) * 2;
+            opcode.rhs.imm.rotated = common::rotate_right(instruction & 0xff, opcode.rhs.imm.shift);
+        } else {
+            opcode.rhs.reg.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+            opcode.rhs.reg.shift_type = static_cast<ShiftType>(common::get_field<5, 2>(instruction));
+            opcode.rhs.reg.imm = !common::get_bit<4>(instruction);
+            opcode.rhs.reg.amount.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
+            opcode.rhs.reg.amount.imm = common::get_field<7, 5>(instruction);
+        }
+
         return opcode;
     }
 
