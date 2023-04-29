@@ -40,6 +40,7 @@ struct ARMDataProcessing {
         opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
         opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
         opcode.opcode = static_cast<Opcode>(common::get_field<21, 4>(instruction));
+        opcode.condition = static_cast<Condition>(common::get_field<28, 4>(instruction));
 
         if (opcode.imm) {
             opcode.rhs.imm.shift = common::get_field<8, 4>(instruction) * 2;
@@ -60,6 +61,7 @@ struct ARMDataProcessing {
     Reg rd;
     Reg rn;
     Opcode opcode;
+    Condition condition;
 
     union {
         struct {

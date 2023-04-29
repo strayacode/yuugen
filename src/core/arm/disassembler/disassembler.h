@@ -8,9 +8,12 @@ namespace core::arm {
 
 class Disassembler {
 public:
+    Disassembler();
+
     std::string disassemble_arm(u32 instruction);
     std::string disassemble_thumb(u16 instruction);
-    std::string get_register_name(Reg reg);
+    const char* get_register_name(Reg reg);
+    const char* get_condition_name(Condition condition);
 
     // arm instruction handlers
     std::string arm_branch_link_maybe_exchange(u32 instruction);
@@ -67,6 +70,9 @@ public:
 
 private:
     Decoder<Disassembler> decoder;
+
+    std::array<const char*, 16> register_names; 
+    std::array<const char*, 16> condition_names; 
 };
 
 } // namespace core::arm

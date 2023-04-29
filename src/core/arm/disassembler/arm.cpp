@@ -81,19 +81,19 @@ std::string Disassembler::arm_data_processing(u32 instruction) {
     if (opcode.imm) {
         rhs_string = common::format("#0x%08x", opcode.rhs.imm.rotated);
     } else {
-        std::string shift_types[4] = {"lsl", "lsr", "asr", "ror"};
-        std::string shift_type = shift_types[static_cast<int>(opcode.rhs.reg.shift_type)];
+        const char* shift_types[4] = {"lsl", "lsr", "asr", "ror"};
+        const char* shift_type = shift_types[static_cast<int>(opcode.rhs.reg.shift_type)];
 
         if (opcode.rhs.reg.imm) {
-            rhs_string = common::format("%s %s #0x%02x", get_register_name(opcode.rhs.reg.rm).c_str(), shift_type.c_str(), opcode.rhs.reg.amount.imm);
+            rhs_string = common::format("%s %s #0x%02x", register_names[opcode.rhs.reg.rm], shift_type, opcode.rhs.reg.amount.imm);
         } else {
-            rhs_string = common::format("%s %s %s", get_register_name(opcode.rd).c_str(), shift_type.c_str(), get_register_name(opcode.rhs.reg.amount.rs).c_str());
+            rhs_string = common::format("%s %s %s", register_names[opcode.rd], shift_type, register_names[opcode.rhs.reg.amount.rs]);
         }
     }
 
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND:
-        return common::format("and");
+        return common::format("and%s%s %s, %s, %s", set_flags_string, condition_names[opcode.condition], register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::EOR:
         return common::format("eor");
     case ARMDataProcessing::Opcode::SUB:
@@ -119,7 +119,7 @@ std::string Disassembler::arm_data_processing(u32 instruction) {
     case ARMDataProcessing::Opcode::ORR:
         return common::format("orr");
     case ARMDataProcessing::Opcode::MOV:
-        return common::format("mov%s %s, %s", set_flags_string, get_register_name(opcode.rd).c_str(), rhs_string.c_str());
+        return common::format("mov%s%s %s, %s", set_flags_string, condition_names[opcode.condition], register_names[opcode.rd], rhs_string.c_str());
     case ARMDataProcessing::Opcode::BIC:
         return common::format("bic");
     case ARMDataProcessing::Opcode::MVN:
