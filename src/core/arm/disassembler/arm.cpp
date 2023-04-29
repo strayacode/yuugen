@@ -23,9 +23,9 @@ std::string Disassembler::arm_count_leading_zeroes(u32 instruction) {
 std::string Disassembler::arm_branch_link(u32 instruction) {
     auto opcode = ARMBranchLink::decode(instruction);
     if (opcode.link) {
-        return common::format("bl #0x%08x", opcode.offset);
+        return common::format("bl%s #0x%08x", condition_names[opcode.condition], opcode.offset + 8);
     } else {
-        return common::format("b #0x%08x", opcode.offset);
+        return common::format("b%s #0x%08x", condition_names[opcode.condition], opcode.offset + 8);
     }
 }
 
@@ -70,7 +70,28 @@ std::string Disassembler::arm_block_data_transfer(u32 instruction) {
 }
 
 std::string Disassembler::arm_single_data_transfer(u32 instruction) {
-    return "handle arm_single_data_transfer";
+    auto opcode = ARMSingleDataTransfer::decode(instruction);
+    std::string rhs_string = "";
+    auto opcode_string = opcode.load ? "ldr" : "str";
+    auto byte_string = opcode.byte ? "b" : "";
+
+    if (opcode.imm) {
+        if (opcode.rhs.imm) {
+            rhs_string = common::format(", #0x%08x", opcode.rhs.imm);
+        }
+    } else {
+        const char* shift_types[4] = {"lsl", "lsr", "asr", "ror"};
+        const char* shift_type = shift_types[static_cast<int>(opcode.rhs.reg.shift_type)];
+        rhs_string = common::format(", %s %s %s", register_names[opcode.rhs.reg.rm], shift_type, register_names[opcode.rhs.reg.amount]);
+    }
+
+    if (opcode.pre) {
+        rhs_string = common::format("[%s%s]", register_names[opcode.rn], rhs_string.c_str());
+    } else {
+        rhs_string = common::format("[%s]%s", register_names[opcode.rn], rhs_string.c_str());
+    }
+
+    return common::format("%s%s %s, %s", opcode_string, byte_string, register_names[opcode.rd], rhs_string.c_str());
 }
 
 std::string Disassembler::arm_data_processing(u32 instruction) {
@@ -85,7 +106,11 @@ std::string Disassembler::arm_data_processing(u32 instruction) {
         const char* shift_type = shift_types[static_cast<int>(opcode.rhs.reg.shift_type)];
 
         if (opcode.rhs.reg.imm) {
-            rhs_string = common::format("%s %s #0x%02x", register_names[opcode.rhs.reg.rm], shift_type, opcode.rhs.reg.amount.imm);
+            if (opcode.rhs.reg.amount.imm) {
+                rhs_string = common::format("%s %s #0x%02x", register_names[opcode.rhs.reg.rm], shift_type, opcode.rhs.reg.amount.imm);
+            } else {
+                rhs_string = common::format("%s", register_names[opcode.rhs.reg.rm]);
+            }
         } else {
             rhs_string = common::format("%s %s %s", register_names[opcode.rd], shift_type, register_names[opcode.rhs.reg.amount.rs]);
         }

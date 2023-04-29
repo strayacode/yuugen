@@ -246,11 +246,13 @@ struct ARMBranchLink {
         ARMBranchLink opcode;
         opcode.link = common::get_bit<24>(instruction);
         opcode.offset = common::sign_extend<s32, 24>(common::get_field<0, 24>(instruction)) << 2;
+        opcode.condition = static_cast<Condition>(common::get_field<28, 4>(instruction));
         return opcode;
     }
 
     bool link;
     u32 offset;
+    Condition condition;
 };
 
 struct ARMBranchLinkExchange {
@@ -378,10 +380,16 @@ struct ARMSingleDataTransfer {
         opcode.imm = !common::get_bit<25>(instruction);
         opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
         opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
-        opcode.rhs.imm = common::get_field<0, 12>(instruction);
-        opcode.rhs.reg.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
-        opcode.rhs.reg.shift_type = static_cast<ShiftType>(common::get_field<5, 2>(instruction));
-        opcode.rhs.reg.amount = common::get_field<7, 5>(instruction);
+
+        if (opcode.imm) {
+            opcode.rhs.imm = common::get_field<0, 12>(instruction);
+        } else {
+            opcode.rhs.reg.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+            opcode.rhs.reg.shift_type = static_cast<ShiftType>(common::get_field<5, 2>(instruction));
+            opcode.rhs.reg.amount = common::get_field<7, 5>(instruction);
+        }
+
+        opcode.condition = static_cast<Condition>(common::get_field<28, 4>(instruction));
         return opcode;
     }
 
@@ -393,6 +401,7 @@ struct ARMSingleDataTransfer {
     bool imm;
     Reg rd;
     Reg rn;
+    Condition condition;
 
     union {
         u32 imm;
