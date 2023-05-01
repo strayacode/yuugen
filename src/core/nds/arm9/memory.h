@@ -12,7 +12,7 @@ public:
     ARM9Memory(System& system);
 
     void reset();
-    void update_memory_map();
+    void update_wram_mapping();
 
     u8 read_byte(u32 addr) override;
     u16 read_half(u32 addr) override;
@@ -29,7 +29,11 @@ private:
     template <u32 mask>
     void write_word(u32 addr, u32 value);
 
+    int get_access_size(u32 mask);
+    u32 get_access_offset(u32 mask);
+
     System& system;
+    u8 postflg;
 };
 
 } // namespace core::nds

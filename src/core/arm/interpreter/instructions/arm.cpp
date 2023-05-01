@@ -487,6 +487,7 @@ void Interpreter::arm_status_load() {
     } else {
         state.gpr[opcode.rd] = state.cpsr.data;
     }
+    
     state.gpr[15] += 4;
 }
 

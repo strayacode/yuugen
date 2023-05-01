@@ -89,6 +89,27 @@ public:
         }
     }
 
+    template <Bus B>
+    void unmap(u32 base, u32 end, RegionAttributes attributes) {
+        if (attributes & RegionAttributes::Read) {
+            if constexpr (B == Bus::All) {
+                get_read_table<Bus::System>().unmap(base, end);
+                get_read_table<Bus::CodeAndData>().unmap(base, end);
+            } else {
+                get_read_table<B>().unmap(base, end);
+            }
+        }
+
+        if (attributes & RegionAttributes::Write) {
+            if constexpr (B == Bus::All) {
+                get_write_table<Bus::System>().unmap(base, end);
+                get_write_table<Bus::CodeAndData>().unmap(base, end);
+            } else {
+                get_write_table<B>().unmap(base, end);
+            }
+        }
+    }
+
     virtual u8 read_byte(u32 addr) = 0;
     virtual u16 read_half(u32 addr) = 0;
     virtual u32 read_word(u32 addr) = 0;

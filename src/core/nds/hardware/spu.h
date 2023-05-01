@@ -4,13 +4,13 @@
 
 namespace core::nds {
 
-class Input {
+class SPU {
 public:
     void reset();
-    u16 read_extkeyin();
+    void write_soundbias(u32 value);
 
 private:
-    u16 extkeyin;
+    u32 soundbias;
 };
 
 } // namespace core::nds

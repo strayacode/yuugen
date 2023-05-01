@@ -12,7 +12,7 @@ public:
     ARM7Memory(System& system);
 
     void reset();
-    void map_wram_region();
+    void update_wram_mapping();
 
     u8 read_byte(u32 addr) override;
     u16 read_half(u32 addr) override;
@@ -35,6 +35,7 @@ private:
     System& system;
     std::array<u8, 0x10000> arm7_wram;
     u16 rcnt;
+    u8 postflg;
 };
 
 } // namespace core::nds

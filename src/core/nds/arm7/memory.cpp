@@ -11,12 +11,13 @@ ARM7Memory::ARM7Memory(System& system) : system(system) {}
 void ARM7Memory::reset() {
     arm7_wram.fill(0);
     rcnt = 0;
+    postflg = 0;
 
     map<arm::Bus::All>(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
-    map_wram_region();
+    update_wram_mapping();
 }
 
-void ARM7Memory::map_wram_region() {
+void ARM7Memory::update_wram_mapping() {
     switch (system.wramcnt) {
     case 0x0:
         map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
@@ -103,7 +104,7 @@ template <u32 mask>
 u32 ARM7Memory::read_word(u32 addr) {
     switch (MMIO(addr)) {
     default:
-        logger.error("ARM7Memory: unmapped read mask=%08x", mask);
+        logger.error("ARM7Memory: unmapped %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
     }
 
@@ -114,9 +115,15 @@ template <u32 mask>
 void ARM7Memory::write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
     case MMIO(0x04000134): 
-        if constexpr (mask & 0xffff) {
-            rcnt = value;
-        }
+        if constexpr (mask & 0xffff) rcnt = value;
+        break;
+    case MMIO(0x04000300):
+        if constexpr (mask & 0xff) postflg = value & 0x1;
+        if constexpr (mask & 0xff00) logger.error("handle haltcnt write");
+        break;
+    case MMIO(0x04000504):
+        system.spu.write_soundbias(value);
+        break;
     default:
         logger.error("ARM7Memory: unmapped %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
         break;

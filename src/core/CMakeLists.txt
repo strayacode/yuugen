@@ -28,8 +28,11 @@ add_library(core
 
     nds/video/video_unit.h nds/video/video_unit.cpp
     nds/video/vram.h
+    nds/video/ppu.h nds/video/ppu.cpp
 
     nds/hardware/cartridge/cartridge.h nds/hardware/cartridge/cartridge.cpp
+    nds/hardware/input.h nds/hardware/input.cpp
+    nds/hardware/spu.h nds/hardware/spu.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

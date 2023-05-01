@@ -9,13 +9,27 @@ namespace core::nds {
 ARM9Memory::ARM9Memory(System& system) : system(system) {}
 
 void ARM9Memory::reset() {
-    using Bus = arm::Bus;
-    using RegionAttributes = arm::RegionAttributes;
-    map<Bus::All>(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, RegionAttributes::ReadWrite);
+    postflg = 0;
+
+    map<arm::Bus::All>(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
+    update_wram_mapping();
 }
 
-void ARM9Memory::update_memory_map() {
-    
+void ARM9Memory::update_wram_mapping() {
+    switch (system.wramcnt) {
+    case 0x0:
+        map<arm::Bus::All>(0x03000000, 0x04000000, system.shared_wram.data(), 0x7fff, arm::RegionAttributes::ReadWrite);
+        break;
+    case 0x1:
+        map<arm::Bus::All>(0x03000000, 0x04000000, system.shared_wram.data() + 0x4000, 0x3fff, arm::RegionAttributes::ReadWrite);
+        break;
+    case 0x2:
+        map<arm::Bus::All>(0x03000000, 0x04000000, system.shared_wram.data(), 0x3fff, arm::RegionAttributes::ReadWrite);
+        break;
+    case 0x3:
+        unmap<arm::Bus::All>(0x03000000, 0x04000000, arm::RegionAttributes::ReadWrite);
+        break;
+    }
 }
 
 u8 ARM9Memory::read_byte(u32 addr) {
@@ -86,7 +100,7 @@ template <u32 mask>
 u32 ARM9Memory::read_word(u32 addr) {
     switch (MMIO(addr)) {
     default:
-        logger.error("ARM9Memory: unmapped read mask=%08x", mask);
+        logger.error("ARM9Memory: unmapped %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
     }
 
@@ -96,10 +110,52 @@ u32 ARM9Memory::read_word(u32 addr) {
 template <u32 mask>
 void ARM9Memory::write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
+    case MMIO(0x04000000):
+        system.video_unit.ppu_a.write_dispcnt(value, mask);
+        break;
+    case MMIO(0x04000244):
+        if constexpr (mask & 0xff) logger.error("ARM9Memory: handle vramcnt_e write");
+        if constexpr (mask & 0xff00) logger.error("ARM9Memory: handle vramcnt_f write");
+        if constexpr (mask & 0xff0000) logger.error("ARM9Memory: handle vramcnt_g write");
+        if constexpr (mask & 0xff000000) system.write_wramcnt(value >> 24);
+        break;
+    case MMIO(0x04000300):
+        if constexpr (mask & 0xff) postflg = value & 0x1;
+        break;
+    case MMIO(0x04000304):
+        system.video_unit.write_powcnt1(value);
+        break;
     default:
-        logger.error("ARM9Memory: unmapped write mask=%08x", mask);
+        logger.error("ARM9Memory: unmapped %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
         break;
     }
+}
+
+int ARM9Memory::get_access_size(u32 mask) {
+    int size = 0;
+    for (int i = 0; i < 4; i++) {
+        if (mask & 0xff) {
+            size += 8;
+        }
+
+        mask >>= 8;
+    }
+
+    return size;
+}
+
+u32 ARM9Memory::get_access_offset(u32 mask) {
+    u32 offset = 0;
+    for (int i = 0; i < 4; i++) {
+        if (mask & 0xff) {
+            break;
+        }
+
+        offset++;
+        mask >>= 8;
+    }
+
+    return offset;
 }
 
 } // namespace core::nds

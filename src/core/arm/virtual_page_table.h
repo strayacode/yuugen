@@ -40,6 +40,18 @@ public:
         }
     }
 
+    void unmap(u32 base, u32 end) {
+        for (u32 addr = base; addr < end; addr += PAGE_SIZE) {
+            auto& l1_entry = page_table[get_l1_index(addr)];
+            if (!l1_entry) {
+                return;
+            }
+
+            auto& l2_entry = (*l1_entry)[get_l2_index(addr)];
+            l2_entry = nullptr;
+        }
+    }
+
 private:
     int get_l1_index(u32 addr) {
         return addr >> L1_SHIFT;
