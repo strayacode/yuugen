@@ -14,15 +14,21 @@ public:
     void reset();
     void update_memory_map();
 
-    u8 system_read_byte(u32 addr) override;
-    u16 system_read_half(u32 addr) override;
-    u32 system_read_word(u32 addr) override;
+    u8 read_byte(u32 addr) override;
+    u16 read_half(u32 addr) override;
+    u32 read_word(u32 addr) override;
 
-    void system_write_byte(u32 addr, u8 value) override;
-    void system_write_half(u32 addr, u16 value) override;
-    void system_write_word(u32 addr, u32 value) override;
+    void write_byte(u32 addr, u8 value) override;
+    void write_half(u32 addr, u16 value) override;
+    void write_word(u32 addr, u32 value) override;
 
 private:
+    template <u32 mask>
+    u32 read_word(u32 addr);
+
+    template <u32 mask>
+    void write_word(u32 addr, u32 value);
+
     System& system;
 };
 

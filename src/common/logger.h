@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <ctime>
+#include <cstdlib>
 #include "common/string.h"
 
 #define RED "\x1B[31m"
@@ -38,6 +39,7 @@ public:
         set_text_colour(TextColour::Red);
         Time time = get_current_time();
         std::printf("[%02d:%02d:%02d] %s\n", time.hour, time.minute, time.second, common::format(pattern, std::forward<Args>(args)...).c_str());
+        std::exit(0);
     }
 
     template <typename... Args>

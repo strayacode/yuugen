@@ -41,11 +41,11 @@ public:
         }
 
         if (std::is_same_v<T, u8>) {
-            return system_read_byte(addr);
+            return read_byte(addr);
         } else if (std::is_same_v<T, u16>) {
-            return system_read_half(addr);
+            return read_half(addr);
         } else {
-            return system_read_word(addr);
+            return read_word(addr);
         }
     }
 
@@ -60,11 +60,11 @@ public:
         }
 
         if (std::is_same_v<T, u8>) {
-            system_write_byte(addr, value);
+            write_byte(addr, value);
         } else if (std::is_same_v<T, u16>) {
-            system_write_half(addr, value);
+            write_half(addr, value);
         } else {
-            system_write_word(addr, value);
+            write_word(addr, value);
         }
     }
 
@@ -89,13 +89,13 @@ public:
         }
     }
 
-    virtual u8 system_read_byte(u32 addr) = 0;
-    virtual u16 system_read_half(u32 addr) = 0;
-    virtual u32 system_read_word(u32 addr) = 0;
+    virtual u8 read_byte(u32 addr) = 0;
+    virtual u16 read_half(u32 addr) = 0;
+    virtual u32 read_word(u32 addr) = 0;
 
-    virtual void system_write_byte(u32 addr, u8 value) = 0;
-    virtual void system_write_half(u32 addr, u16 value) = 0;
-    virtual void system_write_word(u32 addr, u32 value) = 0;
+    virtual void write_byte(u32 addr, u8 value) = 0;
+    virtual void write_half(u32 addr, u16 value) = 0;
+    virtual void write_word(u32 addr, u32 value) = 0;
     
 private:
     template <typename T, Bus B>

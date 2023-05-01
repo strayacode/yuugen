@@ -54,7 +54,42 @@ std::string Disassembler::arm_multiply_long(u32 instruction) {
 }
 
 std::string Disassembler::arm_halfword_data_transfer(u32 instruction) {
-    return "handle arm_halfword_data_transfer";
+    auto opcode = ARMHalfwordDataTransfer::decode(instruction);
+    std::string rhs_string = common::format(" %s [%s%s, ", register_names[opcode.rd], register_names[opcode.rn], opcode.pre ? "" : "]");
+
+    if (opcode.imm) {
+        rhs_string += common::format("#0x%08x", opcode.rhs.imm);
+    } else {
+        rhs_string += common::format("%s", register_names[opcode.rhs.rm]);
+    }
+
+    if (opcode.pre) {
+        rhs_string += "]";
+    }
+
+    if (opcode.writeback) {
+        rhs_string += "!";
+    }
+
+    if (opcode.half && opcode.sign) {
+        if (opcode.load) {
+            return "ldrsh" + rhs_string;
+        } else {
+            return "strd" + rhs_string;
+        }
+    } else if (opcode.half) {
+        if (opcode.load) {
+            return "ldrh" + rhs_string;
+        } else {
+            return "strh" + rhs_string;
+        }
+    } else {
+        if (opcode.load) {
+            return "ldrsb" + rhs_string;
+        } else {
+            return "ldrd" + rhs_string;
+        }
+    }
 }
 
 std::string Disassembler::arm_status_load(u32 instruction) {
@@ -118,11 +153,11 @@ std::string Disassembler::arm_data_processing(u32 instruction) {
 
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND:
-        return common::format("and%s%s %s, %s, %s", set_flags_string, condition_names[opcode.condition], register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return common::format("and%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::EOR:
         return common::format("eor");
     case ARMDataProcessing::Opcode::SUB:
-        return common::format("sub");
+        return common::format("sub%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::RSB:
         return common::format("rsb");
     case ARMDataProcessing::Opcode::ADD:
@@ -138,13 +173,13 @@ std::string Disassembler::arm_data_processing(u32 instruction) {
     case ARMDataProcessing::Opcode::TEQ:
         return common::format("teq");
     case ARMDataProcessing::Opcode::CMP:
-        return common::format("cmp");
+        return common::format("cmp%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::CMN:
         return common::format("cmn");
     case ARMDataProcessing::Opcode::ORR:
         return common::format("orr");
     case ARMDataProcessing::Opcode::MOV:
-        return common::format("mov%s%s %s, %s", set_flags_string, condition_names[opcode.condition], register_names[opcode.rd], rhs_string.c_str());
+        return common::format("mov%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], rhs_string.c_str());
     case ARMDataProcessing::Opcode::BIC:
         return common::format("bic");
     case ARMDataProcessing::Opcode::MVN:

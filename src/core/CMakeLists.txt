@@ -26,6 +26,9 @@ add_library(core
     nds/arm9/memory.h nds/arm9/memory.cpp
     nds/arm9/coprocessor.h nds/arm9/coprocessor.cpp
 
+    nds/video/video_unit.h nds/video/video_unit.cpp
+    nds/video/vram.h
+
     nds/hardware/cartridge/cartridge.h nds/hardware/cartridge/cartridge.cpp
 )
 

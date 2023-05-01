@@ -6,6 +6,7 @@
 #include "core/nds/arm7/arm7.h"
 #include "core/nds/arm9/arm9.h"
 #include "core/nds/hardware/cartridge/cartridge.h"
+#include "core/nds/video/video_unit.h"
 #include "core/scheduler.h"
 
 namespace core::nds {
@@ -22,6 +23,7 @@ public:
     ARM7 arm7;
     ARM9 arm9;
     Cartridge cartridge;
+    VideoUnit video_unit;
     Scheduler scheduler;
     std::array<u8, 0x400000> main_memory;
     std::array<u8, 0x8000> shared_wram;

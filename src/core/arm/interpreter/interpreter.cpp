@@ -34,14 +34,12 @@ void Interpreter::run(int cycles) {
             state.gpr[15] &= ~0x1;
             pipeline[1] = memory.read<u16, Bus::Code>(state.gpr[15]);
 
-            logger.debug("%s::Interpreter: (%08x, %s) at r15 = %08x", arch == Arch::ARMv5 ? "arm9" : "arm7", instruction, disassembler.disassemble_thumb(instruction).c_str(), state.gpr[15]);
             auto handler = decoder.get_thumb_handler(instruction);
             (this->*handler)();
         } else {
             state.gpr[15] &= ~0x3;
             pipeline[1] = memory.read<u32, Bus::Code>(state.gpr[15]);
 
-            logger.info("%s::Interpreter: (%08x, %s) at r15 = %08x", arch == Arch::ARMv5 ? "arm9" : "arm7", instruction, disassembler.disassemble_arm(instruction).c_str(), state.gpr[15]);
             if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
                 auto handler = decoder.get_arm_handler(instruction);
                 (this->*handler)();
@@ -217,6 +215,14 @@ bool Interpreter::calculate_add_overflow(u32 op1, u32 op2, u32 result) {
 
 bool Interpreter::calculate_sub_overflow(u32 op1, u32 op2, u32 result) {
     return ((op1 ^ op2) & (op1 ^ result)) >> 31;
+}
+
+void Interpreter::print_instruction() {
+    if (state.cpsr.t) {
+        logger.debug("%s::Interpreter: (%08x, %s) at r15 = %08x", arch == Arch::ARMv5 ? "arm9" : "arm7", instruction, disassembler.disassemble_thumb(instruction).c_str(), state.gpr[15]);
+    } else {
+        logger.info("%s::Interpreter: (%08x, %s) at r15 = %08x", arch == Arch::ARMv5 ? "arm9" : "arm7", instruction, disassembler.disassemble_arm(instruction).c_str(), state.gpr[15]);
+    }
 }
 
 } // namespace core::arm

@@ -115,6 +115,8 @@ private:
     bool calculate_add_overflow(u32 op1, u32 op2, u32 result);
     bool calculate_sub_overflow(u32 op1, u32 op2, u32 result);
 
+    void print_instruction();
+
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;
