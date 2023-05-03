@@ -2,6 +2,7 @@
 
 #include <array>
 #include "common/types.h"
+#include "core/nds/video/vram_region.h"
 
 namespace core::nds {
 
@@ -24,6 +25,8 @@ public:
     void write_vramcnt(Bank bank, u8 value);
 
 private:
+    void reset_vram_regions();
+
     std::array<u8, 9> vramcnt;
 
     std::array<u8, 0x20000> bank_a;
@@ -35,6 +38,15 @@ private:
     std::array<u8, 0x4000> bank_g;
     std::array<u8, 0x8000> bank_h;
     std::array<u8, 0x4000> bank_i;
+
+    VRAMRegion<0xa4000> lcdc;
+    VRAMRegion<0x80000> bga;
+    VRAMRegion<0x40000> obja;
+    VRAMRegion<0x20000> bgb;
+    VRAMRegion<0x20000> objb;
+    VRAMRegion<0x20000> arm7_vram;
+    VRAMRegion<0x80000> texture_data;
+    VRAMRegion<0x20000> texture_palette;
 };
 
 } // namespace core::nds

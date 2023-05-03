@@ -13,6 +13,7 @@ VRAM::reset() {
     bank_g.fill(0);
     bank_h.fill(0);
     bank_i.fill(0);
+    reset_vram_regions();
 }
 
 void VRAM::write_vramcnt(Bank bank, u8 value) {
@@ -25,6 +26,19 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
     }
 
     vramcnt[index] = value;
+
+    reset_vram_regions();
+}
+
+void VRAM::reset_vram_regions() {
+    lcdc.reset();
+    bga.reset();
+    obja.reset();
+    bgb.reset();
+    objb.reset();
+    arm7_vram.reset();
+    texture_data.reset();
+    texture_palette.reset();
 }
 
 } // namespace core::nds

@@ -28,6 +28,7 @@ add_library(core
 
     nds/video/video_unit.h nds/video/video_unit.cpp
     nds/video/vram.h
+    nds/video/vram_region.h nds/video/vram_page.h
     nds/video/ppu.h nds/video/ppu.cpp
 
     nds/hardware/cartridge/cartridge.h nds/hardware/cartridge/cartridge.cpp
