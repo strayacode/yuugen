@@ -20,10 +20,12 @@ add_library(core
 
     nds/arm7/arm7.h nds/arm7/arm7.cpp
     nds/arm7/memory.h nds/arm7/memory.cpp
+    nds/arm7/mmio.cpp
     nds/arm7/coprocessor.h nds/arm7/coprocessor.cpp
 
     nds/arm9/arm9.h nds/arm9/arm9.cpp
     nds/arm9/memory.h nds/arm9/memory.cpp
+    nds/arm9/mmio.cpp
     nds/arm9/coprocessor.h nds/arm9/coprocessor.cpp
 
     nds/video/video_unit.h nds/video/video_unit.cpp

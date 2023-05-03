@@ -22,6 +22,46 @@ public:
         I,
     };
 
+    template <typename T>
+    T read(u32 addr) {
+        int region = (addr >> 20) & 0xf;
+        switch (region) {
+        case 0x0: case 0x1:
+            return bga.read<T>(addr);
+        case 0x2: case 0x3:
+            return bgb.read<T>(addr);
+        case 0x4: case 0x5:
+            return obja.read<T>(addr);
+        case 0x6: case 0x7:
+            return objb.read<T>(addr);
+        default:
+            return lcdc.read<T>(addr);
+        }
+    }
+
+    template <typename T>
+    void write(u32 addr, T data) {
+        int region = (addr >> 20) & 0xf;
+
+        switch (region) {
+        case 0x0: case 0x1:
+            bga.write<T>(addr, data);
+            break;
+        case 0x2: case 0x3:
+            bgb.write<T>(addr, data);
+            break;
+        case 0x4: case 0x5:
+            obja.write<T>(addr, data);
+            break;
+        case 0x6: case 0x7:
+            objb.write<T>(addr, data);
+            break;
+        default:
+            lcdc.write<T>(addr, data);
+            break;
+        }
+    }
+
     void write_vramcnt(Bank bank, u8 value);
 
 private:

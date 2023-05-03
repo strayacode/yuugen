@@ -17,12 +17,12 @@ public:
 
     template <typename T>
     T read(u32 addr) {
-        return get_vram_page().template read<T>(addr);
+        return get_vram_page(addr).template read<T>(addr);
     }
 
     template <typename T>
     void write(u32 addr, T data) {
-        get_vram_page().template write<T>(addr, data);
+        get_vram_page(addr).template write<T>(addr, data);
     }
 
     void map(u8* pointer, u32 offset, u32 length) {

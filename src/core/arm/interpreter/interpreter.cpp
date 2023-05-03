@@ -30,8 +30,6 @@ void Interpreter::run(int cycles) {
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
 
-        print_instruction();
-
         if (state.cpsr.t) {
             state.gpr[15] &= ~0x1;
             pipeline[1] = memory.read<u16, Bus::Code>(state.gpr[15]);

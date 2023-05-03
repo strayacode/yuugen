@@ -23,11 +23,19 @@ public:
     void write_word(u32 addr, u32 value) override;
 
 private:
-    template <u32 mask>
-    u32 read_word(u32 addr);
+    u8 mmio_read_byte(u32 addr);
+    u16 mmio_read_half(u32 addr);
+    u32 mmio_read_word(u32 addr);
+
+    void mmio_write_byte(u32 addr, u8 value);
+    void mmio_write_half(u32 addr, u16 value);
+    void mmio_write_word(u32 addr, u32 value);
 
     template <u32 mask>
-    void write_word(u32 addr, u32 value);
+    u32 mmio_read_word(u32 addr);
+
+    template <u32 mask>
+    void mmio_write_word(u32 addr, u32 value);
 
     int get_access_size(u32 mask);
     u32 get_access_offset(u32 mask);

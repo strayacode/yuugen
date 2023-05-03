@@ -27,9 +27,9 @@ public:
     }
 
     template <typename T>
-    void write(u32 addr, T data) {
+    void write(u32 addr, T value) {
         for (u64 i = 0; i < banks.size(); i++) {
-            common::write<T>(&banks[i][addr & PAGE_MASK]);
+            common::write<T>(&banks[i][addr & PAGE_MASK], value);
         }
     }
 
