@@ -27,7 +27,7 @@ add_library(core
     nds/arm9/coprocessor.h nds/arm9/coprocessor.cpp
 
     nds/video/video_unit.h nds/video/video_unit.cpp
-    nds/video/vram.h
+    nds/video/vram.h nds/video/vram.cpp
     nds/video/vram_region.h nds/video/vram_page.h
     nds/video/ppu.h nds/video/ppu.cpp
 

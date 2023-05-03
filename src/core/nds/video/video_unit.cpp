@@ -5,6 +5,7 @@ namespace core::nds {
 void VideoUnit::reset() {
     powcnt1.data = 0;
 
+    vram.reset();
     ppu_a.reset();
     ppu_b.reset();
 }

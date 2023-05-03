@@ -113,6 +113,12 @@ void ARM9Memory::write_word(u32 addr, u32 value) {
     case MMIO(0x04000000):
         system.video_unit.ppu_a.write_dispcnt(value, mask);
         break;
+    case MMIO(0x04000240):
+        if constexpr (mask & 0xff) system.video_unit.vram.write_vramcnt(VRAM::Bank::A, value);
+        if constexpr (mask & 0xff00) system.video_unit.vram.write_vramcnt(VRAM::Bank::B, value >> 8);
+        if constexpr (mask & 0xff0000) system.video_unit.vram.write_vramcnt(VRAM::Bank::C, value >> 16);
+        if constexpr (mask & 0xff000000) system.video_unit.vram.write_vramcnt(VRAM::Bank::D, value >> 24);
+        break;
     case MMIO(0x04000244):
         if constexpr (mask & 0xff) logger.error("ARM9Memory: handle vramcnt_e write");
         if constexpr (mask & 0xff00) logger.error("ARM9Memory: handle vramcnt_f write");

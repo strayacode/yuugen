@@ -25,8 +25,9 @@ public:
         get_vram_page().template write<T>(addr, data);
     }
 
-    void map(u8* pointer, u32 offset, int pages_to_map) {
-        for (int i = 0; i < pages_to_map; i++) {
+    void map(u8* pointer, u32 offset, u32 length) {
+        auto pages_to_map = length / PAGE_SIZE;
+        for (u64 i = 0; i < pages_to_map; i++) {
             auto index = (offset / PAGE_SIZE) + i;
             pages[index].add_bank(pointer + (i * PAGE_SIZE));
         }
