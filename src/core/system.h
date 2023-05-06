@@ -2,6 +2,8 @@
 
 #include <thread>
 #include <array>
+#include <chrono>
+#include <ratio>
 #include "core/config.h"
 #include "arm7/arm7.h"
 #include "arm9/arm9.h"
@@ -37,6 +39,7 @@ public:
     u8 wramcnt;
 
 private:
+    void run_thread();
     void run_frame();
     void direct_boot();
     void firmware_boot();
@@ -50,6 +53,13 @@ private:
     };
 
     ThreadState thread_state = ThreadState::Idle;
+
+    using Frame = std::chrono::duration<int, std::ratio<1, 60>>;
+
+    int frames;
+    bool framelimiter = false;
+
+    static constexpr int FPS_UPDATE_INTERVAL = 1000;
 };
 
 } // namespace core

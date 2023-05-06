@@ -21,10 +21,12 @@ void System::reset() {
     video_unit.reset();
     input.reset();
     spu.reset();
-    
+
     main_memory.fill(0);
     shared_wram.fill(0);
     wramcnt = 0;
+
+    frames = 0;
 }
 
 void System::start() {
@@ -38,9 +40,7 @@ void System::start() {
 
     thread_state = ThreadState::Running;
     thread = std::thread{[this]() {
-        while (thread_state == ThreadState::Running) {
-            run_frame();
-        }
+        run_thread();
     }};
 }
 
@@ -65,6 +65,29 @@ void System::write_wramcnt(u8 data) {
     wramcnt = data & 0x3;
     arm7.get_memory().update_wram_mapping();
     arm9.get_memory().update_wram_mapping();
+}
+
+void System::run_thread() {
+    auto frame_end = std::chrono::system_clock::now() + Frame{1};
+    auto fps_update = std::chrono::system_clock::now();
+    while (thread_state == ThreadState::Running) {
+        run_frame();
+        frames++;
+
+        if (std::chrono::system_clock::now() - fps_update >= std::chrono::milliseconds(FPS_UPDATE_INTERVAL)) {
+            // update_fps(frames * (1000.0f / update_interval));
+            logger.warn("fps: %f", frames * (1000.0f / FPS_UPDATE_INTERVAL));
+            frames = 0;
+            fps_update = std::chrono::system_clock::now();
+        }
+
+        if (framelimiter) {
+            std::this_thread::sleep_until(frame_end);
+            frame_end += Frame{1};
+        } else {
+            frame_end = std::chrono::system_clock::now() + Frame{1};
+        }
+    }
 }
 
 void System::run_frame() {
