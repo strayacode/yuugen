@@ -84,10 +84,6 @@ void Application::render_screens() {
     top_screen.render(system.video_unit.get_framebuffer(core::Screen::Top));
     bottom_screen.render(system.video_unit.get_framebuffer(core::Screen::Bottom));
 
-    
-    const u32* top = system.video_unit.get_framebuffer(core::Screen::Top);
-    logger.warn("render screens %08x", top[0]);
-
     const double scale_x = static_cast<f64>(window_width) / 256;
     const double scale_y = static_cast<f64>(window_height) / 384;
     const double scale = scale_x < scale_y ? scale_x : scale_y;

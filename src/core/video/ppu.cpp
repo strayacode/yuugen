@@ -10,6 +10,10 @@ void PPU::reset() {
     framebuffer.fill(0xff00ff00);
 }
 
+void PPU::render_scanline(int line) {
+
+}
+
 void PPU::write_dispcnt(u32 value, u32 mask) {
     dispcnt.data = (dispcnt.data & ~mask) | (value & mask);
 }

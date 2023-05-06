@@ -3,7 +3,7 @@
 
 namespace core {
 
-System::System() : arm7(*this), arm9(*this), cartridge(*this) {
+System::System() : arm7(*this), arm9(*this), cartridge(*this), video_unit(*this) {
     arm7.select_backend(arm::Backend::Interpreter);
     arm9.select_backend(arm::Backend::Interpreter);
 }
