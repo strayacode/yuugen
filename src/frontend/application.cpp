@@ -29,10 +29,14 @@ bool Application::initialise() {
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 13.0f);
 
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
+
+    top_screen.initialise(256, 192);
+    bottom_screen.initialise(256, 192);
+
     return true;
 }
 
@@ -77,38 +81,38 @@ void Application::handle_input() {
 }
 
 void Application::render_screens() {
-    // ImGuiIO& io = ImGui::GetIO();
+    top_screen.render(system.video_unit.get_framebuffer(core::Screen::Top));
+    bottom_screen.render(system.video_unit.get_framebuffer(core::Screen::Bottom));
+
     
-    // SDL_ShowCursor(Settings::Get().hide_cursor && (fullscreen || (io.MousePos.y > menubar_height)) ? SDL_DISABLE : SDL_ENABLE);
+    const u32* top = system.video_unit.get_framebuffer(core::Screen::Top);
+    logger.warn("render screens %08x", top[0]);
 
-    // top_screen.render(m_system.video_unit.get_framebuffer(Screen::Top));
-    // bottom_screen.render(m_system.video_unit.get_framebuffer(Screen::Bottom));
+    const double scale_x = static_cast<f64>(window_width) / 256;
+    const double scale_y = static_cast<f64>(window_height) / 384;
+    const double scale = scale_x < scale_y ? scale_x : scale_y;
 
-    // const double scale_x = (double)window_width / 256;
-    // const double scale_y = (double)window_height / 384;
-    // const double scale = scale_x < scale_y ? scale_x : scale_y;
+    scaled_dimensions = ImVec2(256 * scale, 192 * scale);
 
-    // scaled_dimensions = ImVec2(256 * scale, 192 * scale);
-
-    // center_pos = ((double)window_width - scaled_dimensions.x) / 2;
+    center_pos = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
     
-    // ImGui::GetBackgroundDrawList()->AddImage(
-    //     (void*)(intptr_t)top_screen.get_texture(),
-    //     ImVec2(center_pos, fullscreen ? 0 : menubar_height),
-    //     ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
-    //     ImVec2(0, 0),
-    //     ImVec2(1, 1),
-    //     IM_COL32_WHITE
-    // );
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)top_screen.get_texture(),
+        ImVec2(center_pos, menubar_height),
+        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
     
-    // ImGui::GetBackgroundDrawList()->AddImage(
-    //     (void*)(intptr_t)bottom_screen.get_texture(),
-    //     ImVec2(center_pos, scaled_dimensions.y),
-    //     ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
-    //     ImVec2(0, 0),
-    //     ImVec2(1, 1),
-    //     IM_COL32_WHITE
-    // );
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)bottom_screen.get_texture(),
+        ImVec2(center_pos, scaled_dimensions.y),
+        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
 }
 
 void Application::render_menubar() {
@@ -192,6 +196,7 @@ void Application::render() {
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
     render_menubar();
+    render_screens();
     
     if (demo_window) {
         ImGui::ShowDemoWindow();
@@ -226,8 +231,9 @@ void Application::end_fullscreen_window() {
 }
 
 void Application::boot_game(const std::string& path) {
-    core.set_game_path(path);
-    core.start();
+    system.set_game_path(path);
+    system.set_boot_mode(core::BootMode::Direct);
+    system.start();
 }
 
 void Application::boot_firmware() {

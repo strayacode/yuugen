@@ -7,7 +7,8 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imfilebrowser.h"
 #include "common/types.h"
-#include "core/core.h"
+#include "core/system.h"
+#include "frontend/gl_video_device.h"
 
 class Application {
 public:
@@ -44,5 +45,8 @@ private:
     void boot_firmware();
 
     bool demo_window = true;
-    core::Core core;
+    core::System system;
+
+    GLVideoDevice top_screen;
+    GLVideoDevice bottom_screen;
 };
