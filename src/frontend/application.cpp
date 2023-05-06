@@ -29,8 +29,6 @@ bool Application::initialise() {
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 13.0f);
 
-    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
 
@@ -189,8 +187,7 @@ void Application::render() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
-    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-
+    
     render_menubar();
     render_screens();
     

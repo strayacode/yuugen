@@ -16,12 +16,12 @@ void System::reset() {
     scheduler.reset();
     arm7.reset();
     arm9.reset();
+    cartridge.reset();
+    cartridge.load(config.game_path);
     video_unit.reset();
     input.reset();
     spu.reset();
-    cartridge.reset();
-    cartridge.load(config.game_path);
-
+    
     main_memory.fill(0);
     shared_wram.fill(0);
     wramcnt = 0;

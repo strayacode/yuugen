@@ -17,13 +17,11 @@ void VideoUnit::reset() {
     ppu_b.reset();
 
     scanline_start_event = system.scheduler.register_event("Scanline Start", [this]() {
-        logger.warn("scanline start");
         render_scanline_start();
         system.scheduler.add_event(524, &scanline_end_event);
     });
 
     scanline_end_event = system.scheduler.register_event("Scanline End", [this]() {
-        logger.warn("scanline end");
         render_scanline_end();
         system.scheduler.add_event(1606, &scanline_start_event);
     });

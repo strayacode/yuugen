@@ -57,9 +57,13 @@ void Scheduler::set_current_time(u64 value) {
 }
 
 int Scheduler::calculate_event_index(Event& event) {
+    if (events.size() == 0) {
+        return 0;
+    }
+
     u64 lower_bound = 0;
     u64 upper_bound = events.size() - 1;
-   
+
     while (lower_bound <= upper_bound) {
         u64 mid = (lower_bound + upper_bound) / 2;
         if (event.time > events[mid].time) {

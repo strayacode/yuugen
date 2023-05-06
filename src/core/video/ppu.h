@@ -24,6 +24,13 @@ public:
     const u32* get_framebuffer() { return framebuffer.data(); }
     
 private:
+    void render_blank_screen(int line);
+    void render_graphics_display(int line);
+    void render_vram_display(int line);
+
+    u32 rgb555_to_rgb888(u32 colour);
+    void render_pixel(int x, int y, u32 colour);
+
     union DISPCNT {
         struct {
             u32 bgmode : 3;
