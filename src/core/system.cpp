@@ -22,6 +22,8 @@ void System::reset() {
     video_unit.reset();
     input.reset();
     spu.reset();
+    dma7.reset();
+    dma9.reset();
 
     main_memory.fill(0);
     shared_wram.fill(0);

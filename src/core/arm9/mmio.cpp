@@ -87,6 +87,10 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x04000000):
         system.video_unit.ppu_a.write_dispcnt(value, mask);
         break;
+    case MMIO(0x040000d0):
+        if constexpr (mask & 0xffff) system.dma9.write_length(2, value);
+        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle dmacnt write");
+        break;
     case MMIO(0x04000240):
         if constexpr (mask & 0xff) system.video_unit.vram.write_vramcnt(VRAM::Bank::A, value);
         if constexpr (mask & 0xff00) system.video_unit.vram.write_vramcnt(VRAM::Bank::B, value >> 8);

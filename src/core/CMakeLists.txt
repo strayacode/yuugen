@@ -21,6 +21,7 @@ add_library(core
     hardware/cartridge/cartridge.h hardware/cartridge/cartridge.cpp
     hardware/input.h hardware/input.cpp
     hardware/spu.h hardware/spu.cpp
+    hardware/dma.h hardware/dma.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

@@ -11,6 +11,7 @@
 #include "core/video/video_unit.h"
 #include "core/hardware/input.h"
 #include "core/hardware/spu.h"
+#include "core/hardware/dma.h"
 #include "core/scheduler.h"
 
 namespace core {
@@ -33,6 +34,8 @@ public:
     VideoUnit video_unit;
     Input input;
     SPU spu;
+    DMA dma7;
+    DMA dma9;
     Scheduler scheduler;
     std::array<u8, 0x400000> main_memory;
     std::array<u8, 0x8000> shared_wram;
