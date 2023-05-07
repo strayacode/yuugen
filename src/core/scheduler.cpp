@@ -12,7 +12,7 @@ void Scheduler::tick(int cycles) {
     current_time += cycles;
 }
 
-void Scheduler::run_events() {
+void Scheduler::run() {
     while (events.size() > 0 && events[0].time <= current_time) {
         events[0].type->callback();
         events.erase(events.begin());

@@ -24,7 +24,7 @@ class Scheduler {
 public:
     void reset();
     void tick(int cycles);
-    void run_events();
+    void run();
     void add_event(u64 delay, EventType* type);
     void cancel_event(EventType* type);
     EventType register_event(std::string name, SchedulerCallback callback);

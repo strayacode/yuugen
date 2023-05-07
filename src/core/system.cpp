@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "common/logger.h"
 #include "core/system.h"
 
@@ -30,6 +31,8 @@ void System::reset() {
 }
 
 void System::start() {
+    // stop the previous thread if one was running
+    stop();
     reset();
 
     if (config.boot_mode == BootMode::Direct) {
@@ -96,7 +99,7 @@ void System::run_frame() {
         arm7.run(1);
         arm9.run(2);
         scheduler.tick(1);
-        scheduler.run_events();
+        scheduler.run();
     }
 }
 
