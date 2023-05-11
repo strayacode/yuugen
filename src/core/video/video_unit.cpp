@@ -29,11 +29,19 @@ void VideoUnit::reset() {
     system.scheduler.add_event(1606, &scanline_start_event);
 }
 
+u16 VideoUnit::read_dispstat(arm::Arch arch) {
+    if (arch == arm::Arch::ARMv5) {
+        return dispstat9.data;
+    } else {
+        return dispstat7.data;
+    }
+}
+
 void VideoUnit::write_powcnt1(u16 value) {
     powcnt1.data = value & 0x820f;
 }
 
-const u32* VideoUnit::get_framebuffer(Screen screen) {
+u32* VideoUnit::get_framebuffer(Screen screen) {
     if (powcnt1.display_swap == (screen == Screen::Top)) {
         return ppu_a.get_framebuffer();
     } else {

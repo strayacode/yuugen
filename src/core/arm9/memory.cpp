@@ -12,9 +12,9 @@ void ARM9Memory::reset() {
     itcm_data.fill(0);
 
     dtcm.data = dtcm_data.data();
-    dtcm.mask = 0x3fff;
+    dtcm.mask = dtcm_data.size() - 1;
     itcm.data = itcm_data.data();
-    itcm.mask = 0x7fff;
+    itcm.mask = itcm_data.size() - 1;
 
     map(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
     update_wram_mapping();
@@ -97,6 +97,9 @@ void ARM9Memory::write_word(u32 addr, u32 value) {
     switch (addr >> 24) {
     case 0x04:
         mmio_write_word(addr, value);
+        break;
+    case 0x06:
+        system.video_unit.vram.write<u32>(addr, value);
         break;
     default:
         logger.error("ARM9Memory: handle 32-bit write %08x = %02x", addr, value);

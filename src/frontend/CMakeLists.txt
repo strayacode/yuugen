@@ -1,7 +1,7 @@
 set(SOURCES
     main.cpp
     application.h application.cpp
-    gl_video_device.h gl_video_device.cpp
+    imgui_video_device.h imgui_video_device.cpp
 )
 
 set(IMGUI_SOURCES

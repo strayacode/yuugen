@@ -1,4 +1,5 @@
 #include "common/logger.h"
+#include "arm/arch.h"
 #include "core/arm9/arm9.h"
 #include "core/system.h"
 
@@ -72,7 +73,16 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
 
 template <u32 mask>
 u32 ARM9Memory::mmio_read_word(u32 addr) {
+    u32 value = 0;
     switch (MMIO(addr)) {
+    case MMIO(0x04000004):
+        if constexpr (mask & 0xffff) value |= system.video_unit.read_dispstat(arm::Arch::ARMv5);
+        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle vcount read");
+        return value;
+    case MMIO(0x04000130):
+        if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
+        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle keycnt read");
+        return value;
     default:
         logger.error("ARM9Memory: unmapped %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;

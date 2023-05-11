@@ -32,8 +32,8 @@ bool Application::initialise() {
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
 
-    top_screen.initialise(256, 192);
-    bottom_screen.initialise(256, 192);
+    top_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
+    bottom_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
 
     return true;
 }
@@ -79,17 +79,16 @@ void Application::handle_input() {
 }
 
 void Application::render_screens() {
-    top_screen.render(system.video_unit.get_framebuffer(core::Screen::Top));
-    bottom_screen.render(system.video_unit.get_framebuffer(core::Screen::Bottom));
+    top_screen.update_texture(system.video_unit.get_framebuffer(core::Screen::Top));
+    bottom_screen.update_texture(system.video_unit.get_framebuffer(core::Screen::Bottom));
 
-    const double scale_x = static_cast<f64>(window_width) / 256;
-    const double scale_y = static_cast<f64>(window_height) / 384;
-    const double scale = scale_x < scale_y ? scale_x : scale_y;
+    const f64 scale_x = static_cast<f64>(window_width) / 256;
+    const f64 scale_y = static_cast<f64>(window_height) / 384;
+    const f64 scale = scale_x < scale_y ? scale_x : scale_y;
 
     scaled_dimensions = ImVec2(256 * scale, 192 * scale);
-
     center_pos = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
-    
+
     ImGui::GetBackgroundDrawList()->AddImage(
         (void*)(intptr_t)top_screen.get_texture(),
         ImVec2(center_pos, menubar_height),
@@ -98,7 +97,7 @@ void Application::render_screens() {
         ImVec2(1, 1),
         IM_COL32_WHITE
     );
-    
+
     ImGui::GetBackgroundDrawList()->AddImage(
         (void*)(intptr_t)bottom_screen.get_texture(),
         ImVec2(center_pos, scaled_dimensions.y),

@@ -3,7 +3,12 @@
 namespace core {
 
 void Input::reset() {
-    extkeyin = 0;
+    keyinput = 0x3ff;
+    extkeyin = 0x7f;
+}
+
+u16 Input::read_keyinput() {
+    return keyinput & 0x3ff;
 }
 
 u16 Input::read_extkeyin() {

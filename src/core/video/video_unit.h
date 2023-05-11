@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/types.h"
+#include "arm/arch.h"
 #include "core/scheduler.h"
 #include "core/video/vram.h"
 #include "core/video/ppu.h"
@@ -19,9 +20,10 @@ public:
     VideoUnit(System& system);
 
     void reset();
+    u16 read_dispstat(arm::Arch arch);
     void write_powcnt1(u16 value);
 
-    const u32* get_framebuffer(Screen screen);
+    u32* get_framebuffer(Screen screen);
 
     VRAM vram;
     PPU ppu_a;

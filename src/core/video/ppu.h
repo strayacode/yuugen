@@ -18,10 +18,9 @@ public:
 
     void reset();
     void render_scanline(int line);
-
     void write_dispcnt(u32 value, u32 mask);
 
-    const u32* get_framebuffer() { return framebuffer.data(); }
+    u32* get_framebuffer() { return framebuffer.data(); }
     
 private:
     void render_blank_screen(int line);

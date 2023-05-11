@@ -8,7 +8,7 @@
 #include "imgui/imfilebrowser.h"
 #include "common/types.h"
 #include "core/system.h"
-#include "frontend/gl_video_device.h"
+#include "frontend/imgui_video_device.h"
 
 class Application {
 public:
@@ -47,6 +47,6 @@ private:
     bool demo_window = true;
     core::System system;
 
-    GLVideoDevice top_screen;
-    GLVideoDevice bottom_screen;
+    ImGuiVideoDevice top_screen;
+    ImGuiVideoDevice bottom_screen;
 };
