@@ -2,7 +2,8 @@
 
 #include "common/types.h"
 #include "common/memory.h"
-#include "arm/virtual_page_table.h"
+#include "arm/coprocessor.h"
+#include "arm/page_table.h"
 
 namespace arm {
 
@@ -15,9 +16,6 @@ enum class Bus {
 
     // for components other than the cpu (e.g. DMA)
     System,
-
-    CodeAndData,
-    All,
 };
 
 enum RegionAttributes : u8 {
@@ -34,8 +32,21 @@ public:
     template <typename T, Bus B>
     T read(u32 addr) {
         static_assert(is_one_of_v<T, u8, u16, u32>, "T is not valid");
+        addr &= ~(sizeof(T) - 1);
 
-        auto pointer = get_read_pointer<T, B>(addr);
+        if constexpr (B != Bus::System) {
+            if (itcm.config.enable_reads && addr >= itcm.config.base && addr < itcm.config.limit) {
+                return common::read<T>(itcm.data, (addr - itcm.config.base) & itcm.mask);
+            }
+        }
+
+        if constexpr (B == Bus::Data) {
+            if (dtcm.config.enable_reads && addr >= dtcm.config.base && addr < dtcm.config.limit) {
+                return common::read<T>(dtcm.data, (addr - dtcm.config.base) & dtcm.mask);
+            }
+        }
+
+        auto pointer = read_table.get_pointer<T>(addr);
         if (pointer) {
             return common::read<T>(pointer);
         }
@@ -52,8 +63,23 @@ public:
     template <typename T, Bus B>
     void write(u32 addr, T value) {
         static_assert(is_one_of_v<T, u8, u16, u32>, "T is not valid");
+        addr &= ~(sizeof(T) - 1);
 
-        auto pointer = get_write_pointer<T, B>(addr);
+        if constexpr (B != Bus::System) {
+            if (itcm.config.enable_writes && addr >= itcm.config.base && addr < itcm.config.limit) {
+                common::write<T>(itcm.data, value, (addr - itcm.config.base) & itcm.mask);
+                return;
+            }
+        }
+
+        if constexpr (B == Bus::Data) {
+            if (dtcm.config.enable_writes && addr >= dtcm.config.base && addr < dtcm.config.limit) {
+                common::write<T>(dtcm.data, value, (addr - dtcm.config.base) & dtcm.mask);
+                return;
+            }
+        }
+
+        auto pointer = write_table.get_pointer<T>(addr);
         if (pointer) {
             common::write<T>(pointer, value);
             return;
@@ -68,45 +94,23 @@ public:
         }
     }
 
-    template <Bus B>
     void map(u32 base, u32 end, u8* pointer, u32 mask, RegionAttributes attributes) {
         if (attributes & RegionAttributes::Read) {
-            if constexpr (B == Bus::All) {
-                get_read_table<Bus::System>().map(base, end, pointer, mask);
-                get_read_table<Bus::CodeAndData>().map(base, end, pointer, mask);
-            } else {
-                get_read_table<B>().map(base, end, pointer, mask);
-            }
+            read_table.map(base, end, pointer, mask);
         }
 
         if (attributes & RegionAttributes::Write) {
-            if constexpr (B == Bus::All) {
-                get_write_table<Bus::System>().map(base, end, pointer, mask);
-                get_write_table<Bus::CodeAndData>().map(base, end, pointer, mask);
-            } else {
-                get_write_table<B>().map(base, end, pointer, mask);
-            }
+            write_table.map(base, end, pointer, mask);
         }
     }
 
-    template <Bus B>
     void unmap(u32 base, u32 end, RegionAttributes attributes) {
         if (attributes & RegionAttributes::Read) {
-            if constexpr (B == Bus::All) {
-                get_read_table<Bus::System>().unmap(base, end);
-                get_read_table<Bus::CodeAndData>().unmap(base, end);
-            } else {
-                get_read_table<B>().unmap(base, end);
-            }
+            read_table.unmap(base, end);
         }
 
         if (attributes & RegionAttributes::Write) {
-            if constexpr (B == Bus::All) {
-                get_write_table<Bus::System>().unmap(base, end);
-                get_write_table<Bus::CodeAndData>().unmap(base, end);
-            } else {
-                get_write_table<B>().unmap(base, end);
-            }
+            write_table.unmap(base, end);
         }
     }
 
@@ -119,38 +123,10 @@ public:
     virtual void write_word(u32 addr, u32 value) = 0;
     
 private:
-    template <typename T, Bus B>
-    u8* get_read_pointer(u32 addr) {
-        return get_read_table<B>().template get_pointer<T>(addr);
-    }
-
-    template <typename T, Bus B>
-    u8* get_write_pointer(u32 addr) {
-        return get_write_table<B>().template get_pointer<T>(addr);
-    }
-
-    template <Bus B>
-    VirtualPageTable<12>& get_read_table() {
-        if constexpr (B == Bus::System) {
-            return read_system_table;
-        } else {
-            return read_code_data_table;
-        }
-    }
-
-    template <Bus B>
-    VirtualPageTable<12>& get_write_table() {
-        if constexpr (B == Bus::System) {
-            return write_system_table;
-        } else {
-            return write_code_data_table;
-        }
-    }
-
-    VirtualPageTable<12> read_code_data_table;
-    VirtualPageTable<12> write_code_data_table;
-    VirtualPageTable<12> read_system_table;
-    VirtualPageTable<12> write_system_table;
+    PageTable<14> read_table;
+    PageTable<14> write_table;
+    Coprocessor::TCM dtcm;
+    Coprocessor::TCM itcm;
 };
 
 } // namespace arm

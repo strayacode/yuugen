@@ -2,6 +2,10 @@
 
 namespace core {
 
+void ARM7Coprocessor::reset() {
+
+}
+
 u32 ARM7Coprocessor::read(u32 cn, u32 cm, u32 cp) {
     return 0;
 }

@@ -9,7 +9,7 @@ namespace arm {
 // since a large chunk of the 32-bit address space gets unused, it will be more memory efficient to do 2 levels
 // a template parameter specifies the number of bits per page
 template <int N>
-class VirtualPageTable {
+class PageTable {
 public:
     template <typename T>
     u8* get_pointer(u32 addr) {

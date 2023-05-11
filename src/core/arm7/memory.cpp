@@ -13,27 +13,27 @@ void ARM7Memory::reset() {
     rcnt = 0;
     postflg = 0;
 
-    map<arm::Bus::All>(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
+    map(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
     update_wram_mapping();
 }
 
 void ARM7Memory::update_wram_mapping() {
     switch (system.wramcnt) {
     case 0x0:
-        map<arm::Bus::All>(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
+        map(0x03000000, 0x03800000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
         break;
     case 0x1:
-        map<arm::Bus::All>(0x03000000, 0x03800000, system.shared_wram.data(), 0x3fff, arm::RegionAttributes::ReadWrite);
+        map(0x03000000, 0x03800000, system.shared_wram.data(), 0x3fff, arm::RegionAttributes::ReadWrite);
         break;
     case 0x2:
-        map<arm::Bus::All>(0x03000000, 0x03800000, system.shared_wram.data() + 0x4000, 0x3fff, arm::RegionAttributes::ReadWrite);
+        map(0x03000000, 0x03800000, system.shared_wram.data() + 0x4000, 0x3fff, arm::RegionAttributes::ReadWrite);
         break;
     case 0x3:
-        map<arm::Bus::All>(0x03000000, 0x03800000, system.shared_wram.data(), 0x7fff, arm::RegionAttributes::ReadWrite);
+        map(0x03000000, 0x03800000, system.shared_wram.data(), 0x7fff, arm::RegionAttributes::ReadWrite);
         break;
     }
 
-    map<arm::Bus::All>(0x03800000, 0x04000000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
+    map(0x03800000, 0x04000000, arm7_wram.data(), 0xffff, arm::RegionAttributes::ReadWrite);
 }
 
 u8 ARM7Memory::read_byte(u32 addr) {

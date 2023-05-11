@@ -18,6 +18,7 @@ public:
     void select_backend(arm::Backend backend);
     void direct_boot();
     ARM9Memory& get_memory() { return memory; }
+    ARM9Coprocessor& get_coprocessor() { return coprocessor; }
 
 private:
     System& system;

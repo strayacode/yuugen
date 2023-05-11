@@ -1,7 +1,7 @@
 add_library(arm
     arch.h
     coprocessor.h
-    virtual_page_table.h
+    page_table.h
     memory.h
     cpu.h state.h
     interpreter/interpreter.h interpreter/interpreter.cpp
