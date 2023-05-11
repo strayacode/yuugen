@@ -4,9 +4,10 @@
 #include <array>
 #include <chrono>
 #include <ratio>
+#include "common/input_device.h"
 #include "core/config.h"
-#include "arm7/arm7.h"
-#include "arm9/arm9.h"
+#include "core/arm7/arm7.h"
+#include "core/arm9/arm9.h"
 #include "core/hardware/cartridge/cartridge.h"
 #include "core/video/video_unit.h"
 #include "core/hardware/input.h"
@@ -26,6 +27,7 @@ public:
     void stop();
     void set_game_path(const std::string& game_path);
     void set_boot_mode(BootMode boot_mode);
+    void set_input_device(common::InputDevice& input_device);
     void write_wramcnt(u8 data);
 
     ARM7 arm7;

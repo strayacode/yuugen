@@ -34,6 +34,7 @@ bool Application::initialise() {
 
     top_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
     bottom_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
+    system.set_input_device(input_device);
 
     return true;
 }
@@ -73,7 +74,52 @@ void Application::handle_input() {
             window_width = event.window.data1;
             window_height = event.window.data2;
         } else if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
-            bool key_pressed = event.type == SDL_KEYDOWN;
+            bool pressed = event.type == SDL_KEYDOWN;
+            switch (event.key.keysym.sym) {
+            case SDLK_d:
+                input_device.handle(common::InputEvent::A, pressed);
+                break;
+            case SDLK_s:
+                input_device.handle(common::InputEvent::B, pressed);
+                break;
+            case SDLK_RSHIFT:
+                input_device.handle(common::InputEvent::Select, pressed);
+                break;
+            case SDLK_RETURN:
+                input_device.handle(common::InputEvent::Start, pressed);
+                break;
+            case SDLK_RIGHT:
+                input_device.handle(common::InputEvent::Right, pressed);
+                break;
+            case SDLK_LEFT:
+                input_device.handle(common::InputEvent::Left, pressed);
+                break;
+            case SDLK_UP:
+                input_device.handle(common::InputEvent::Up, pressed);
+                break;
+            case SDLK_DOWN:
+                input_device.handle(common::InputEvent::Down, pressed);
+                break;
+            case SDLK_e:
+                input_device.handle(common::InputEvent::R, pressed);
+                break;
+            case SDLK_w:
+                input_device.handle(common::InputEvent::L, pressed);
+                break;
+            }
+        } else if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+            // int x = ((event.button.x - center_pos) / scaled_dimensions.x) * 256;
+            // int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
+
+            // if ((x >= 0 && x < 256) && (y >= 0 && y < 192) && event.button.button == SDL_BUTTON_LEFT) {
+            //     // only do a touchscreen event if it occurs in the bottom screen
+            //     bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
+            //     m_system.input.SetTouch(button_pressed);
+            //     m_system.input.SetPoint(x, y);
+            // }
+            // TODO: handle touch properly
+            bool pressed = reinterpret_cast<SDL_MouseMotionEvent*>(&event)->state & SDL_BUTTON_LMASK;
+            // logger.debug("touch pressed: %d", pressed);
         }
     }
 }

@@ -7,6 +7,7 @@ add_library(common
     memory.h
     string.h string.cpp
     callback.h
+    video_device.h input_device.h
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

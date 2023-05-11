@@ -7,6 +7,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imfilebrowser.h"
 #include "common/types.h"
+#include "common/input_device.h"
 #include "core/system.h"
 #include "frontend/imgui_video_device.h"
 
@@ -47,6 +48,8 @@ private:
     bool demo_window = true;
     core::System system;
 
+    // TODO: combine top and bottom screen into single VideoDevice interface
     ImGuiVideoDevice top_screen;
     ImGuiVideoDevice bottom_screen;
+    common::InputDevice input_device;
 };

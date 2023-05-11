@@ -162,7 +162,8 @@ Bank Interpreter::get_bank(Mode mode) {
     case Mode::UND:
         return Bank::UND;
     default:
-        logger.error("Interpreter: mode %02x doesn't have a bank", static_cast<u8>(mode));
+        logger.warn("Interpreter: mode %02x doesn't have a bank", static_cast<u8>(mode));
+        return Bank::USR;
     }
 }
 
