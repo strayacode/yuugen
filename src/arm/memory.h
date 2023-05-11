@@ -121,12 +121,13 @@ public:
     virtual void write_byte(u32 addr, u8 value) = 0;
     virtual void write_half(u32 addr, u16 value) = 0;
     virtual void write_word(u32 addr, u32 value) = 0;
+
+    Coprocessor::TCM dtcm;
+    Coprocessor::TCM itcm;
     
 private:
     PageTable<14> read_table;
     PageTable<14> write_table;
-    Coprocessor::TCM dtcm;
-    Coprocessor::TCM itcm;
 };
 
 } // namespace arm

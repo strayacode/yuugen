@@ -4,8 +4,6 @@
 
 namespace core {
 
-#define MMIO(addr) (addr >> 2)
-
 ARM7Memory::ARM7Memory(System& system) : system(system) {}
 
 void ARM7Memory::reset() {

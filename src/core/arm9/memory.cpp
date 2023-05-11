@@ -4,12 +4,17 @@
 
 namespace core {
 
-#define MMIO(addr) (addr >> 2)
-
 ARM9Memory::ARM9Memory(System& system) : system(system) {}
 
 void ARM9Memory::reset() {
     postflg = 0;
+    dtcm_data.fill(0);
+    itcm_data.fill(0);
+
+    dtcm.data = dtcm_data.data();
+    dtcm.mask = 0x3fff;
+    itcm.data = itcm_data.data();
+    itcm.mask = 0x7fff;
 
     map(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
     update_wram_mapping();

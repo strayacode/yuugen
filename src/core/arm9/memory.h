@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include "common/types.h"
 #include "arm/memory.h"
 
@@ -42,6 +43,8 @@ private:
 
     System& system;
     u8 postflg;
+    std::array<u8, 0x4000> dtcm_data;
+    std::array<u8, 0x8000> itcm_data;
 };
 
 } // namespace core

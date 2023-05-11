@@ -17,11 +17,6 @@ public:
     void write(u32 cn, u32 cm, u32 cp, u32 value) override;
     u32 get_exception_base() override;
 
-    u32 get_dtcm_base();
-    u32 get_dtcm_size();
-    u32 get_itcm_base();
-    u32 get_itcm_size();
-
     union Control {
         struct {
             bool mmu : 1;
@@ -40,9 +35,9 @@ public:
             bool exception_vector : 1;
             bool cache_replacement : 1;
             bool pre_armv5 : 1;
-            bool dtcm : 1;
+            bool dtcm_enable : 1;
             bool dtcm_write_only : 1;
-            bool itcm : 1;
+            bool itcm_enable : 1;
             bool itcm_write_only : 1;
             u32 : 2;
             bool unaligned_access : 1;
