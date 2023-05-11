@@ -66,10 +66,6 @@ void System::set_boot_mode(BootMode boot_mode) {
     config.boot_mode = boot_mode;
 }
 
-void System::set_input_device(common::InputDevice& input_device) {
-    input.set_input_device(input_device);
-}
-
 void System::write_wramcnt(u8 data) {
     wramcnt = data & 0x3;
     arm7.get_memory().update_wram_mapping();

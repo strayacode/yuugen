@@ -1,21 +1,31 @@
 #pragma once
 
 #include "common/types.h"
-#include "common/input_device.h"
 
 namespace core {
+
+enum class InputEvent : int {
+    A,
+    B,
+    Start,
+    Select,
+    Left,
+    Right,
+    Up,
+    Down,
+    L,
+    R,
+};
 
 class Input {
 public:
     void reset();
-    void set_input_device(common::InputDevice& input_device);
-
+    void handle_input(InputEvent event, bool pressed);
+    
     u16 read_keyinput();
     u16 read_extkeyin();
 
 private:
-    void input_callback(common::InputEvent event, bool pressed);
-
     union KEYINPUT {
         struct {
             bool a : 1;
