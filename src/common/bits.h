@@ -27,13 +27,13 @@ template <typename T>
 inline int countl_zeroes(T value) {
     int n = num_bits<T>();
     int count = 0;
-
+    
     while (value != 0) {
         value >>= 1;
         count++;
     }
 
-    return n - value;
+    return n - count;
 }
 
 template <typename T>

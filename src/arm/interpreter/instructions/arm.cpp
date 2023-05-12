@@ -501,7 +501,6 @@ void Interpreter::arm_status_store() {
         value = state.gpr[opcode.rhs.rm];
     }
 
-    // TODO: deal with loading and store in user/system mode
     if (opcode.spsr) {
         state.spsr->data = (state.spsr->data & ~opcode.mask) | (value & opcode.mask);
     } else {

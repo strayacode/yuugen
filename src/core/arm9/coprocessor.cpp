@@ -16,6 +16,8 @@ void ARM9Coprocessor::reset() {
 
 u32 ARM9Coprocessor::read(u32 cn, u32 cm, u32 cp) {
     switch ((cn << 16) | (cm << 8) | cp) {
+    case 0x000001:
+        return 0x0f0d2112;
     default:
         logger.error("ARM9Coprocessor: handle register read c%d, c%d, c%d", cn, cm, cp);
     }
