@@ -1,4 +1,5 @@
 #include "common/logger.h"
+#include "common/string.h"
 #include "frontend/application.h"
 
 bool Application::initialise() {
@@ -28,12 +29,18 @@ bool Application::initialise() {
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 13.0f);
+    large_font = io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 18.0f);
 
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
 
     top_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
     bottom_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
+
+    system.set_update_callback([this](f32 fps) {
+        this->fps = fps;
+    });
+
     return true;
 }
 
@@ -190,6 +197,22 @@ void Application::render_menubar() {
     }
 }
 
+void Application::render_performance_overlay() {
+    if (system.get_state() == core::System::State::Running && static_cast<int>(fps) != 0) {
+        ImGui::PushFont(large_font);
+        auto fps_string = common::format("%.0f FPS | %.2f ms", fps, 1000.0f / fps);
+        auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
+        ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string.c_str());
+        ImGui::PopFont();
+    } else if (system.get_state() == core::System::State::Paused) {
+        ImGui::PushFont(large_font);
+        auto fps_string = "Paused";
+        auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
+        ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string);
+        ImGui::PopFont();
+    }
+}
+
 void Application::setup_style() {
     ImGui::GetStyle().WindowBorderSize = 1.0f;
     ImGui::GetStyle().PopupBorderSize = 0.0f;
@@ -233,6 +256,7 @@ void Application::render() {
     
     render_menubar();
     render_screens();
+    render_performance_overlay();
     
     if (demo_window) {
         ImGui::ShowDemoWindow();

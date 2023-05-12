@@ -28,6 +28,18 @@ public:
     void set_boot_mode(BootMode boot_mode);
     void write_wramcnt(u8 data);
 
+    using UpdateCallback = common::Callback<void(f32)>;
+
+    void set_update_callback(UpdateCallback update_callback) { this->update_callback = update_callback; }
+
+    enum class State {
+        Running,
+        Paused,
+        Idle,
+    };
+
+    State get_state() { return state; }
+
     ARM7 arm7;
     ARM9 arm9;
     Cartridge cartridge;
@@ -56,11 +68,13 @@ private:
     };
 
     ThreadState thread_state = ThreadState::Idle;
+    State state = State::Idle;
 
     using Frame = std::chrono::duration<int, std::ratio<1, 60>>;
 
     int frames;
     bool framelimiter = false;
+    UpdateCallback update_callback;
 
     static constexpr int FPS_UPDATE_INTERVAL = 1000;
 };

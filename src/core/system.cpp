@@ -44,6 +44,7 @@ void System::start() {
     }
 
     thread_state = ThreadState::Running;
+    state = State::Running;
     thread = std::thread{[this]() {
         run_thread();
     }};
@@ -80,8 +81,7 @@ void System::run_thread() {
         frames++;
 
         if (std::chrono::system_clock::now() - fps_update >= std::chrono::milliseconds(FPS_UPDATE_INTERVAL)) {
-            // update_fps(frames * (1000.0f / update_interval));
-            logger.warn("fps: %f", frames * (1000.0f / FPS_UPDATE_INTERVAL));
+            update_callback(frames * (1000.0f / FPS_UPDATE_INTERVAL));
             frames = 0;
             fps_update = std::chrono::system_clock::now();
         }

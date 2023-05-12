@@ -37,17 +37,21 @@ private:
     void begin_fullscreen_window(const char *name, float padding = 0.0f);
     void end_fullscreen_window();
     
-    void render_display_window();
     void render_screens();
     void render_menubar();
+    void render_performance_overlay();
     
     void boot_game(const std::string& path);
     void boot_firmware();
 
-    bool demo_window = true;
+    bool demo_window = false;
     core::System system;
 
     // TODO: combine top and bottom screen into single VideoDevice interface
     ImGuiVideoDevice top_screen;
     ImGuiVideoDevice bottom_screen;
+
+    f32 fps;
+
+    ImFont* large_font;
 };
