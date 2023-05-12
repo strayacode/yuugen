@@ -180,21 +180,20 @@ void Interpreter::thumb_branch_exchange() {
 }
 
 void Interpreter::thumb_branch_link_exchange() {
-    logger.todo("handle thumb_branch_link_exchange");
     if (arch == Arch::ARMv4) {
         return;
     }
 
-    u8 rm = (instruction >> 3) & 0xF;
-    u32 next_instruction_address = state.gpr[15] - 2;
-    state.gpr[14] = next_instruction_address | 1;
+    auto opcode = ThumbBranchLinkExchange::decode(instruction);
+    u32 next_instruction_addr = state.gpr[15] - 2;
+    state.gpr[14] = next_instruction_addr | 0x1;
     
-    if (state.gpr[rm] & 0x1) {
-        state.gpr[15] = state.gpr[rm] & ~1;
+    if (state.gpr[opcode.rm] & 0x1) {
+        state.gpr[15] = state.gpr[opcode.rm] & ~0x1;
         thumb_flush_pipeline();
     } else {
         state.cpsr.t = false;
-        state.gpr[15] = state.gpr[rm] & ~3;
+        state.gpr[15] = state.gpr[opcode.rm] & ~0x3;
         arm_flush_pipeline();
     }
 }
@@ -214,21 +213,15 @@ void Interpreter::thumb_branch_link_offset() {
 }
 
 void Interpreter::thumb_branch_link_exchange_offset() {
-    logger.todo("handle thumb_branch_link_exchange_offset");
-    // arm9 specific instruction
     if (arch == Arch::ARMv4) {
         return;
     }
 
-    u32 offset = (instruction & 0x7FF) << 1;
-    u32 next_instruction_address = state.gpr[15] - 2;
-    state.gpr[15] = (state.gpr[14] + offset) & ~0x3;
-    state.gpr[14] = next_instruction_address | 1;
-
-    // set t flag to 0
+    auto opcode = ThumbBranchLinkExchangeOffset::decode(instruction);
+    u32 next_instruction_addr = state.gpr[15] - 2;
+    state.gpr[15] = (state.gpr[14] + opcode.offset) & ~0x3;
+    state.gpr[14] = next_instruction_addr | 0x1;
     state.cpsr.t = false;
-
-    // flush the pipeline
     arm_flush_pipeline();
 }
 
@@ -409,40 +402,45 @@ void Interpreter::thumb_load_store_halfword() {
 }
 
 void Interpreter::thumb_load_store_multiple() {
-    logger.todo("handle thumb_load_store_multiple");
-    u8 rn = (instruction >> 8) & 0x7;
-    u32 address = state.gpr[rn];
+    auto opcode = ThumbLoadStoreMultiple::decode(instruction);
+    u32 addr = state.gpr[opcode.rn];
 
-    bool load = instruction & (1 << 11);
-    
-    // TODO: handle edgecases
-    if (load) {
-        for (int i = 0; i < 8; i++) {
-            if (instruction & (1 << i)) {
-                state.gpr[i] = read_word(address);
-                address += 4;
+    if (opcode.rlist == 0) {
+        state.gpr[15] += 2;
+
+        if (arch == Arch::ARMv4) {
+            if (opcode.load) {
+                state.gpr[15] = read_word(addr);
+            } else {
+                write_word(addr, state.gpr[15]);
             }
         }
 
-        // if rn is in rlist:
-        // if arm9 writeback if rn is the only register or not the last register in rlist
-        // if arm7 then no writeback if rn in rlist
-        if (arch == Arch::ARMv5) {
-            if (((instruction & 0xFF) == static_cast<u32>(1 << rn)) || !(((instruction & 0xFF) >> rn) == 1)) {
-                state.gpr[rn] = address;
+        state.gpr[opcode.rn] = addr + 0x40;
+        return;
+    }
+
+    if (opcode.load) {
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                state.gpr[i] = read_word(addr);
+                addr += 4;
             }
-        } else if (!(instruction & static_cast<u32>(1 << rn))) {
-            state.gpr[rn] = address;
+        }
+
+        // TODO: sort out edgecases with writeback
+        if (~opcode.rlist & (1 << opcode.rn)) {
+            state.gpr[opcode.rn] = addr;
         }
     } else {
         for (int i = 0; i < 8; i++) {
-            if (instruction & (1 << i)) {
-                write_word(address, state.gpr[i]);
-                address += 4;
+            if (opcode.rlist & (1 << i)) {
+                write_word(addr, state.gpr[i]);
+                addr += 4;
             }
         }
 
-        state.gpr[rn] = address;
+        state.gpr[opcode.rn] = addr;
     }
 
     state.gpr[15] += 2;

@@ -780,9 +780,15 @@ struct ThumbLoadStoreHalfword {
 struct ThumbLoadStoreMultiple {
     static ThumbLoadStoreMultiple decode(u16 instruction) {
         ThumbLoadStoreMultiple opcode;
+        opcode.rlist = common::get_field<0, 8>(instruction);
+        opcode.rn = static_cast<Reg>(common::get_field<8, 3>(instruction));
+        opcode.load = common::get_bit<11>(instruction);
         return opcode;
     }
 
+    u8 rlist;
+    Reg rn;
+    bool load;
 };
 
 } // namespace arm
