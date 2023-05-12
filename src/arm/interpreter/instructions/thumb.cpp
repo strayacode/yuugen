@@ -31,18 +31,18 @@ void Interpreter::thumb_shift_immediate() {
 void Interpreter::thumb_alu_immediate() {
     auto opcode = ThumbALUImmediate::decode(instruction);
     switch (opcode.opcode) {
-    case ThumbALUImmediate::MOV:
+    case ThumbALUImmediate::Opcode::MOV:
         state.gpr[opcode.rd] = opcode.imm;
         state.cpsr.n = false;
         state.cpsr.z = opcode.imm == 0;
         break;
-    case 0x1:
+    case ThumbALUImmediate::Opcode::CMP:
         alu_cmp(state.gpr[opcode.rd], opcode.imm);
         break;
-    case 0x2:
+    case ThumbALUImmediate::Opcode::ADD:
         state.gpr[opcode.rd] = alu_add(state.gpr[opcode.rd], opcode.imm, true);
         break;
-    case 0x3:
+    case ThumbALUImmediate::Opcode::SUB:
         state.gpr[opcode.rd] = alu_sub(state.gpr[opcode.rd], opcode.imm, true);
         break;
     }
@@ -180,6 +180,7 @@ void Interpreter::thumb_branch_exchange() {
 }
 
 void Interpreter::thumb_branch_link_exchange() {
+    logger.todo("handle thumb_branch_link_exchange");
     if (arch == Arch::ARMv4) {
         return;
     }
@@ -213,6 +214,7 @@ void Interpreter::thumb_branch_link_offset() {
 }
 
 void Interpreter::thumb_branch_link_exchange_offset() {
+    logger.todo("handle thumb_branch_link_exchange_offset");
     // arm9 specific instruction
     if (arch == Arch::ARMv4) {
         return;
@@ -383,17 +385,12 @@ void Interpreter::thumb_push_pop() {
 }
 
 void Interpreter::thumb_load_store_sp_relative() {
-    u32 immediate = instruction & 0xFF;
-    u8 rd = (instruction >> 8) & 0x7;
-
-    bool load = instruction & (1 << 11);
-
-    u32 address = state.gpr[13] + (immediate << 2);
-
-    if (load) {
-        state.gpr[rd] = read_word_rotate(address);
+    auto opcode = ThumbLoadStoreSPRelative::decode(instruction);
+    u32 addr = state.gpr[13] + (opcode.imm << 2);
+    if (opcode.load) {
+        state.gpr[opcode.rd] = read_word_rotate(addr);
     } else {
-        write_word(address, state.gpr[rd]);
+        write_word(addr, state.gpr[opcode.rd]);
     }
     
     state.gpr[15] += 2;
@@ -412,6 +409,7 @@ void Interpreter::thumb_load_store_halfword() {
 }
 
 void Interpreter::thumb_load_store_multiple() {
+    logger.todo("handle thumb_load_store_multiple");
     u8 rn = (instruction >> 8) & 0x7;
     u32 address = state.gpr[rn];
 

@@ -633,7 +633,7 @@ struct ThumbBranchLinkExchangeOffset {
 struct ThumbBranch {
     static ThumbBranch decode(u16 instruction) {
         ThumbBranch opcode;
-        opcode.offset = common::sign_extend<s32, 10>(instruction) | (common::get_field<0, 11>(instruction) << 1);
+        opcode.offset = common::sign_extend<s32, 11>(common::get_field<0, 11>(instruction)) << 1;
         return opcode;
     }
 
@@ -750,9 +750,15 @@ struct ThumbPushPop {
 struct ThumbLoadStoreSPRelative {
     static ThumbLoadStoreSPRelative decode(u16 instruction) {
         ThumbLoadStoreSPRelative opcode;
+        opcode.imm = common::get_field<0, 8>(instruction);
+        opcode.rd = static_cast<Reg>(common::get_field<8, 3>(instruction));
+        opcode.load = common::get_bit<11>(instruction);
         return opcode;
     }
 
+    u32 imm;
+    Reg rd;
+    bool load;
 };
 
 struct ThumbLoadStoreHalfword {
