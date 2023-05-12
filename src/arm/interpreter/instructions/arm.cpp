@@ -505,7 +505,7 @@ void Interpreter::arm_status_store() {
     if (opcode.spsr) {
         state.spsr->data = (state.spsr->data & ~opcode.mask) | (value & opcode.mask);
     } else {
-        if (common::get_bit<16>(instruction)) {
+        if (opcode.mask & 0xff) {
             set_mode(static_cast<Mode>(value & 0x1f));
         }
 

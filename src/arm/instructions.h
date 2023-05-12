@@ -2,6 +2,7 @@
 
 #include "common/bits.h"
 #include "common/types.h"
+#include "common/logger.h"
 #include "arm/cpu.h"
 
 namespace arm {
@@ -324,7 +325,8 @@ struct ARMStatusStore {
         ARMStatusStore opcode;
         opcode.spsr = common::get_bit<22>(instruction);
         opcode.imm = common::get_bit<25>(instruction);
-
+        
+        opcode.mask = 0;
         if (common::get_bit<16>(instruction)) {
             opcode.mask |= 0x000000ff;
         }

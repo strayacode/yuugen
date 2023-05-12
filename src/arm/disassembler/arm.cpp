@@ -93,11 +93,35 @@ std::string Disassembler::arm_halfword_data_transfer(u32 instruction) {
 }
 
 std::string Disassembler::arm_status_load(u32 instruction) {
-    return "handle arm_status_load";
+    auto opcode = ARMStatusLoad::decode(instruction);
+    auto psr_string = opcode.spsr ? "spsr" : "cpsr";
+    return common::format("mrs %s, %s", register_names[opcode.rd], psr_string);
 }
 
 std::string Disassembler::arm_status_store(u32 instruction) {
-    return "handle arm_status_store";
+    auto opcode = ARMStatusStore::decode(instruction);
+    std::string mask = "";
+    if (opcode.mask & 0xff000000) {
+        mask += "f";
+    }
+
+    if (opcode.mask & 0xff0000) {
+        mask += "s";
+    }
+
+    if (opcode.mask & 0xff00) {
+        mask += "x";
+    }
+
+    if (opcode.mask & 0xff) {
+        mask += "c";
+    }
+    
+    if (opcode.imm) {
+        return common::format("msr %s, #0x%08x", mask.c_str(), opcode.rhs.rotated);
+    } else {
+        return common::format("msr %s, %s", mask.c_str(), register_names[opcode.rhs.rm]);
+    }
 }
 
 std::string Disassembler::arm_block_data_transfer(u32 instruction) {
