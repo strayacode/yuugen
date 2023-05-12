@@ -52,7 +52,6 @@ void Interpreter::run(int cycles) {
 
 void Interpreter::jump_to(u32 addr) {
     state.gpr[15] = addr;
-
     if (state.cpsr.t) {
         thumb_flush_pipeline();
     } else {

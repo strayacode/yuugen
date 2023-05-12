@@ -7,7 +7,7 @@ PPU::PPU(VideoUnit& video_unit, Engine engine) : video_unit(video_unit), engine(
 
 void PPU::reset() {
     dispcnt.data = 0;
-    framebuffer.fill(0xff00ff00);
+    framebuffer.fill(0);
 }
 
 void PPU::render_scanline(int line) {
