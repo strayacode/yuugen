@@ -483,7 +483,7 @@ void Interpreter::arm_halfword_data_transfer() {
 void Interpreter::arm_status_load() {
     auto opcode = ARMStatusLoad::decode(instruction);
     if (opcode.spsr) {
-        state.gpr[opcode.rd] = state.spsr_banked[get_bank(state.cpsr.mode)].data;
+        state.gpr[opcode.rd] = state.spsr->data;
     } else {
         state.gpr[opcode.rd] = state.cpsr.data;
     }
@@ -503,8 +503,7 @@ void Interpreter::arm_status_store() {
 
     // TODO: deal with loading and store in user/system mode
     if (opcode.spsr) {
-        u32 result = (state.spsr_banked[get_bank(state.cpsr.mode)].data & ~opcode.mask) | (value & opcode.mask);
-        state.spsr_banked[get_bank(state.cpsr.mode)].data = result;
+        state.spsr->data = (state.spsr->data & ~opcode.mask) | (value & opcode.mask);
     } else {
         if (common::get_bit<16>(instruction)) {
             set_mode(static_cast<Mode>(value & 0x1f));

@@ -35,9 +35,8 @@ union StatusRegister {
 struct State {
     std::array<u32, 16> gpr;
     std::array<std::array<u32, 7>, 6> gpr_banked;
-
-    // TODO: change this to be a pointer or similar
     StatusRegister cpsr;
+    StatusRegister* spsr;
     std::array<StatusRegister, 6> spsr_banked;
 };
 
