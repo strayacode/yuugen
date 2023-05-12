@@ -593,9 +593,11 @@ struct ThumbBranchExchange {
 struct ThumbBranchLinkExchange {
     static ThumbBranchLinkExchange decode(u16 instruction) {
         ThumbBranchLinkExchange opcode;
+        opcode.rm = static_cast<Reg>(common::get_field<3, 4>(instruction));
         return opcode;
     }
 
+    Reg rm;
 };
 
 struct ThumbBranchLinkSetup {
@@ -621,9 +623,11 @@ struct ThumbBranchLinkOffset {
 struct ThumbBranchLinkExchangeOffset {
     static ThumbBranchLinkExchangeOffset decode(u16 instruction) {
         ThumbBranchLinkExchangeOffset opcode;
+        opcode.offset = common::get_field<0, 11>(instruction) << 1;
         return opcode;
     }
 
+    u32 offset;
 };
 
 struct ThumbBranch {
