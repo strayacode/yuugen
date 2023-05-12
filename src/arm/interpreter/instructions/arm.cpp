@@ -205,7 +205,7 @@ void Interpreter::arm_saturating_add_subtract() {
     }
 
     if (opcode.double_rhs) {
-        u32 result = rhs * 2;
+        u32 result = rhs + rhs;
         if ((rhs ^ result) >> 31) {
             state.cpsr.q = true;
             result = 0x80000000 - (result >> 31);
@@ -216,7 +216,7 @@ void Interpreter::arm_saturating_add_subtract() {
 
     if (opcode.sub) {
         u32 result = lhs - rhs;
-        if (calculate_add_overflow(lhs, rhs, result)) {
+        if (calculate_sub_overflow(lhs, rhs, result)) {
             state.cpsr.q = true;
             result = 0x80000000 - (result >> 31);
         }
@@ -224,7 +224,7 @@ void Interpreter::arm_saturating_add_subtract() {
         state.gpr[opcode.rd] = result;
     } else {
         u32 result = lhs + rhs;
-        if (calculate_sub_overflow(lhs, rhs, result)) {
+        if (calculate_add_overflow(lhs, rhs, result)) {
             state.cpsr.q = true;
             result = 0x80000000 - (result >> 31);
         }
