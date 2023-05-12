@@ -51,6 +51,7 @@ void Interpreter::thumb_alu_immediate() {
 }
 
 void Interpreter::thumb_data_processing_register() {
+    logger.todo("handle thumb_data_processing_register");
     // u8 rd = instruction & 0x7;
     // u8 rs = (instruction >> 3) & 0x7;
     // u8 opcode = (instruction >> 6) & 0xF;
@@ -126,37 +127,31 @@ void Interpreter::thumb_data_processing_register() {
 }
 
 void Interpreter::thumb_special_data_processing() {
-    // u8 rd = ((instruction & (1 << 7)) >> 4) | (instruction & 0x7);
-    // u8 rs = (instruction >> 3) & 0xF;
+    auto opcode = ThumbSpecialDataProcessing::decode(instruction);
+    switch (opcode.opcode) {
+    case ThumbSpecialDataProcessing::Opcode::ADD:
+        state.gpr[opcode.rd] += state.gpr[opcode.rs];
+        if (opcode.rd == 15) {
+            thumb_flush_pipeline();
+        } else {
+            state.gpr[15] += 2;    
+        }
 
-    // u8 opcode = (instruction >> 8) & 0x3;
+        break;
+    case ThumbSpecialDataProcessing::Opcode::CMP:
+        alu_cmp(state.gpr[opcode.rd], state.gpr[opcode.rs]);
+        state.gpr[15] += 2;
+        break;
+    case ThumbSpecialDataProcessing::Opcode::MOV:
+        state.gpr[opcode.rd] = state.gpr[opcode.rs];
+        if (opcode.rd == 15) {
+            thumb_flush_pipeline();
+        } else {
+            state.gpr[15] += 2;
+        }
 
-    // switch (opcode) {
-    // case 0x0:
-    //     state.gpr[rd] += state.gpr[rs];
-    //     if (rd == 15) {
-    //         thumb_flush_pipeline();
-    //     } else {
-    //         state.gpr[15] += 2;    
-    //     }
-
-    //     break;
-    // case 0x1:
-    //     alu_cmp(state.gpr[rd], state.gpr[rs]);
-    //     state.gpr[15] += 2;
-    //     break;
-    // case 0x2:
-    //     state.gpr[rd] = state.gpr[rs];
-    //     if (rd == 15) {
-    //         thumb_flush_pipeline();
-    //     } else {
-    //         state.gpr[15] += 2;
-    //     }
-
-    //     break;
-    // default:
-    //     logger.error("handle opcode %d", opcode);
-    // }
+        break;
+    }
 }
 
 void Interpreter::thumb_adjust_stack_pointer() {
@@ -194,6 +189,7 @@ void Interpreter::thumb_branch_exchange() {
 }
 
 void Interpreter::thumb_branch_link_exchange() {
+    logger.todo("handle thumb_branch_link_exchange");
     // if (arch == Arch::ARMv4) {
     //     return;
     // }
@@ -213,22 +209,21 @@ void Interpreter::thumb_branch_link_exchange() {
 }
 
 void Interpreter::thumb_branch_link_setup() {
-    // u32 immediate = ((instruction & (1 << 10)) ? 0xFFFFF000 : 0) | ((instruction & 0x7FF) << 1);
-
-    // state.gpr[14] = state.gpr[15] + (immediate << 11);
-    // state.gpr[15] += 2;
+    auto opcode = ThumbBranchLinkSetup::decode(instruction);
+    state.gpr[14] = state.gpr[15] + opcode.imm;
+    state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_branch_link_offset() {
-    // u32 offset = (instruction & 0x7FF) << 1;
-    // u32 next_instruction_address = state.gpr[15] - 1;
-
-    // state.gpr[15] = (state.gpr[14] + offset) & ~1;
-    // state.gpr[14] = next_instruction_address;
-    // thumb_flush_pipeline();
+    auto opcode = ThumbBranchLinkOffset::decode(instruction); 
+    u32 next_instruction_addr = state.gpr[15] - 2;
+    state.gpr[15] = (state.gpr[14] + opcode.offset) & ~0x1;
+    state.gpr[14] = next_instruction_addr | 0x1;
+    thumb_flush_pipeline();
 }
 
 void Interpreter::thumb_branch_link_exchange_offset() {
+    logger.todo("handle thumb_branch_link_exchange_offset");
     // // arm9 specific instruction
     // if (arch == Arch::ARMv4) {
     //     return;
@@ -253,15 +248,13 @@ void Interpreter::thumb_branch() {
 }
 
 void Interpreter::thumb_branch_conditional() {
-    // u8 condition = (instruction >> 8) & 0xF;
-
-    // if (evaluate_condition(condition)) {
-    //     u32 offset = ((instruction & (1 << 7)) ? 0xFFFFFE00 : 0) | ((instruction & 0xFF) << 1);
-    //     state.gpr[15] += offset;
-    //     thumb_flush_pipeline();
-    // } else {
-    //     state.gpr[15] += 2;
-    // }
+    auto opcode = ThumbBranchConditional::decode(instruction);
+    if (evaluate_condition(opcode.condition)) {
+        state.gpr[15] += opcode.offset;
+        thumb_flush_pipeline();
+    } else {
+        state.gpr[15] += 2;
+    }
 }
 
 void Interpreter::thumb_software_interrupt() {
@@ -283,6 +276,7 @@ void Interpreter::thumb_load_pc() {
 }
 
 void Interpreter::thumb_load_store() {
+    logger.todo("handle thumb_load_store");
     // u8 rd = m_instruction & 0x7;
     // u8 rn = (m_instruction >> 3) & 0x7;
     // u8 rm = (m_instruction >> 6) & 0x7;
@@ -334,6 +328,7 @@ void Interpreter::thumb_load_store() {
 }
 
 void Interpreter::thumb_load_store_immediate() {
+    logger.todo("handle thumb_load_store_immediate");
     // u8 rd = m_instruction & 0x7;
     // u8 rn = (m_instruction >> 3) & 0x7;
     // u32 immediate = (m_instruction >> 6) & 0x1F;
@@ -359,67 +354,63 @@ void Interpreter::thumb_load_store_immediate() {
 }
 
 void Interpreter::thumb_push_pop() {
-    // bool pclr = (m_instruction >> 8) & 0x1;
-    // bool pop = (m_instruction >> 11) & 0x1;
+    auto opcode = ThumbPushPop::decode(instruction);
+    u32 addr = state.gpr[13];
 
-    // u32 address = m_gpr[13];
+    if (opcode.pop) {
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                state.gpr[i] = read_word(addr);
+                addr += 4;
+            }
+        }
 
-    // if (pop) {
-    //     for (int i = 0; i < 8; i++) {
-    //         if (m_instruction & (1 << i)) {
-    //             m_gpr[i] = read_word(address);
-    //             address += 4;
-    //         }
-    //     }
+        if (opcode.pclr) {
+            state.gpr[15] = read_word(addr);
+            state.gpr[13] = addr + 4;
+            
+            if ((arch == Arch::ARMv4) || (state.gpr[15] & 0x1)) {
+                state.gpr[15] &= ~0x1;
+                thumb_flush_pipeline();
+            } else {
+                state.cpsr.t = false;
+                state.gpr[15] &= ~0x3;
+                arm_flush_pipeline();
+            }
+        } else {
+            state.gpr[15] += 2;
+            state.gpr[13] = addr;
+        }
+    } else {
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                addr -= 4;
+            }
+        }
 
-    //     if (pclr) {
-    //         m_gpr[15] = read_word(address);
-    //         address += 4;
+        if (opcode.pclr) {
+            addr -= 4;
+        }
 
-    //         if ((m_arch == Arch::ARMv4) || (m_gpr[15] & 0x1)) {
-    //             // halfword align r15 and flush pipeline
-    //             m_gpr[15] &= ~1;
-    //             thumb_flush_pipeline();
-    //         } else {
-    //             // clear bit 5 of cpsr to switch to arm state
-    //             m_cpsr.t = false;
-    //             m_gpr[15] &= ~3;
-    //             arm_flush_pipeline();
-    //         }
-    //     } else {
-    //         m_gpr[15] += 2;
-    //     }
+        state.gpr[13] = addr;
 
-    //     m_gpr[13] = address;
-    // } else {
-    //     for (int i = 0; i < 8; i++) {
-    //         if (m_instruction & (1 << i)) {
-    //             address -= 4;
-    //         }
-    //     }
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                write_word(addr, state.gpr[i]);
+                addr += 4;
+            }
+        }
 
-    //     if (pclr) {
-    //         address -= 4;
-    //     }
+        if (opcode.pclr) {
+            write_word(addr, state.gpr[14]);
+        }
 
-    //     m_gpr[13] = address;
-
-    //     for (int i = 0; i < 8; i++) {
-    //         if (m_instruction & (1 << i)) {
-    //             write_word(address, m_gpr[i]);
-    //             address += 4;
-    //         }
-    //     }
-
-    //     if (pclr) {
-    //         write_word(address, m_gpr[14]);
-    //     }
-
-    //     m_gpr[15] += 2;
-    // }
+        state.gpr[15] += 2;
+    }
 }
 
 void Interpreter::thumb_load_store_sp_relative() {
+    logger.todo("handle thumb_load_store_sp_relative");
     // u32 immediate = m_instruction & 0xFF;
     // u8 rd = (m_instruction >> 8) & 0x7;
 
@@ -449,6 +440,7 @@ void Interpreter::thumb_load_store_halfword() {
 }
 
 void Interpreter::thumb_load_store_multiple() {
+    logger.todo("handle thumb_load_store_multiple");
     // u8 rn = (m_instruction >> 8) & 0x7;
     // u32 address = m_gpr[rn];
 

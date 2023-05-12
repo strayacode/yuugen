@@ -325,7 +325,7 @@ struct ARMStatusStore {
         ARMStatusStore opcode;
         opcode.spsr = common::get_bit<22>(instruction);
         opcode.imm = common::get_bit<25>(instruction);
-        
+
         opcode.mask = 0;
         if (common::get_bit<16>(instruction)) {
             opcode.mask |= 0x000000ff;
@@ -509,12 +509,24 @@ struct ThumbDataProcessing {
 
 };
 
-struct ThumbDataProcessingSpecial {
-    static ThumbDataProcessingSpecial decode(u16 instruction) {
-        ThumbDataProcessingSpecial opcode;
+struct ThumbSpecialDataProcessing {
+    enum class Opcode {
+        ADD = 0,
+        CMP = 1,
+        MOV = 2,
+    };
+
+    static ThumbSpecialDataProcessing decode(u16 instruction) {
+        ThumbSpecialDataProcessing opcode;
+        opcode.rd = static_cast<Reg>((common::get_bit<7>(instruction) << 3) | (common::get_field<0, 3>(instruction)));
+        opcode.rs = static_cast<Reg>(common::get_field<3, 4>(instruction));
+        opcode.opcode = static_cast<Opcode>(common::get_field<8, 2>(instruction));
         return opcode;
     }
 
+    Reg rd;
+    Reg rs;
+    Opcode opcode;
 };
 
 struct ThumbAdjustStackPointer {
@@ -564,17 +576,21 @@ struct ThumbBranchLinkExchange {
 struct ThumbBranchLinkSetup {
     static ThumbBranchLinkSetup decode(u16 instruction) {
         ThumbBranchLinkSetup opcode;
+        opcode.imm = static_cast<u32>(common::sign_extend<s32, 11>(common::get_field<0, 11>(instruction))) << 12;
         return opcode;
     }
 
+    u32 imm;
 };
 
 struct ThumbBranchLinkOffset {
     static ThumbBranchLinkOffset decode(u16 instruction) {
         ThumbBranchLinkOffset opcode;
+        opcode.offset = common::get_field<0, 11>(instruction) << 1;
         return opcode;
     }
 
+    u32 offset;
 };
 
 struct ThumbBranchLinkExchangeOffset {
@@ -598,8 +614,13 @@ struct ThumbBranch {
 struct ThumbBranchConditional {
     static ThumbBranchConditional decode(u16 instruction) {
         ThumbBranchConditional opcode;
+        opcode.condition = static_cast<Condition>(common::get_field<8, 4>(instruction));
+        opcode.offset = static_cast<u32>(common::sign_extend<s32, 8>(common::get_field<0, 8>(instruction))) << 1;
         return opcode;
     }
+
+    Condition condition;
+    u32 offset;
 };
 
 struct ThumbLoadPC {
@@ -633,9 +654,15 @@ struct ThumbLoadStoreImmediate {
 struct ThumbPushPop {
     static ThumbPushPop decode(u16 instruction) {
         ThumbPushPop opcode;
+        opcode.rlist = common::get_field<0, 8>(instruction);
+        opcode.pclr = common::get_bit<8>(instruction);
+        opcode.pop = common::get_bit<11>(instruction);
         return opcode;
     }
 
+    u8 rlist;
+    bool pclr;
+    bool pop;
 };
 
 struct ThumbLoadStoreSPRelative {

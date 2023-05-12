@@ -47,6 +47,7 @@ public:
         set_text_colour(TextColour::Red);
         Time time = get_current_time();
         std::printf("[%02d:%02d:%02d] TODO: %s\n", time.hour, time.minute, time.second, common::format(pattern, std::forward<Args>(args)...).c_str());
+        std::exit(0);
     }
 
 private:
