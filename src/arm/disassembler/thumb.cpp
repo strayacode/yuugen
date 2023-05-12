@@ -42,8 +42,12 @@ std::string Disassembler::thumb_branch_exchange(u32 instruction) {
     return "handle thumb_branch_exchange";
 }
 
-std::string Disassembler::thumb_load_store(u32 instruction) {
-    return "handle thumb_load_store";
+std::string Disassembler::thumb_load_store_register_offset(u32 instruction) {
+    return "handle thumb_load_store_register_offset";
+}
+
+std::string Disassembler::thumb_load_store_signed(u32 instruction) {
+    return "handle thumb_load_store_signed";
 }
 
 std::string Disassembler::thumb_load_pc(u32 instruction) {

@@ -51,79 +51,70 @@ void Interpreter::thumb_alu_immediate() {
 }
 
 void Interpreter::thumb_data_processing_register() {
-    logger.todo("handle thumb_data_processing_register");
-    // u8 rd = instruction & 0x7;
-    // u8 rs = (instruction >> 3) & 0x7;
-    // u8 opcode = (instruction >> 6) & 0xF;
-    // bool carry = state.cpsr.c;
+    auto opcode = ThumbDataProcessingRegister::decode(instruction);
+    bool carry = state.cpsr.c;
 
-    // switch (opcode) {
-    // case 0x0:
-    //     state.gpr[rd] = alu_and(state.gpr[rd], state.gpr[rs], true);
-    //     break;
-    // case 0x1:
-    //     state.gpr[rd] = alu_eor(state.gpr[rd], state.gpr[rs], true);
-    //     break;
-    // case 0x2:
-    //     state.gpr[rd] = alu_lsl(state.gpr[rd], state.gpr[rs] & 0xFF, carry);
-    //     state.cpsr.c = carry;
-    //     state.cpsr.n = state.gpr[rd] >> 31;
-    //     state.cpsr.z = state.gpr[rd] == 0;
-    //     break;
-    // case 0x3:
-    //     state.gpr[rd] = alu_lsr(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
-    //     state.cpsr.c = carry;
-    //     state.cpsr.n = state.gpr[rd] >> 31;
-    //     state.cpsr.z = state.gpr[rd] == 0;
-    //     break;
-    // case 0x4:
-    //     state.gpr[rd] = alu_asr(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
-    //     state.cpsr.c = carry;
-    //     state.cpsr.n = state.gpr[rd] >> 31;
-    //     state.cpsr.z = state.gpr[rd] == 0;
-    //     break;
-    // case 0x5:
-    //     state.gpr[rd] = alu_adc(state.gpr[rd], state.gpr[rs], true);
-    //     break;
-    // case 0x6:
-    //     state.gpr[rd] = alu_sbc(state.gpr[rd], state.gpr[rs], true);
-    //     break;
-    // case 0x7:
-    //     state.gpr[rd] = alu_ror(state.gpr[rd], state.gpr[rs] & 0xFF, carry, false);
-    //     state.cpsr.c = carry;
-    //     state.cpsr.n = state.gpr[rd] >> 31;
-    //     state.cpsr.z = state.gpr[rd] == 0;
-    //     break;
-    // case 0x8:
-    //     alu_tst(state.gpr[rd], state.gpr[rs]);
-    //     break;
-    // case 0x9:
-    //     state.gpr[rd] = alu_sub(0, state.gpr[rs], true);
-    //     break;
-    // case 0xA:
-    //     alu_cmp(state.gpr[rd], state.gpr[rs]);
-    //     break;
-    // case 0xB:
-    //     alu_cmn(state.gpr[rd], state.gpr[rs]);
-    //     break;
-    // case 0xC:
-    //     state.gpr[rd] = alu_orr(state.gpr[rd], state.gpr[rs], true);
-    //     break;
-    // case 0xD:
-    //     state.gpr[rd] *= state.gpr[rs];
+    switch (opcode.opcode) {
+    case ThumbDataProcessingRegister::Opcode::AND:
+        state.gpr[opcode.rd] = alu_and(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+        break;
+    case ThumbDataProcessingRegister::Opcode::EOR:
+        state.gpr[opcode.rd] = alu_eor(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+        break;
+    case ThumbDataProcessingRegister::Opcode::LSL:
+        state.gpr[opcode.rd] = alu_lsl(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry);
+        state.cpsr.c = carry;
+        set_nz(state.gpr[opcode.rd]);
+        break;
+    case ThumbDataProcessingRegister::Opcode::LSR:
+        state.gpr[opcode.rd] = alu_lsr(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
+        state.cpsr.c = carry;
+        set_nz(state.gpr[opcode.rd]);
+        break;
+    case ThumbDataProcessingRegister::Opcode::ASR:
+        state.gpr[opcode.rd] = alu_asr(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
+        state.cpsr.c = carry;
+        set_nz(state.gpr[opcode.rd]);
+        break;
+    case ThumbDataProcessingRegister::Opcode::ADC:
+        state.gpr[opcode.rd] = alu_adc(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+        break;
+    case ThumbDataProcessingRegister::Opcode::SBC:
+        state.gpr[opcode.rd] = alu_sbc(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+        break;
+    case ThumbDataProcessingRegister::Opcode::ROR:
+        state.gpr[opcode.rd] = alu_ror(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
+        state.cpsr.c = carry;
+        set_nz(state.gpr[opcode.rd]);
+        break;
+    case ThumbDataProcessingRegister::Opcode::TST:
+        alu_tst(state.gpr[opcode.rd], state.gpr[opcode.rs]);
+        break;
+    case ThumbDataProcessingRegister::Opcode::NEG:
+        state.gpr[opcode.rd] = alu_sub(0, state.gpr[opcode.rs], true);
+        break;
+    case ThumbDataProcessingRegister::Opcode::CMP:
+        alu_cmp(state.gpr[opcode.rd], state.gpr[opcode.rs]);
+        break;
+    case ThumbDataProcessingRegister::Opcode::CMN:
+        alu_cmn(state.gpr[opcode.rd], state.gpr[opcode.rs]);
+        break;
+    case ThumbDataProcessingRegister::Opcode::ORR:
+        state.gpr[opcode.rd] = alu_orr(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+        break;
+    case ThumbDataProcessingRegister::Opcode::MUL:
+        state.gpr[opcode.rd] *= state.gpr[opcode.rs];
+        set_nz(state.gpr[opcode.rd]);
+        break;
+    case ThumbDataProcessingRegister::Opcode::BIC:
+        state.gpr[opcode.rd] = alu_bic(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+        break;
+    case ThumbDataProcessingRegister::Opcode::MVN:
+        state.gpr[opcode.rd] = alu_mvn(state.gpr[opcode.rs], true);
+        break;
+    }
 
-    //     state.cpsr.n = state.gpr[rd] >> 31;
-    //     state.cpsr.z = state.gpr[rd] == 0;
-    //     break;
-    // case 0xE:
-    //     state.gpr[rd] = alu_bic(state.gpr[rd], state.gpr[rs], true);
-    //     break;
-    // case 0xF:
-    //     state.gpr[rd] = alu_mvn(state.gpr[rs], true);
-    //     break;
-    // }
-
-    // state.gpr[15] += 2;
+    state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_special_data_processing() {
@@ -275,82 +266,66 @@ void Interpreter::thumb_load_pc() {
     state.gpr[15] += 2;
 }
 
-void Interpreter::thumb_load_store() {
-    logger.todo("handle thumb_load_store");
-    // u8 rd = m_instruction & 0x7;
-    // u8 rn = (m_instruction >> 3) & 0x7;
-    // u8 rm = (m_instruction >> 6) & 0x7;
-
-    // u8 opcode = (m_instruction >> 10) & 0x3;
-    // bool sign = m_instruction & (1 << 9);
-    // u32 address = m_gpr[rn] + m_gpr[rm];
-
-    // if (sign) {
-    //     switch (opcode) {
-    //     case 0x0:
-    //         write_half(address, m_gpr[rd]);
-    //         break;
-    //     case 0x1:
-    //         m_gpr[rd] = Common::sign_extend<u32, 8>(read_byte(address));
-    //         break;
-    //     case 0x2:
-    //         m_gpr[rd] = read_half(address);
-    //         break;
-    //     case 0x3:
-    //         m_gpr[rd] = Common::sign_extend<u32, 16>(read_half(address));
-    //         break;
-    //     }    
-    // } else {
-    //     switch (opcode) {
-    //     case 0x0:
-    //         write_word(address, m_gpr[rd]);
-    //         break;
-    //     case 0x1:
-    //         write_byte(address, m_gpr[rd]);
-    //         break;
-    //     case 0x2: {
-    //         m_gpr[rd] = read_word(address);
-
-    //         if (address & 0x3) {
-    //             int shift_amount = (address & 0x3) * 8;
-    //             m_gpr[rd] = (m_gpr[rd] << (32 - shift_amount)) | (m_gpr[rd] >> shift_amount);
-    //         }
-
-    //         break;
-    //     }
-    //     case 0x3:
-    //         m_gpr[rd] = read_byte(address);
-    //         break;
-    //     }
-    // }
+void Interpreter::thumb_load_store_register_offset() {
+    auto opcode = ThumbLoadStoreRegisterOffset::decode(instruction);
+    u32 addr = state.gpr[opcode.rn] + state.gpr[opcode.rm];
+    switch (opcode.opcode) {
+    case ThumbLoadStoreRegisterOffset::Opcode::STR:
+        write_word(addr, state.gpr[opcode.rd]);
+        break;
+    case ThumbLoadStoreRegisterOffset::Opcode::STRB:
+        write_byte(addr, state.gpr[opcode.rd]);
+        break;
+    case ThumbLoadStoreRegisterOffset::Opcode::LDR:
+        state.gpr[opcode.rd] = read_word_rotate(addr);
+        break;
+    case ThumbLoadStoreRegisterOffset::Opcode::LDRB:
+        state.gpr[opcode.rd] = read_byte(addr);
+        break;
+    }
     
-    // m_gpr[15] += 2;
+    state.gpr[15] += 2;
+}
+
+void Interpreter::thumb_load_store_signed() {
+    auto opcode = ThumbLoadStoreSigned::decode(instruction);
+    u32 addr = state.gpr[opcode.rn] + state.gpr[opcode.rm];
+    switch (opcode.opcode) {
+    case ThumbLoadStoreSigned::Opcode::STRH:
+        write_half(addr, state.gpr[opcode.rd]);
+        break;
+    case ThumbLoadStoreSigned::Opcode::LDRSB:
+        state.gpr[opcode.rd] = common::sign_extend<s32, 8>(read_byte(addr));
+        break;
+    case ThumbLoadStoreSigned::Opcode::LDRH:
+        state.gpr[opcode.rd] = read_half(addr);
+        break;
+    case ThumbLoadStoreSigned::Opcode::LDRSH:
+        state.gpr[opcode.rd] = common::sign_extend<s32, 16>(read_half(addr));
+        break;
+    }
+
+    state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_load_store_immediate() {
-    logger.todo("handle thumb_load_store_immediate");
-    // u8 rd = m_instruction & 0x7;
-    // u8 rn = (m_instruction >> 3) & 0x7;
-    // u32 immediate = (m_instruction >> 6) & 0x1F;
-
-    // u8 opcode = (m_instruction >> 11) & 0x3;
-
-    // switch (opcode) {
-    // case 0x0:
-    //     write_word(m_gpr[rn] + (immediate << 2), m_gpr[rd]);
-    //     break;
-    // case 0x1:
-    //     m_gpr[rd] = read_word_rotate(m_gpr[rn] + (immediate << 2));
-    //     break;
-    // case 0x2:
-    //     write_byte(m_gpr[rn] + immediate, m_gpr[rd]);
-    //     break;
-    // case 0x3:
-    //     m_gpr[rd] = read_byte(m_gpr[rn] + immediate);
-    //     break;
-    // }
+    auto opcode = ThumbLoadStoreImmediate::decode(instruction);
+    switch (opcode.opcode) {
+    case ThumbLoadStoreImmediate::Opcode::STR:
+        write_word(state.gpr[opcode.rn] + (opcode.imm << 2), state.gpr[opcode.rd]);
+        break;
+    case ThumbLoadStoreImmediate::Opcode::LDR:
+        state.gpr[opcode.rd] = read_word_rotate(state.gpr[opcode.rn] + (opcode.imm << 2));
+        break;
+    case ThumbLoadStoreImmediate::Opcode::STRB:
+        write_byte(state.gpr[opcode.rn] + opcode.imm, state.gpr[opcode.rd]);
+        break;
+    case ThumbLoadStoreImmediate::Opcode::LDRB:
+        state.gpr[opcode.rd] = read_byte(state.gpr[opcode.rn] + opcode.imm);
+        break;
+    }
     
-    // m_gpr[15] += 2;
+    state.gpr[15] += 2;
 }
 
 void Interpreter::thumb_push_pop() {

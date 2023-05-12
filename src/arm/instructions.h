@@ -482,10 +482,10 @@ struct ThumbShiftImmediate {
 
 struct ThumbALUImmediate {
     enum Opcode {
-        MOV,
-        CMP,
-        ADD,
-        SUB,
+        MOV = 0,
+        CMP = 1,
+        ADD = 2,
+        SUB = 3,
     };
 
     static ThumbALUImmediate decode(u16 instruction) {
@@ -501,12 +501,37 @@ struct ThumbALUImmediate {
     Opcode opcode;
 };
 
-struct ThumbDataProcessing {
-    static ThumbDataProcessing decode(u16 instruction) {
-        ThumbDataProcessing opcode;
+struct ThumbDataProcessingRegister {
+    enum class Opcode {
+        AND = 0,
+        EOR = 1,
+        LSL = 2,
+        LSR = 3,
+        ASR = 4,
+        ADC = 5,
+        SBC = 6,
+        ROR = 7,
+        TST = 8,
+        NEG = 9,
+        CMP = 10,
+        CMN = 11,
+        ORR = 12,
+        MUL = 13,
+        BIC = 14,
+        MVN = 15,
+    };
+
+    static ThumbDataProcessingRegister decode(u16 instruction) {
+        ThumbDataProcessingRegister opcode;
+        opcode.rd = static_cast<Reg>(common::get_field<0, 3>(instruction));
+        opcode.rs = static_cast<Reg>(common::get_field<3, 3>(instruction));
+        opcode.opcode = static_cast<Opcode>(common::get_field<6, 4>(instruction));
         return opcode;
     }
 
+    Reg rd;
+    Reg rs;
+    Opcode opcode;
 };
 
 struct ThumbSpecialDataProcessing {
@@ -635,20 +660,73 @@ struct ThumbLoadPC {
     Reg rd;
 };
 
-struct ThumbLoadStore {
-    static ThumbLoadStore decode(u16 instruction) {
-        ThumbLoadStore opcode;
+struct ThumbLoadStoreRegisterOffset {
+    enum class Opcode {
+        STR = 0,
+        STRB = 1,
+        LDR = 2,
+        LDRB = 3,
+    };
+
+    static ThumbLoadStoreRegisterOffset decode(u16 instruction) {
+        ThumbLoadStoreRegisterOffset opcode;
+        opcode.rd = static_cast<Reg>(common::get_field<0, 3>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<3, 3>(instruction));
+        opcode.rm = static_cast<Reg>(common::get_field<6, 3>(instruction));
+        opcode.opcode = static_cast<Opcode>(common::get_field<10, 2>(instruction));
         return opcode;
     }
 
+    Reg rd;
+    Reg rn;
+    Reg rm;
+    Opcode opcode;
+};
+
+struct ThumbLoadStoreSigned {
+    enum class Opcode {
+        STRH = 0,
+        LDRSB = 1,
+        LDRH = 2,
+        LDRSH = 3,
+    };
+
+    static ThumbLoadStoreSigned decode(u16 instruction) {
+        ThumbLoadStoreSigned opcode;
+        opcode.rd = static_cast<Reg>(common::get_field<0, 3>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<3, 3>(instruction));
+        opcode.rm = static_cast<Reg>(common::get_field<6, 3>(instruction));
+        opcode.opcode = static_cast<Opcode>(common::get_field<10, 2>(instruction));
+        return opcode;
+    }
+
+    Reg rd;
+    Reg rn;
+    Reg rm;
+    Opcode opcode;
 };
 
 struct ThumbLoadStoreImmediate {
+    enum class Opcode {
+        STR = 0,
+        LDR = 1,
+        STRB = 2,
+        LDRB = 3,
+    };
+
     static ThumbLoadStoreImmediate decode(u16 instruction) {
         ThumbLoadStoreImmediate opcode;
+        opcode.rd = static_cast<Reg>(common::get_field<0, 3>(instruction));
+        opcode.rn = static_cast<Reg>(common::get_field<3, 3>(instruction));
+        opcode.imm = common::get_field<6, 5>(instruction);
+        opcode.opcode = static_cast<Opcode>(common::get_field<11, 2>(instruction));
         return opcode;
     }
 
+    Reg rd;
+    Reg rn;
+    u32 imm;
+    Opcode opcode;
 };
 
 struct ThumbPushPop {

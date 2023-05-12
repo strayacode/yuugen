@@ -54,7 +54,8 @@ public:
     void thumb_special_data_processing();
     void thumb_branch_link_exchange();
     void thumb_branch_exchange();
-    void thumb_load_store();
+    void thumb_load_store_register_offset();
+    void thumb_load_store_signed();
     void thumb_load_pc();
     void thumb_load_store_sp_relative();
     void thumb_load_store_halfword();

@@ -50,7 +50,8 @@ public:
     std::string thumb_special_data_processing(u32 instruction);
     std::string thumb_branch_link_exchange(u32 instruction);
     std::string thumb_branch_exchange(u32 instruction);
-    std::string thumb_load_store(u32 instruction);
+    std::string thumb_load_store_register_offset(u32 instruction);
+    std::string thumb_load_store_signed(u32 instruction);
     std::string thumb_load_pc(u32 instruction);
     std::string thumb_load_store_sp_relative(u32 instruction);
     std::string thumb_load_store_halfword(u32 instruction);

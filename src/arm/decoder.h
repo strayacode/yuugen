@@ -66,7 +66,8 @@ public:
         register_thumb("010001xxxx", &D::thumb_special_data_processing);
         register_thumb("010001111x", &D::thumb_branch_link_exchange);
         register_thumb("010001110x", &D::thumb_branch_exchange);
-        register_thumb("0101xxxxxx", &D::thumb_load_store);
+        register_thumb("0101xx0xxx", &D::thumb_load_store_register_offset);
+        register_thumb("0101xx1xxx", &D::thumb_load_store_signed);
         register_thumb("01001xxxxx", &D::thumb_load_pc);
         register_thumb("1001xxxxxx", &D::thumb_load_store_sp_relative);
         register_thumb("1000xxxxxx", &D::thumb_load_store_halfword);
