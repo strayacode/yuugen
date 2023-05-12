@@ -147,7 +147,7 @@ std::string Disassembler::arm_data_processing(u32 instruction) {
                 rhs_string = common::format("%s", register_names[opcode.rhs.reg.rm]);
             }
         } else {
-            rhs_string = common::format("%s %s %s", register_names[opcode.rd], shift_type, register_names[opcode.rhs.reg.amount.rs]);
+            rhs_string = common::format("%s %s %s", register_names[opcode.rhs.reg.rm], shift_type, register_names[opcode.rhs.reg.amount.rs]);
         }
     }
 
@@ -155,35 +155,35 @@ std::string Disassembler::arm_data_processing(u32 instruction) {
     case ARMDataProcessing::Opcode::AND:
         return common::format("and%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::EOR:
-        return common::format("eor");
+        return common::format("eor%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::SUB:
         return common::format("sub%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::RSB:
-        return common::format("rsb");
+        return common::format("rsb%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::ADD:
-        return common::format("add");
+        return common::format("add%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::ADC:
-        return common::format("adc");
+        return common::format("adc%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::SBC:
-        return common::format("sbc");
+        return common::format("sbc%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::RSC:
-        return common::format("rsc");
+        return common::format("rsc%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::TST:
-        return common::format("tst");
+        return common::format("tst%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::TEQ:
-        return common::format("teq");
+        return common::format("teq%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::CMP:
         return common::format("cmp%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::CMN:
-        return common::format("cmn");
+        return common::format("cmn%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::ORR:
-        return common::format("orr");
+        return common::format("orr%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::MOV:
         return common::format("mov%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], rhs_string.c_str());
     case ARMDataProcessing::Opcode::BIC:
-        return common::format("bic");
+        return common::format("bic%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
     case ARMDataProcessing::Opcode::MVN:
-        return common::format("mvn");
+        return common::format("mvn%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], rhs_string.c_str());
     }
 
     return "...";

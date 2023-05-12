@@ -49,8 +49,12 @@ struct ARMDataProcessing {
             opcode.rhs.reg.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
             opcode.rhs.reg.shift_type = static_cast<ShiftType>(common::get_field<5, 2>(instruction));
             opcode.rhs.reg.imm = !common::get_bit<4>(instruction);
-            opcode.rhs.reg.amount.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
-            opcode.rhs.reg.amount.imm = common::get_field<7, 5>(instruction);
+
+            if (opcode.rhs.reg.imm) {
+                opcode.rhs.reg.amount.imm = common::get_field<7, 5>(instruction);
+            } else {
+                opcode.rhs.reg.amount.rs = static_cast<Reg>(common::get_field<8, 4>(instruction));
+            }
         }
 
         return opcode;
@@ -277,8 +281,13 @@ struct ARMHalfwordDataTransfer {
         opcode.sign = common::get_bit<6>(instruction);
         opcode.rd = static_cast<Reg>(common::get_field<12, 4>(instruction));
         opcode.rn = static_cast<Reg>(common::get_field<16, 4>(instruction));
-        opcode.rhs.imm = ((instruction >> 4) & 0xf0) | (instruction & 0xf);
-        opcode.rhs.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+
+        if (opcode.imm) {
+            opcode.rhs.imm = ((instruction >> 4) & 0xf0) | (instruction & 0xf);
+        } else {
+            opcode.rhs.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        }
+
         return opcode;
     }
 
@@ -329,9 +338,13 @@ struct ARMStatusStore {
             opcode.mask |= 0xff000000;
         }
 
-        int amount = common::get_field<8, 4>(instruction) << 1;
-        opcode.rhs.rotated = common::rotate_right(instruction & 0xff, amount);
-        opcode.rhs.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        if (opcode.imm) {
+            int amount = common::get_field<8, 4>(instruction) << 1;
+            opcode.rhs.rotated = common::rotate_right(instruction & 0xff, amount);
+        } else {
+            opcode.rhs.rm = static_cast<Reg>(common::get_field<0, 4>(instruction));
+        }
+
         return opcode;
     }
 
