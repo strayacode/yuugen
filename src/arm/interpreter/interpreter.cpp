@@ -22,10 +22,20 @@ void Interpreter::reset() {
     state.cpsr.data = 0xd3;
     set_mode(Mode::SVC);
     pipeline.fill(0);
+    irq = false;
+    halted = false;
 }
 
 void Interpreter::run(int cycles) {
     while (cycles--) {
+        if (halted) {
+            return;
+        }
+
+        if (irq && !state.cpsr.i) {
+            handle_interrupt();
+        }
+
         // TODO: handle interrupts in a nice way
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
@@ -92,6 +102,14 @@ void Interpreter::set_mode(Mode mode) {
         state.gpr[13] = state.gpr_banked[new_bank][5];
         state.gpr[14] = state.gpr_banked[new_bank][6];
     }
+}
+
+void Interpreter::update_irq(bool irq) {
+    this->irq = irq;
+}
+
+bool Interpreter::is_halted() {
+    return halted;
 }
 
 void Interpreter::illegal_instruction() {
@@ -217,6 +235,23 @@ bool Interpreter::calculate_add_overflow(u32 op1, u32 op2, u32 result) {
 
 bool Interpreter::calculate_sub_overflow(u32 op1, u32 op2, u32 result) {
     return ((op1 ^ op2) & (op1 ^ result)) >> 31;
+}
+
+void Interpreter::handle_interrupt() {
+    halted = false;
+    state.spsr_banked[Bank::IRQ].data = state.cpsr.data;
+    set_mode(Mode::IRQ);
+    state.cpsr.i = true;
+    
+    if (state.cpsr.t) {
+        state.cpsr.t = false;
+        state.gpr[14] = state.gpr[15];
+    } else {
+        state.gpr[14] = state.gpr[15] - 4;
+    }
+
+    state.gpr[15] = coprocessor.get_exception_base() + 0x18;
+    arm_flush_pipeline();
 }
 
 void Interpreter::print_instruction() {

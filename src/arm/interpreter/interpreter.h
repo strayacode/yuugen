@@ -18,6 +18,8 @@ public:
     void run(int cycles) override;
     void jump_to(u32 addr) override;
     void set_mode(Mode mode) override;
+    void update_irq(bool irq) override;
+    bool is_halted() override;
 
     // arm instruction handlers
     void arm_branch_link_maybe_exchange();
@@ -116,6 +118,7 @@ private:
     bool calculate_add_overflow(u32 op1, u32 op2, u32 result);
     bool calculate_sub_overflow(u32 op1, u32 op2, u32 result);
 
+    void handle_interrupt();
     void print_instruction();
 
     Arch arch;
@@ -124,6 +127,8 @@ private:
     std::array<u32, 2> pipeline;
     u32 instruction;
     std::array<std::array<bool, 16>, 16> condition_table;
+    bool irq;
+    bool halted;
 };
 
 } // namespace arm

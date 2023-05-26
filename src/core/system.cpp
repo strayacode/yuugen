@@ -4,7 +4,7 @@
 
 namespace core {
 
-System::System() : arm7(*this), arm9(*this), cartridge(*this), video_unit(*this) {
+System::System() : arm7(*this), arm9(*this), cartridge(*this), video_unit(*this), ipc(arm7.get_irq(), arm9.get_irq()) {
     arm7.select_backend(arm::Backend::Interpreter);
     arm9.select_backend(arm::Backend::Interpreter);
 }
@@ -24,6 +24,7 @@ void System::reset() {
     spu.reset();
     dma7.reset();
     dma9.reset();
+    ipc.reset();
 
     main_memory.fill(0);
     shared_wram.fill(0);

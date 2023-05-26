@@ -18,6 +18,28 @@ u32 ARM9Coprocessor::read(u32 cn, u32 cm, u32 cp) {
     switch ((cn << 16) | (cm << 8) | cp) {
     case 0x000001:
         return 0x0f0d2112;
+    case 0x010000:
+        return control.data;
+    case 0x090100:
+        return dtcm_control.data;
+    case 0x090101:
+        return itcm_control.data;
+    case 0x020000:
+    case 0x020001:
+    case 0x030000:
+    case 0x050000:
+    case 0x050001:
+    case 0x050002:
+    case 0x050003:
+    case 0x060000:
+    case 0x060100:
+    case 0x060200:
+    case 0x060300:
+    case 0x060400:
+    case 0x060500:
+    case 0x060600:
+    case 0x060700:
+        return 0;
     default:
         logger.error("ARM9Coprocessor: handle register read c%d, c%d, c%d", cn, cm, cp);
     }

@@ -22,6 +22,8 @@ add_library(core
     hardware/input.h hardware/input.cpp
     hardware/spu.h hardware/spu.cpp
     hardware/dma.h hardware/dma.cpp
+    hardware/ipc.h hardware/ipc.cpp
+    hardware/irq.h hardware/irq.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

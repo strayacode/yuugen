@@ -8,10 +8,7 @@ template <typename T, int size>
 class RingBuffer {
 public:
     RingBuffer() {
-        head_index = 0;
-        tail_index = 0;
-        items = 0;
-        buffer = {};
+        reset();
     }
 
     bool is_empty() {
@@ -23,7 +20,7 @@ public:
     }
 
     void push(T data) {
-        if (Full()) {
+        if (is_full()) {
             return;
         }
 
@@ -49,6 +46,13 @@ public:
 
     int get_size() {
         return items;
+    }
+
+    void reset() {
+        head_index = 0;
+        tail_index = 0;
+        items = 0;
+        buffer = {};
     }
 
 private:

@@ -5,10 +5,11 @@
 
 namespace core {
 
-ARM7::ARM7(System& system) : system(system), memory(system) {}
+ARM7::ARM7(System& system) : system(system), memory(system), irq(cpu) {}
 
 void ARM7::reset() {
     memory.reset();
+    irq.reset();
     cpu->reset();
 }
 

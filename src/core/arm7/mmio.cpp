@@ -1,4 +1,5 @@
 #include "common/logger.h"
+#include "arm/arch.h"
 #include "core/arm7/arm7.h"
 #include "core/system.h"
 
@@ -73,6 +74,16 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
 template <u32 mask>
 u32 ARM7Memory::mmio_read_word(u32 addr) {
     switch (MMIO(addr)) {
+    case MMIO(0x04000180):
+        return system.ipc.read_ipcsync(arm::Arch::ARMv4);
+    case MMIO(0x04000184):
+        return system.ipc.read_ipcfifocnt(arm::Arch::ARMv4);
+    case MMIO(0x04000208):
+        return system.arm7.get_irq().read_ime();
+    case MMIO(0x04000210):
+        return system.arm7.get_irq().read_ie();
+    case MMIO(0x04000214):
+        return system.arm7.get_irq().read_irf();
     default:
         logger.error("ARM7Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
@@ -81,11 +92,27 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
     return 0;
 }
 
+// TODO: apply mask to write handlers
 template <u32 mask>
 void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
     case MMIO(0x04000134): 
         if constexpr (mask & 0xffff) rcnt = value;
+        break;
+    case MMIO(0x04000180):
+        if constexpr (mask & 0xffff) system.ipc.write_ipcsync(arm::Arch::ARMv4, value);
+        break;
+    case MMIO(0x04000184):
+        if constexpr (mask & 0xffff) system.ipc.write_ipcfifocnt(arm::Arch::ARMv4, value);
+        break;
+    case MMIO(0x04000208):
+        system.arm7.get_irq().write_ime(value);
+        break;
+    case MMIO(0x04000210):
+        system.arm7.get_irq().write_ie(value);
+        break;
+    case MMIO(0x04000214):
+        system.arm7.get_irq().write_irf(value);
         break;
     case MMIO(0x04000300):
         if constexpr (mask & 0xff) postflg = value & 0x1;

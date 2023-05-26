@@ -4,6 +4,7 @@
 #include "arm/cpu.h"
 #include "core/arm7/memory.h"
 #include "core/arm7/coprocessor.h"
+#include "core/hardware/irq.h"
 
 namespace core {
 
@@ -19,11 +20,13 @@ public:
     void direct_boot();
     ARM7Memory& get_memory() { return memory; }
     ARM7Coprocessor& get_coprocessor() { return coprocessor; }
+    IRQ& get_irq() { return irq; }
 
 private:
     System& system;
     ARM7Memory memory;
     ARM7Coprocessor coprocessor;
+    IRQ irq;
     std::unique_ptr<arm::CPU> cpu;
 };
 
