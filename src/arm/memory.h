@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/types.h"
+#include "common/logger.h"
 #include "common/memory.h"
 #include "arm/coprocessor.h"
 #include "arm/page_table.h"
@@ -24,7 +25,6 @@ enum RegionAttributes : u8 {
     ReadWrite = Read | Write,
 };
 
-// this class will be used as a base class which both the arm7 and arm9 implement
 class Memory {
 public:
     virtual ~Memory() = default;

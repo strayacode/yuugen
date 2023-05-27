@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "common/types.h"
 #include "arm/memory.h"
 
@@ -40,8 +41,11 @@ private:
     int get_access_size(u32 mask);
     u32 get_access_offset(u32 mask);
 
+    void load_bios(const std::string& path);
+
     System& system;
     std::array<u8, 0x10000> arm7_wram;
+    std::array<u8, 0x4000> bios;
     u16 rcnt;
     u8 postflg;
 };

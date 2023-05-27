@@ -4,6 +4,7 @@ add_library(common
     bits.h
     ring_buffer.h
     memory_mapped_file.h
+    regular_file.h regular_file.cpp
     memory.h
     string.h string.cpp
     callback.h

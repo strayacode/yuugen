@@ -101,6 +101,9 @@ void ARM9Memory::write_word(u32 addr, u32 value) {
     case 0x06:
         system.video_unit.vram.write<u32>(addr, value);
         break;
+    case 0x08: case 0x09:
+        // ignore gba cart writes
+        break;
     default:
         logger.error("ARM9Memory: handle 32-bit write %08x = %02x", addr, value);
     }

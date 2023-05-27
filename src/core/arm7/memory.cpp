@@ -1,16 +1,21 @@
 #include "common/logger.h"
+#include "common/regular_file.h"
+#include "common/memory.h"
 #include "core/arm7/arm7.h"
 #include "core/system.h"
 
 namespace core {
 
-ARM7Memory::ARM7Memory(System& system) : system(system) {}
+ARM7Memory::ARM7Memory(System& system) : system(system) {
+    load_bios("../bios/bios7.bin");
+}
 
 void ARM7Memory::reset() {
     arm7_wram.fill(0);
     rcnt = 0;
     postflg = 0;
 
+    map(0x00000000, 0x00004000, bios.data(), 0x3fff, arm::RegionAttributes::Read);
     map(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
     update_wram_mapping();
 }
@@ -95,6 +100,12 @@ void ARM7Memory::write_word(u32 addr, u32 value) {
     default:
         logger.error("ARM7Memory: handle 32-bit write %08x = %02x", addr, value);
     }
+}
+
+void ARM7Memory::load_bios(const std::string& path) {
+    common::RegularFile file;
+    file.load(path);
+    bios = common::read<std::array<u8, 0x4000>>(file.get_pointer(0));
 }
 
 } // namespace core
