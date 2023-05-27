@@ -115,9 +115,21 @@ void Interpreter::arm_data_processing() {
 
     if (opcode.rd == 15) {
         if (opcode.set_flags) {
-            logger.error("Interpreter: handle rd == 15 and S == 1");
-        } else {
-            arm_flush_pipeline();
+            auto spsr = *state.spsr;
+            set_mode(spsr.mode);
+            state.cpsr = spsr;
+        }
+
+        if (opcode.opcode != ARMDataProcessing::Opcode::TST &&
+            opcode.opcode != ARMDataProcessing::Opcode::TEQ &&
+            opcode.opcode != ARMDataProcessing::Opcode::CMP &&
+            opcode.opcode != ARMDataProcessing::Opcode::CMN
+        ) {
+            if (state.cpsr.t) {
+                thumb_flush_pipeline();
+            } else {
+                arm_flush_pipeline();
+            }
         }
     } else {
         state.gpr[15] += 4;

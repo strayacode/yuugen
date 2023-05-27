@@ -41,8 +41,11 @@ private:
     int get_access_size(u32 mask);
     u32 get_access_offset(u32 mask);
 
+    void load_bios(const std::string& path);
+
     System& system;
     u8 postflg;
+    std::array<u8, 0x8000> bios;
     std::array<u8, 0x4000> dtcm_data;
     std::array<u8, 0x8000> itcm_data;
 };

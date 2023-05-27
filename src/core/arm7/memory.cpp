@@ -97,6 +97,9 @@ void ARM7Memory::write_word(u32 addr, u32 value) {
     case 0x04:
         mmio_write_word(addr, value);
         break;
+    case 0x08: case 0x09:
+        // ignore gba cart writes
+        break;
     default:
         logger.error("ARM7Memory: handle 32-bit write %08x = %02x", addr, value);
     }

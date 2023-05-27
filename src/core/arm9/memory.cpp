@@ -1,10 +1,13 @@
 #include "common/logger.h"
+#include "common/regular_file.h"
 #include "core/arm9/arm9.h"
 #include "core/system.h"
 
 namespace core {
 
-ARM9Memory::ARM9Memory(System& system) : system(system) {}
+ARM9Memory::ARM9Memory(System& system) : system(system) {
+    load_bios("../bios/bios9.bin");
+}
 
 void ARM9Memory::reset() {
     postflg = 0;
@@ -16,6 +19,7 @@ void ARM9Memory::reset() {
     itcm.data = itcm_data.data();
     itcm.mask = itcm_data.size() - 1;
 
+    map(0xffff0000, 0xffff8000, bios.data(), 0x7fff, arm::RegionAttributes::Read);
     map(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
     update_wram_mapping();
 }
@@ -107,6 +111,12 @@ void ARM9Memory::write_word(u32 addr, u32 value) {
     default:
         logger.error("ARM9Memory: handle 32-bit write %08x = %02x", addr, value);
     }
+}
+
+void ARM9Memory::load_bios(const std::string& path) {
+    common::RegularFile file;
+    file.load(path);
+    bios = common::read<std::array<u8, 0x8000>>(file.get_pointer(0));
 }
 
 } // namespace core

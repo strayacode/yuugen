@@ -13,20 +13,22 @@ void IRQ::reset() {
 
 void IRQ::raise(IRQ::Source source) {
     irf |= 1 << static_cast<int>(source);
-    logger.debug("IRQ: raise interrupt source %d", static_cast<int>(source));
     cpu->update_irq(ime && (ie & irf));
 }
 
 void IRQ::write_ime(u32 value) {
     ime = value & 0x1;
+    cpu->update_irq(ime && (ie & irf));
 }
 
 void IRQ::write_ie(u32 value) {
     ie = value;
+    cpu->update_irq(ime && (ie & irf));
 }
 
 void IRQ::write_irf(u32 value) {
     irf &= ~value;
+    cpu->update_irq(ime && (ie & irf));
 }
 
 } // namespace core

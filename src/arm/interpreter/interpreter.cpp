@@ -36,7 +36,6 @@ void Interpreter::run(int cycles) {
             handle_interrupt();
         }
 
-        // TODO: handle interrupts in a nice way
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
 
