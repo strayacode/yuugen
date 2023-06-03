@@ -25,51 +25,110 @@ u16 IPC::read_ipcfifocnt(arm::Arch arch) {
     return ipcfifocnt[static_cast<int>(arch)].data;
 }
 
-void IPC::write_ipcsync(arm::Arch arch, u32 value) {
-    auto& tx = ipcsync[static_cast<int>(arch)];
-    auto& rx = ipcsync[!static_cast<int>(arch)];
+u32 IPC::read_ipcfiforecv(arm::Arch arch) {
+    auto& tx_cnt = ipcfifocnt[static_cast<int>(arch)];
+    auto& tx_recv = ipcfiforecv[static_cast<int>(arch)];
+    auto& rx_cnt = ipcfifocnt[!static_cast<int>(arch)];
+    auto& rx_fifo = fifo[!static_cast<int>(arch)];
     auto rx_irq = irq[!static_cast<int>(arch)];
     
-    tx.data = (tx.data & ~0x6f00) | (value & 0x6f00);
-    rx.input = tx.output;
+    if (!rx_fifo.is_empty()) {
+        tx_recv = rx_fifo.get_size();
 
-    if (tx.send_irq && rx.enable_irq) {
+        if (tx_cnt.enable_fifos) {
+            rx_fifo.pop();
+
+            if (rx_fifo.is_empty()) {
+                rx_cnt.send_fifo_empty = true;
+                tx_cnt.receive_fifo_empty = true;
+                
+                if (rx_cnt.send_fifo_empty_irq) {
+                    rx_irq->raise(IRQ::Source::IPCSendEmpty);
+                }
+            } else if (rx_fifo.get_size() == 15) {
+                rx_cnt.send_fifo_full = false;
+                tx_cnt.receive_fifo_full = false;
+            }
+        }
+    } else {
+        tx_cnt.error = true;
+    }
+
+    return tx_recv;
+}
+
+void IPC::write_ipcsync(arm::Arch arch, u32 value) {
+    auto& tx_sync = ipcsync[static_cast<int>(arch)];
+    auto& rx_sync = ipcsync[!static_cast<int>(arch)];
+    auto rx_irq = irq[!static_cast<int>(arch)];
+    
+    tx_sync.data = (tx_sync.data & ~0x6f00) | (value & 0x6f00);
+    rx_sync.input = tx_sync.output;
+
+    if (tx_sync.send_irq && rx_sync.enable_irq) {
         rx_irq->raise(IRQ::Source::IPCSync);
     }
 }
 
 void IPC::write_ipcfifocnt(arm::Arch arch, u16 value) {
-    auto& tx = ipcfifocnt[static_cast<int>(arch)];
+    auto& tx_cnt = ipcfifocnt[static_cast<int>(arch)];
     auto& tx_fifo = fifo[static_cast<int>(arch)];
     auto tx_irq = irq[static_cast<int>(arch)];
-    auto& rx = ipcfifocnt[!static_cast<int>(arch)];
-    bool send_fifo_empty_irq_old = tx.send_fifo_empty_irq;
-    bool receive_fifo_empty_irq_old = tx.receive_fifo_empty_irq;
+    auto& rx_cnt = ipcfifocnt[!static_cast<int>(arch)];
+    bool send_fifo_empty_irq_old = tx_cnt.send_fifo_empty_irq;
+    bool receive_fifo_empty_irq_old = tx_cnt.receive_fifo_empty_irq;
 
-    tx.data = (tx.data & ~0x8404) | (value & 0x8404);
+    tx_cnt.data = (tx_cnt.data & ~0x8404) | (value & 0x8404);
 
     if (common::get_bit<3>(value)) {
         tx_fifo.reset();
-        tx.send_fifo_empty = true;
-        tx.send_fifo_full = false;
-        rx.receive_fifo_empty = true;
-        rx.receive_fifo_full = false;
+        tx_cnt.send_fifo_empty = true;
+        tx_cnt.send_fifo_full = false;
+        rx_cnt.receive_fifo_empty = true;
+        rx_cnt.receive_fifo_full = false;
 
-        if (tx.send_fifo_empty_irq) {
+        if (tx_cnt.send_fifo_empty_irq) {
             tx_irq->raise(IRQ::Source::IPCSendEmpty);
         }
     }
 
-    if (!send_fifo_empty_irq_old && tx.send_fifo_empty_irq && tx.send_fifo_empty) {
+    if (!send_fifo_empty_irq_old && tx_cnt.send_fifo_empty_irq && tx_cnt.send_fifo_empty) {
         tx_irq->raise(IRQ::Source::IPCSendEmpty);
     }
 
-    if (!receive_fifo_empty_irq_old && tx.receive_fifo_empty_irq && tx.receive_fifo_empty) {
+    if (!receive_fifo_empty_irq_old && tx_cnt.receive_fifo_empty_irq && tx_cnt.receive_fifo_empty) {
         tx_irq->raise(IRQ::Source::IPCReceiveNonEmpty);
     }
 
     if (common::get_bit<14>(value)) {
-        tx.error = false;
+        tx_cnt.error = false;
+    }
+}
+
+void IPC::write_ipcfifosend(arm::Arch arch, u32 value) {
+    auto& tx_cnt = ipcfifocnt[static_cast<int>(arch)];
+    auto& tx_fifo = fifo[static_cast<int>(arch)];
+    auto& rx_cnt = ipcfifocnt[!static_cast<int>(arch)];
+    auto rx_irq = irq[!static_cast<int>(arch)];
+    
+    if (tx_cnt.enable_fifos) {
+        if (tx_fifo.get_size() < 16) {
+            tx_fifo.push(value);
+
+            if (tx_fifo.get_size() == 1) {
+                tx_cnt.send_fifo_empty = false;
+                rx_cnt.receive_fifo_empty = false;
+
+                if (rx_cnt.receive_fifo_empty_irq) {
+                    rx_irq->raise(IRQ::Source::IPCReceiveNonEmpty);
+                }
+            } else if (tx_fifo.get_size() == 16) {
+                tx_cnt.send_fifo_full = true;
+                rx_cnt.receive_fifo_full = true;
+            }
+        } else {
+            tx_cnt.error = true;
+        }
     }
 }
 

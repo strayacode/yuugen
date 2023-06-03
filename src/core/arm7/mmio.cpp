@@ -84,6 +84,8 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return system.arm7.get_irq().read_ie();
     case MMIO(0x04000214):
         return system.arm7.get_irq().read_irf();
+    case MMIO(0x04100000):
+        return system.ipc.read_ipcfiforecv(arm::Arch::ARMv4);
     default:
         logger.error("ARM7Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
@@ -104,6 +106,9 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000184):
         if constexpr (mask & 0xffff) system.ipc.write_ipcfifocnt(arm::Arch::ARMv4, value);
+        break;
+    case MMIO(0x04000188):
+        system.ipc.write_ipcfifosend(arm::Arch::ARMv4, value);
         break;
     case MMIO(0x04000208):
         system.arm7.get_irq().write_ime(value);

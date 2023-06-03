@@ -6,7 +6,7 @@ namespace core {
 
 void VRAM::reset() {
     vramstat = 0;
-    vramcnt.fill(0);
+    vramcnt.fill(VRAMCNT{});
     bank_a.fill(0);
     bank_b.fill(0);
     bank_c.fill(0);
@@ -24,64 +24,64 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
     int index = static_cast<int>(bank);
     value &= masks[index];
 
-    if (vramcnt[index] == value) {
+    if (vramcnt[index].data == value) {
         return;
     }
 
-    vramcnt[index] = value;
+    vramcnt[index].data = value;
 
     reset_vram_regions();
 
-    if (is_bank_enabled(vramcnt[0])) {
-        u8 ofs = get_bank_offset(vramcnt[0]);
-        switch (get_bank_mst(vramcnt[0])) {
+    if (vramcnt[0].enabled) {
+        auto offset = vramcnt[0].offset;
+        switch (vramcnt[0].mst) {
         case 0:
             lcdc.map(bank_a.data(), 0, 0x20000);
             break;
         case 1:
-            bga.map(bank_a.data(), ofs * 0x20000, 0x20000);
+            bga.map(bank_a.data(), offset * 0x20000, 0x20000);
             break;
         case 2:
-            obja.map(bank_a.data(), common::get_bit<0>(ofs) * 0x20000, 0x20000);
+            obja.map(bank_a.data(), common::get_bit<0>(offset) * 0x20000, 0x20000);
             break;
         case 3:
-            texture_data.map(bank_a.data(), ofs * 0x20000, 0x20000);
+            texture_data.map(bank_a.data(), offset * 0x20000, 0x20000);
             break;
         }
     }
 
-    if (is_bank_enabled(vramcnt[1])) {
-        u8 ofs = get_bank_offset(vramcnt[1]);
-        switch (get_bank_mst(vramcnt[1])) {
+    if (vramcnt[1].enabled) {
+        auto offset = vramcnt[1].offset;
+        switch (vramcnt[1].mst) {
         case 0:
             lcdc.map(bank_b.data(), 0x20000, 0x20000);
             break;
         case 1:
-            bga.map(bank_b.data(), ofs * 0x20000, 0x20000);
+            bga.map(bank_b.data(), offset * 0x20000, 0x20000);
             break;
         case 2:
-            obja.map(bank_b.data(), common::get_bit<0>(ofs) * 0x20000, 0x20000);
+            obja.map(bank_b.data(), common::get_bit<0>(offset) * 0x20000, 0x20000);
             break;
         case 3:
-            texture_data.map(bank_b.data(), ofs * 0x20000, 0x20000);
+            texture_data.map(bank_b.data(), offset * 0x20000, 0x20000);
             break;
         }
     }
     
-    if (is_bank_enabled(vramcnt[2])) {
-        u8 ofs = get_bank_offset(vramcnt[2]);
-        switch (get_bank_mst(vramcnt[2])) {
+    if (vramcnt[2].enabled) {
+        auto offset = vramcnt[2].offset;
+        switch (vramcnt[2].mst) {
         case 0:
             lcdc.map(bank_c.data(), 0x40000, 0x20000);
             break;
         case 1:
-            bga.map(bank_c.data(), ofs * 0x20000, 0x20000);
+            bga.map(bank_c.data(), offset * 0x20000, 0x20000);
             break;
         case 2:
-            arm7_vram.map(bank_c.data(), common::get_bit<0>(ofs) * 0x20000, 0x20000);
+            arm7_vram.map(bank_c.data(), common::get_bit<0>(offset) * 0x20000, 0x20000);
             break;
         case 3:
-            texture_data.map(bank_c.data(), ofs * 0x20000, 0x20000);
+            texture_data.map(bank_c.data(), offset * 0x20000, 0x20000);
             break;
         case 4:
             bgb.map(bank_c.data(), 0, 0x20000);
@@ -89,26 +89,26 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (is_bank_enabled(vramcnt[2]) && (get_bank_mst(vramcnt[2]) == 2)) {
+    if (vramcnt[2].enabled && (vramcnt[2].mst == 2)) {
         vramstat |= 1;
     } else {
         vramstat &= ~1;
     }
     
-    if (is_bank_enabled(vramcnt[3])) {
-        u8 ofs = get_bank_offset(vramcnt[3]);
-        switch (get_bank_mst(vramcnt[3])) {
+    if (vramcnt[3].enabled) {
+        auto offset = vramcnt[3].offset;
+        switch (vramcnt[3].mst) {
         case 0:
             lcdc.map(bank_d.data(), 0x60000, 0x20000);
             break;
         case 1:
-            bga.map(bank_d.data(), ofs * 0x20000, 0x20000);
+            bga.map(bank_d.data(), offset * 0x20000, 0x20000);
             break;
         case 2:
-            arm7_vram.map(bank_d.data(), common::get_bit<0>(ofs) * 0x20000, 0x20000);
+            arm7_vram.map(bank_d.data(), common::get_bit<0>(offset) * 0x20000, 0x20000);
             break;
         case 3:
-            texture_data.map(bank_d.data(), ofs * 0x20000, 0x20000);
+            texture_data.map(bank_d.data(), offset * 0x20000, 0x20000);
             break;
         case 4:
             objb.map(bank_d.data(), 0, 0x20000);
@@ -116,14 +116,14 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (is_bank_enabled(vramcnt[3]) && (get_bank_mst(vramcnt[3]) == 2)) {
+    if (vramcnt[3].enabled && (vramcnt[3].mst == 2)) {
         vramstat |= 1 << 1;
     } else {
         vramstat &= ~(1 << 1);
     }
     
-    if (is_bank_enabled(vramcnt[4])) {
-        switch (get_bank_mst(vramcnt[4])) {
+    if (vramcnt[4].enabled) {
+        switch (vramcnt[4].mst) {
         case 0:
             lcdc.map(bank_e.data(), 0x80000, 0x10000);
             break;
@@ -142,20 +142,20 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (is_bank_enabled(vramcnt[5])) {
-        u8 ofs = get_bank_offset(vramcnt[5]);
-        switch (get_bank_mst(vramcnt[5])) {
+    if (vramcnt[5].enabled) {
+        auto offset = vramcnt[5].offset;
+        switch (vramcnt[5].mst) {
         case 0:
             lcdc.map(bank_f.data(), 0x90000, 0x4000);
             break;
         case 1:
-            bga.map(bank_f.data(), common::get_bit<0>(ofs) * 0x4000 + common::get_bit<1>(ofs) * 0x10000, 0x4000);
+            bga.map(bank_f.data(), common::get_bit<0>(offset) * 0x4000 + common::get_bit<1>(offset) * 0x10000, 0x4000);
             break;
         case 2:
-            obja.map(bank_f.data(), common::get_bit<0>(ofs) * 0x4000 + common::get_bit<1>(ofs) * 0x10000, 0x4000);
+            obja.map(bank_f.data(), common::get_bit<0>(offset) * 0x4000 + common::get_bit<1>(offset) * 0x10000, 0x4000);
             break;
         case 3:
-            texture_palette.map(bank_f.data(), (common::get_bit<0>(ofs) + common::get_bit<1>(ofs) * 4) * 0x4000, 0x4000);
+            texture_palette.map(bank_f.data(), (common::get_bit<0>(offset) + common::get_bit<1>(offset) * 4) * 0x4000, 0x4000);
             break;
         case 4:
             logger.warn("VRAM: handle mapping bank f to bg extended palette");
@@ -166,20 +166,20 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (is_bank_enabled(vramcnt[6])) {
-        u8 ofs = get_bank_offset(vramcnt[6]);
-        switch (get_bank_mst(vramcnt[6])) {
+    if (vramcnt[6].enabled) {
+        auto offset = vramcnt[6].offset;
+        switch (vramcnt[6].mst) {
         case 0:
             lcdc.map(bank_g.data(), 0x94000, 0x4000);
             break;
         case 1:
-            bga.map(bank_g.data(), common::get_bit<0>(ofs) * 0x4000 + common::get_bit<1>(ofs) * 0x10000, 0x4000);
+            bga.map(bank_g.data(), common::get_bit<0>(offset) * 0x4000 + common::get_bit<1>(offset) * 0x10000, 0x4000);
             break;
         case 2:
-            obja.map(bank_g.data(), common::get_bit<0>(ofs) * 0x4000 + common::get_bit<1>(ofs) * 0x10000, 0x4000);
+            obja.map(bank_g.data(), common::get_bit<0>(offset) * 0x4000 + common::get_bit<1>(offset) * 0x10000, 0x4000);
             break;
         case 3:
-            texture_palette.map(bank_g.data(), (common::get_bit<0>(ofs) + common::get_bit<1>(ofs) * 4) * 0x4000, 0x4000);
+            texture_palette.map(bank_g.data(), (common::get_bit<0>(offset) + common::get_bit<1>(offset) * 4) * 0x4000, 0x4000);
             break;
         case 4:
             logger.warn("VRAM: handle mapping bank g to bg extended palette");
@@ -190,8 +190,8 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (is_bank_enabled(vramcnt[7])) {
-        switch (get_bank_mst(vramcnt[7])) {
+    if (vramcnt[7].enabled) {
+        switch (vramcnt[7].mst) {
         case 0:
             lcdc.map(bank_h.data(), 0x98000, 0x8000);
             break;
@@ -204,8 +204,8 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (is_bank_enabled(vramcnt[8])) {
-        switch (get_bank_mst(vramcnt[8])) {
+    if (vramcnt[8].enabled) {
+        switch (vramcnt[8].mst) {
         case 0:
             lcdc.map(bank_i.data(), 0xa0000, 0x4000);
             break;
@@ -231,18 +231,6 @@ void VRAM::reset_vram_regions() {
     arm7_vram.reset();
     texture_data.reset();
     texture_palette.reset();
-}
-
-bool VRAM::is_bank_enabled(u8 vramcnt) {
-    return common::get_bit<7>(vramcnt);
-}
-
-int VRAM::get_bank_offset(u8 vramcnt) {
-    return common::get_field<3, 2>(vramcnt);
-}
-
-int VRAM::get_bank_mst(u8 vramcnt) {
-    return common::get_field<0, 3>(vramcnt);
 }
 
 } // namespace core

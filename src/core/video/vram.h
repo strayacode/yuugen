@@ -66,12 +66,21 @@ public:
 
 private:
     void reset_vram_regions();
-    bool is_bank_enabled(u8 vramcnt);
-    int get_bank_offset(u8 vramcnt);
-    int get_bank_mst(u8 vramcnt);
 
     u8 vramstat;
-    std::array<u8, 9> vramcnt;
+
+    union VRAMCNT {
+        struct {
+            u8 mst : 3;
+            u8 offset : 2;
+            u8 : 2;
+            bool enabled : 1;
+        };
+
+        u8 data;
+    };
+
+    std::array<VRAMCNT, 9> vramcnt;
 
     std::array<u8, 0x20000> bank_a;
     std::array<u8, 0x20000> bank_b;

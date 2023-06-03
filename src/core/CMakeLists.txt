@@ -24,6 +24,7 @@ add_library(core
     hardware/dma.h hardware/dma.cpp
     hardware/ipc.h hardware/ipc.cpp
     hardware/irq.h hardware/irq.cpp
+    hardware/maths_unit.h hardware/maths_unit.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
