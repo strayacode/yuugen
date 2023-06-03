@@ -15,9 +15,29 @@ void MathsUnit::reset() {
     sqrt_result = 0;
 }
 
-void MathsUnit::write_divcnt(u16 value) {
-    divcnt = value;
+void MathsUnit::write_divcnt(u16 value, u32 mask) {
+    divcnt = (divcnt & ~mask) | (value & mask);
     start_division();
+}
+
+void MathsUnit::write_div_numer(u64 value, u64 mask) {
+    div_numer = (div_numer & ~mask) | (value & mask);
+    start_division();
+}
+
+void MathsUnit::write_div_denom(u64 value, u64 mask) {
+    div_denom = (div_denom & ~mask) | (value & mask);
+    start_division();
+}
+
+void MathsUnit::write_sqrtcnt(u16 value, u32 mask) {
+    sqrtcnt = (sqrtcnt & ~mask) | (value & mask);
+    start_square_root();
+}
+
+void MathsUnit::write_sqrt_param(u64 value, u64 mask) {
+    sqrt_param = (sqrt_param & ~mask) | (value & mask);
+    start_square_root();
 }
 
 void MathsUnit::start_division() {

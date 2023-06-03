@@ -17,7 +17,11 @@ public:
     u64 read_sqrt_param() { return sqrt_param; }
     u32 read_sqrt_result() { return sqrt_result; }
 
-    void write_divcnt(u16 value);
+    void write_divcnt(u16 value, u32 mask);
+    void write_div_numer(u64 value, u64 mask);
+    void write_div_denom(u64 value, u64 mask);
+    void write_sqrtcnt(u16 value, u32 mask);
+    void write_sqrt_param(u64 value, u64 mask);
     
 private:
     void start_division();

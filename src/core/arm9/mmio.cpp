@@ -93,6 +93,20 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.arm9.get_irq().read_ie();
     case MMIO(0x04000214):
         return system.arm9.get_irq().read_irf();
+    case MMIO(0x04000280):
+        return system.maths_unit.read_divcnt();
+    case MMIO(0x040002a0):
+        return system.maths_unit.read_div_result();
+    case MMIO(0x040002a4):
+        return system.maths_unit.read_div_result() >> 32;
+    case MMIO(0x040002a8):
+        return system.maths_unit.read_divrem_result();
+    case MMIO(0x040002ac):
+        return system.maths_unit.read_divrem_result() >> 32;
+    case MMIO(0x040002b0):
+        return system.maths_unit.read_sqrtcnt();
+    case MMIO(0x040002b4):
+        return system.maths_unit.read_sqrt_result();
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv5);
     default:
@@ -139,10 +153,38 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xff000000) system.video_unit.vram.write_vramcnt(VRAM::Bank::D, value >> 24);
         break;
     case MMIO(0x04000244):
-        if constexpr (mask & 0xff) logger.error("ARM9Memory: handle vramcnt_e write");
-        if constexpr (mask & 0xff00) logger.error("ARM9Memory: handle vramcnt_f write");
-        if constexpr (mask & 0xff0000) logger.error("ARM9Memory: handle vramcnt_g write");
+        if constexpr (mask & 0xff) system.video_unit.vram.write_vramcnt(VRAM::Bank::E, value);
+        if constexpr (mask & 0xff00) system.video_unit.vram.write_vramcnt(VRAM::Bank::F, value >> 8);
+        if constexpr (mask & 0xff0000) system.video_unit.vram.write_vramcnt(VRAM::Bank::G, value >> 16);
         if constexpr (mask & 0xff000000) system.write_wramcnt(value >> 24);
+        break;
+    case MMIO(0x04000248):
+        if constexpr (mask & 0xff) system.video_unit.vram.write_vramcnt(VRAM::Bank::H, value);
+        if constexpr (mask & 0xff00) system.video_unit.vram.write_vramcnt(VRAM::Bank::I, value >> 8);
+        break;
+    case MMIO(0x04000280):
+        system.maths_unit.write_divcnt(value, mask);
+        break;
+    case MMIO(0x04000290):
+        system.maths_unit.write_div_numer(value, mask);
+        break;
+    case MMIO(0x04000294):
+        system.maths_unit.write_div_numer(static_cast<u64>(value) << 32, static_cast<u64>(mask) << 32);
+        break;
+    case MMIO(0x04000298):
+        system.maths_unit.write_div_denom(value, mask);
+        break;
+    case MMIO(0x0400029c):
+        system.maths_unit.write_div_denom(static_cast<u64>(value) << 32, static_cast<u64>(mask) << 32);
+        break;
+    case MMIO(0x040002b0):
+        system.maths_unit.write_sqrtcnt(value, mask);
+        break;
+    case MMIO(0x040002b8):
+        system.maths_unit.write_sqrt_param(value, mask);
+        break;
+    case MMIO(0x040002bc):
+        system.maths_unit.write_sqrt_param(static_cast<u64>(value) << 32, static_cast<u64>(mask) << 32);
         break;
     case MMIO(0x04000300):
         if constexpr (mask & 0xff) postflg = value & 0x1;
