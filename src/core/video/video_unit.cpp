@@ -4,7 +4,7 @@
 
 namespace core {
 
-VideoUnit::VideoUnit(System& system) : ppu_a(*this, Engine::A), ppu_b(*this, Engine::B), system(system) {}
+VideoUnit::VideoUnit(System& system) : ppu_a(*this, Engine::A), ppu_b(*this, Engine::B), system(system), irq7(system.arm7.get_irq()), irq9(system.arm9.get_irq()) {}
 
 void VideoUnit::reset() {
     powcnt1.data = 0;
@@ -62,25 +62,29 @@ void VideoUnit::render_scanline_start() {
     if (vcount < 192) {
         ppu_a.render_scanline(vcount);
         ppu_b.render_scanline(vcount);
-
-        // TODO
-        // system.dma[1].Trigger(2);
+        system.dma9.trigger(DMA::Timing::HBlank);
     }
 
     dispstat7.hblank = true;
     dispstat9.hblank = true;
 
-    // TODO: handle hblank irqs and dmas
+    if (dispstat7.hblank_irq) {
+        irq7.raise(IRQ::Source::HBlank);
+    }
 
-    // TODO
+    if (dispstat9.hblank_irq) {
+        irq9.raise(IRQ::Source::HBlank);
+    }
+
+    // TODO: handle 3d rendering
     // if (vcount == 215) {
     //     renderer_3d.render();
     // }
 
-    // TODO
-    // if ((vcount > 1) && (vcount < 194)) {
-    //     system.dma[1].Trigger(3);
-    // }
+    // TODO: is this correctly implemented?
+    if (vcount > 1 && vcount < 194) {
+        system.dma9.trigger(DMA::Timing::StartOfDisplay);
+    }
 }
 
 void VideoUnit::render_scanline_end() {
@@ -96,7 +100,15 @@ void VideoUnit::render_scanline_end() {
         dispstat7.vblank = true;
         dispstat9.vblank = true;
 
-        // TODO: handle vblank irqs and dmas
+        if (dispstat7.vblank_irq) {
+            irq7.raise(IRQ::Source::VBlank);
+        }
+
+        if (dispstat9.vblank_irq) {
+            irq9.raise(IRQ::Source::VBlank);
+        }
+
+        system.dma9.trigger(DMA::Timing::VBlank);
         break;
     case 262:
         dispstat7.vblank = false;
@@ -107,7 +119,9 @@ void VideoUnit::render_scanline_end() {
     if ((dispstat7.lyc_setting | (dispstat7.lyc_setting_msb << 1)) == vcount) {
         dispstat7.lyc = true;
 
-        // TODO: handle vcounter irqs
+        if (dispstat7.lyc_irq) {
+            irq7.raise(IRQ::Source::VCounter);
+        }
     } else {
         dispstat7.lyc = false;
     }
@@ -115,7 +129,9 @@ void VideoUnit::render_scanline_end() {
     if ((dispstat9.lyc_setting | (dispstat9.lyc_setting_msb << 1)) == vcount) {
         dispstat9.lyc = true;
 
-        // TODO: handle vcounter irqs
+        if (dispstat9.lyc_irq) {
+            irq9.raise(IRQ::Source::VCounter);
+        }
     } else {
         dispstat9.lyc = false;
     }

@@ -10,6 +10,22 @@ void DMA::reset() {
     dmafill.fill(0);
 }
 
+void DMA::trigger(Timing timing) {
+    for (int i = 0; i < 4; i++) {
+        auto& channel = channels[i];
+        Timing channel_timing;
+        if (arch == arm::Arch::ARMv5) {
+            channel_timing = channel.control.timing;
+        } else {
+            channel_timing = static_cast<Timing>(static_cast<int>(channel.control.timing) >> 1);
+        }
+
+        if (channel.control.enable && channel_timing == timing) {
+            transfer(i);
+        }
+    }
+}
+
 u16 DMA::read_length(int index) {
     return channels[index].length;
 }

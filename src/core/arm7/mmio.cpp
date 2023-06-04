@@ -81,16 +81,23 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x040000dc):
         if constexpr (mask & 0xffff) value |= system.dma7.read_length(3);
-        if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(3);
+        if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(3) << 16;
         return value;
     case MMIO(0x04000130):
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
         if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle keycnt read");
         return value;
+    case MMIO(0x04000138):
+        if constexpr (mask & 0xff) value |= system.rtc.read_rtc();
+        return value;
     case MMIO(0x04000180):
         return system.ipc.read_ipcsync(arm::Arch::ARMv4);
     case MMIO(0x04000184):
         return system.ipc.read_ipcfifocnt(arm::Arch::ARMv4);
+    case MMIO(0x040001c0):
+        if constexpr (mask & 0xffff) value |= system.spi.read_spicnt();
+        if constexpr (mask & 0xff0000) value |= system.spi.read_spidata() << 16;
+        break;
     case MMIO(0x04000208):
         return system.arm7.get_irq().read_ime();
     case MMIO(0x04000210):
@@ -131,6 +138,9 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000134): 
         if constexpr (mask & 0xffff) rcnt = value;
+        break;
+    case MMIO(0x04000138):
+        if constexpr (mask & 0xff) system.rtc.write_rtc(value);
         break;
     case MMIO(0x04000180):
         if constexpr (mask & 0xffff) system.ipc.write_ipcsync(arm::Arch::ARMv4, value);

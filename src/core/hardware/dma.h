@@ -14,6 +14,19 @@ public:
 
     void reset();
 
+    enum Timing : int {
+        Immediate = 0,
+        VBlank = 1,
+        HBlank = 2,
+        StartOfDisplay = 3,
+        MainMemoryDisplay = 4,
+        Slot1 = 5,
+        Slot2 = 6,
+        GXFIFO = 7,
+    };
+
+    void trigger(Timing timing);
+
     u16 read_length(int index);
     u16 read_control(int index);
 
@@ -32,17 +45,6 @@ private:
         Reload = 3,
     };
 
-    enum Timing : int {
-        Immediate = 0,
-        VBlank = 1,
-        HBlank = 2,
-        StartOfDisplay = 3,
-        MainMemoryDisplay = 4,
-        Slot1 = 5,
-        Slot2 = 6,
-        GXFIFO = 7,
-    };
-
     struct Channel {
         u32 length;
         u32 source;
@@ -58,8 +60,7 @@ private:
                 AddressMode source_control : 2;
                 bool repeat : 1;
                 bool transfer_words : 1;
-                bool gamepak_drq : 1;
-                Timing timing : 2;
+                Timing timing : 3;
                 bool irq : 1;
                 bool enable : 1;
             };

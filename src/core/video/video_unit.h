@@ -5,6 +5,7 @@
 #include "core/scheduler.h"
 #include "core/video/vram.h"
 #include "core/video/ppu.h"
+#include "core/hardware/irq.h"
 
 namespace core {
 
@@ -73,6 +74,8 @@ private:
     DISPSTAT dispstat7;
     DISPSTAT dispstat9;
     System& system;
+    IRQ& irq7;
+    IRQ& irq9;
 };
 
 } // namespace core

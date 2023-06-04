@@ -15,6 +15,7 @@
 #include "core/hardware/ipc.h"
 #include "core/hardware/maths_unit.h"
 #include "core/hardware/rtc.h"
+#include "core/hardware/spi.h"
 #include "core/scheduler.h"
 
 namespace core {
@@ -57,6 +58,7 @@ public:
     IPC ipc;
     MathsUnit maths_unit;
     RTC rtc;
+    SPI spi;
     Scheduler scheduler;
     std::array<u8, 0x400000> main_memory;
     std::array<u8, 0x8000> shared_wram;
