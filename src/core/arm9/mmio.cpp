@@ -107,6 +107,10 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.maths_unit.read_sqrtcnt();
     case MMIO(0x040002b4):
         return system.maths_unit.read_sqrt_result();
+    case MMIO(0x04004000):
+    case MMIO(0x04004008):
+        // dsi registers
+        return 0;
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv5);
     default:
@@ -125,8 +129,8 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         system.video_unit.ppu_a.write_dispcnt(value, mask);
         break;
     case MMIO(0x040000d0):
-        if constexpr (mask & 0xffff) system.dma9.write_length(2, value);
-        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle dmacnt write");
+        if constexpr (mask & 0xffff) system.dma9.write_length(2, value, mask);
+        if constexpr (mask & 0xffff0000) system.dma9.write_control(2, value >> 16, mask >> 16);
         break;
     case MMIO(0x04000180):
         if constexpr (mask & 0xffff) system.ipc.write_ipcsync(arm::Arch::ARMv5, value);

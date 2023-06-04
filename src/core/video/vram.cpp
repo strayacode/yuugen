@@ -32,7 +32,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
 
     reset_vram_regions();
 
-    if (vramcnt[0].enabled) {
+    if (vramcnt[0].enable) {
         auto offset = vramcnt[0].offset;
         switch (vramcnt[0].mst) {
         case 0:
@@ -50,7 +50,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (vramcnt[1].enabled) {
+    if (vramcnt[1].enable) {
         auto offset = vramcnt[1].offset;
         switch (vramcnt[1].mst) {
         case 0:
@@ -68,7 +68,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
     
-    if (vramcnt[2].enabled) {
+    if (vramcnt[2].enable) {
         auto offset = vramcnt[2].offset;
         switch (vramcnt[2].mst) {
         case 0:
@@ -89,13 +89,13 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (vramcnt[2].enabled && (vramcnt[2].mst == 2)) {
+    if (vramcnt[2].enable && (vramcnt[2].mst == 2)) {
         vramstat |= 1;
     } else {
         vramstat &= ~1;
     }
     
-    if (vramcnt[3].enabled) {
+    if (vramcnt[3].enable) {
         auto offset = vramcnt[3].offset;
         switch (vramcnt[3].mst) {
         case 0:
@@ -116,13 +116,13 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (vramcnt[3].enabled && (vramcnt[3].mst == 2)) {
+    if (vramcnt[3].enable && (vramcnt[3].mst == 2)) {
         vramstat |= 1 << 1;
     } else {
         vramstat &= ~(1 << 1);
     }
     
-    if (vramcnt[4].enabled) {
+    if (vramcnt[4].enable) {
         switch (vramcnt[4].mst) {
         case 0:
             lcdc.map(bank_e.data(), 0x80000, 0x10000);
@@ -142,7 +142,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (vramcnt[5].enabled) {
+    if (vramcnt[5].enable) {
         auto offset = vramcnt[5].offset;
         switch (vramcnt[5].mst) {
         case 0:
@@ -166,7 +166,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (vramcnt[6].enabled) {
+    if (vramcnt[6].enable) {
         auto offset = vramcnt[6].offset;
         switch (vramcnt[6].mst) {
         case 0:
@@ -190,7 +190,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (vramcnt[7].enabled) {
+    if (vramcnt[7].enable) {
         switch (vramcnt[7].mst) {
         case 0:
             lcdc.map(bank_h.data(), 0x98000, 0x8000);
@@ -204,7 +204,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
         }
     }
 
-    if (vramcnt[8].enabled) {
+    if (vramcnt[8].enable) {
         switch (vramcnt[8].mst) {
         case 0:
             lcdc.map(bank_i.data(), 0xa0000, 0x4000);

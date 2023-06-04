@@ -86,7 +86,7 @@ private:
             u8 mst : 3;
             u8 offset : 2;
             u8 : 2;
-            bool enabled : 1;
+            bool enable : 1;
         };
 
         u8 data;

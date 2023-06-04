@@ -55,24 +55,40 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 value) {
         memory.dtcm.config.enable_writes = control.dtcm_enable;
         memory.itcm.config.enable_reads = control.itcm_enable && !control.itcm_write_only;
         memory.itcm.config.enable_writes = control.itcm_enable;
-        // logger.debug("ARM9Coprocessor: dtcm enable_reads: %d", memory.dtcm.config.enable_reads);
-        // logger.debug("ARM9Coprocessor: dtcm enable_writes: %d", memory.dtcm.config.enable_writes);
-        // logger.debug("ARM9Coprocessor: itcm enable_reads: %d", memory.itcm.config.enable_reads);
-        // logger.debug("ARM9Coprocessor: itcm enable_writes: %d", memory.itcm.config.enable_writes);
+        break;
+    case 0x020000:
+    case 0x020001:
+    case 0x030000:
+    case 0x050002:
+    case 0x050003:
+    case 0x060000:
+    case 0x060100:
+    case 0x060200:
+    case 0x060300:
+    case 0x060400:
+    case 0x060500:
+    case 0x060600:
+    case 0x060700:
+    case 0x070500:
+    case 0x070501:
+    case 0x070600:
+    case 0x070601:
+    case 0x070602:
+    case 0x070A01:
+    case 0x070A02:
+    case 0x070A04:
+    case 0x070E01:
+    case 0x070E02:
         break;
     case 0x090100:
         dtcm_control.data = value;
         memory.dtcm.config.base = dtcm_control.base << 12;
         memory.dtcm.config.limit = memory.dtcm.config.base + (512 << dtcm_control.size);
-        // logger.debug("ARM9Coprocessor: dtcm base: %08x", memory.dtcm.config.base);
-        // logger.debug("ARM9Coprocessor: dtcm limit: %08x", memory.dtcm.config.limit);
         break;
     case 0x090101:
         itcm_control.data = value;
         memory.itcm.config.base = 0;
         memory.itcm.config.limit = 512 << itcm_control.size;
-        // logger.debug("ARM9Coprocessor: itcm base: %08x", memory.itcm.config.base);
-        // logger.debug("ARM9Coprocessor: itcm limit: %08x", memory.itcm.config.limit);
         break;
     default:
         logger.error("ARM9Coprocessor: handle register write c%d, c%d, c%d = %08x", cn, cm, cp, value);

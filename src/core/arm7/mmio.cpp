@@ -103,6 +103,16 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
 template <u32 mask>
 void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
+    case MMIO(0x040000d4):
+        system.dma7.write_source(3, value, mask);
+        break;
+    case MMIO(0x040000d8):
+        system.dma7.write_destination(3, value, mask);
+        break;
+    case MMIO(0x040000dc):
+        if constexpr (mask & 0xffff) system.dma7.write_length(3, value, mask);
+        if constexpr (mask & 0xffff0000) system.dma7.write_control(3, value >> 16, mask >> 16);
+        break;
     case MMIO(0x04000134): 
         if constexpr (mask & 0xffff) rcnt = value;
         break;
@@ -128,8 +138,10 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xff) postflg = value & 0x1;
         if constexpr (mask & 0xff00) logger.error("handle haltcnt write");
         break;
+    case MMIO(0x04000400) ... MMIO(0x040004fc):
+        system.spu.write_channel(addr, value, mask);
     case MMIO(0x04000504):
-        system.spu.write_soundbias(value);
+        system.spu.write_soundbias(value, mask);
         break;
     default:
         logger.error("ARM7Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
