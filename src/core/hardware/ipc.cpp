@@ -1,4 +1,5 @@
 #include "common/bits.h"
+#include "common/logger.h"
 #include "core/hardware/ipc.h"
 
 namespace core {
@@ -33,7 +34,7 @@ u32 IPC::read_ipcfiforecv(arm::Arch arch) {
     auto rx_irq = irq[!static_cast<int>(arch)];
     
     if (!rx_fifo.is_empty()) {
-        tx_recv = rx_fifo.get_size();
+        tx_recv = rx_fifo.get_front();
 
         if (tx_cnt.enable_fifos) {
             rx_fifo.pop();
