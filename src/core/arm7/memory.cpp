@@ -65,6 +65,8 @@ u32 ARM7Memory::read_word(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_word(addr);
+    case 0x06:
+        return system.video_unit.vram.read_arm7<u32>(addr);
     default:
         logger.error("ARM7Memory: handle 32-bit read %08x", addr);
     }

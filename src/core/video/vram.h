@@ -62,6 +62,18 @@ public:
         }
     }
 
+    template <typename T>
+    T read_arm7(u32 addr) {
+        return arm7_vram.read<T>(addr);
+    }
+
+    template <typename T>
+    void write_arm7(u32 addr, T value) {
+        arm7_vram.write<T>(addr, value);
+    }
+
+    u8 read_vramstat() { return vramstat; }
+
     void write_vramcnt(Bank bank, u8 value);
 
 private:

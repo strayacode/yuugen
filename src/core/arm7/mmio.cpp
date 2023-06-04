@@ -73,6 +73,7 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
 
 template <u32 mask>
 u32 ARM7Memory::mmio_read_word(u32 addr) {
+    u32 value = 0;
     switch (MMIO(addr)) {
     case MMIO(0x04000180):
         return system.ipc.read_ipcsync(arm::Arch::ARMv4);
@@ -84,6 +85,10 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return system.arm7.get_irq().read_ie();
     case MMIO(0x04000214):
         return system.arm7.get_irq().read_irf();
+    case MMIO(0x04000240):
+        if constexpr (mask & 0xff) value |= system.video_unit.vram.read_vramstat();
+        if constexpr (mask & 0xff00) value |= static_cast<u32>(system.read_wramcnt()) << 8;
+        return value;
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv4);
     default:

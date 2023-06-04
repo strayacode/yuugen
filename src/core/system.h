@@ -28,6 +28,8 @@ public:
     void stop();
     void set_game_path(const std::string& game_path);
     void set_boot_mode(BootMode boot_mode);
+
+    u8 read_wramcnt() { return wramcnt; }
     void write_wramcnt(u8 data);
 
     using UpdateCallback = common::Callback<void(f32)>;
