@@ -25,6 +25,7 @@ add_library(core
     hardware/ipc.h hardware/ipc.cpp
     hardware/irq.h hardware/irq.cpp
     hardware/maths_unit.h hardware/maths_unit.cpp
+    hardware/rtc.h hardware/rtc.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

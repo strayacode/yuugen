@@ -25,6 +25,8 @@ void System::reset() {
     dma7.reset();
     dma9.reset();
     ipc.reset();
+    maths_unit.reset();
+    rtc.reset();
 
     main_memory.fill(0);
     shared_wram.fill(0);

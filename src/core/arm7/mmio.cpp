@@ -75,9 +75,17 @@ template <u32 mask>
 u32 ARM7Memory::mmio_read_word(u32 addr) {
     u32 value = 0;
     switch (MMIO(addr)) {
+    case MMIO(0x04000004):
+        if constexpr (mask & 0xffff) value |= system.video_unit.read_dispstat(arm::Arch::ARMv4);
+        if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle vcount read");
+        return value;
     case MMIO(0x040000dc):
         if constexpr (mask & 0xffff) value |= system.dma7.read_length(3);
         if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(3);
+        return value;
+    case MMIO(0x04000130):
+        if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
+        if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle keycnt read");
         return value;
     case MMIO(0x04000180):
         return system.ipc.read_ipcsync(arm::Arch::ARMv4);
@@ -107,6 +115,10 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
 template <u32 mask>
 void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
+    case MMIO(0x04000004):
+        if constexpr (mask & 0xffff) system.video_unit.write_dispstat(arm::Arch::ARMv4, value, mask);
+        if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle vcount writes");
+        break;
     case MMIO(0x040000d4):
         system.dma7.write_source(3, value, mask);
         break;
@@ -144,6 +156,7 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000400) ... MMIO(0x040004fc):
         system.spu.write_channel(addr, value, mask);
+        break;
     case MMIO(0x04000504):
         system.spu.write_soundbias(value, mask);
         break;

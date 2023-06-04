@@ -37,6 +37,15 @@ u16 VideoUnit::read_dispstat(arm::Arch arch) {
     }
 }
 
+void VideoUnit::write_dispstat(arm::Arch arch, u16 value, u32 mask) {
+    mask &= 0xffbf;
+    if (arch == arm::Arch::ARMv5) {
+        dispstat9.data = (dispstat9.data & ~mask) | (value & mask);
+    } else {
+        dispstat7.data = (dispstat7.data & ~mask) | (value & mask);
+    }
+}
+
 void VideoUnit::write_powcnt1(u16 value) {
     powcnt1.data = value & 0x820f;
 }
