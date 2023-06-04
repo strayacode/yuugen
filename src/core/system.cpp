@@ -29,6 +29,7 @@ void System::reset() {
     main_memory.fill(0);
     shared_wram.fill(0);
     wramcnt = 0;
+    haltcnt = 0;
 
     frames = 0;
 }
@@ -72,6 +73,20 @@ void System::write_wramcnt(u8 data) {
     wramcnt = data & 0x3;
     arm7.get_memory().update_wram_mapping();
     arm9.get_memory().update_wram_mapping();
+}
+
+void System::write_haltcnt(u8 data) {
+    haltcnt = data & 0xc0;
+    switch ((haltcnt >> 6) & 0x3) {
+    case 0x2:
+        arm7.get_cpu().halt();
+        break;
+    case 0x3:
+        logger.todo("System: handle sleep mode");
+        break;
+    default:
+        logger.todo("System: unimplemented power down mode");
+    }
 }
 
 void System::run_thread() {

@@ -21,6 +21,7 @@ public:
     ARM7Memory& get_memory() { return memory; }
     ARM7Coprocessor& get_coprocessor() { return coprocessor; }
     IRQ& get_irq() { return irq; }
+    arm::CPU& get_cpu() { return *cpu; }
 
 private:
     System& system;

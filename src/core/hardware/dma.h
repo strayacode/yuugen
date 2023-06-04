@@ -14,7 +14,8 @@ public:
 
     void reset();
 
-    // TODO: in read_control read 5 bits from length
+    u16 read_length(int index);
+    u16 read_control(int index);
 
     void write_length(int index, u16 value, u32 mask);
     void write_source(int index, u32 value, u32 mask);

@@ -4,7 +4,7 @@
 
 namespace core {
 
-ARM9Coprocessor::ARM9Coprocessor(ARM9Memory& memory) : memory(memory) {}
+ARM9Coprocessor::ARM9Coprocessor(std::unique_ptr<arm::CPU>& cpu, ARM9Memory& memory) : cpu(cpu), memory(memory) {}
 
 void ARM9Coprocessor::reset() {
     control.data = 0;
@@ -74,11 +74,14 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 value) {
     case 0x070600:
     case 0x070601:
     case 0x070602:
-    case 0x070A01:
-    case 0x070A02:
-    case 0x070A04:
-    case 0x070E01:
-    case 0x070E02:
+    case 0x070a01:
+    case 0x070a02:
+    case 0x070a04:
+    case 0x070e01:
+    case 0x070e02:
+        break;
+    case 0x070004:
+        cpu->halt();
         break;
     case 0x090100:
         dtcm_control.data = value;

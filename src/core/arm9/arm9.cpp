@@ -5,7 +5,7 @@
 
 namespace core {
 
-ARM9::ARM9(System& system) : system(system), memory(system), coprocessor(memory), irq(cpu) {}
+ARM9::ARM9(System& system) : system(system), memory(system), coprocessor(cpu, memory), irq(cpu) {}
 
 void ARM9::reset() {
     memory.reset();

@@ -111,6 +111,10 @@ bool Interpreter::is_halted() {
     return halted;
 }
 
+void Interpreter::halt() {
+    halted = true;
+}
+
 void Interpreter::illegal_instruction() {
     logger.error("Interpreter: illegal instruction %08x at pc = %08x", instruction, state.gpr[15]);
 }

@@ -10,6 +10,14 @@ void DMA::reset() {
     dmafill.fill(0);
 }
 
+u16 DMA::read_length(int index) {
+    return channels[index].length;
+}
+
+u16 DMA::read_control(int index) {
+    return ((channels[index].length >> 16) & 0x1f) | channels[index].control.data;
+}
+
 void DMA::write_length(int index, u16 value, u32 mask) {
     channels[index].length = (channels[index].length & ~mask) | (value & mask);
 }

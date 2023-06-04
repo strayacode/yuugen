@@ -75,6 +75,10 @@ template <u32 mask>
 u32 ARM7Memory::mmio_read_word(u32 addr) {
     u32 value = 0;
     switch (MMIO(addr)) {
+    case MMIO(0x040000dc):
+        if constexpr (mask & 0xffff) value |= system.dma7.read_length(3);
+        if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(3);
+        return value;
     case MMIO(0x04000180):
         return system.ipc.read_ipcsync(arm::Arch::ARMv4);
     case MMIO(0x04000184):
@@ -92,7 +96,7 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv4);
     default:
-        logger.error("ARM7Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
+        logger.warn("ARM7Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
     }
 
@@ -136,7 +140,7 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000300):
         if constexpr (mask & 0xff) postflg = value & 0x1;
-        if constexpr (mask & 0xff00) logger.error("handle haltcnt write");
+        if constexpr (mask & 0xff00) system.write_haltcnt(value >> 8);
         break;
     case MMIO(0x04000400) ... MMIO(0x040004fc):
         system.spu.write_channel(addr, value, mask);
@@ -144,7 +148,7 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         system.spu.write_soundbias(value, mask);
         break;
     default:
-        logger.error("ARM7Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
+        logger.warn("ARM7Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
         break;
     }
 }

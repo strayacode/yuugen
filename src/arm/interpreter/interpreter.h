@@ -20,6 +20,7 @@ public:
     void set_mode(Mode mode) override;
     void update_irq(bool irq) override;
     bool is_halted() override;
+    void halt() override;
 
     // arm instruction handlers
     void arm_branch_link_maybe_exchange();

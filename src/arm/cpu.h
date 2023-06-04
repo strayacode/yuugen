@@ -70,6 +70,7 @@ public:
     virtual void set_mode(Mode mode) = 0;
     virtual void update_irq(bool irq) = 0;
     virtual bool is_halted() = 0;
+    virtual void halt() = 0;
     State& get_state() { return state; }
 
     State state;

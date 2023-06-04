@@ -114,7 +114,7 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv5);
     default:
-        logger.error("ARM9Memory: unmapped %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
+        logger.warn("ARM9Memory: unmapped %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
     }
 
@@ -197,7 +197,7 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         system.video_unit.write_powcnt1(value);
         break;
     default:
-        logger.error("ARM9Memory: unmapped %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
+        logger.warn("ARM9Memory: unmapped %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
         break;
     }
 }

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include "common/types.h"
 #include "arm/coprocessor.h"
+#include "arm/cpu.h"
 
 namespace core {
 
@@ -10,7 +12,7 @@ class ARM9Memory;
 
 class ARM9Coprocessor : public arm::Coprocessor {
 public:
-    ARM9Coprocessor(ARM9Memory& memory);
+    ARM9Coprocessor(std::unique_ptr<arm::CPU>& cpu, ARM9Memory& memory);
 
     void reset() override;
     u32 read(u32 cn, u32 cm, u32 cp) override;
@@ -72,6 +74,7 @@ private:
 
     TCMControl dtcm_control;
     TCMControl itcm_control;
+    std::unique_ptr<arm::CPU>& cpu;
     ARM9Memory& memory;
 };
 

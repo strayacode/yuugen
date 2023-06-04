@@ -31,6 +31,7 @@ public:
 
     u8 read_wramcnt() { return wramcnt; }
     void write_wramcnt(u8 data);
+    void write_haltcnt(u8 data);
 
     using UpdateCallback = common::Callback<void(f32)>;
 
@@ -58,6 +59,7 @@ public:
     std::array<u8, 0x400000> main_memory;
     std::array<u8, 0x8000> shared_wram;
     u8 wramcnt;
+    u8 haltcnt;
 
 private:
     void run_thread();
