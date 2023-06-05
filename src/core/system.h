@@ -16,6 +16,7 @@
 #include "core/hardware/maths_unit.h"
 #include "core/hardware/rtc.h"
 #include "core/hardware/spi.h"
+#include "core/hardware/timers.h"
 #include "core/scheduler.h"
 
 namespace core {
@@ -59,6 +60,8 @@ public:
     MathsUnit maths_unit;
     RTC rtc;
     SPI spi;
+    Timers timers7;
+    Timers timers9;
     Scheduler scheduler;
     std::array<u8, 0x400000> main_memory;
     std::array<u8, 0x8000> shared_wram;

@@ -29,11 +29,13 @@ public:
 
     u16 read_length(int index);
     u16 read_control(int index);
+    u32 read_dmafill(u32 addr);
 
     void write_length(int index, u16 value, u32 mask);
     void write_source(int index, u32 value, u32 mask);
     void write_destination(int index, u32 value, u32 mask);
     void write_control(int index, u16 value, u32 mask);
+    void write_dmafill(u32 addr, u32 value);
 
 private:
     void transfer(int index);

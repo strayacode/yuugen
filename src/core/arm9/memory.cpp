@@ -104,8 +104,14 @@ void ARM9Memory::write_word(u32 addr, u32 value) {
     case 0x04:
         mmio_write_word(addr, value);
         break;
+    case 0x05:
+        system.video_unit.write_palette_ram<u32>(addr, value);
+        break;
     case 0x06:
         system.video_unit.vram.write<u32>(addr, value);
+        break;
+    case 0x07:
+        system.video_unit.write_oam<u32>(addr, value);
         break;
     case 0x08: case 0x09:
         // ignore gba cart writes

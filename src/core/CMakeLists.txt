@@ -27,6 +27,7 @@ add_library(core
     hardware/maths_unit.h hardware/maths_unit.cpp
     hardware/rtc.h hardware/rtc.cpp
     hardware/spi.h hardware/spi.cpp
+    hardware/timers.h hardware/timers.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

@@ -83,6 +83,9 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.dma9.read_length(3);
         if constexpr (mask & 0xffff0000) value |= system.dma9.read_control(3) << 16;
         return value;
+    case MMIO(0x040000e0) ... MMIO(0x040000ec):
+        return system.dma9.read_dmafill(addr);
+        break;
     case MMIO(0x04000130):
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
         if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle keycnt read");
@@ -140,7 +143,7 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000004):
         if constexpr (mask & 0xffff) system.video_unit.write_dispstat(arm::Arch::ARMv5, value, mask);
-        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle vcount writes");
+        if constexpr (mask & 0xffff0000) system.video_unit.write_vcount(value >> 16, mask >> 16);
         break;
     case MMIO(0x040000b0):
         system.dma9.write_source(0, value, mask);
@@ -151,6 +154,22 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x040000b8):
         if constexpr (mask & 0xffff) system.dma9.write_length(0, value, mask);
         if constexpr (mask & 0xffff0000) system.dma9.write_control(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x040000bc):
+        system.dma9.write_source(1, value, mask);
+        break;
+    case MMIO(0x040000c0):
+        system.dma9.write_destination(1, value, mask);
+        break;
+    case MMIO(0x040000c4):
+        if constexpr (mask & 0xffff) system.dma9.write_length(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.dma9.write_control(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x040000c8):
+        system.dma9.write_source(2, value, mask);
+        break;
+    case MMIO(0x040000cc):
+        system.dma9.write_destination(2, value, mask);
         break;
     case MMIO(0x040000d0):
         if constexpr (mask & 0xffff) system.dma9.write_length(2, value, mask);
@@ -165,6 +184,25 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x040000dc):
         if constexpr (mask & 0xffff) system.dma9.write_length(3, value, mask);
         if constexpr (mask & 0xffff0000) system.dma9.write_control(3, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x040000e0) ... MMIO(0x040000ec):
+        system.dma9.write_dmafill(addr, value);
+        break;
+    case MMIO(0x04000100):
+        if constexpr (mask & 0xffff) system.timers9.write_length(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers9.write_control(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000104):
+        if constexpr (mask & 0xffff) system.timers9.write_length(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers9.write_control(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000108):
+        if constexpr (mask & 0xffff) system.timers9.write_length(2, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers9.write_control(2, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x0400010c):
+        if constexpr (mask & 0xffff) system.timers9.write_length(3, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers9.write_control(3, value >> 16, mask >> 16);
         break;
     case MMIO(0x04000180):
         if constexpr (mask & 0xffff) system.ipc.write_ipcsync(arm::Arch::ARMv5, value);

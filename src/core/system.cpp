@@ -4,7 +4,18 @@
 
 namespace core {
 
-System::System() : arm7(*this), arm9(*this), cartridge(*this), video_unit(*this), dma7(arm7.get_memory(), arm7.get_irq(), arm::Arch::ARMv4), dma9(arm9.get_memory(), arm9.get_irq(), arm::Arch::ARMv5), ipc(arm7.get_irq(), arm9.get_irq()), spi(*this) {
+System::System() :
+    arm7(*this),
+    arm9(*this),
+    cartridge(*this),
+    video_unit(*this),
+    dma7(arm7.get_memory(), arm7.get_irq(), arm::Arch::ARMv4),
+    dma9(arm9.get_memory(), arm9.get_irq(), arm::Arch::ARMv5),
+    ipc(arm7.get_irq(), arm9.get_irq()),
+    spi(*this),
+    timers7(scheduler, arm7.get_irq()),
+    timers9(scheduler, arm9.get_irq())
+{
     arm7.select_backend(arm::Backend::Interpreter);
     arm9.select_backend(arm::Backend::Interpreter);
 }
@@ -28,6 +39,8 @@ void System::reset() {
     maths_unit.reset();
     rtc.reset();
     spi.reset();
+    timers7.reset();
+    timers9.reset();
 
     main_memory.fill(0);
     shared_wram.fill(0);

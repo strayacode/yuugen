@@ -1,6 +1,8 @@
 #pragma once
 
+#include <array>
 #include "common/types.h"
+#include "common/memory.h"
 #include "arm/arch.h"
 #include "core/scheduler.h"
 #include "core/video/vram.h"
@@ -26,9 +28,30 @@ public:
     u16 read_powcnt1() { return powcnt1.data; }
 
     void write_dispstat(arm::Arch arch, u16 value, u32 mask);
+    void write_vcount(u16 value, u32 mask);
     void write_powcnt1(u16 value, u32 mask);
 
     u32* get_framebuffer(Screen screen);
+
+    template <typename T>
+    void read_palette_ram(u32 addr, T value) {
+        return common::read<T>(palette_ram.data(), addr & 0x7ff);
+    }
+
+    template <typename T>
+    void read_oam(u32 addr, T value) {
+        return common::read<T>(oam.data(), addr & 0x7ff);
+    }
+
+    template <typename T>
+    void write_palette_ram(u32 addr, T value) {
+        common::write<T>(palette_ram.data(), value, addr & 0x7ff);
+    }
+
+    template <typename T>
+    void write_oam(u32 addr, T value) {
+        common::write<T>(oam.data(), value, addr & 0x7ff);
+    }
 
     VRAM vram;
     PPU ppu_a;
@@ -68,6 +91,9 @@ private:
 
         u16 data;
     };
+
+    std::array<u8, 0x800> palette_ram;
+    std::array<u8, 0x800> oam;
 
     EventType scanline_start_event;
     EventType scanline_end_event;

@@ -7,6 +7,8 @@ namespace core {
 VideoUnit::VideoUnit(System& system) : ppu_a(*this, Engine::A), ppu_b(*this, Engine::B), system(system), irq7(system.arm7.get_irq()), irq9(system.arm9.get_irq()) {}
 
 void VideoUnit::reset() {
+    palette_ram.fill(0);
+    oam.fill(0);
     powcnt1.data = 0;
     dispstat7.data = 0;
     dispstat9.data = 0;
@@ -44,6 +46,10 @@ void VideoUnit::write_dispstat(arm::Arch arch, u16 value, u32 mask) {
     } else {
         dispstat7.data = (dispstat7.data & ~mask) | (value & mask);
     }
+}
+
+void VideoUnit::write_vcount(u16 value, u32 mask) {
+    vcount = (vcount & ~mask) | (value & mask);
 }
 
 void VideoUnit::write_powcnt1(u16 value, u32 mask) {

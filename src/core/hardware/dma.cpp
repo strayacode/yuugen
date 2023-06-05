@@ -34,6 +34,10 @@ u16 DMA::read_control(int index) {
     return ((channels[index].length >> 16) & 0x1f) | channels[index].control.data;
 }
 
+u32 DMA::read_dmafill(u32 addr) {
+    return dmafill[(addr - 0x040000e0) / 4];
+}
+
 void DMA::write_length(int index, u16 value, u32 mask) {
     channels[index].length = (channels[index].length & ~mask) | (value & mask);
 }
@@ -78,6 +82,10 @@ void DMA::write_control(int index, u16 value, u32 mask) {
     if (channel.control.timing == Timing::Immediate) {
         transfer(index);
     }
+}
+
+void DMA::write_dmafill(u32 addr, u32 value) {
+    dmafill[(addr - 0x040000e0) / 4] = value;
 }
 
 void DMA::transfer(int index) {
