@@ -8,6 +8,10 @@ namespace core {
 class SPU {
 public:
     void reset();
+
+    u16 read_soundcnt() { return soundcnt; }
+
+    void write_soundcnt(u16 value, u32 mask);
     void write_soundbias(u32 value, u32 mask);
     void write_channel(u32 addr, u32 value, u32 mask);
 
@@ -55,6 +59,7 @@ private:
 
     std::array<Channel, 16> channels;
     u32 soundbias;
+    u16 soundcnt;
 };
 
 } // namespace core

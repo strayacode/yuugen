@@ -108,6 +108,10 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xff) value |= system.video_unit.vram.read_vramstat();
         if constexpr (mask & 0xff00) value |= static_cast<u32>(system.read_wramcnt()) << 8;
         return value;
+    case MMIO(0x04000304):
+        return system.video_unit.read_powcnt1();
+    case MMIO(0x04000500):
+        return system.spu.read_soundcnt();
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv4);
     default:
@@ -168,8 +172,14 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xff) postflg = value & 0x1;
         if constexpr (mask & 0xff00) system.write_haltcnt(value >> 8);
         break;
+    case MMIO(0x04000304):
+        system.video_unit.write_powcnt1(value, mask);
+        break;
     case MMIO(0x04000400) ... MMIO(0x040004fc):
         system.spu.write_channel(addr, value, mask);
+        break;
+    case MMIO(0x04000500):
+        system.spu.write_soundcnt(value, mask);
         break;
     case MMIO(0x04000504):
         system.spu.write_soundbias(value, mask);

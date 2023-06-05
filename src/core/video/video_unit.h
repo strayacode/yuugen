@@ -22,8 +22,11 @@ public:
 
     void reset();
     u16 read_dispstat(arm::Arch arch);
+
+    u16 read_powcnt1() { return powcnt1.data; }
+
     void write_dispstat(arm::Arch arch, u16 value, u32 mask);
-    void write_powcnt1(u16 value);
+    void write_powcnt1(u16 value, u32 mask);
 
     u32* get_framebuffer(Screen screen);
 

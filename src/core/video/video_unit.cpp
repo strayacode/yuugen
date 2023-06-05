@@ -46,8 +46,9 @@ void VideoUnit::write_dispstat(arm::Arch arch, u16 value, u32 mask) {
     }
 }
 
-void VideoUnit::write_powcnt1(u16 value) {
-    powcnt1.data = value & 0x820f;
+void VideoUnit::write_powcnt1(u16 value, u32 mask) {
+    mask &= 0x820f;
+    powcnt1.data = (powcnt1.data & ~mask) | (value & mask);
 }
 
 u32* VideoUnit::get_framebuffer(Screen screen) {

@@ -8,6 +8,10 @@ void SPU::reset() {
     soundbias = 0;
 }
 
+void SPU::write_soundcnt(u16 value, u32 mask) {
+    soundcnt = (soundcnt & ~mask) | (value & mask);
+}
+
 void SPU::write_soundbias(u32 value, u32 mask) {
     mask &= 0x3ff;
     soundbias = (soundbias & ~mask) | (value & mask);
