@@ -4,7 +4,7 @@
 
 namespace core {
 
-System::System() : arm7(*this), arm9(*this), cartridge(*this), video_unit(*this), dma7(arm7.get_memory(), arm7.get_irq(), arm::Arch::ARMv4), dma9(arm9.get_memory(), arm9.get_irq(), arm::Arch::ARMv5), ipc(arm7.get_irq(), arm9.get_irq()) {
+System::System() : arm7(*this), arm9(*this), cartridge(*this), video_unit(*this), dma7(arm7.get_memory(), arm7.get_irq(), arm::Arch::ARMv4), dma9(arm9.get_memory(), arm9.get_irq(), arm::Arch::ARMv5), ipc(arm7.get_irq(), arm9.get_irq()), spi(*this) {
     arm7.select_backend(arm::Backend::Interpreter);
     arm9.select_backend(arm::Backend::Interpreter);
 }
@@ -128,6 +128,7 @@ void System::direct_boot() {
     cartridge.direct_boot();
     arm7.direct_boot();
     arm9.direct_boot();
+    spi.direct_boot();
     logger.debug("System: direct booted successfully");
 }
 

@@ -74,6 +74,7 @@ public:
 
     u8 read_vramstat() { return vramstat; }
 
+    u8 read_vramcnt(Bank bank) { return vramcnt[static_cast<int>(bank)].data; }
     void write_vramcnt(Bank bank, u8 value);
 
 private:

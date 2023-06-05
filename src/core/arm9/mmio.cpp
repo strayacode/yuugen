@@ -93,6 +93,12 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.arm9.get_irq().read_ie();
     case MMIO(0x04000214):
         return system.arm9.get_irq().read_irf();
+    case MMIO(0x04000240):
+        if constexpr (mask & 0xff) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::A);
+        if constexpr (mask & 0xff00) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::B) << 8;
+        if constexpr (mask & 0xff0000) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::C) << 16;
+        if constexpr (mask & 0xff000000) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::D) << 24;
+        return value;
     case MMIO(0x04000280):
         return system.maths_unit.read_divcnt();
     case MMIO(0x040002a0):
@@ -127,6 +133,10 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
     case MMIO(0x04000000):
         system.video_unit.ppu_a.write_dispcnt(value, mask);
+        break;
+    case MMIO(0x04000004):
+        if constexpr (mask & 0xffff) system.video_unit.write_dispstat(arm::Arch::ARMv5, value, mask);
+        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle vcount writes");
         break;
     case MMIO(0x040000d0):
         if constexpr (mask & 0xffff) system.dma9.write_length(2, value, mask);

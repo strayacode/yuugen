@@ -151,6 +151,10 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x04000188):
         system.ipc.write_ipcfifosend(arm::Arch::ARMv4, value);
         break;
+    case MMIO(0x040001c0):
+        if constexpr (mask & 0xffff) system.spi.write_spicnt(value, mask);
+        if constexpr (mask & 0xffff0000) system.spi.write_spidata(value >> 16);
+        break;
     case MMIO(0x04000208):
         system.arm7.get_irq().write_ime(value);
         break;
