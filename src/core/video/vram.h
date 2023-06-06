@@ -2,6 +2,7 @@
 
 #include <array>
 #include "common/types.h"
+#include "common/logger.h"
 #include "core/video/vram_region.h"
 
 namespace core {
@@ -74,7 +75,10 @@ public:
 
     u8 read_vramstat() { return vramstat; }
 
-    u8 read_vramcnt(Bank bank) { return vramcnt[static_cast<int>(bank)].data; }
+    u8 read_vramcnt(Bank bank) {
+        logger.log("read vramcnt bank %d %02x\n", static_cast<int>(bank), vramcnt[static_cast<int>(bank)].data);
+        return vramcnt[static_cast<int>(bank)].data;
+    }
     void write_vramcnt(Bank bank, u8 value);
 
 private:

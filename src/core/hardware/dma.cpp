@@ -61,7 +61,7 @@ void DMA::write_control(int index, u16 value, u32 mask) {
     auto old_control = channel.control;
 
     channel.length &= 0xffff;
-    channel.length |= value & 0x1f & mask;
+    channel.length |= (value & 0x1f & mask) << 16;
     channel.control.data = (channel.control.data & ~mask) | (value & mask);
 
     if (channel.control.enable && channel.control.timing == Timing::GXFIFO) {

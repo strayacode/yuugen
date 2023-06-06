@@ -30,6 +30,8 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
 
     vramcnt[index].data = value;
 
+    logger.log("vramcnt[%d] = %08x\n", index, vramcnt[index].data);
+
     reset_vram_regions();
 
     if (vramcnt[0].enable) {
