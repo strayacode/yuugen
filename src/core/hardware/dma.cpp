@@ -3,11 +3,17 @@
 
 namespace core {
 
-DMA::DMA(arm::Memory& memory, IRQ& irq, arm::Arch arch) : memory(memory), irq(irq), arch(arch) {}
+DMA::DMA(Scheduler& scheduler, arm::Memory& memory, IRQ& irq, arm::Arch arch) : scheduler(scheduler), memory(memory), irq(irq), arch(arch) {}
 
 void DMA::reset() {
     channels.fill(Channel{});
     dmafill.fill(0);
+
+    for (int i = 0; i < 4; i++) {
+        transfer_events[i] = scheduler.register_event("DMA Transfer", [this, i]() {
+            transfer(i);
+        });
+    }
 }
 
 void DMA::trigger(Timing timing) {
@@ -21,7 +27,7 @@ void DMA::trigger(Timing timing) {
         }
 
         if (channel.control.enable && channel_timing == timing) {
-            transfer(i);
+            scheduler.add_event(1, &transfer_events[i]);
         }
     }
 }
@@ -80,7 +86,7 @@ void DMA::write_control(int index, u16 value, u32 mask) {
     }
 
     if (channel.control.timing == Timing::Immediate) {
-        transfer(index);
+        scheduler.add_event(1, &transfer_events[index]);
     }
 }
 

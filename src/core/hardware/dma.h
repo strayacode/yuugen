@@ -5,12 +5,13 @@
 #include "arm/arch.h"
 #include "arm/memory.h"
 #include "core/hardware/irq.h"
+#include "core/scheduler.h"
 
 namespace core {
 
 class DMA {
 public:
-    DMA(arm::Memory& memory, IRQ& irq, arm::Arch arch);
+    DMA(Scheduler& scheduler, arm::Memory& memory, IRQ& irq, arm::Arch arch);
 
     void reset();
 
@@ -75,6 +76,8 @@ private:
 
     std::array<Channel, 4> channels;
     std::array<u32, 4> dmafill;
+    std::array<EventType, 4> transfer_events;
+    Scheduler& scheduler;
     arm::Memory& memory;
     IRQ& irq;
     arm::Arch arch;

@@ -1,3 +1,4 @@
+#include "common/logger.h"
 #include "core/scheduler.h"
 
 namespace core {
@@ -61,11 +62,11 @@ int Scheduler::calculate_event_index(Event& event) {
         return 0;
     }
 
-    u64 lower_bound = 0;
-    u64 upper_bound = events.size() - 1;
+    int lower_bound = 0;
+    int upper_bound = events.size() - 1;
 
     while (lower_bound <= upper_bound) {
-        u64 mid = (lower_bound + upper_bound) / 2;
+        int mid = (lower_bound + upper_bound) / 2;
         if (event.time > events[mid].time) {
             lower_bound = mid + 1;
         } else {

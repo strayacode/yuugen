@@ -36,9 +36,9 @@ void Interpreter::run(int cycles) {
             handle_interrupt();
         }
 
-        if (arch == arm::Arch::ARMv5) {
-            log_state();
-        }
+        // if (arch == arm::Arch::ARMv5) {
+        //     log_state();
+        // }
 
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
@@ -63,8 +63,7 @@ void Interpreter::run(int cycles) {
     }
 }
 
-void Interpreter::jump_to(u32 addr) {
-    state.gpr[15] = addr;
+void Interpreter::flush_pipeline() {
     if (state.cpsr.t) {
         thumb_flush_pipeline();
     } else {
@@ -267,7 +266,7 @@ void Interpreter::log_state() {
     }
 
     logger.log("cpsr: %08x ", state.cpsr.data);
-    logger.log("instruction: %08x\n", instruction);
+    logger.log("%08x\n", instruction);
 }
 
 } // namespace arm

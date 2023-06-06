@@ -16,7 +16,7 @@ public:
 
     void reset() override;
     void run(int cycles) override;
-    void jump_to(u32 addr) override;
+    void flush_pipeline() override;
     void set_mode(Mode mode) override;
     void update_irq(bool irq) override;
     bool is_halted() override;

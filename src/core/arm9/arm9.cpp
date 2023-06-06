@@ -46,10 +46,8 @@ void ARM9::direct_boot() {
     coprocessor.write(9, 1, 0, 0x0300000a);
     coprocessor.write(9, 1, 1, 0x00000020);
 
-    cpu->jump_to(system.cartridge.get_arm9_entrypoint());
-
     auto& state = cpu->get_state();
-    state.gpr[12] = state.gpr[14] = state.gpr[15];
+    state.gpr[12] = state.gpr[14] = state.gpr[15] = system.cartridge.get_arm9_entrypoint();
     state.gpr[13] = 0x03002f7c;
     state.gpr_banked[arm::Bank::IRQ][5] = 0x03003f80;
     state.gpr_banked[arm::Bank::SVC][5] = 0x03003fc0;
@@ -57,6 +55,7 @@ void ARM9::direct_boot() {
     // enter system mode
     state.cpsr.data = 0xdf;
     cpu->set_mode(arm::Mode::SYS);
+    cpu->flush_pipeline();
 }
 
 } // namespace core

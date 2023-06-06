@@ -66,7 +66,7 @@ public:
     virtual ~CPU() = default;
     virtual void reset() = 0;
     virtual void run(int cycles) = 0;
-    virtual void jump_to(u32 addr) = 0;
+    virtual void flush_pipeline() = 0;
     virtual void set_mode(Mode mode) = 0;
     virtual void update_irq(bool irq) = 0;
     virtual bool is_halted() = 0;
