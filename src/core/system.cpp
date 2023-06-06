@@ -128,11 +128,20 @@ void System::run_thread() {
 }
 
 void System::run_frame() {
+    // auto frame_end = scheduler.get_current_time() + 560190;
+    // while (scheduler.get_current_time() < frame_end) {
+    //     arm7.run(1);
+    //     arm9.run(2);
+    //     scheduler.tick(1);
+    //     scheduler.run();
+    // }
+
     auto frame_end = scheduler.get_current_time() + 560190;
     while (scheduler.get_current_time() < frame_end) {
-        arm7.run(1);
-        arm9.run(2);
-        scheduler.tick(1);
+        u64 cycles = std::min(static_cast<u64>(16), scheduler.get_event_time() - scheduler.get_current_time());
+        arm7.run(cycles);
+        arm9.run(cycles * 2);
+        scheduler.tick(cycles);
         scheduler.run();
     }
 }
