@@ -33,6 +33,10 @@ u64 Interpreter::single_step() {
         handle_interrupt();
     }
 
+    if (m_arch == Arch::ARMv5) {
+        log_state();
+    }
+
     // the instruction decoded previously is now executed
     m_instruction = m_pipeline[0];
 
@@ -188,8 +192,9 @@ void Interpreter::unknown_instruction() {
 
 void Interpreter::log_state() {
     for (int i = 0; i < 16; i++) {
-        LogFile::Get().Log("%08x ", m_gpr[i]);
+        LogFile::Get().Log("r%d: %08x ", i, m_gpr[i]);
     }
 
+    LogFile::Get().Log("cpsr: %08x ", m_cpsr.data);
     LogFile::Get().Log("%08x\n", m_instruction);
 }
