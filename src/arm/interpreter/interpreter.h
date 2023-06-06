@@ -120,7 +120,7 @@ private:
     bool calculate_sub_overflow(u32 op1, u32 op2, u32 result);
 
     void handle_interrupt();
-    void print_instruction();
+    void log_state();
 
     Arch arch;
     Memory& memory;

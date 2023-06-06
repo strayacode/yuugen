@@ -36,6 +36,10 @@ void Interpreter::run(int cycles) {
             handle_interrupt();
         }
 
+        if (arch == arm::Arch::ARMv5) {
+            log_state();
+        }
+
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
 
@@ -257,12 +261,13 @@ void Interpreter::handle_interrupt() {
     arm_flush_pipeline();
 }
 
-void Interpreter::print_instruction() {
-    if (state.cpsr.t) {
-        logger.debug("%s::Interpreter: (%08x, %s) at r15 = %08x", arch == Arch::ARMv5 ? "arm9" : "arm7", instruction, disassembler.disassemble_thumb(instruction).c_str(), state.gpr[15]);
-    } else {
-        logger.info("%s::Interpreter: (%08x, %s) at r15 = %08x", arch == Arch::ARMv5 ? "arm9" : "arm7", instruction, disassembler.disassemble_arm(instruction).c_str(), state.gpr[15]);
+void Interpreter::log_state() {
+    for (int i = 0; i < 16; i++) {
+        logger.log("r%d: %08x ", i, state.gpr[15]);
     }
+
+    logger.log("cpsr: %08x ", state.cpsr.data);
+    logger.log("instruction: %08x\n", instruction);
 }
 
 } // namespace arm

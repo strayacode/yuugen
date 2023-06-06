@@ -50,6 +50,11 @@ public:
         std::exit(0);
     }
 
+    template <typename... Args>
+    void log(const char* pattern, Args... args) {
+        std::fprintf(fp, "%s", common::format(pattern, std::forward<Args>(args)...).c_str());
+    }
+
 private:
     struct Time {
         int hour;
@@ -88,6 +93,8 @@ private:
             std::printf("%s", WHITE);
         }
     }
+
+    FILE* fp = fopen("yuugen.log", "w");
 };
 
 extern Logger logger;

@@ -34,12 +34,12 @@ public:
     u32* get_framebuffer(Screen screen);
 
     template <typename T>
-    void read_palette_ram(u32 addr, T value) {
+    void read_palette_ram(u32 addr) {
         return common::read<T>(palette_ram.data(), addr & 0x7ff);
     }
 
     template <typename T>
-    void read_oam(u32 addr, T value) {
+    void read_oam(u32 addr) {
         return common::read<T>(oam.data(), addr & 0x7ff);
     }
 

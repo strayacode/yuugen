@@ -73,8 +73,8 @@ u16 Timers::update_counter(int index) {
         return channel.counter;
     }
 
-    auto change = (scheduler.get_current_time() - channel.activation_timestamp) >> channel.shift;
-    return channel.counter + change;
+    auto delta = (scheduler.get_current_time() - channel.activation_timestamp) >> channel.shift;
+    return channel.counter + delta;
 }
 
 } // namespace core
