@@ -263,7 +263,7 @@ void Interpreter::handle_interrupt() {
 
 void Interpreter::log_state() {
     for (int i = 0; i < 16; i++) {
-        logger.log("r%d: %08x ", i, state.gpr[15]);
+        logger.log("r%d: %08x ", i, state.gpr[i]);
     }
 
     logger.log("cpsr: %08x ", state.cpsr.data);
