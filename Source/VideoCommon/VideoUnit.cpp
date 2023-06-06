@@ -82,7 +82,7 @@ void VideoUnit::build_mmio(MMIO& mmio, Arch arch) {
             mmio.complex_read<u32>([this](u32) {
                 return ((vram.vramcnt[3] << 24) | (vram.vramcnt[2] << 16) | (vram.vramcnt[1] << 8) | vram.vramcnt[0]);
             }),
-            mmio.complex_write<u32>([this](u32, u8 data) {
+            mmio.complex_write<u32>([this](u32, u32 data) {
                 system.video_unit.vram.update_vram_mapping(VRAM::Bank::A, data);
                 system.video_unit.vram.update_vram_mapping(VRAM::Bank::B, (data >> 8) & 0xFF);
                 system.video_unit.vram.update_vram_mapping(VRAM::Bank::C, (data >> 16) & 0xFF);
