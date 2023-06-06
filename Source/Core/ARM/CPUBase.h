@@ -79,7 +79,7 @@ public:
     virtual ~CPUBase() = default;
 
     // runs the backend until target
-    virtual bool run(u64 target) = 0;
+    virtual bool run(int cycles) = 0;
 
     virtual void arm_flush_pipeline() = 0;
     virtual void thumb_flush_pipeline() = 0;

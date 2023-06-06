@@ -9,7 +9,7 @@ class Interpreter final : public CPUBase {
 public:
     Interpreter(MemoryBase& memory, CoprocessorBase& coprocessor, Arch arch);
 
-    bool run(u64 target) override;
+    bool run(int cycles) override;
     u64 single_step();
 
     // arm instruction handlers

@@ -9,10 +9,9 @@ Interpreter::Interpreter(MemoryBase& memory, CoprocessorBase& coprocessor, Arch 
     generate_condition_table();
 }
 
-bool Interpreter::run(u64 target) {
-    while (m_timestamp < target) {
+bool Interpreter::run(int cycles) {
+    while (cycles--) {
         if (m_halted) {
-            m_timestamp = target;
             return true;
         }
 
@@ -22,7 +21,7 @@ bool Interpreter::run(u64 target) {
         }
 #endif
 
-        m_timestamp += single_step();
+        single_step();
     }
 
     return true;

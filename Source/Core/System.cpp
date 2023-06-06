@@ -108,30 +108,9 @@ void System::firmware_boot() {
 
 void System::run_frame() {
     while (scheduler.GetCurrentTime() < frame_end_time) {
-        if (!arm7.cpu().is_halted() || !arm9.cpu().is_halted()) {
-            u64 cycles = std::min(static_cast<u64>(16), scheduler.GetEventTime() - scheduler.GetCurrentTime());
-            u64 arm7_target = scheduler.GetCurrentTime() + cycles;
-            u64 arm9_target = scheduler.GetCurrentTime() + (cycles << 1);
-            
-            // run the arm9 until the next scheduled event
-            if (!arm9.cpu().run(arm9_target)) {
-                set_state(State::Paused);
-                return;
-            }
-
-            // let the arm7 catch up
-            if (!arm7.cpu().run(arm7_target)) {
-                set_state(State::Paused);
-                return;
-            }
-
-            // advance the scheduler
-            scheduler.Tick(cycles);
-        } else {
-            // if both cpus are halted we can just advance to the next event
-            scheduler.set_current_time(scheduler.GetEventTime());
-        }
-
+        arm7.cpu().run(1);
+        arm9.cpu().run(2);
+        scheduler.Tick(1);
         scheduler.RunEvents();
     }
 
