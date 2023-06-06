@@ -36,22 +36,18 @@ void Interpreter::run(int cycles) {
             handle_interrupt();
         }
 
-        if (arch == arm::Arch::ARMv5) {
-            log_state();
-        }
-
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
 
         if (state.cpsr.t) {
             state.gpr[15] &= ~0x1;
-            pipeline[1] = memory.read<u16, Bus::Code>(state.gpr[15]);
+            pipeline[1] = code_read_half(state.gpr[15]);
 
             auto handler = decoder.get_thumb_handler(instruction);
             (this->*handler)();
         } else {
             state.gpr[15] &= ~0x3;
-            pipeline[1] = memory.read<u32, Bus::Code>(state.gpr[15]);
+            pipeline[1] = code_read_word(state.gpr[15]);
 
             if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
                 auto handler = decoder.get_arm_handler(instruction);

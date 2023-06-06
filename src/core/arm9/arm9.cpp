@@ -29,7 +29,6 @@ void ARM9::select_backend(arm::Backend backend) {
 
 void ARM9::direct_boot() {
     using Bus = arm::Bus;
-    memory.write<u8, Bus::Data>(0x04000247, 0x03); // wramcnt
     memory.write<u8, Bus::Data>(0x04000300, 0x01); // postflg (arm9)
     memory.write<u16, Bus::Data>(0x04000304, 0x0001); // powcnt1
     memory.write<u32, Bus::Data>(0x027ff800, 0x00001fc2); // chip id 1

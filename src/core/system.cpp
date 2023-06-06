@@ -147,6 +147,8 @@ void System::run_frame() {
 }
 
 void System::direct_boot() {
+    write_wramcnt(0x03);
+
     cartridge.direct_boot();
     arm7.direct_boot();
     arm9.direct_boot();
