@@ -9,9 +9,13 @@
 #include "common/types.h"
 #include "core/system.h"
 #include "frontend/imgui_video_device.h"
+#include "frontend/arm_debugger_window.h"
+#include "frontend/font_database.h"
 
 class Application {
 public:
+    Application();
+
     bool initialise();
     void start();
     void stop();
@@ -52,6 +56,8 @@ private:
     ImGuiVideoDevice bottom_screen;
 
     f32 fps;
+    FontDatabase font_database;
 
-    ImFont* large_font;
+    ARMDebuggerWindow arm7_debugger_window;
+    ARMDebuggerWindow arm9_debugger_window;
 };

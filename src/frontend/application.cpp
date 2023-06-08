@@ -2,6 +2,8 @@
 #include "common/string.h"
 #include "frontend/application.h"
 
+Application::Application() : arm7_debugger_window(system.arm7.get_cpu(), arm::Arch::ARMv4, font_database), arm9_debugger_window(system.arm9.get_cpu(), arm::Arch::ARMv5, font_database) {}
+
 bool Application::initialise() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) > 0) {
         logger.warn("error initialising SDL!");
@@ -28,8 +30,10 @@ bool Application::initialise() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 13.0f);
-    large_font = io.Fonts->AddFontFromFileTTF("../Data/fonts/roboto-regular.ttf", 18.0f);
+
+    font_database.add_font(FontDatabase::Style::Regular, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 13.0f));
+    font_database.add_font(FontDatabase::Style::Large, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-regular.ttf", 18.0f));
+    font_database.add_font(FontDatabase::Style::Debug, io.Fonts->AddFontFromFileTTF("../data/fonts/cascadia-mono.ttf", 13.0f));
 
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
@@ -184,6 +188,13 @@ void Application::render_menubar() {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("Debug")) {
+            ImGui::MenuItem("ARM7", nullptr, arm7_debugger_window.get_visible_pointer());
+            ImGui::MenuItem("ARM9", nullptr, arm9_debugger_window.get_visible_pointer());
+
+            ImGui::EndMenu();
+        }
+
         ImGui::EndMainMenuBar();
     }
 
@@ -198,19 +209,17 @@ void Application::render_menubar() {
 }
 
 void Application::render_performance_overlay() {
+    font_database.push_style(FontDatabase::Style::Large);
     if (system.get_state() == core::System::State::Running && static_cast<int>(fps) != 0) {
-        ImGui::PushFont(large_font);
         auto fps_string = common::format("%.0f FPS | %.2f ms", fps, 1000.0f / fps);
         auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
         ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string.c_str());
-        ImGui::PopFont();
     } else if (system.get_state() == core::System::State::Paused) {
-        ImGui::PushFont(large_font);
         auto fps_string = "Paused";
         auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
         ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string);
-        ImGui::PopFont();
     }
+    font_database.pop_style();
 }
 
 void Application::setup_style() {
@@ -261,6 +270,9 @@ void Application::render() {
     if (demo_window) {
         ImGui::ShowDemoWindow();
     }
+
+    arm7_debugger_window.render();
+    arm9_debugger_window.render();
     
     ImGui::Render();
     glViewport(0, 0, 1280, 720);
