@@ -15,7 +15,7 @@ void ARM7Memory::reset() {
     rcnt = 0;
     postflg = 0;
 
-    map(0x00000000, 0x00004000, bios.data(), 0x3fff, arm::RegionAttributes::Read);
+    map(0x00000000, 0x01000000, bios.data(), 0x3fff, arm::RegionAttributes::Read);
     map(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
     update_wram_mapping();
 }

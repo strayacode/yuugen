@@ -195,6 +195,7 @@ void Interpreter::arm_single_data_swap() {
 
 void Interpreter::arm_count_leading_zeroes() {
     if (arch == Arch::ARMv4) {
+        undefined_exception();
         return;
     }
 
@@ -205,6 +206,7 @@ void Interpreter::arm_count_leading_zeroes() {
 
 void Interpreter::arm_saturating_add_subtract() {
     if (arch == Arch::ARMv4) {
+        undefined_exception();
         return;
     }
 
@@ -249,7 +251,6 @@ void Interpreter::arm_saturating_add_subtract() {
 
 void Interpreter::arm_signed_multiply() {
     if (arch == Arch::ARMv4) {
-        logger.warn("Interpreter: arm_signed_multiply executed by arm7");
         return;
     }
 
@@ -287,7 +288,6 @@ void Interpreter::arm_signed_multiply() {
 
 void Interpreter::arm_signed_multiply_word() {
     if (arch == Arch::ARMv4) {
-        logger.warn("Interpreter: arm_signed_multiply_word executed by arm7");
         return;
     }
 
@@ -315,7 +315,6 @@ void Interpreter::arm_signed_multiply_word() {
 
 void Interpreter::arm_signed_multiply_accumulate_long() {
     if (arch == Arch::ARMv4) {
-        logger.warn("Interpreter: arm_signed_multiply_accumulate_long executed by arm7");
         return;
     }
 
@@ -685,12 +684,16 @@ void Interpreter::arm_single_data_transfer() {
 }
 
 void Interpreter::arm_coprocessor_register_transfer() {
-    if (arch == Arch::ARMv4) {
-        logger.warn("Interpreter: arm_coprocessor_register_transfer executed by arm7");
+    auto opcode = ARMCoprocessorRegisterTransfer::decode(instruction);
+
+    // TODO: handle this in a nicer way
+    if (arch == Arch::ARMv4 && opcode.cp == 14) {
+        logger.warn("Interpreter: mrc cp14 on arm7");
+        return;
+    } else if ((arch == Arch::ARMv4 && opcode.cp == 15) || (arch == Arch::ARMv5 && opcode.cp == 14)) {
+        undefined_exception();
         return;
     }
-
-    auto opcode = ARMCoprocessorRegisterTransfer::decode(instruction);
 
     if (opcode.rd == 15) {
         logger.error("Interpreter: handle rd == 15 in arm_coprocessor_register_transfer");

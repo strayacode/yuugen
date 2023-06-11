@@ -260,6 +260,18 @@ void Interpreter::handle_interrupt() {
     arm_flush_pipeline();
 }
 
+void Interpreter::undefined_exception() {
+    logger.warn("Interpreter: undefined exception fired for instruction %08x at %08x", instruction, state.gpr[15]);
+
+    state.spsr_banked[Bank::UND].data = state.cpsr.data;
+    set_mode(Mode::UND);
+
+    state.cpsr.i = true;
+    state.gpr[14] = state.gpr[15] - 4;
+    state.gpr[15] = coprocessor.get_exception_base() + 0x04;
+    arm_flush_pipeline();
+}
+
 void Interpreter::log_state() {
     for (int i = 0; i < 16; i++) {
         logger.log("r%d: %08x ", i, state.gpr[i]);
