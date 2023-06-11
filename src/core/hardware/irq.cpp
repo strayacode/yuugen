@@ -13,6 +13,13 @@ void IRQ::reset() {
 
 void IRQ::raise(IRQ::Source source) {
     irf |= 1 << static_cast<int>(source);
+
+    if (ie & (1 << static_cast<int>(source))) {
+        if (ime || cpu->get_arch() == arm::Arch::ARMv4) {
+            cpu->update_halted(false);
+        }
+    }
+
     cpu->update_irq(ime && (ie & irf));
 }
 

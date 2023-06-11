@@ -95,7 +95,7 @@ void System::write_haltcnt(u8 data) {
     haltcnt = data & 0xc0;
     switch ((haltcnt >> 6) & 0x3) {
     case 0x2:
-        arm7.get_cpu().halt();
+        arm7.get_cpu().update_halted(true);
         break;
     case 0x3:
         logger.todo("System: handle sleep mode");

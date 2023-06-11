@@ -110,8 +110,12 @@ bool Interpreter::is_halted() {
     return halted;
 }
 
-void Interpreter::halt() {
-    halted = true;
+void Interpreter::update_halted(bool halted) {
+    this->halted = halted;
+}
+
+Arch Interpreter::get_arch() {
+    return arch;
 }
 
 void Interpreter::illegal_instruction() {

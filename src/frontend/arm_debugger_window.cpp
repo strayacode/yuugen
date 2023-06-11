@@ -3,7 +3,7 @@
 #include "frontend/arm_debugger_window.h"
 #include "core/system.h"
 
-ARMDebuggerWindow::ARMDebuggerWindow(core::System& system, arm::CPU& cpu, arm::Arch arch, FontDatabase& font_database) : system(system), cpu(cpu), arch(arch), font_database(font_database) {}
+ARMDebuggerWindow::ARMDebuggerWindow(core::System& system, arm::CPU& cpu, core::IRQ& irq, arm::Arch arch, FontDatabase& font_database) : system(system), cpu(cpu), irq(irq), arch(arch), font_database(font_database) {}
 
 void ARMDebuggerWindow::render() {
     if (!visible) return;
@@ -99,6 +99,13 @@ void ARMDebuggerWindow::render() {
     if (disassembly_size < 0) {
         disassembly_size = 0;
     }
+
+    ImGui::Separator();
+    ImGui::Text("ime: %08x", irq.read_ime());
+    ImGui::SameLine();
+    ImGui::Text("ie: %08x", irq.read_ie());
+    ImGui::SameLine();
+    ImGui::Text("irf: %08x", irq.read_irf());
 
     font_database.pop_style();
     ImGui::End();

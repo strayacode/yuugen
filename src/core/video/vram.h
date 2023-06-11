@@ -25,7 +25,7 @@ public:
 
     template <typename T>
     T read(u32 addr) {
-        int region = (addr >> 20) & 0xf;
+        auto region = (addr >> 20) & 0xf;
         switch (region) {
         case 0x0: case 0x1:
             return bga.read<T>(addr);
@@ -42,7 +42,7 @@ public:
 
     template <typename T>
     void write(u32 addr, T value) {
-        int region = (addr >> 20) & 0xf;
+        auto region = (addr >> 20) & 0xf;
         switch (region) {
         case 0x0: case 0x1:
             bga.write<T>(addr, value);

@@ -81,7 +81,7 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 value) {
     case 0x070e02:
         break;
     case 0x070004:
-        cpu->halt();
+        cpu->update_halted(true);
         break;
     case 0x090100:
         dtcm_control.data = value;
