@@ -2,6 +2,7 @@
 
 #include <array>
 #include "common/types.h"
+#include "common/logger.h"
 #include "core/video/vram_region.h"
 
 namespace core {
@@ -40,24 +41,23 @@ public:
     }
 
     template <typename T>
-    void write(u32 addr, T data) {
+    void write(u32 addr, T value) {
         int region = (addr >> 20) & 0xf;
-
         switch (region) {
         case 0x0: case 0x1:
-            bga.write<T>(addr, data);
+            bga.write<T>(addr, value);
             break;
         case 0x2: case 0x3:
-            bgb.write<T>(addr, data);
+            bgb.write<T>(addr, value);
             break;
         case 0x4: case 0x5:
-            obja.write<T>(addr, data);
+            obja.write<T>(addr, value);
             break;
         case 0x6: case 0x7:
-            objb.write<T>(addr, data);
+            objb.write<T>(addr, value);
             break;
         default:
-            lcdc.write<T>(addr, data);
+            lcdc.write<T>(addr, value);
             break;
         }
     }

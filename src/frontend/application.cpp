@@ -2,7 +2,7 @@
 #include "common/string.h"
 #include "frontend/application.h"
 
-Application::Application() : arm7_debugger_window(system.arm7.get_cpu(), arm::Arch::ARMv4, font_database), arm9_debugger_window(system.arm9.get_cpu(), arm::Arch::ARMv5, font_database) {}
+Application::Application() : arm7_debugger_window(system, system.arm7.get_cpu(), arm::Arch::ARMv4, font_database), arm9_debugger_window(system, system.arm9.get_cpu(), arm::Arch::ARMv5, font_database) {}
 
 bool Application::initialise() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) > 0) {

@@ -5,9 +5,13 @@
 #include "arm/arch.h"
 #include "frontend/font_database.h"
 
+namespace core {
+    class System;
+};
+
 class ARMDebuggerWindow {
 public:
-    ARMDebuggerWindow(arm::CPU& cpu, arm::Arch arch, FontDatabase& font_database);
+    ARMDebuggerWindow(core::System& system, arm::CPU& cpu, arm::Arch arch, FontDatabase& font_database);
 
     void render();
     void set_visible(bool visible) { this->visible = visible; }
@@ -16,6 +20,8 @@ public:
 
 private:
     bool visible = true;
+    int disassembly_size = 25;
+    core::System& system;
     arm::CPU& cpu;
     arm::Arch arch;
     FontDatabase& font_database;

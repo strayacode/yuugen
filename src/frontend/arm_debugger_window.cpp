@@ -1,8 +1,9 @@
 #include "imgui/imgui.h"
 #include "common/string.h"
 #include "frontend/arm_debugger_window.h"
+#include "core/system.h"
 
-ARMDebuggerWindow::ARMDebuggerWindow(arm::CPU& cpu, arm::Arch arch, FontDatabase& font_database) : cpu(cpu), arch(arch), font_database(font_database) {}
+ARMDebuggerWindow::ARMDebuggerWindow(core::System& system, arm::CPU& cpu, arm::Arch arch, FontDatabase& font_database) : system(system), cpu(cpu), arch(arch), font_database(font_database) {}
 
 void ARMDebuggerWindow::render() {
     if (!visible) return;
@@ -81,7 +82,24 @@ void ARMDebuggerWindow::render() {
     auto halted = cpu.is_halted();
     ImGui::Checkbox("Halted", &halted);
 
-    font_database.pop_style();
+    ImGui::Separator();
 
+    if (ImGui::Button("+")) {
+        disassembly_size++;
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("-")) {
+        disassembly_size--;
+    }
+
+    ImGui::SameLine();
+
+    if (disassembly_size < 0) {
+        disassembly_size = 0;
+    }
+
+    font_database.pop_style();
     ImGui::End();
 }
