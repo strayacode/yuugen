@@ -7,6 +7,19 @@ PPU::PPU(VideoUnit& video_unit, Engine engine) : video_unit(video_unit), engine(
 
 void PPU::reset() {
     dispcnt.data = 0;
+    bgcnt.fill(0);
+    bghofs.fill(0);
+    bgvofs.fill(0);
+    bgpa.fill(0);
+    bgpb.fill(0);
+    bgpc.fill(0);
+    bgpd.fill(0);
+    bgx.fill(0);
+    bgy.fill(0);
+    internal_x.fill(0);
+    internal_y.fill(0);
+    winh.fill(0);
+    winv.fill(0);
     framebuffer.fill(0);
 }
 
@@ -29,6 +42,42 @@ void PPU::render_scanline(int line) {
 
 void PPU::write_dispcnt(u32 value, u32 mask) {
     dispcnt.data = (dispcnt.data & ~mask) | (value & mask);
+}
+
+void PPU::write_bgcnt(int index, u16 value, u32 mask) {
+    bgcnt[index] = (bgcnt[index] & ~mask) | (value & mask);
+}
+
+void PPU::write_bghofs(int index, u16 value, u32 mask) {
+    bghofs[index] = (bghofs[index] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgvofs(int index, u16 value, u32 mask) {
+    bgvofs[index] = (bgvofs[index] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgpa(int index, u16 value, u32 mask) {
+    bgpa[index] = (bgpa[index] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgpb(int index, u16 value, u32 mask) {
+    bgpb[index] = (bgpb[index] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgpc(int index, u16 value, u32 mask) {
+    bgpc[index] = (bgpc[index] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgpd(int index, u16 value, u32 mask) {
+    bgpd[index] = (bgpd[index] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgx(int index, u16 value, u32 mask) {
+    bgx[index] = (bgx[index] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgy(int index, u16 value, u32 mask) {
+    bgy[index] = (bgx[index] & ~mask) | (value & mask);
 }
 
 void PPU::render_blank_screen(int line) {

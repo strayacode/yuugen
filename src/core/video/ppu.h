@@ -20,6 +20,16 @@ public:
     void render_scanline(int line);
     void write_dispcnt(u32 value, u32 mask);
 
+    void write_bgcnt(int index, u16 value, u32 mask);
+    void write_bghofs(int index, u16 value, u32 mask);
+    void write_bgvofs(int index, u16 value, u32 mask);
+    void write_bgpa(int index, u16 value, u32 mask);
+    void write_bgpb(int index, u16 value, u32 mask);
+    void write_bgpc(int index, u16 value, u32 mask);
+    void write_bgpd(int index, u16 value, u32 mask);
+    void write_bgx(int index, u16 value, u32 mask);
+    void write_bgy(int index, u16 value, u32 mask);
+
     u32* get_framebuffer() { return framebuffer.data(); }
     
 private:
@@ -61,6 +71,19 @@ private:
     };
 
     DISPCNT dispcnt;
+    std::array<u16, 4> bgcnt;
+    std::array<u16, 4> bghofs;
+    std::array<u16, 4> bgvofs;
+    std::array<u16, 2> bgpa;
+    std::array<u16, 2> bgpb;
+    std::array<u16, 2> bgpc;
+    std::array<u16, 2> bgpd;
+    std::array<u32, 2> bgx;
+    std::array<u32, 2> bgy;
+    std::array<u32, 2> internal_x;
+    std::array<u32, 2> internal_y;
+    std::array<u16, 2> winh;
+    std::array<u16, 2> winv;
     std::array<u32, 256 * 192> framebuffer;
     VideoUnit& video_unit;
     Engine engine;

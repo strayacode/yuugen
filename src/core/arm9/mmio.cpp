@@ -145,6 +145,58 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff) system.video_unit.write_dispstat(arm::Arch::ARMv5, value, mask);
         if constexpr (mask & 0xffff0000) system.video_unit.write_vcount(value >> 16, mask >> 16);
         break;
+    case MMIO(0x04000008):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bgcnt(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgcnt(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x0400000c):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bgcnt(2, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgcnt(3, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000010):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bghofs(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgvofs(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000014):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bghofs(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgvofs(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000018):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bghofs(2, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgvofs(2, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x0400001c):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bghofs(3, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgvofs(3, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000020):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bgpa(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgpb(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000024):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bgpc(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgpd(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000028):
+        system.video_unit.ppu_a.write_bgx(0, value, mask & 0xffff);
+        break;
+    case MMIO(0x0400002c):
+        system.video_unit.ppu_a.write_bgy(0, value, mask & 0xffff);
+        break;
+    case MMIO(0x04000030):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bgpa(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgpb(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000034):
+        if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bgpc(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bgpd(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000038):
+        system.video_unit.ppu_a.write_bgx(1, value, mask & 0xffff);
+        break;
+    case MMIO(0x0400003c):
+        system.video_unit.ppu_a.write_bgy(1, value, mask & 0xffff);
+        break;
     case MMIO(0x040000b0):
         system.dma9.write_source(0, value, mask);
         break;
