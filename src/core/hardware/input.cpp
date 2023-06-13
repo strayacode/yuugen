@@ -45,12 +45,4 @@ void Input::handle_input(InputEvent event, bool pressed) {
     }
 }
 
-u16 Input::read_keyinput() {
-    return keyinput.data & 0x3ff;
-}
-
-u16 Input::read_extkeyin() {
-    return extkeyin;
-}
-
 } // namespace core

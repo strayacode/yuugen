@@ -16,7 +16,10 @@ add_library(core
     video/video_unit.h video/video_unit.cpp
     video/vram.h video/vram.cpp
     video/vram_region.h video/vram_page.h
-    video/ppu.h video/ppu.cpp
+    video/ppu/ppu.h video/ppu/ppu.cpp
+    video/ppu/affine.cpp video/ppu/composer.cpp
+    video/ppu/object.cpp video/ppu/text.cpp 
+    video/ppu/tile_decoder.cpp
 
     hardware/cartridge/cartridge.h hardware/cartridge/cartridge.cpp
     hardware/input.h hardware/input.cpp

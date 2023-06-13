@@ -22,8 +22,8 @@ public:
     void reset();
     void handle_input(InputEvent event, bool pressed);
     
-    u16 read_keyinput();
-    u16 read_extkeyin();
+    u16 read_keyinput() { return keyinput.data & 0x3ff; }
+    u16 read_extkeyin() { return extkeyin; }
 
 private:
     union KEYINPUT {

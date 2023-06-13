@@ -91,6 +91,9 @@ void ARM9Memory::write_half(u32 addr, u16 value) {
     case 0x04:
         mmio_write_half(addr, value);
         break;
+    case 0x05:
+        system.video_unit.write_palette_ram<u16>(addr, value);
+        break;
     case 0x06:
         system.video_unit.vram.write<u16>(addr, value);
         break;

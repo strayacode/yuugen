@@ -7,13 +7,14 @@
 - [] vram mirroring
 
 # PPU:
-- [] layer composition
+- [x] layer composition
 - [] blending
-- [] bg and obj windows
+- [x] bg window
+- [] obj window
 - [] mosaic
 - [] main memory display rendering
 - [] master brightness
-- [] text bg rendering
+- [x] text bg rendering
 - [] affine bg rendering
 - [] extended bg rendering
 - [] large bg rendering

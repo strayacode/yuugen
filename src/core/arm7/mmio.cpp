@@ -87,6 +87,10 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
         if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle keycnt read");
         return value;
+    case MMIO(0x04000134):
+        if constexpr (mask & 0xffff) logger.error("ARM7Memory: handle debug rcnt read");
+        if constexpr (mask & 0xffff0000) value |= system.input.read_extkeyin() << 16;
+        return value;
     case MMIO(0x04000138):
         if constexpr (mask & 0xff) value |= system.rtc.read_rtc();
         return value;

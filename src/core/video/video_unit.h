@@ -6,7 +6,7 @@
 #include "arm/arch.h"
 #include "core/scheduler.h"
 #include "core/video/vram.h"
-#include "core/video/ppu.h"
+#include "core/video/ppu/ppu.h"
 #include "core/hardware/irq.h"
 
 namespace core {
@@ -32,6 +32,8 @@ public:
     void write_powcnt1(u16 value, u32 mask);
 
     u32* get_framebuffer(Screen screen);
+    u8* get_palette_ram() { return palette_ram.data(); }
+    u8* get_oam() { return oam.data(); }
 
     template <typename T>
     void read_palette_ram(u32 addr) {
