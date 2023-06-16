@@ -24,6 +24,7 @@ private:
     void transfer(u8 value);
     void firmware_transfer(u8 value);
     void touchscreen_transfer(u8 value);
+    void load_calibration_points();
 
     enum Device : int {
         Powerman = 0,
@@ -37,7 +38,7 @@ private:
             u16 baudrate : 2;
             u16 : 5;
             bool busy : 1;
-            Device device : 2;
+            u16 device : 2;
             bool transfer_halfwords : 1;
             bool chipselect_hold : 1;
             u16 : 2;
@@ -55,6 +56,17 @@ private:
     bool write_in_progress;
     u8 command;
     u32 address;
+
+    u16 adc_x1;
+    u16 adc_x2;
+    u16 adc_y1;
+    u16 adc_y2;
+    u8 scr_x1;
+    u8 scr_x2;
+    u8 scr_y1;
+    u8 scr_y2;
+    u16 output;
+
     common::RegularFile firmware;
     System& system;
 };

@@ -117,18 +117,14 @@ void Application::handle_input() {
                 break;
             }
         } else if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
-            // int x = ((event.button.x - center_pos) / scaled_dimensions.x) * 256;
-            // int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
-
-            // if ((x >= 0 && x < 256) && (y >= 0 && y < 192) && event.button.button == SDL_BUTTON_LEFT) {
-            //     // only do a touchscreen event if it occurs in the bottom screen
-            //     bool button_pressed = event.type == SDL_MOUSEBUTTONDOWN;
-            //     m_system.input.SetTouch(button_pressed);
-            //     m_system.input.SetPoint(x, y);
-            // }
-            // TODO: handle touch properly
-            bool pressed = reinterpret_cast<SDL_MouseMotionEvent*>(&event)->state & SDL_BUTTON_LMASK;
-            // logger.debug("touch pressed: %d", pressed);
+            int x = ((event.button.x - center_pos) / scaled_dimensions.x) * 256;
+            int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
+            
+            if ((x >= 0 && x < 256) && (y >= 0 && y < 192)) {
+                bool pressed = reinterpret_cast<SDL_MouseMotionEvent*>(&event)->state & SDL_BUTTON_LMASK;
+                system.input.set_touch(pressed);
+                system.input.set_point(x, y);
+            }
         }
     }
 }

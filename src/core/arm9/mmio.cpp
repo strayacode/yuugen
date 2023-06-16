@@ -77,13 +77,17 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
     switch (MMIO(addr)) {
     case MMIO(0x04000000):
         return system.video_unit.ppu_a.read_dispcnt();
+    case MMIO(0x04000004):
+        if constexpr (mask & 0xffff) value |= system.video_unit.read_dispstat(arm::Arch::ARMv5);
+        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle vcount read");
+        return value;
     case MMIO(0x04000008):
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_bgcnt(0);
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_a.read_bgcnt(1) << 16;
         return value;
-    case MMIO(0x04000004):
-        if constexpr (mask & 0xffff) value |= system.video_unit.read_dispstat(arm::Arch::ARMv5);
-        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle vcount read");
+    case MMIO(0x0400000c):
+        if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_bgcnt(2);
+        if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_a.read_bgcnt(3) << 16;
         return value;
     case MMIO(0x040000dc):
         if constexpr (mask & 0xffff) value |= system.dma9.read_length(3);

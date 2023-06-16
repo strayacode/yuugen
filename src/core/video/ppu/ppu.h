@@ -2,6 +2,7 @@
 
 #include <array>
 #include "common/types.h"
+#include "common/callback.h"
 
 namespace core {
 
@@ -45,14 +46,19 @@ public:
     u32* get_framebuffer() { return framebuffer.data(); }
     
 private:
+    using AffineCallback = common::Callback<void(int pixel, int x, int y), 40>;
+
     void render_blank_screen(int line);
     void render_graphics_display(int line);
     void render_vram_display(int line);
 
     void render_text(int bg, int line);
+
+    void affine_loop(int bg, int width, int height, AffineCallback affine_callback);
     void render_affine(int bg, int line);
     void render_extended(int bg, int line);
     void render_large(int bg, int line);
+
     void render_objects(int line);
 
     u32 rgb555_to_rgb888(u32 colour);
@@ -70,6 +76,8 @@ private:
 
     u8 calculate_enabled_layers(int x, int line);
     bool in_window_bounds(int coord, int start, int end);
+
+    void reset_layers();
 
     union DISPCNT {
         struct {

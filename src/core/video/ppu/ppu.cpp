@@ -43,16 +43,19 @@ void PPU::reset() {
     master_bright = 0;
 
     framebuffer.fill(0);
-
-    for (int i = 0; i < 4; i++) {
-        bg_layers[i].fill(0);
-    }
-
-    obj_priority.fill(0);
-    obj_colour.fill(0);
+    reset_layers();
 }
 
 void PPU::render_scanline(int line) {
+    reset_layers();
+
+    if (line == 0) {
+        internal_x[0] = bgx[0];
+        internal_y[0] = bgy[0];
+        internal_x[1] = bgx[1];
+        internal_y[1] = bgy[1];
+    }
+
     switch (dispcnt.display_mode) {
     case 0:
         render_blank_screen(line);
@@ -102,11 +105,15 @@ void PPU::write_bgpd(int index, u16 value, u32 mask) {
 }
 
 void PPU::write_bgx(int index, u32 value, u32 mask) {
-    bgx[index] = (bgx[index] & ~mask) | (value & mask);
+    mask &= 0xfffffff;
+    bgx[index] = common::sign_extend<u32, 28>((bgx[index] & ~mask) | (value & mask));
+    internal_x[index] = bgx[index];
 }
 
 void PPU::write_bgy(int index, u32 value, u32 mask) {
-    bgy[index] = (bgy[index] & ~mask) | (value & mask);
+    mask &= 0xfffffff;
+    bgy[index] = common::sign_extend<u32, 28>((bgy[index] & ~mask) | (value & mask));
+    internal_y[index] = bgy[index];
 }
 
 void PPU::write_winh(int index, u16 value, u32 mask) {
@@ -259,6 +266,15 @@ bool PPU::in_window_bounds(int coord, int start, int end) {
     } else {
         return coord >= start || coord < end;
     }
+}
+
+void PPU::reset_layers() {
+    for (int i = 0; i < 4; i++) {
+        bg_layers[i].fill(0);
+    }
+
+    obj_priority.fill(4);
+    obj_priority.fill(0x8000);
 }
 
 } // namespace core

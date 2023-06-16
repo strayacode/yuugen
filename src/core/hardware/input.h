@@ -21,7 +21,18 @@ class Input {
 public:
     void reset();
     void handle_input(InputEvent event, bool pressed);
+    void set_touch(bool pressed);
+    void set_point(int x, int y);
+
+    struct Point {
+        int x;
+        int y;
+    };
+
+    Point point;
     
+    bool touch_down() { return !(extkeyin & (1 << 6)); }
+    Point get_point() { return point; }
     u16 read_keyinput() { return keyinput.data & 0x3ff; }
     u16 read_extkeyin() { return extkeyin; }
 
