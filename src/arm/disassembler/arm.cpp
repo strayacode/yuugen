@@ -175,39 +175,51 @@ std::string Disassembler::arm_data_processing(u32 instruction) {
         }
     }
 
+    auto operand_only = [&](const char *type) {
+        return common::format("%s%s%s %s, %s", type, condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
+    };
+
+    auto destination_only = [&](const char *type) {
+        return common::format("%s%s%s %s, %s", type, condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], rhs_string.c_str());
+    };
+    
+    auto operand_and_destination = [&](const char *type) {
+        return common::format("%s%s%s %s, %s, %s", type, condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+    };
+
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND:
-        return common::format("and%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("and");
     case ARMDataProcessing::Opcode::EOR:
-        return common::format("eor%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("eor");
     case ARMDataProcessing::Opcode::SUB:
-        return common::format("sub%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("sub");
     case ARMDataProcessing::Opcode::RSB:
-        return common::format("rsb%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("rsb");
     case ARMDataProcessing::Opcode::ADD:
-        return common::format("add%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("add");
     case ARMDataProcessing::Opcode::ADC:
-        return common::format("adc%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("adc");
     case ARMDataProcessing::Opcode::SBC:
-        return common::format("sbc%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("sbc");
     case ARMDataProcessing::Opcode::RSC:
-        return common::format("rsc%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("rsc");
     case ARMDataProcessing::Opcode::TST:
-        return common::format("tst%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
+        return operand_only("tst");
     case ARMDataProcessing::Opcode::TEQ:
-        return common::format("teq%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
+        return operand_only("teq");
     case ARMDataProcessing::Opcode::CMP:
-        return common::format("cmp%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
+        return operand_only("cmp");
     case ARMDataProcessing::Opcode::CMN:
-        return common::format("cmn%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rn], rhs_string.c_str());
+        return operand_only("cmn");
     case ARMDataProcessing::Opcode::ORR:
-        return common::format("orr%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("orr");
     case ARMDataProcessing::Opcode::MOV:
-        return common::format("mov%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], rhs_string.c_str());
+        return destination_only("mov");
     case ARMDataProcessing::Opcode::BIC:
-        return common::format("bic%s%s %s, %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], register_names[opcode.rn], rhs_string.c_str());
+        return operand_and_destination("bic");
     case ARMDataProcessing::Opcode::MVN:
-        return common::format("mvn%s%s %s, %s", condition_names[opcode.condition], set_flags_string, register_names[opcode.rd], rhs_string.c_str());
+        return destination_only("mvn");
     }
 
     return "...";
