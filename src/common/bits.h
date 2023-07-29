@@ -1,6 +1,8 @@
 #pragma once
 
 #include "common/types.h"
+// #include <stdio.h>
+#include <type_traits>
 
 namespace common {
 
@@ -53,9 +55,9 @@ inline int countr_zeroes(T value) {
 }
 
 template <typename T, int N>
-inline T sign_extend(T value) {
-    T mask = static_cast<T>(1) << (N - 1);
-    return (value ^ mask) - mask;
+inline constexpr T sign_extend(T value) {
+    constexpr int shift = 8 * sizeof(T) - N;
+    return static_cast<T>((static_cast<std::make_signed_t<T>>(value) << shift) >> shift);
 }
 
 template <typename T>
