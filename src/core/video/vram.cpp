@@ -136,7 +136,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
             texture_palette.map(bank_e.data(), 0, 0x10000);
             break;
         case 4:
-            logger.warn("VRAM: handle mapping bank e to bg extended palette");
+            bga_extended_palette.map(bank_e.data(), 0, 0x8000);
             break;
         }
     }
@@ -230,6 +230,8 @@ void VRAM::reset_vram_regions() {
     arm7_vram.reset();
     texture_data.reset();
     texture_palette.reset();
+    bga_extended_palette.reset();
+    bgb_extended_palette.reset();
 }
 
 } // namespace core

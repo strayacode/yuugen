@@ -77,6 +77,9 @@ public:
     u8 read_vramcnt(Bank bank) { return vramcnt[static_cast<int>(bank)].data; }
     void write_vramcnt(Bank bank, u8 value);
 
+    VRAMRegion<0x8000> bga_extended_palette;
+    VRAMRegion<0x8000> bgb_extended_palette;
+
 private:
     void reset_vram_regions();
 

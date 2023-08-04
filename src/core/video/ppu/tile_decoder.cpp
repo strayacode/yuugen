@@ -59,7 +59,11 @@ PPU::TileRow PPU::decode_tile_row_8bpp(u32 tile_base, int tile_number, int palet
         if (palette_index == 0) {
             colour = colour_transparent;
         } else if (dispcnt.bg_extended_palette) {
-            logger.todo("PPU: handle bg extended palette");
+            if (engine == Engine::A) {
+                colour = video_unit.vram.bga_extended_palette.read<u16>(0x06000000 + extended_palette_slot * 0x2000 + (palette_number * 0xff + palette_index) * 2);
+            } else {
+                colour = video_unit.vram.bgb_extended_palette.read<u16>(0x06000000 + extended_palette_slot * 0x2000 + (palette_number * 0xff + palette_index) * 2);
+            }
         } else {
             colour = common::read<u16>(palette_ram, (palette_index * 2) & 0x3ff);
         }
