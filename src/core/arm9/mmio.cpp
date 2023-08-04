@@ -89,13 +89,16 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_bgcnt(2);
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_a.read_bgcnt(3) << 16;
         return value;
+    case MMIO(0x04000048):
+        if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_winin();
+        if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_a.read_winout() << 16;
+        return value;
     case MMIO(0x040000dc):
         if constexpr (mask & 0xffff) value |= system.dma9.read_length(3);
         if constexpr (mask & 0xffff0000) value |= system.dma9.read_control(3) << 16;
         return value;
     case MMIO(0x040000e0) ... MMIO(0x040000ec):
         return system.dma9.read_dmafill(addr);
-        break;
     case MMIO(0x04000130):
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
         if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle keycnt read");

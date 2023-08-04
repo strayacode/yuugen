@@ -15,9 +15,9 @@
 - [] main memory display rendering
 - [] master brightness
 - [x] text bg rendering
-- [] affine bg rendering
-- [] extended bg rendering
-- [] large bg rendering
+- [x] affine bg rendering
+- [x] extended bg rendering
+- [x] large bg rendering
 - [] object rendering
 
 # GPU:

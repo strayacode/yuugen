@@ -22,6 +22,8 @@ public:
 
     u32 read_dispcnt() { return dispcnt.data; }
     u16 read_bgcnt(int index) { return bgcnt[index].data; }
+    u16 read_winin() { return winin; }
+    u16 read_winout() { return winout; }
 
     void write_dispcnt(u32 value, u32 mask);
 
