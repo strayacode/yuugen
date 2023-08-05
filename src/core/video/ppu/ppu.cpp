@@ -4,12 +4,13 @@
 
 namespace core {
 
-PPU::PPU(u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& lcdc) : 
+PPU::PPU(u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& obj_extended_palette, VRAMRegion& lcdc) : 
     palette_ram(palette_ram),
     oam(oam),
     bg(bg),
     obj(obj),
     bg_extended_palette(bg_extended_palette),
+    obj_extended_palette(obj_extended_palette),
     lcdc(lcdc) {}
 
 void PPU::reset() {
@@ -171,13 +172,13 @@ void PPU::render_graphics_display(int line) {
             break;
         case 2:
         case 4:
-            render_affine(2, line);
+            render_affine(2);
             break;
         case 5:
-            render_extended(2, line);
+            render_extended(2);
             break;
         case 6:
-            render_large(2, line);
+            render_large(2);
             break;
         }
     }
@@ -189,12 +190,12 @@ void PPU::render_graphics_display(int line) {
             break;
         case 1:
         case 2:
-            render_affine(3, line);
+            render_affine(3);
             break;
         case 3:
         case 4:
         case 5:
-            render_extended(3, line);
+            render_extended(3);
             break;
         }
     }

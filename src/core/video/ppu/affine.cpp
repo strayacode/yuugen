@@ -36,7 +36,7 @@ void PPU::affine_loop(int id, int width, int height, AffineCallback affine_callb
     internal_y[id - 2] += bgpd[id - 2];
 }
 
-void PPU::render_affine(int id, int line) {
+void PPU::render_affine(int id) {
     u32 screen_base = (bgcnt[id].screen_base * 2048) + (dispcnt.screen_base * 65536);
     u32 character_base = (bgcnt[id].character_base * 16384) + (dispcnt.character_base * 65536);
     int size = 128 << bgcnt[id].size;
@@ -57,7 +57,7 @@ void PPU::render_affine(int id, int line) {
     });
 }
 
-void PPU::render_extended(int id, int line) {
+void PPU::render_extended(int id) {
     if (common::get_bit<7>(bgcnt[id].data)) {
         u32 data_base = bgcnt[id].screen_base * 16384;
         int bitmap_width = extended_dimensions[bgcnt[id].size][0];
@@ -119,7 +119,7 @@ void PPU::render_extended(int id, int line) {
     }
 }
 
-void PPU::render_large(int id, int line) {
+void PPU::render_large(int id) {
     int bitmap_width = 512 << (bgcnt[id].size & 0x1);
     int bitmap_height = 1024 >> (bgcnt[id].size & 0x1);
 

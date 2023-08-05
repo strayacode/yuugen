@@ -9,7 +9,7 @@ namespace core {
 
 class PPU {
 public:
-    PPU(u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& lcdc);
+    PPU(u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& obj_extended_palette, VRAMRegion& lcdc);
 
     void reset();
     void render_scanline(int line);
@@ -51,9 +51,9 @@ private:
     void render_text(int id, int line);
 
     void affine_loop(int id, int width, int height, AffineCallback affine_callback);
-    void render_affine(int id, int line);
-    void render_extended(int id, int line);
-    void render_large(int id, int line);
+    void render_affine(int id);
+    void render_extended(int id);
+    void render_large(int id);
 
     void render_objects(int line);
 
@@ -172,6 +172,7 @@ private:
     VRAMRegion& bg;
     VRAMRegion& obj;
     VRAMRegion& bg_extended_palette;
+    VRAMRegion& obj_extended_palette;
     VRAMRegion& lcdc;
     
     static constexpr int obj_dimensions[3][4][2] = {{{8, 8}, {16, 16}, {32, 32}, {64, 64}}, {{16, 8}, {32, 8}, {32, 16}, {64, 32}}, {{8, 16}, {8, 32}, {16, 32}, {32, 64}}};

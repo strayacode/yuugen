@@ -27,6 +27,8 @@ void VRAM::reset() {
     texture_palette.allocate(0x20000);
     bga_extended_palette.allocate(0x8000);
     bgb_extended_palette.allocate(0x8000);
+    obja_extended_palette.allocate(0x2000);
+    objb_extended_palette.allocate(0x2000);
 
     reset_vram_regions();
 }
@@ -169,10 +171,10 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
             texture_palette.map(bank_f.data(), (common::get_bit<0>(offset) + common::get_bit<1>(offset) * 4) * 0x4000, 0x4000);
             break;
         case 4:
-            logger.warn("VRAM: handle mapping bank f to bg extended palette");
+            bga_extended_palette.map(bank_f.data(), common::get_bit<0>(offset) * 0x4000, 0x4000);
             break;
         case 5:
-            logger.warn("VRAM: handle mapping bank f to obj extended palette");
+            obja_extended_palette.map(bank_f.data(), 0, 0x2000);
             break;
         }
     }
@@ -193,10 +195,10 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
             texture_palette.map(bank_g.data(), (common::get_bit<0>(offset) + common::get_bit<1>(offset) * 4) * 0x4000, 0x4000);
             break;
         case 4:
-            logger.warn("VRAM: handle mapping bank g to bg extended palette");
+            bga_extended_palette.map(bank_g.data(), common::get_bit<0>(offset) * 0x4000, 0x4000);
             break;
         case 5:
-            logger.warn("VRAM: handle mapping bank g to obj extended palette");
+            obja_extended_palette.map(bank_g.data(), 0, 0x2000);
             break;
         }
     }
@@ -210,7 +212,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
             bgb.map(bank_h.data(), 0, 0x8000);
             break;
         case 2:
-            logger.warn("VRAM: handle mapping bank h to bg extended palette");
+            bgb_extended_palette.map(bank_h.data(), 0, 0x8000);
             break;
         }
     }
@@ -227,7 +229,7 @@ void VRAM::write_vramcnt(Bank bank, u8 value) {
             objb.map(bank_i.data(), 0, 0x4000);
             break;
         case 3:
-            logger.warn("VRAM: handle mapping bank i to obj extended palette");
+            objb_extended_palette.map(bank_i.data(), 0, 0x2000);
             break;
         }
     }

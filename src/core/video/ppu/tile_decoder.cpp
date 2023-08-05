@@ -19,8 +19,7 @@ u16 PPU::decode_obj_pixel_8bpp(u32 base, int number, int x, int y) {
     if (index == 0) {
         return colour_transparent;
     } else if (dispcnt.obj_extended_palette) {
-        logger.todo("PPU: handle obj extended palette");
-        return 0;
+        return obj_extended_palette.read<u16>((number * 0xff + index) * 2);
     } else {
         return common::read<u16>(palette_ram, (0x200 + (index * 2)) & 0x3ff);
     }

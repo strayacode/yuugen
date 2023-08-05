@@ -87,6 +87,8 @@ public:
     VRAMRegion texture_palette;
     VRAMRegion bga_extended_palette;
     VRAMRegion bgb_extended_palette;
+    VRAMRegion obja_extended_palette;
+    VRAMRegion objb_extended_palette;
 
 private:
     void reset_vram_regions();
