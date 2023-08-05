@@ -140,6 +140,18 @@ private:
         u16 data;
     };
 
+    union MOSAIC {
+        struct {
+            u8 bg_width : 4;
+            u8 bg_height : 4;
+            u8 obj_width : 4;
+            u8 obj_height : 4;
+            u32 : 16;
+        };
+
+        u32 data;
+    };
+
     DISPCNT dispcnt;
     std::array<BGCNT, 4> bgcnt;
     std::array<u16, 4> bghofs;
@@ -156,11 +168,13 @@ private:
     std::array<u16, 2> winv;
     u16 winin;
     u16 winout;
-    u32 mosaic;
+    MOSAIC mosaic;
     BLDCNT bldcnt;
     u16 bldalpha;
     u32 bldy;
     u16 master_bright;
+
+    int mosaic_bg_vertical_counter;
 
     std::array<u32, 256 * 192> framebuffer;
     std::array<std::array<u16, 256>, 4> bg_layers;

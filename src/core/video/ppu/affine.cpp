@@ -8,7 +8,7 @@ namespace core {
 
 void PPU::affine_loop(int id, int width, int height, AffineCallback affine_callback) {
     if (bgcnt[id].mosaic) {
-        logger.todo("PPU: handle mosaic");
+        logger.todo("PPU: handle mosaic for affine loop");
     }
     
     s32 copy_x = internal_x[id - 2];

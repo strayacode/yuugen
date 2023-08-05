@@ -6,8 +6,9 @@
 namespace core {
 
 void PPU::render_text(int id, int line) {
+    // apply vertical mosaic
     if (bgcnt[id].mosaic) {
-        logger.todo("PPU: handle mosaic");
+        line -= mosaic_bg_vertical_counter;
     }
 
     int y = (line + bgvofs[id]) % 512;
@@ -53,6 +54,20 @@ void PPU::render_text(int id, int line) {
             }
 
             bg_layers[id][offset] = pixels[j];
+        }
+    }
+
+    // apply horizontal mosaic
+    if (bgcnt[id].mosaic) {
+        int mosaic_bg_horizontal_counter = 0;
+
+        for (int i = 0; i < 256; i++) {
+            bg_layers[id][i] = bg_layers[id][i - mosaic_bg_horizontal_counter];
+            if (mosaic_bg_horizontal_counter == mosaic.bg_width) {
+                mosaic_bg_horizontal_counter = 0;
+            } else {
+                mosaic_bg_horizontal_counter++;
+            }
         }
     }
 }

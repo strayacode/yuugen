@@ -30,11 +30,13 @@ void PPU::reset() {
     winv.fill(0);
     winin = 0;
     winout = 0;
-    mosaic = 0;
+    mosaic.data = 0;
     bldcnt.data = 0;
     bldalpha = 0;
     bldy = 0;
     master_bright = 0;
+
+    mosaic_bg_vertical_counter = 0;
 
     framebuffer.fill(0);
     reset_layers();
@@ -48,6 +50,8 @@ void PPU::render_scanline(int line) {
         internal_y[0] = bgy[0];
         internal_x[1] = bgx[1];
         internal_y[1] = bgy[1];
+
+        mosaic_bg_vertical_counter = 0;
     }
 
     switch (dispcnt.display_mode) {
@@ -63,6 +67,13 @@ void PPU::render_scanline(int line) {
     case 3:
         logger.error("PPU: handle main memory display");
         break;
+    }
+
+    // update mosaic vertical counter
+    if (mosaic_bg_vertical_counter == mosaic.bg_height) {
+        mosaic_bg_vertical_counter = 0;
+    } else {
+        mosaic_bg_vertical_counter++;
     }
 }
 
@@ -127,7 +138,8 @@ void PPU::write_winout(u16 value, u32 mask) {
 }
 
 void PPU::write_mosaic(u16 value, u32 mask) {
-    mosaic = (mosaic & ~mask) | (value & mask);
+    mask &= 0xffff;
+    mosaic.data = (mosaic.data & ~mask) | (value & mask);
 }
 
 void PPU::write_bldcnt(u16 value, u32 mask) {
