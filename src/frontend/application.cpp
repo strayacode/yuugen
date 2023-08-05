@@ -31,7 +31,7 @@ bool Application::initialise() {
 
     ImGuiIO& io = ImGui::GetIO();
 
-    font_database.add_font(FontDatabase::Style::Regular, io.Fonts->AddFontFromFileTTF("../data/fonts/open-sans-regular.ttf", 15.0f));
+    font_database.add_font(FontDatabase::Style::Regular, io.Fonts->AddFontFromFileTTF("../data/fonts/open-sans-regular.ttf", 16.0f));
     font_database.add_font(FontDatabase::Style::Large, io.Fonts->AddFontFromFileTTF("../data/fonts/open-sans-regular.ttf", 19.0f));
     font_database.add_font(FontDatabase::Style::Debug, io.Fonts->AddFontFromFileTTF("../data/fonts/cascadia-mono.ttf", 13.0f));
 

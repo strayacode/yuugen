@@ -1,23 +1,16 @@
 #include "common/logger.h"
 #include "common/bits.h"
-#include "core/video/video_unit.h"
 #include "core/video/ppu/ppu.h"
 
 namespace core {
 
-PPU::PPU(VideoUnit& video_unit, Engine engine) : video_unit(video_unit), engine(engine) {
-    if (engine == Engine::A) {
-        palette_ram = video_unit.get_palette_ram();
-        oam = video_unit.get_oam();
-        vram_addr = 0x06000000;
-        obj_addr = 0x06400000;
-    } else {
-        palette_ram = video_unit.get_palette_ram() + 0x400;
-        oam = video_unit.get_oam() + 0x400;
-        vram_addr = 0x06200000;
-        obj_addr = 0x06600000;
-    }
-}
+PPU::PPU(u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& lcdc) : 
+    palette_ram(palette_ram),
+    oam(oam),
+    bg(bg),
+    obj(obj),
+    bg_extended_palette(bg_extended_palette),
+    lcdc(lcdc) {}
 
 void PPU::reset() {
     dispcnt.data = 0;
@@ -76,52 +69,52 @@ void PPU::write_dispcnt(u32 value, u32 mask) {
     dispcnt.data = (dispcnt.data & ~mask) | (value & mask);
 }
 
-void PPU::write_bgcnt(int index, u16 value, u32 mask) {
-    bgcnt[index].data = (bgcnt[index].data & ~mask) | (value & mask);
+void PPU::write_bgcnt(int id, u16 value, u32 mask) {
+    bgcnt[id].data = (bgcnt[id].data & ~mask) | (value & mask);
 }
 
-void PPU::write_bghofs(int index, u16 value, u32 mask) {
-    bghofs[index] = (bghofs[index] & ~mask) | (value & mask);
+void PPU::write_bghofs(int id, u16 value, u32 mask) {
+    bghofs[id] = (bghofs[id] & ~mask) | (value & mask);
 }
 
-void PPU::write_bgvofs(int index, u16 value, u32 mask) {
-    bgvofs[index] = (bgvofs[index] & ~mask) | (value & mask);
+void PPU::write_bgvofs(int id, u16 value, u32 mask) {
+    bgvofs[id] = (bgvofs[id] & ~mask) | (value & mask);
 }
 
-void PPU::write_bgpa(int index, u16 value, u32 mask) {
-    bgpa[index] = (bgpa[index] & ~mask) | (value & mask);
+void PPU::write_bgpa(int id, u16 value, u32 mask) {
+    bgpa[id] = (bgpa[id] & ~mask) | (value & mask);
 }
 
-void PPU::write_bgpb(int index, u16 value, u32 mask) {
-    bgpb[index] = (bgpb[index] & ~mask) | (value & mask);
+void PPU::write_bgpb(int id, u16 value, u32 mask) {
+    bgpb[id] = (bgpb[id] & ~mask) | (value & mask);
 }
 
-void PPU::write_bgpc(int index, u16 value, u32 mask) {
-    bgpc[index] = (bgpc[index] & ~mask) | (value & mask);
+void PPU::write_bgpc(int id, u16 value, u32 mask) {
+    bgpc[id] = (bgpc[id] & ~mask) | (value & mask);
 }
 
-void PPU::write_bgpd(int index, u16 value, u32 mask) {
-    bgpd[index] = (bgpd[index] & ~mask) | (value & mask);
+void PPU::write_bgpd(int id, u16 value, u32 mask) {
+    bgpd[id] = (bgpd[id] & ~mask) | (value & mask);
 }
 
-void PPU::write_bgx(int index, u32 value, u32 mask) {
+void PPU::write_bgx(int id, u32 value, u32 mask) {
     mask &= 0xfffffff;
-    bgx[index] = common::sign_extend<u32, 28>((bgx[index] & ~mask) | (value & mask));
-    internal_x[index] = bgx[index];
+    bgx[id] = common::sign_extend<u32, 28>((bgx[id] & ~mask) | (value & mask));
+    internal_x[id] = bgx[id];
 }
 
-void PPU::write_bgy(int index, u32 value, u32 mask) {
+void PPU::write_bgy(int id, u32 value, u32 mask) {
     mask &= 0xfffffff;
-    bgy[index] = common::sign_extend<u32, 28>((bgy[index] & ~mask) | (value & mask));
-    internal_y[index] = bgy[index];
+    bgy[id] = common::sign_extend<u32, 28>((bgy[id] & ~mask) | (value & mask));
+    internal_y[id] = bgy[id];
 }
 
-void PPU::write_winh(int index, u16 value, u32 mask) {
-    winh[index] = (winh[index] & ~mask) | (value & mask);
+void PPU::write_winh(int id, u16 value, u32 mask) {
+    winh[id] = (winh[id] & ~mask) | (value & mask);
 }
 
-void PPU::write_winv(int index, u16 value, u32 mask) {
-    winv[index] = (winv[index] & ~mask) | (value & mask);
+void PPU::write_winv(int id, u16 value, u32 mask) {
+    winv[id] = (winv[id] & ~mask) | (value & mask);
 }
 
 void PPU::write_winin(u16 value, u32 mask) {
@@ -215,8 +208,8 @@ void PPU::render_graphics_display(int line) {
 
 void PPU::render_vram_display(int line) {
     for (int x = 0; x < 256; x++) {
-        u32 addr = 0x06800000 + (dispcnt.vram_block * 0x20000) + ((256 * line) + x) * 2;
-        u16 data = video_unit.vram.read<u16>(addr);
+        u32 addr = (dispcnt.vram_block * 0x20000) + ((256 * line) + x) * 2;
+        u16 data = lcdc.read<u16>(addr);
         render_pixel(x, line, rgb555_to_rgb888(data) | 0xff000000);
     }
 }

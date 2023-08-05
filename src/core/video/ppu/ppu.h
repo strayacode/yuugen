@@ -3,41 +3,35 @@
 #include <array>
 #include "common/types.h"
 #include "common/callback.h"
+#include "core/video/vram_region.h"
 
 namespace core {
 
-class VideoUnit;
-
-enum class Engine {
-    A,
-    B,
-};
-
 class PPU {
 public:
-    PPU(VideoUnit& video_unit, Engine engine);
+    PPU(u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& lcdc);
 
     void reset();
     void render_scanline(int line);
 
     u32 read_dispcnt() { return dispcnt.data; }
-    u16 read_bgcnt(int index) { return bgcnt[index].data; }
+    u16 read_bgcnt(int id) { return bgcnt[id].data; }
     u16 read_winin() { return winin; }
     u16 read_winout() { return winout; }
 
     void write_dispcnt(u32 value, u32 mask);
 
-    void write_bgcnt(int index, u16 value, u32 mask);
-    void write_bghofs(int index, u16 value, u32 mask);
-    void write_bgvofs(int index, u16 value, u32 mask);
-    void write_bgpa(int index, u16 value, u32 mask);
-    void write_bgpb(int index, u16 value, u32 mask);
-    void write_bgpc(int index, u16 value, u32 mask);
-    void write_bgpd(int index, u16 value, u32 mask);
-    void write_bgx(int index, u32 value, u32 mask);
-    void write_bgy(int index, u32 value, u32 mask);
-    void write_winh(int index, u16 value, u32 mask);
-    void write_winv(int index, u16 value, u32 mask);
+    void write_bgcnt(int id, u16 value, u32 mask);
+    void write_bghofs(int id, u16 value, u32 mask);
+    void write_bgvofs(int id, u16 value, u32 mask);
+    void write_bgpa(int id, u16 value, u32 mask);
+    void write_bgpb(int id, u16 value, u32 mask);
+    void write_bgpc(int id, u16 value, u32 mask);
+    void write_bgpd(int id, u16 value, u32 mask);
+    void write_bgx(int id, u32 value, u32 mask);
+    void write_bgy(int id, u32 value, u32 mask);
+    void write_winh(int id, u16 value, u32 mask);
+    void write_winv(int id, u16 value, u32 mask);
     void write_winin(u16 value, u32 mask);
     void write_winout(u16 value, u32 mask);
     void write_mosaic(u16 value, u32 mask);
@@ -54,12 +48,12 @@ private:
     void render_graphics_display(int line);
     void render_vram_display(int line);
 
-    void render_text(int bg, int line);
+    void render_text(int id, int line);
 
-    void affine_loop(int bg, int width, int height, AffineCallback affine_callback);
-    void render_affine(int bg, int line);
-    void render_extended(int bg, int line);
-    void render_large(int bg, int line);
+    void affine_loop(int id, int width, int height, AffineCallback affine_callback);
+    void render_affine(int id, int line);
+    void render_extended(int id, int line);
+    void render_large(int id, int line);
 
     void render_objects(int line);
 
@@ -175,11 +169,11 @@ private:
 
     u8* palette_ram;
     u8* oam;
-    u32 vram_addr;
-    u32 obj_addr;
-    VideoUnit& video_unit;
-    Engine engine;
-
+    VRAMRegion& bg;
+    VRAMRegion& obj;
+    VRAMRegion& bg_extended_palette;
+    VRAMRegion& lcdc;
+    
     static constexpr int obj_dimensions[3][4][2] = {{{8, 8}, {16, 16}, {32, 32}, {64, 64}}, {{16, 8}, {32, 8}, {32, 16}, {64, 32}}, {{8, 16}, {8, 32}, {16, 32}, {32, 64}}};
     static constexpr int text_dimensions[4][2] = {{256, 256}, {512, 256}, {256, 512}, {512, 512}};
     static constexpr int extended_dimensions[4][2] = {{128, 128}, {256, 256}, {512, 256}, {512, 512}};

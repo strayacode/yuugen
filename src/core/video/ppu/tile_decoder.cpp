@@ -5,7 +5,7 @@
 namespace core {
 
 u16 PPU::decode_obj_pixel_4bpp(u32 base, int number, int x, int y) {
-    auto indices = video_unit.vram.read<u8>(base + (y * 32) + (x / 2));
+    auto indices = obj.read<u8>(base + (y * 32) + (x / 2));
     auto index = (indices >> (4 * (x & 0x1))) & 0xf;
     if (index == 0) {
         return colour_transparent;
@@ -15,7 +15,7 @@ u16 PPU::decode_obj_pixel_4bpp(u32 base, int number, int x, int y) {
 }
 
 u16 PPU::decode_obj_pixel_8bpp(u32 base, int number, int x, int y) {
-    auto index = video_unit.vram.read<u8>(base + (y * 64) + x);
+    auto index = obj.read<u8>(base + (y * 64) + x);
     if (index == 0) {
         return colour_transparent;
     } else if (dispcnt.obj_extended_palette) {
@@ -30,7 +30,7 @@ PPU::TileRow PPU::decode_tile_row_4bpp(u32 tile_base, int tile_number, int palet
     TileRow pixels;
     int row = (vertical_flip ? (y ^ 7) : y) % 8;
     u32 tile_addr = tile_base + (tile_number * 32) + (row * 4);
-    u32 palette_indices = video_unit.vram.read<u32>(tile_addr);
+    u32 palette_indices = bg.read<u32>(tile_addr);
 
     for (int x = 0; x < 8; x++) {
         int column = horizontal_flip ? (x ^ 7) : x;
@@ -49,7 +49,7 @@ PPU::TileRow PPU::decode_tile_row_8bpp(u32 tile_base, int tile_number, int palet
     TileRow pixels;
     int row = (vertical_flip ? (y ^ 7) : y) % 8;
     u32 tile_addr = tile_base + (tile_number * 64) + (row * 8);
-    u64 palette_indices = video_unit.vram.read<u64>(tile_addr);
+    u64 palette_indices = bg.read<u64>(tile_addr);
 
     for (int x = 0; x < 8; x++) {
         int column = horizontal_flip ? (x ^ 7) : x;
@@ -59,11 +59,7 @@ PPU::TileRow PPU::decode_tile_row_8bpp(u32 tile_base, int tile_number, int palet
         if (palette_index == 0) {
             colour = colour_transparent;
         } else if (dispcnt.bg_extended_palette) {
-            if (engine == Engine::A) {
-                colour = video_unit.vram.bga_extended_palette.read<u16>(0x06000000 + extended_palette_slot * 0x2000 + (palette_number * 0xff + palette_index) * 2);
-            } else {
-                colour = video_unit.vram.bgb_extended_palette.read<u16>(0x06000000 + extended_palette_slot * 0x2000 + (palette_number * 0xff + palette_index) * 2);
-            }
+            colour = bg_extended_palette.read<u16>(extended_palette_slot * 0x2000 + (palette_number * 0xff + palette_index) * 2);
         } else {
             colour = common::read<u16>(palette_ram, (palette_index * 2) & 0x3ff);
         }

@@ -4,7 +4,12 @@
 
 namespace core {
 
-VideoUnit::VideoUnit(System& system) : ppu_a(*this, Engine::A), ppu_b(*this, Engine::B), system(system), irq7(system.arm7.get_irq()), irq9(system.arm9.get_irq()) {}
+VideoUnit::VideoUnit(System& system) :
+    ppu_a(get_palette_ram(), get_oam(), vram.bga, vram.obja, vram.bga_extended_palette, vram.lcdc),
+    ppu_b(get_palette_ram() + 0x400, get_oam() + 0x400, vram.bgb, vram.objb, vram.bgb_extended_palette, vram.lcdc),
+    system(system),
+    irq7(system.arm7.get_irq()),
+    irq9(system.arm9.get_irq()) {}
 
 void VideoUnit::reset() {
     palette_ram.fill(0);

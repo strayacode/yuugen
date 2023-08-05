@@ -16,6 +16,18 @@ void VRAM::reset() {
     bank_g.fill(0);
     bank_h.fill(0);
     bank_i.fill(0);
+
+    lcdc.allocate(0xa4000);
+    bga.allocate(0x80000);
+    obja.allocate(0x40000);
+    bgb.allocate(0x20000);
+    objb.allocate(0x20000);
+    arm7_vram.allocate(0x20000);
+    texture_data.allocate(0x80000);
+    texture_palette.allocate(0x20000);
+    bga_extended_palette.allocate(0x8000);
+    bgb_extended_palette.allocate(0x8000);
+
     reset_vram_regions();
 }
 

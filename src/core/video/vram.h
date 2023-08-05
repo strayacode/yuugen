@@ -77,8 +77,16 @@ public:
     u8 read_vramcnt(Bank bank) { return vramcnt[static_cast<int>(bank)].data; }
     void write_vramcnt(Bank bank, u8 value);
 
-    VRAMRegion<0x8000> bga_extended_palette;
-    VRAMRegion<0x8000> bgb_extended_palette;
+    VRAMRegion lcdc;
+    VRAMRegion bga;
+    VRAMRegion obja;
+    VRAMRegion bgb;
+    VRAMRegion objb;
+    VRAMRegion arm7_vram;
+    VRAMRegion texture_data;
+    VRAMRegion texture_palette;
+    VRAMRegion bga_extended_palette;
+    VRAMRegion bgb_extended_palette;
 
 private:
     void reset_vram_regions();
@@ -107,15 +115,6 @@ private:
     std::array<u8, 0x4000> bank_g;
     std::array<u8, 0x8000> bank_h;
     std::array<u8, 0x4000> bank_i;
-
-    VRAMRegion<0xa4000> lcdc;
-    VRAMRegion<0x80000> bga;
-    VRAMRegion<0x40000> obja;
-    VRAMRegion<0x20000> bgb;
-    VRAMRegion<0x20000> objb;
-    VRAMRegion<0x20000> arm7_vram;
-    VRAMRegion<0x80000> texture_data;
-    VRAMRegion<0x20000> texture_palette;
 };
 
 } // namespace core
