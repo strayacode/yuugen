@@ -155,7 +155,6 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
     return 0;
 }
 
-// TODO: apply mask to write handlers
 template <u32 mask>
 void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
@@ -304,6 +303,9 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000188):
         system.ipc.write_ipcfifosend(arm::Arch::ARMv5, value);
+        break;
+    case MMIO(0x04000204):
+        if constexpr (mask & 0xffff) system.write_exmemcnt(value, mask);
         break;
     case MMIO(0x04000208):
         system.arm9.get_irq().write_ime(value, mask);

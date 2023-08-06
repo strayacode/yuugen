@@ -1,5 +1,6 @@
 #include "common/logger.h"
 #include "common/regular_file.h"
+#include "common/bits.h"
 #include "core/arm9/arm9.h"
 #include "core/system.h"
 
@@ -69,6 +70,12 @@ u32 ARM9Memory::read_word(u32 addr) {
         return mmio_read_word(addr);
     case 0x06:
         return system.video_unit.vram.read<u32>(addr);
+    case 0x08:
+        if (common::get_bit<7>(system.exmemcnt)) {
+            return 0;
+        }
+
+        return 0xffffffff;
     default:
         logger.error("ARM9Memory: handle 32-bit read %08x", addr);
     }
