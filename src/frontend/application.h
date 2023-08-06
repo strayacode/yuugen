@@ -32,7 +32,7 @@ public:
     ImGui::FileBrowser file_dialog;
 
     ImVec2 scaled_dimensions;
-    static constexpr float menubar_height = 18;
+    static constexpr float menubar_height = 21;
     double center_pos = 0;
     int window_width = 0;
     int window_height = 0;
@@ -48,12 +48,19 @@ private:
     void boot_game(const std::string& path);
     void boot_firmware();
 
-    bool demo_window = false;
+    bool demo_window = true;
     core::System system;
 
     // TODO: combine top and bottom screen into single VideoDevice interface
     ImGuiVideoDevice top_screen;
     ImGuiVideoDevice bottom_screen;
+
+    ImVec4 grey0 = ImVec4(0.143f, 0.150f, 0.153f, 1.000f);
+    ImVec4 grey1 = ImVec4(0.100f, 0.100f, 0.100f, 1.000f);
+    ImVec4 grey2 = ImVec4(0.090f, 0.090f, 0.090f, 1.000f);
+    ImVec4 black = ImVec4(0.000f, 0.000f, 0.000f, 1.000f);
+    ImVec4 blue = ImVec4(0.218f, 0.359f, 0.832f, 1.000f);
+    ImVec4 window_bg = ImVec4(0.100f, 0.100f, 0.100f, 0.980f);
 
     f32 fps;
     FontDatabase font_database;

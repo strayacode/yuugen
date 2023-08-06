@@ -31,8 +31,8 @@ bool Application::initialise() {
 
     ImGuiIO& io = ImGui::GetIO();
 
-    font_database.add_font(FontDatabase::Style::Regular, io.Fonts->AddFontFromFileTTF("../data/fonts/open-sans-regular.ttf", 16.0f));
-    font_database.add_font(FontDatabase::Style::Large, io.Fonts->AddFontFromFileTTF("../data/fonts/open-sans-regular.ttf", 19.0f));
+    font_database.add_font(FontDatabase::Style::Regular, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-light.ttf", 16.0f));
+    font_database.add_font(FontDatabase::Style::Large, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-light.ttf", 19.0f));
     font_database.add_font(FontDatabase::Style::Debug, io.Fonts->AddFontFromFileTTF("../data/fonts/cascadia-mono.ttf", 13.0f));
 
     setup_style();
@@ -223,7 +223,7 @@ void Application::setup_style() {
     ImGui::GetStyle().PopupBorderSize = 0.0f;
     ImGui::GetStyle().ChildBorderSize = 0.0f;
     ImGui::GetStyle().GrabMinSize = 7.0f;
-    ImGui::GetStyle().WindowRounding = 5.0f;
+    ImGui::GetStyle().WindowRounding = 0.0f;
     ImGui::GetStyle().FrameRounding = 0.0f;
     ImGui::GetStyle().PopupRounding = 0.0f;
     ImGui::GetStyle().ChildRounding = 0.0f;
@@ -236,22 +236,24 @@ void Application::setup_style() {
     ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_HeaderHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_HeaderActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_HeaderHovered] = blue;
+    ImGui::GetStyle().Colors[ImGuiCol_HeaderActive] = blue;
     ImGui::GetStyle().Colors[ImGuiCol_ResizeGrip] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_ResizeGripHovered] = blue;
+    ImGui::GetStyle().Colors[ImGuiCol_ResizeGripActive] = blue;
     ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = blue;
     ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = ImVec4(0.349f, 0.500f, 0.910f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Tab] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TabHovered] = ImVec4(0.186f, 0.186f, 0.188f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TabActive] = ImVec4(0.231f, 0.231f, 0.251f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_FrameBg] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
-    ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = ImVec4(0.160f, 0.273f, 0.632f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = blue;
+    ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = blue;
     ImGui::GetStyle().Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
     ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] = ImVec4(0.210f, 0.210f, 0.210f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = window_bg;
+    ImGui::GetStyle().Colors[ImGuiCol_Border] = black;
 }
 
 void Application::render() {
@@ -272,7 +274,7 @@ void Application::render() {
     
     ImGui::Render();
     glViewport(0, 0, 1280, 720);
-    glClearColor(0, 0, 0, 1);
+    glClearColor(grey2.x, grey2.y, grey2.z, grey2.w);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);

@@ -11,7 +11,8 @@
 - [] blending
 - [x] bg window
 - [] obj window
-- [] mosaic
+- [] bg mosaic
+- [] obj mosaic
 - [] main memory display rendering
 - [] master brightness
 - [x] text bg rendering
