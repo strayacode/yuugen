@@ -7,19 +7,27 @@
 namespace core {
 
 void PPU::affine_loop(int id, int width, int height, AffineCallback affine_callback) {
-    if (bgcnt[id].mosaic) {
-        logger.todo("PPU: handle mosaic for affine loop");
-    }
-    
     s32 copy_x = internal_x[id - 2];
     s32 copy_y = internal_y[id - 2];
+    int mosaic_bg_horizontal_counter = 0;
 
     for (int pixel = 0; pixel < 256; pixel++) {
         int x = copy_x >> 8;
         int y = copy_y >> 8;
 
-        copy_x += bgpa[id - 2];
-        copy_y += bgpc[id - 2];
+        // apply horizontal mosaic
+        if (bgcnt[id].mosaic && mosaic.bg_width != 0) {
+            if (mosaic_bg_horizontal_counter == mosaic.bg_width) {
+                mosaic_bg_horizontal_counter = 0;
+                copy_x += mosaic.bg_width * bgpa[id - 2];
+                copy_y += mosaic.bg_width * bgpc[id - 2];
+            } else {
+                mosaic_bg_horizontal_counter++;
+            }
+        } else {
+            copy_x += bgpa[id - 2];
+            copy_y += bgpc[id - 2];
+        }
 
         if (bgcnt[id].wraparound_ext_palette_slot) {
             x &= width - 1;
@@ -31,9 +39,6 @@ void PPU::affine_loop(int id, int width, int height, AffineCallback affine_callb
 
         affine_callback(pixel, x, y);
     }
-
-    internal_x[id - 2] += bgpb[id - 2];
-    internal_y[id - 2] += bgpd[id - 2];
 }
 
 void PPU::render_affine(int id) {

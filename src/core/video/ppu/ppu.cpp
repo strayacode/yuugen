@@ -75,6 +75,22 @@ void PPU::render_scanline(int line) {
     } else {
         mosaic_bg_vertical_counter++;
     }
+
+    // update internal affine registers
+    // affine registers don't get updated in mode 0
+    if (dispcnt.bg_mode != 0) {
+        for (int i = 0; i < 2; i++) {
+            if (bgcnt[i + 2].mosaic && mosaic.bg_height != 0) {
+                if (mosaic_bg_vertical_counter == 0) {
+                    internal_x[i] += mosaic.bg_height * bgpb[i];
+                    internal_y[i] += mosaic.bg_height * bgpd[i];
+                }
+            } else {
+                internal_x[i] += bgpb[i];
+                internal_y[i] += bgpd[i];
+            }
+        }
+    }
 }
 
 void PPU::write_dispcnt(u32 value, u32 mask) {

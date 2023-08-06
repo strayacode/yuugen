@@ -58,7 +58,7 @@ void PPU::render_text(int id, int line) {
     }
 
     // apply horizontal mosaic
-    if (bgcnt[id].mosaic) {
+    if (bgcnt[id].mosaic && mosaic.bg_width != 0) {
         int mosaic_bg_horizontal_counter = 0;
 
         for (int i = 0; i < 256; i++) {
