@@ -58,12 +58,13 @@ u32 IPC::read_ipcfiforecv(arm::Arch arch) {
     return tx_recv;
 }
 
-void IPC::write_ipcsync(arm::Arch arch, u32 value) {
+void IPC::write_ipcsync(arm::Arch arch, u32 value, u32 mask) {
     auto& tx_sync = ipcsync[static_cast<int>(arch)];
     auto& rx_sync = ipcsync[!static_cast<int>(arch)];
     auto rx_irq = irq[!static_cast<int>(arch)];
-    
-    tx_sync.data = (tx_sync.data & ~0x6f00) | (value & 0x6f00);
+
+    mask &= 0x6f00;
+    tx_sync.data = (tx_sync.data & ~mask) | (value & mask);
     rx_sync.input = tx_sync.output;
 
     if (tx_sync.send_irq && rx_sync.enable_irq) {
@@ -71,7 +72,7 @@ void IPC::write_ipcsync(arm::Arch arch, u32 value) {
     }
 }
 
-void IPC::write_ipcfifocnt(arm::Arch arch, u16 value) {
+void IPC::write_ipcfifocnt(arm::Arch arch, u16 value, u32 mask) {
     auto& tx_cnt = ipcfifocnt[static_cast<int>(arch)];
     auto& tx_fifo = fifo[static_cast<int>(arch)];
     auto tx_irq = irq[static_cast<int>(arch)];
@@ -79,7 +80,8 @@ void IPC::write_ipcfifocnt(arm::Arch arch, u16 value) {
     bool send_fifo_empty_irq_old = tx_cnt.send_fifo_empty_irq;
     bool receive_fifo_empty_irq_old = tx_cnt.receive_fifo_empty_irq;
 
-    tx_cnt.data = (tx_cnt.data & ~0x8404) | (value & 0x8404);
+    mask &= 0x8404;
+    tx_cnt.data = (tx_cnt.data & ~mask) | (value & mask);
 
     if (common::get_bit<3>(value)) {
         tx_fifo.reset();

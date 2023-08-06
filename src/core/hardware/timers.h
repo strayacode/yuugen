@@ -11,15 +11,15 @@ public:
     Timers(Scheduler& scheduler, IRQ& irq);
 
     void reset();
-    void write_length(int index, u16 value, u32 mask);
-    void write_control(int index, u16 value, u32 mask);
+    void write_length(int id, u16 value, u32 mask);
+    void write_control(int id, u16 value, u32 mask);
 
 private:
-    void overflow(int index);
-    void activate_channel(int index);
-    void deactivate_channel(int index);
+    void overflow(int id);
+    void activate_channel(int id);
+    void deactivate_channel(int id);
 
-    u16 update_counter(int index);
+    u16 update_counter(int id);
 
     struct Channel {
         union Control {

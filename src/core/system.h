@@ -33,8 +33,11 @@ public:
     void set_boot_mode(BootMode boot_mode);
 
     u8 read_wramcnt() { return wramcnt; }
-    void write_wramcnt(u8 data);
-    void write_haltcnt(u8 data);
+    void write_wramcnt(u8 value);
+    void write_haltcnt(u8 value);
+
+    u16 read_exmemcnt() { return exmemcnt; }
+    void write_exmemcnt(u16 value, u32 mask);
 
     using UpdateCallback = common::Callback<void(f32)>;
 
@@ -67,6 +70,7 @@ public:
     std::array<u8, 0x8000> shared_wram;
     u8 wramcnt;
     u8 haltcnt;
+    u16 exmemcnt;
 
 private:
     void run_thread();

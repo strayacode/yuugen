@@ -39,9 +39,9 @@ public:
     u32 read_ie() { return ie; }
     u32 read_irf() { return irf; }
 
-    void write_ime(u32 value);
-    void write_ie(u32 value);
-    void write_irf(u32 value);
+    void write_ime(u32 value, u32 mask);
+    void write_ie(u32 value, u32 mask);
+    void write_irf(u32 value, u32 mask);
 
 private:
     u32 ime;

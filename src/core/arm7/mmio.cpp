@@ -151,10 +151,10 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xff) system.rtc.write_rtc(value);
         break;
     case MMIO(0x04000180):
-        if constexpr (mask & 0xffff) system.ipc.write_ipcsync(arm::Arch::ARMv4, value);
+        if constexpr (mask & 0xffff) system.ipc.write_ipcsync(arm::Arch::ARMv4, value, mask);
         break;
     case MMIO(0x04000184):
-        if constexpr (mask & 0xffff) system.ipc.write_ipcfifocnt(arm::Arch::ARMv4, value);
+        if constexpr (mask & 0xffff) system.ipc.write_ipcfifocnt(arm::Arch::ARMv4, value, mask);
         break;
     case MMIO(0x04000188):
         system.ipc.write_ipcfifosend(arm::Arch::ARMv4, value);
@@ -164,13 +164,13 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff0000) system.spi.write_spidata(value >> 16);
         break;
     case MMIO(0x04000208):
-        system.arm7.get_irq().write_ime(value);
+        system.arm7.get_irq().write_ime(value, mask);
         break;
     case MMIO(0x04000210):
-        system.arm7.get_irq().write_ie(value);
+        system.arm7.get_irq().write_ie(value, mask);
         break;
     case MMIO(0x04000214):
-        system.arm7.get_irq().write_irf(value);
+        system.arm7.get_irq().write_irf(value, mask);
         break;
     case MMIO(0x04000300):
         if constexpr (mask & 0xff) postflg = value & 0x1;

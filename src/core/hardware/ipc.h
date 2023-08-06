@@ -18,8 +18,8 @@ public:
     u16 read_ipcfifocnt(arm::Arch arch);
     u32 read_ipcfiforecv(arm::Arch arch);
 
-    void write_ipcsync(arm::Arch arch, u32 value);
-    void write_ipcfifocnt(arm::Arch arch, u16 value);
+    void write_ipcsync(arm::Arch arch, u32 value, u32 mask);
+    void write_ipcfifocnt(arm::Arch arch, u16 value, u32 mask);
     void write_ipcfifosend(arm::Arch arch, u32 value);
 
 private:

@@ -46,6 +46,7 @@ void System::reset() {
     shared_wram.fill(0);
     wramcnt = 0;
     haltcnt = 0;
+    exmemcnt = 0;
 
     frames = 0;
 }
@@ -85,14 +86,14 @@ void System::set_boot_mode(BootMode boot_mode) {
     config.boot_mode = boot_mode;
 }
 
-void System::write_wramcnt(u8 data) {
-    wramcnt = data & 0x3;
+void System::write_wramcnt(u8 value) {
+    wramcnt = value & 0x3;
     arm7.get_memory().update_wram_mapping();
     arm9.get_memory().update_wram_mapping();
 }
 
-void System::write_haltcnt(u8 data) {
-    haltcnt = data & 0xc0;
+void System::write_haltcnt(u8 value) {
+    haltcnt = value & 0xc0;
     switch ((haltcnt >> 6) & 0x3) {
     case 0x2:
         arm7.get_cpu().update_halted(true);
@@ -103,6 +104,10 @@ void System::write_haltcnt(u8 data) {
     default:
         logger.todo("System: unimplemented power down mode");
     }
+}
+
+void System::write_exmemcnt(u16 value, u32 mask) {
+    exmemcnt = (exmemcnt & ~mask) | (value & mask);
 }
 
 void System::run_thread() {

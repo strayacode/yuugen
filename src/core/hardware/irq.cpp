@@ -23,18 +23,20 @@ void IRQ::raise(IRQ::Source source) {
     cpu->update_irq(ime && (ie & irf));
 }
 
-void IRQ::write_ime(u32 value) {
-    ime = value & 0x1;
+void IRQ::write_ime(u32 value, u32 mask) {
+    mask &= 0x1;
+    ime = (ime & ~mask) | (value & mask);
+
     cpu->update_irq(ime && (ie & irf));
 }
 
-void IRQ::write_ie(u32 value) {
-    ie = value;
+void IRQ::write_ie(u32 value, u32 mask) {
+    ie = (ie & ~mask) | (value & mask);
     cpu->update_irq(ime && (ie & irf));
 }
 
-void IRQ::write_irf(u32 value) {
-    irf &= ~value;
+void IRQ::write_irf(u32 value, u32 mask) {
+    irf &= ~(value & mask);
     cpu->update_irq(ime && (ie & irf));
 }
 
