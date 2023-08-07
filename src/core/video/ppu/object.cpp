@@ -12,6 +12,7 @@ void PPU::render_objects(int line) {
         }
 
         std::array<u16, 3> attributes;
+        std::array<s16, 4> affine_parameters;
         attributes[0] = common::read<u16>(oam, i * 8);
         attributes[1] = common::read<u16>(oam, (i * 8) + 2);
         attributes[2] = common::read<u16>(oam, (i * 8) + 4);
@@ -29,8 +30,6 @@ void PPU::render_objects(int line) {
         u16 tile_number = common::get_field<0, 10>(attributes[2]);
         u16 priority = common::get_field<10, 2>(attributes[2]);
         u16 palette_number = common::get_field<12, 4>(attributes[2]);
-        int width = obj_dimensions[shape][size][0];
-        int height = obj_dimensions[shape][size][1];
         
         if (x >= 256) {
             x -= 512;
@@ -40,19 +39,42 @@ void PPU::render_objects(int line) {
             y -= 256;
         }
 
+        int width = obj_dimensions[shape][size][0];
+        int height = obj_dimensions[shape][size][1];
+        int half_width = width / 2;
+        int half_height = height / 2;
+
+        x += half_width;
+        y += half_height;
+
         if (mosaic) {
             logger.error("PPU: handle object mosaic");
         }
 
         if (affine) {
             bool double_size = common::get_bit<9>(attributes[0]);
-            u16 affine_parameter = common::get_field<9, 5>(attributes[1]);
+            u16 group = common::get_field<9, 5>(attributes[1]) * 32;
+            
+            affine_parameters[0] = common::read<u16>(oam, group + 0x6);
+            affine_parameters[1] = common::read<u16>(oam, group + 0xe);
+            affine_parameters[2] = common::read<u16>(oam, group + 0x16);
+            affine_parameters[3] = common::read<u16>(oam, group + 0x1e);
 
             if (double_size) {
-                logger.error("PPU: handle double size parameter");
+                x += half_width;
+                y += half_height;
+                half_width *= 2;
+                half_height *= 2;
             }
-
-            logger.error("PPU: handle object affine rendering");
+        } else {
+            // for non-affine sprites, we can still use the general affine formula,
+            // but instead use the parameters 0x100, 0, 0 and 0x100
+            // these parameters get treated as identity values, meaning they don't
+            // have any effect in the multiplication
+            affine_parameters[0] = 0x100;
+            affine_parameters[1] = 0;
+            affine_parameters[2] = 0;
+            affine_parameters[3] = 0x100;
         }
 
         if (mode == ObjectMode::SemiTransparent) {
@@ -64,29 +86,37 @@ void PPU::render_objects(int line) {
         }
 
         int local_y = line - y;
-        if (local_y < 0 || local_y >= height) {
+        if (local_y < -half_height || local_y >= half_height) {
             continue;
         }
 
-        for (int local_x = 0; local_x < width; local_x++) {
+        for (int local_x = -half_width; local_x <= half_width; local_x++) {
             u16 colour = 0;
             int global_x = x + local_x;
             if (global_x < 0 || global_x >= 256) {
                 continue;
             }
 
+            int transformed_x = (((affine_parameters[0] * local_x) + (affine_parameters[1] * local_y)) >> 8) + (width / 2);
+            int transformed_y = (((affine_parameters[2] * local_x) + (affine_parameters[3] * local_y)) >> 8) + (height / 2);
+
+            // make sure the transformed coordinates are still in bounds
+            if (transformed_x < 0 || transformed_y < 0 || transformed_x >= width || transformed_y >= height) {
+                continue;
+            }
+
             if (horizontal_flip) {
-                local_x = width - local_x - 1;
+                transformed_x = width - transformed_x - 1;
             }
 
             if (vertical_flip) {
-                local_y = height - local_y - 1;
+                transformed_y = height - transformed_y - 1;
             }
 
-            int inner_tile_x = local_x % 8;
-            int inner_tile_y = local_y % 8;
-            int tile_x = local_x / 8;
-            int tile_y = local_y / 8;
+            int inner_tile_x = transformed_x % 8;
+            int inner_tile_y = transformed_y % 8;
+            int tile_x = transformed_x / 8;
+            int tile_y = transformed_y / 8;
             int tile_addr = 0;
 
             if (mode == ObjectMode::Bitmap) {
@@ -98,6 +128,7 @@ void PPU::render_objects(int line) {
                     logger.error("PPU: handle 2d mapping 8bpp");
                 }
 
+                tile_addr += tile_x * 64;
                 colour = decode_obj_pixel_8bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
             } else {
                 logger.error("PPU: handle 4bpp mode");
