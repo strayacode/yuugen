@@ -57,6 +57,8 @@ u16 ARM9Memory::read_half(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_half(addr);
+    case 0x06:
+        return system.video_unit.vram.read<u16>(addr);
     default:
         logger.error("ARM9Memory: handle 16-bit read %08x", addr);
     }

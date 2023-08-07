@@ -107,6 +107,8 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.ipc.read_ipcsync(arm::Arch::ARMv5);
     case MMIO(0x04000184):
         return system.ipc.read_ipcfifocnt(arm::Arch::ARMv5);
+    case MMIO(0x040001a4):
+        return system.cartridge.read_romctrl();
     case MMIO(0x04000204):
         return system.read_exmemcnt();
     case MMIO(0x04000208):
@@ -147,6 +149,8 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return 0;
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv5);
+    case MMIO(0x04100010):
+        return system.cartridge.read_data();
     default:
         logger.warn("ARM9Memory: unmapped %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
@@ -303,6 +307,19 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000188):
         system.ipc.write_ipcfifosend(arm::Arch::ARMv5, value);
+        break;
+    case MMIO(0x040001a0):
+        if constexpr (mask & 0xffff) system.cartridge.write_auxspicnt(value, mask);
+        if constexpr (mask & 0x00ff0000) logger.error("handle auxspidata writes");
+        break;
+    case MMIO(0x040001a4):
+        system.cartridge.write_romctrl(value, mask);
+        break;
+    case MMIO(0x040001a8):
+        system.cartridge.write_command_buffer(value, mask);
+        break;
+    case MMIO(0x040001ac):
+        system.cartridge.write_command_buffer(static_cast<u64>(value) << 32, static_cast<u64>(mask) << 32);
         break;
     case MMIO(0x04000204):
         if constexpr (mask & 0xffff) system.write_exmemcnt(value, mask);

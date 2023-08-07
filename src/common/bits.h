@@ -76,4 +76,26 @@ inline U get_field(T value) {
   return static_cast<U>((value >> start)) & ~(static_cast<T>(-1) << size);
 }
 
+inline u32 bswap32(u32 value) {
+    u32 result = 0;
+    result |= value >> 24;
+    result |= (value >> 8) & 0xff00;
+    result |= (value << 8) & 0xff0000;
+    result |= value << 24;
+    return result;
+}
+
+inline u64 bswap64(u64 value) {
+    u64 result = 0;
+    result |= value >> 56;
+    result |= (value >> 40) & 0xff00;
+    result |= (value >> 24) & 0xff0000;
+    result |= (value >> 8) & 0xff000000;
+    result |= (value << 8) & 0xff00000000;
+    result |= (value << 24) & 0xff0000000000;
+    result |= (value << 40) & 0xff000000000000;
+    result |= (value << 56) & 0xff00000000000000;
+    return result;
+}
+
 } // namespace common
