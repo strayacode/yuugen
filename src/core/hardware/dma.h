@@ -15,7 +15,7 @@ public:
 
     void reset();
 
-    enum Timing : int {
+    enum Timing : u16 {
         Immediate = 0,
         VBlank = 1,
         HBlank = 2,
