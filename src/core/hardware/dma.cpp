@@ -99,7 +99,7 @@ void DMA::transfer(int index) {
     auto& channel = channels[index];
     auto source_adjust = adjust_lut[channel.control.transfer_words][channel.control.source_control];
     auto destination_adjust = adjust_lut[channel.control.transfer_words][channel.control.destination_control];
-    
+
     if (channel.control.transfer_words) {
         for (u32 i = 0; i < channel.internal_length; i++) {
             memory.write<u32, arm::Bus::System>(channel.internal_destination, memory.read<u32, arm::Bus::System>(channel.internal_source));

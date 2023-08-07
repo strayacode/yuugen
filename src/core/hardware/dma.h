@@ -41,7 +41,7 @@ public:
 private:
     void transfer(int index);
 
-    enum AddressMode : int {
+    enum AddressMode : u16 {
         Increment = 0,
         Decrement = 1,
         Fixed = 2,
