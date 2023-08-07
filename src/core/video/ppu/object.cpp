@@ -30,7 +30,7 @@ void PPU::render_objects(int line) {
         u16 tile_number = common::get_field<0, 10>(attributes[2]);
         u16 priority = common::get_field<10, 2>(attributes[2]);
         u16 palette_number = common::get_field<12, 4>(attributes[2]);
-        
+
         if (x >= 256) {
             x -= 512;
         }

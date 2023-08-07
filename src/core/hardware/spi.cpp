@@ -108,11 +108,13 @@ void SPI::touchscreen_transfer(u8 value) {
 
     if (common::get_bit<7>(value)) {
         u8 channel = common::get_field<4, 3>(value);
+        u16 touch_x = 0;
+        u16 touch_y = 0xfff;
 
         if (system.input.touch_down()) {
-            u16 touch_x = (system.input.point.x - scr_x1 + 1) * (adc_x2 - adc_x1) / (scr_x2 - scr_x1) + adc_x1;
-            u16 touch_y = (system.input.point.y - scr_y1 + 1) * (adc_y2 - adc_y1) / (scr_y2 - scr_y1) + adc_y1;
-
+            touch_x = (system.input.point.x - scr_x1 + 1) * (adc_x2 - adc_x1) / (scr_x2 - scr_x1) + adc_x1;
+            touch_y = (system.input.point.y - scr_y1 + 1) * (adc_y2 - adc_y1) / (scr_y2 - scr_y1) + adc_y1;
+            
             switch (channel) {
             case 1:
                 output = touch_y << 3;
@@ -132,13 +134,14 @@ void SPI::touchscreen_transfer(u8 value) {
 
 void SPI::load_calibration_points() {
     u32 user_settings_offset = common::read<u16>(firmware.get_pointer(0x20)) * 8;
+    
     adc_x1 = common::read<u16>(firmware.get_pointer(user_settings_offset + 0x58));
-    adc_x2 = common::read<u16>(firmware.get_pointer(user_settings_offset + 0x5a));
-    adc_y1 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x5c));
-    adc_y2 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x5d));
-    scr_x1 = common::read<u16>(firmware.get_pointer(user_settings_offset + 0x5e));
-    scr_x2 = common::read<u16>(firmware.get_pointer(user_settings_offset + 0x60));
-    scr_y1 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x62));
+    adc_y1 = common::read<u16>(firmware.get_pointer(user_settings_offset + 0x5a));
+    scr_x1 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x5c));
+    scr_y1 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x5d));
+    adc_x2 = common::read<u16>(firmware.get_pointer(user_settings_offset + 0x5e));
+    adc_y2 = common::read<u16>(firmware.get_pointer(user_settings_offset + 0x60));
+    scr_x2 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x62));
     scr_y2 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x63));
     logger.debug("SPI: touchscreen calibration points loaded successfully");
 }

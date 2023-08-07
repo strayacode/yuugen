@@ -137,6 +137,8 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.maths_unit.read_sqrtcnt();
     case MMIO(0x040002b4):
         return system.maths_unit.read_sqrt_result();
+    case MMIO(0x04000304):
+        return system.video_unit.read_powcnt1();
     case MMIO(0x04001000):
         return system.video_unit.ppu_b.read_dispcnt();
     case MMIO(0x04001008):
