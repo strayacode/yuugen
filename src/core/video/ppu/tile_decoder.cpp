@@ -6,7 +6,7 @@
 namespace core {
 
 u16 PPU::decode_obj_pixel_4bpp(u32 base, int number, int x, int y) {
-    auto indices = obj.read<u8>(base + (y * 32) + (x / 2));
+    auto indices = obj.read<u8>(base + (y * 4) + (x / 2));
     auto index = (indices >> (4 * (x & 0x1))) & 0xf;
     if (index == 0) {
         return colour_transparent;

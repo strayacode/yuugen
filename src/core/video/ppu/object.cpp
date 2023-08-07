@@ -120,7 +120,15 @@ void PPU::render_objects(int line) {
             int tile_addr = 0;
 
             if (mode == ObjectMode::Bitmap) {
-                logger.error("PPU: handle bitmap mode");
+                if (dispcnt.bitmap_obj_mapping) {
+                    colour = obj.read<u16>(((tile_number * (64 << dispcnt.bitmap_obj_1d_boundary)) + (transformed_y * width) + transformed_x) * 2);
+                } else {
+                    logger.error("PPU: handle 2d mapping bitmap");
+                }
+
+                if (!(colour & colour_transparent)) {
+                    colour = colour_transparent;
+                }
             } else if (is_8bpp) {
                 if (dispcnt.tile_obj_mapping) {
                     tile_addr = (tile_number * (32 << dispcnt.tile_obj_1d_boundary)) + (tile_y * width * 8);
@@ -131,7 +139,15 @@ void PPU::render_objects(int line) {
                 tile_addr += tile_x * 64;
                 colour = decode_obj_pixel_8bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
             } else {
-                logger.error("PPU: handle 4bpp mode");
+                if (dispcnt.tile_obj_mapping) {
+                    tile_addr = (tile_number * (32 << dispcnt.tile_obj_1d_boundary)) + (tile_y * width * 4);
+                } else {
+                    logger.error("PPU: handle 2d mapping 8bpp");
+                }
+
+                tile_addr += tile_x * 32;
+                // colour = 0x7fff;
+                colour = decode_obj_pixel_4bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
             }
 
             Object& target_obj = obj_buffer[global_x];
