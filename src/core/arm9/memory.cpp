@@ -106,6 +106,9 @@ void ARM9Memory::write_half(u32 addr, u16 value) {
     case 0x06:
         system.video_unit.vram.write<u16>(addr, value);
         break;
+    case 0x07:
+        system.video_unit.write_oam<u16>(addr, value);
+        break;
     default:
         logger.error("ARM9Memory: handle 16-bit write %08x = %02x", addr, value);
     }

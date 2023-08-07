@@ -295,8 +295,10 @@ void PPU::reset_layers() {
         bg_layers[i].fill(0);
     }
 
-    obj_priority.fill(4);
-    obj_priority.fill(0x8000);
+    for (int i = 0; i < 256; i++) {
+        obj_buffer[i].priority = 4;
+        obj_buffer[i].colour = colour_transparent;
+    }
 }
 
 } // namespace core

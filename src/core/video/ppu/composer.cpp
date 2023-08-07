@@ -29,9 +29,9 @@ void PPU::compose_pixel(int x, int line) {
         }
     }
 
-    if (dispcnt.enable_obj && obj_colour[x] != colour_transparent) {
-        if (obj_priority[x] <= priority) {
-            pixel = obj_colour[x];
+    if (dispcnt.enable_obj && obj_buffer[x].colour != colour_transparent) {
+        if (obj_buffer[x].priority <= priority) {
+            pixel = obj_buffer[x].colour;
         }
     }
 

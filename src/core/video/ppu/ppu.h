@@ -152,6 +152,18 @@ private:
         u32 data;
     };
 
+    struct Object {
+        int priority;
+        u16 colour;
+    };
+
+    enum class ObjectMode : int {
+        Normal = 0,
+        SemiTransparent = 1,
+        ObjectWindow = 2,
+        Bitmap,
+    };
+
     DISPCNT dispcnt;
     std::array<BGCNT, 4> bgcnt;
     std::array<u16, 4> bghofs;
@@ -178,9 +190,8 @@ private:
 
     std::array<u32, 256 * 192> framebuffer;
     std::array<std::array<u16, 256>, 4> bg_layers;
-    std::array<int, 256> obj_priority;
-    std::array<u16, 256> obj_colour;
-
+    std::array<Object, 256> obj_buffer;
+    
     u8* palette_ram;
     u8* oam;
     VRAMRegion& bg;
@@ -189,7 +200,7 @@ private:
     VRAMRegion& obj_extended_palette;
     VRAMRegion& lcdc;
     
-    static constexpr int obj_dimensions[3][4][2] = {{{8, 8}, {16, 16}, {32, 32}, {64, 64}}, {{16, 8}, {32, 8}, {32, 16}, {64, 32}}, {{8, 16}, {8, 32}, {16, 32}, {32, 64}}};
+    static constexpr int obj_dimensions[4][4][2] = {{{8, 8}, {16, 16}, {32, 32}, {64, 64}}, {{16, 8}, {32, 8}, {32, 16}, {64, 32}}, {{8, 16}, {8, 32}, {16, 32}, {32, 64}}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}}};
     static constexpr int text_dimensions[4][2] = {{256, 256}, {512, 256}, {256, 512}, {512, 512}};
     static constexpr int extended_dimensions[4][2] = {{128, 128}, {256, 256}, {512, 256}, {512, 512}};
     static constexpr u16 colour_transparent = 0x8000;
