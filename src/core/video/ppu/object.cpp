@@ -28,16 +28,16 @@ void PPU::render_objects(int line) {
         u8 size = common::get_field<14, 2>(attributes[1]);
         u16 tile_number = common::get_field<0, 10>(attributes[2]);
         u16 priority = common::get_field<10, 2>(attributes[2]);
-        u16 palette_number = common::get_field<12, 4>(attributes[4]);
+        u16 palette_number = common::get_field<12, 4>(attributes[2]);
         int width = obj_dimensions[shape][size][0];
         int height = obj_dimensions[shape][size][1];
-
+        
         if (x >= 256) {
-            logger.error("PPU: handle x out of bounds");
+            x -= 512;
         }
 
         if (y >= 192) {
-            logger.error("PPU: handle x out of bounds");
+            y -= 256;
         }
 
         if (mosaic) {
@@ -63,14 +63,6 @@ void PPU::render_objects(int line) {
             logger.error("PPU: handle object window mode");
         }
 
-        if (horizontal_flip) {
-            logger.error("PPU: handle horizontal flip");
-        }
-
-        if (vertical_flip) {
-            logger.error("PPU: handle vertical flip");
-        }
-
         int local_y = line - y;
         if (local_y < 0 || local_y >= height) {
             continue;
@@ -83,10 +75,30 @@ void PPU::render_objects(int line) {
                 continue;
             }
 
+            if (horizontal_flip) {
+                local_x = width - local_x - 1;
+            }
+
+            if (vertical_flip) {
+                local_y = height - local_y - 1;
+            }
+
+            int inner_tile_x = local_x % 8;
+            int inner_tile_y = local_y % 8;
+            int tile_x = local_x / 8;
+            int tile_y = local_y / 8;
+            int tile_addr = 0;
+
             if (mode == ObjectMode::Bitmap) {
                 logger.error("PPU: handle bitmap mode");
             } else if (is_8bpp) {
-                logger.error("PPU: handle 8bpp mode");
+                if (dispcnt.tile_obj_mapping) {
+                    tile_addr = (tile_number * (32 << dispcnt.tile_obj_1d_boundary)) + (tile_y * width * 8);
+                } else {
+                    logger.error("PPU: handle 2d mapping 8bpp");
+                }
+
+                colour = decode_obj_pixel_8bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
             } else {
                 logger.error("PPU: handle 4bpp mode");
             }

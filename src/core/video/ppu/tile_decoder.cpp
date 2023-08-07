@@ -1,4 +1,5 @@
 #include "common/memory.h"
+#include "common/logger.h"
 #include "core/video/ppu/ppu.h"
 #include "core/video/video_unit.h"
 
@@ -15,7 +16,7 @@ u16 PPU::decode_obj_pixel_4bpp(u32 base, int number, int x, int y) {
 }
 
 u16 PPU::decode_obj_pixel_8bpp(u32 base, int number, int x, int y) {
-    auto index = obj.read<u8>(base + (y * 64) + x);
+    auto index = obj.read<u8>(base + (y * 8) + x);
     if (index == 0) {
         return colour_transparent;
     } else if (dispcnt.obj_extended_palette) {
