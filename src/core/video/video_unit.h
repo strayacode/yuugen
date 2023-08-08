@@ -28,6 +28,8 @@ public:
     u16 read_powcnt1() { return powcnt1.data; }
 
     void write_dispstat(arm::Arch arch, u16 value, u32 mask);
+
+    u16 read_vcount() { return vcount; }
     void write_vcount(u16 value, u32 mask);
     void write_powcnt1(u16 value, u32 mask);
 
@@ -36,12 +38,12 @@ public:
     u8* get_oam() { return oam.data(); }
 
     template <typename T>
-    void read_palette_ram(u32 addr) {
+    T read_palette_ram(u32 addr) {
         return common::read<T>(palette_ram.data(), addr & 0x7ff);
     }
 
     template <typename T>
-    void read_oam(u32 addr) {
+    T read_oam(u32 addr) {
         return common::read<T>(oam.data(), addr & 0x7ff);
     }
 

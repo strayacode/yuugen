@@ -79,7 +79,7 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.video_unit.ppu_a.read_dispcnt();
     case MMIO(0x04000004):
         if constexpr (mask & 0xffff) value |= system.video_unit.read_dispstat(arm::Arch::ARMv5);
-        if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle vcount read");
+        if constexpr (mask & 0xffff0000) value |= system.video_unit.read_vcount() << 16;
         return value;
     case MMIO(0x04000008):
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_bgcnt(0);
@@ -93,6 +93,18 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_winin();
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_a.read_winout() << 16;
         return value;
+    case MMIO(0x040000b8):
+        if constexpr (mask & 0xffff) value |= system.dma9.read_length(0);
+        if constexpr (mask & 0xffff0000) value |= system.dma9.read_control(0) << 16;
+        return value;
+    case MMIO(0x040000c4):
+        if constexpr (mask & 0xffff) value |= system.dma9.read_length(1);
+        if constexpr (mask & 0xffff0000) value |= system.dma9.read_control(1) << 16;
+        return value;
+    case MMIO(0x040000d0):
+        if constexpr (mask & 0xffff) value |= system.dma9.read_length(2);
+        if constexpr (mask & 0xffff0000) value |= system.dma9.read_control(2) << 16;
+        return value;
     case MMIO(0x040000dc):
         if constexpr (mask & 0xffff) value |= system.dma9.read_length(3);
         if constexpr (mask & 0xffff0000) value |= system.dma9.read_control(3) << 16;
@@ -102,6 +114,18 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
     case MMIO(0x04000100):
         if constexpr (mask & 0xffff) value |= system.timers9.read_length(0);
         if constexpr (mask & 0xffff0000) value |= system.timers9.read_control(0) << 16;
+        return value;
+    case MMIO(0x04000104):
+        if constexpr (mask & 0xffff) value |= system.timers9.read_length(1);
+        if constexpr (mask & 0xffff0000) value |= system.timers9.read_control(1) << 16;
+        return value;
+    case MMIO(0x04000108):
+        if constexpr (mask & 0xffff) value |= system.timers9.read_length(2);
+        if constexpr (mask & 0xffff0000) value |= system.timers9.read_control(2) << 16;
+        return value;
+    case MMIO(0x0400010c):
+        if constexpr (mask & 0xffff) value |= system.timers9.read_length(3);
+        if constexpr (mask & 0xffff0000) value |= system.timers9.read_control(3) << 16;
         return value;
     case MMIO(0x04000130):
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();

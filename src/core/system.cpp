@@ -99,7 +99,7 @@ void System::write_haltcnt(u8 value) {
         arm7.get_cpu().update_halted(true);
         break;
     case 0x3:
-        logger.todo("System: handle sleep mode");
+        logger.warn("System: handle sleep mode");
         break;
     default:
         logger.todo("System: unimplemented power down mode");
