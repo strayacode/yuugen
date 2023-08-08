@@ -140,6 +140,15 @@ private:
         u16 data;
     };
 
+    union BLDY {
+        struct {
+            u32 coefficient : 5;
+            u32 : 27;
+        };
+
+        u32 data;
+    };
+
     union MOSAIC {
         struct {
             u8 bg_width : 4;
@@ -182,8 +191,8 @@ private:
     u16 winout;
     MOSAIC mosaic;
     BLDCNT bldcnt;
+    BLDY bldy;
     u16 bldalpha;
-    u32 bldy;
     u16 master_bright;
 
     int mosaic_bg_vertical_counter;

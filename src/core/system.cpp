@@ -41,12 +41,16 @@ void System::reset() {
     spi.reset();
     timers7.reset();
     timers9.reset();
+    wifi.reset();
 
     main_memory.fill(0);
     shared_wram.fill(0);
     wramcnt = 0;
     haltcnt = 0;
     exmemcnt = 0;
+    postflg7 = 0;
+    postflg9 = 0;
+    rcnt = 0;
 
     frames = 0;
 }

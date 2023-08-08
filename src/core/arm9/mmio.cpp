@@ -153,6 +153,14 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x04000280):
         return system.maths_unit.read_divcnt();
+    case MMIO(0x04000290):
+        return system.maths_unit.read_div_numer();
+    case MMIO(0x04000294):
+        return system.maths_unit.read_div_numer() >> 32;
+    case MMIO(0x04000298):
+        return system.maths_unit.read_div_denom();
+    case MMIO(0x0400029c):
+        return system.maths_unit.read_div_denom() >> 32;
     case MMIO(0x040002a0):
         return system.maths_unit.read_div_result();
     case MMIO(0x040002a4):
@@ -165,6 +173,13 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.maths_unit.read_sqrtcnt();
     case MMIO(0x040002b4):
         return system.maths_unit.read_sqrt_result();
+    case MMIO(0x040002b8):
+        return system.maths_unit.read_sqrt_param();
+    case MMIO(0x040002bc):
+        return system.maths_unit.read_sqrt_param() >> 32;
+    case MMIO(0x04000300):
+        if constexpr (mask & 0xff) value |= system.read_postflg9();
+        return value;
     case MMIO(0x04000304):
         return system.video_unit.read_powcnt1();
     case MMIO(0x04001000):
@@ -269,6 +284,18 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x04000050):
         if constexpr (mask & 0xffff) system.video_unit.ppu_a.write_bldcnt(value, mask);
         if constexpr (mask & 0xffff0000) system.video_unit.ppu_a.write_bldalpha(value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000054):
+        system.video_unit.ppu_a.write_bldy(value, mask & 0xffff);
+        break;
+    case MMIO(0x04000058):
+    case MMIO(0x0400005c):
+        break;
+    case MMIO(0x04000060):
+        system.video_unit.gpu.write_disp3dcnt(value, mask);
+        break;
+    case MMIO(0x04000064):
+        system.video_unit.write_dispcapcnt(value, mask);
         break;
     case MMIO(0x040000b0):
         system.dma9.write_source(0, value, mask);
@@ -487,6 +514,7 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         system.video_unit.ppu_b.write_bldy(value, mask & 0xffff);
         break;
     case MMIO(0x04001058):
+    case MMIO(0x0400105c):
         break;
     default:
         logger.warn("ARM9Memory: unmapped %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));

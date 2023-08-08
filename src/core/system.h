@@ -17,6 +17,7 @@
 #include "core/hardware/rtc.h"
 #include "core/hardware/spi.h"
 #include "core/hardware/timers.h"
+#include "core/hardware/wifi.h"
 #include "core/scheduler.h"
 
 namespace core {
@@ -38,6 +39,10 @@ public:
 
     u16 read_exmemcnt() { return exmemcnt; }
     void write_exmemcnt(u16 value, u32 mask);
+
+    u8 read_postflg7() { return postflg7; }
+    u8 read_postflg9() { return postflg9; }
+    u16 read_rcnt() { return rcnt; }
 
     using UpdateCallback = common::Callback<void(f32)>;
 
@@ -65,12 +70,16 @@ public:
     SPI spi;
     Timers timers7;
     Timers timers9;
+    Wifi wifi;
     Scheduler scheduler;
     std::array<u8, 0x400000> main_memory;
     std::array<u8, 0x8000> shared_wram;
     u8 wramcnt;
     u8 haltcnt;
     u16 exmemcnt;
+    u8 postflg7;
+    u8 postflg9;
+    u16 rcnt;
 
 private:
     void run_thread();

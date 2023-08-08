@@ -7,6 +7,7 @@
 #include "core/scheduler.h"
 #include "core/video/vram.h"
 #include "core/video/ppu/ppu.h"
+#include "core/video/gpu/gpu.h"
 #include "core/hardware/irq.h"
 
 namespace core {
@@ -32,6 +33,7 @@ public:
     u16 read_vcount() { return vcount; }
     void write_vcount(u16 value, u32 mask);
     void write_powcnt1(u16 value, u32 mask);
+    void write_dispcapcnt(u32 value, u32 mask);
 
     u32* get_framebuffer(Screen screen);
     u8* get_palette_ram() { return palette_ram.data(); }
@@ -60,6 +62,7 @@ public:
     VRAM vram;
     PPU ppu_a;
     PPU ppu_b;
+    GPU gpu;
     
 private:
     void render_scanline_start();
@@ -96,6 +99,27 @@ private:
         u16 data;
     };
 
+    union DISPCAPCNT {
+        struct {
+            u32 eva : 5;
+            u32 : 3;
+            u32 evb : 5;
+            u32 : 3;
+            u32 vram_write_block : 2;
+            u32 vram_write_offset : 2;
+            u32 capture_size : 2;
+            u32 : 2;
+            bool source_a : 1;
+            bool source_b : 1;
+            u32 vram_read_offset : 2;
+            u32 : 1;
+            u32 capture_source : 2;
+            bool capture_enable : 1;
+        };
+
+        u32 data;
+    };
+
     std::array<u8, 0x800> palette_ram;
     std::array<u8, 0x800> oam;
 
@@ -106,6 +130,7 @@ private:
     u16 vcount;
     DISPSTAT dispstat7;
     DISPSTAT dispstat9;
+    DISPCAPCNT dispcapcnt;
     System& system;
     IRQ& irq7;
     IRQ& irq9;

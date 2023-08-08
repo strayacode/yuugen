@@ -83,12 +83,28 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.dma7.read_length(3);
         if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(3) << 16;
         return value;
+    case MMIO(0x04000100):
+        if constexpr (mask & 0xffff) value |= system.timers7.read_length(0);
+        if constexpr (mask & 0xffff0000) value |= system.timers7.read_control(0) << 16;
+        return value;
+    case MMIO(0x04000104):
+        if constexpr (mask & 0xffff) value |= system.timers7.read_length(1);
+        if constexpr (mask & 0xffff0000) value |= system.timers7.read_control(1) << 16;
+        return value;
+    case MMIO(0x04000108):
+        if constexpr (mask & 0xffff) value |= system.timers7.read_length(2);
+        if constexpr (mask & 0xffff0000) value |= system.timers7.read_control(2) << 16;
+        return value;
+    case MMIO(0x0400010c):
+        if constexpr (mask & 0xffff) value |= system.timers7.read_length(3);
+        if constexpr (mask & 0xffff0000) value |= system.timers7.read_control(3) << 16;
+        return value;
     case MMIO(0x04000130):
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
         if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle keycnt read");
         return value;
     case MMIO(0x04000134):
-        if constexpr (mask & 0xffff) logger.error("ARM7Memory: handle debug rcnt read");
+        if constexpr (mask & 0xffff) value |= system.read_rcnt();
         if constexpr (mask & 0xffff0000) value |= system.input.read_extkeyin() << 16;
         return value;
     case MMIO(0x04000138):
@@ -112,6 +128,9 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xff) value |= system.video_unit.vram.read_vramstat();
         if constexpr (mask & 0xff00) value |= static_cast<u32>(system.read_wramcnt()) << 8;
         return value;
+    case MMIO(0x04000300):
+        if constexpr (mask & 0xff) value |= system.read_postflg7();
+        return value;
     case MMIO(0x04000304):
         return system.video_unit.read_powcnt1();
     case MMIO(0x04000500):
@@ -119,6 +138,11 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv4);
     default:
+        if (addr >= 0x04800000 && addr < 0x04900000) {
+            // TODO: handle wifi reads
+            return 0;
+        }
+
         logger.warn("ARM7Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
     }
@@ -143,6 +167,22 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff) system.dma7.write_length(3, value, mask);
         if constexpr (mask & 0xffff0000) system.dma7.write_control(3, value >> 16, mask >> 16);
         break;
+    case MMIO(0x04000100):
+        if constexpr (mask & 0xffff) system.timers7.write_length(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers7.write_control(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000104):
+        if constexpr (mask & 0xffff) system.timers7.write_length(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers7.write_control(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000108):
+        if constexpr (mask & 0xffff) system.timers7.write_length(2, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers7.write_control(2, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x0400010c):
+        if constexpr (mask & 0xffff) system.timers7.write_length(3, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers7.write_control(3, value >> 16, mask >> 16);
+        break;
     case MMIO(0x04000134): 
         if constexpr (mask & 0xffff) rcnt = value;
         break;
@@ -161,6 +201,10 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x040001c0):
         if constexpr (mask & 0xffff) system.spi.write_spicnt(value, mask);
         if constexpr (mask & 0xffff0000) system.spi.write_spidata(value >> 16);
+        break;
+    case MMIO(0x04000204):
+        if constexpr (mask & 0xffff) logger.error("ARM7Memory: handle exmemstat write");
+        if constexpr (mask & 0xffff0000) system.wifi.write_wifiwaitcnt(value >> 16, mask >> 16);
         break;
     case MMIO(0x04000208):
         system.arm7.get_irq().write_ime(value, mask);
@@ -188,6 +232,11 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         system.spu.write_soundbias(value, mask);
         break;
     default:
+        if (addr >= 0x04800000 && addr < 0x04900000) {
+            // TODO: handle wifi writes
+            break;
+        }
+
         logger.warn("ARM7Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
         break;
     }

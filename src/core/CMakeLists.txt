@@ -20,6 +20,7 @@ add_library(core
     video/ppu/affine.cpp video/ppu/composer.cpp
     video/ppu/object.cpp video/ppu/text.cpp 
     video/ppu/tile_decoder.cpp
+    video/gpu/gpu.h video/gpu/gpu.cpp
 
     hardware/cartridge/cartridge.h hardware/cartridge/cartridge.cpp
     hardware/input.h hardware/input.cpp
@@ -31,6 +32,7 @@ add_library(core
     hardware/rtc.h hardware/rtc.cpp
     hardware/spi.h hardware/spi.cpp
     hardware/timers.h hardware/timers.cpp
+    hardware/wifi.h hardware/wifi.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

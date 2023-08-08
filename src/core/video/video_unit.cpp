@@ -17,11 +17,13 @@ void VideoUnit::reset() {
     powcnt1.data = 0;
     dispstat7.data = 0;
     dispstat9.data = 0;
+    dispcapcnt.data = 0;
     vcount = 0;
 
     vram.reset();
     ppu_a.reset();
     ppu_b.reset();
+    gpu.reset();
 
     scanline_start_event = system.scheduler.register_event("Scanline Start", [this]() {
         render_scanline_start();
@@ -60,6 +62,13 @@ void VideoUnit::write_vcount(u16 value, u32 mask) {
 void VideoUnit::write_powcnt1(u16 value, u32 mask) {
     mask &= 0x820f;
     powcnt1.data = (powcnt1.data & ~mask) | (value & mask);
+}
+
+void VideoUnit::write_dispcapcnt(u32 value, u32 mask) {
+    dispcapcnt.data = (dispcapcnt.data & ~mask) | (value & mask);
+    if (dispcapcnt.capture_enable) {
+        logger.error("VideoUnit: handle display capture");
+    }
 }
 
 u32* VideoUnit::get_framebuffer(Screen screen) {
