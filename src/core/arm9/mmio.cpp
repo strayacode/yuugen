@@ -99,6 +99,10 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x040000e0) ... MMIO(0x040000ec):
         return system.dma9.read_dmafill(addr);
+    case MMIO(0x04000100):
+        if constexpr (mask & 0xffff) value |= system.timers9.read_length(0);
+        if constexpr (mask & 0xffff0000) value |= system.timers9.read_control(0) << 16;
+        return value;
     case MMIO(0x04000130):
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
         if constexpr (mask & 0xffff0000) logger.error("ARM9Memory: handle keycnt read");

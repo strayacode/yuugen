@@ -11,7 +11,11 @@ public:
     Timers(Scheduler& scheduler, IRQ& irq);
 
     void reset();
+
+    u16 read_length(int id) { return update_counter(id); }
     void write_length(int id, u16 value, u32 mask);
+
+    u16 read_control(int id) { return channels[id].control.data; }
     void write_control(int id, u16 value, u32 mask);
 
 private:
