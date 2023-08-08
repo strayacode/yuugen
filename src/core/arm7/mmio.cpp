@@ -101,7 +101,7 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
     case MMIO(0x040001c0):
         if constexpr (mask & 0xffff) value |= system.spi.read_spicnt();
         if constexpr (mask & 0xff0000) value |= system.spi.read_spidata() << 16;
-        break;
+        return value;
     case MMIO(0x04000208):
         return system.arm7.get_irq().read_ime();
     case MMIO(0x04000210):
