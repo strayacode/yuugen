@@ -188,6 +188,14 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_b.read_bgcnt(0);
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_b.read_bgcnt(1) << 16;
         return value;
+    case MMIO(0x0400100c):
+        if constexpr (mask & 0xffff) value |= system.video_unit.ppu_b.read_bgcnt(2);
+        if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_b.read_bgcnt(3) << 16;
+        return value;
+    case MMIO(0x04001048):
+        if constexpr (mask & 0xffff) value |= system.video_unit.ppu_b.read_winin();
+        if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_b.read_winout() << 16;
+        return value;
     case MMIO(0x04004000):
     case MMIO(0x04004008):
         // dsi registers
@@ -296,6 +304,9 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000064):
         system.video_unit.write_dispcapcnt(value, mask);
+        break;
+    case MMIO(0x0400006c):
+        system.video_unit.ppu_a.write_master_bright(value, mask);
         break;
     case MMIO(0x040000b0):
         system.dma9.write_source(0, value, mask);
@@ -513,8 +524,15 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x04001054):
         system.video_unit.ppu_b.write_bldy(value, mask & 0xffff);
         break;
+    case MMIO(0x04001004):
     case MMIO(0x04001058):
     case MMIO(0x0400105c):
+    case MMIO(0x04001060):
+    case MMIO(0x04001064):
+    case MMIO(0x04001068):
+        break;
+    case MMIO(0x0400106c):
+        system.video_unit.ppu_b.write_master_bright(value, mask);
         break;
     default:
         logger.warn("ARM9Memory: unmapped %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));

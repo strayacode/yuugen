@@ -33,9 +33,9 @@ void PPU::reset() {
     mosaic.data = 0;
     bldcnt.data = 0;
     bldy.data = 0;
+    master_bright.data = 0;
     bldalpha = 0;
-    master_bright = 0;
-
+    
     mosaic_bg_vertical_counter = 0;
 
     framebuffer.fill(0);
@@ -168,6 +168,10 @@ void PPU::write_bldalpha(u16 value, u32 mask) {
 
 void PPU::write_bldy(u16 value, u32 mask) {
     bldy.data = (bldy.data & ~mask) | (value & mask);
+}
+
+void PPU::write_master_bright(u32 value, u32 mask) {
+    master_bright.data = (master_bright.data & ~mask) | (value & mask);
 }
 
 void PPU::render_blank_screen(int line) {

@@ -38,6 +38,7 @@ public:
     void write_bldcnt(u16 value, u32 mask);
     void write_bldalpha(u16 value, u32 mask);
     void write_bldy(u16 value, u32 mask);
+    void write_master_bright(u32 value, u32 mask);
 
     u32* get_framebuffer() { return framebuffer.data(); }
     
@@ -119,6 +120,18 @@ private:
         u16 data;
     };
 
+    union MOSAIC {
+        struct {
+            u8 bg_width : 4;
+            u8 bg_height : 4;
+            u8 obj_width : 4;
+            u8 obj_height : 4;
+            u32 : 16;
+        };
+
+        u32 data;
+    };
+
     union BLDCNT {
         struct {
             bool bg0_first_target : 1;
@@ -149,12 +162,18 @@ private:
         u32 data;
     };
 
-    union MOSAIC {
+    enum BrightnessMode : u32 {
+        Disable = 0,
+        Up = 1,
+        Down = 2,
+        Reserved = 3,
+    };
+
+    union MASTER_BRIGHT {
         struct {
-            u8 bg_width : 4;
-            u8 bg_height : 4;
-            u8 obj_width : 4;
-            u8 obj_height : 4;
+            u32 factor : 5;
+            u32 : 9;
+            BrightnessMode mode : 2;
             u32 : 16;
         };
 
@@ -192,9 +211,9 @@ private:
     MOSAIC mosaic;
     BLDCNT bldcnt;
     BLDY bldy;
+    MASTER_BRIGHT master_bright;
     u16 bldalpha;
-    u16 master_bright;
-
+    
     int mosaic_bg_vertical_counter;
 
     std::array<u32, 256 * 192> framebuffer;
