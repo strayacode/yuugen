@@ -34,7 +34,7 @@ void PPU::reset() {
     bldcnt.data = 0;
     bldy.data = 0;
     master_bright.data = 0;
-    bldalpha = 0;
+    bldalpha.data = 0;
     
     mosaic_bg_vertical_counter = 0;
 
@@ -163,7 +163,7 @@ void PPU::write_bldcnt(u16 value, u32 mask) {
 }
 
 void PPU::write_bldalpha(u16 value, u32 mask) {
-    bldalpha = (bldalpha & ~mask) | (value & mask);
+    bldalpha.data = (bldalpha.data & ~mask) | (value & mask);
 }
 
 void PPU::write_bldy(u16 value, u32 mask) {

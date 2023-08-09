@@ -74,7 +74,7 @@ private:
         BrightnessDecrease = 3,
     };
 
-    void blend(u32 top, u32 bottom, SpecialEffect special_effect);
+    u32 blend(u32 top, u32 bottom, SpecialEffect special_effect);
 
     using TileRow = std::array<u16, 8>;
 
@@ -167,7 +167,7 @@ private:
 
     union BLDY {
         struct {
-            u32 coefficient : 5;
+            u32 evy : 5;
             u32 : 27;
         };
 
@@ -190,6 +190,17 @@ private:
         };
 
         u32 data;
+    };
+
+    union BLDALPHA {
+        struct {
+            u16 eva : 5;
+            u16 : 3;
+            u16 evb : 5;
+            u16 : 3;
+        };
+
+        u16 data;
     };
 
     struct Object {
@@ -224,7 +235,7 @@ private:
     BLDCNT bldcnt;
     BLDY bldy;
     MASTER_BRIGHT master_bright;
-    u16 bldalpha;
+    BLDALPHA bldalpha;
     
     int mosaic_bg_vertical_counter;
 
