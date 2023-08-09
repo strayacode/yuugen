@@ -199,11 +199,11 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         system.ipc.write_ipcfifosend(arm::Arch::ARMv4, value);
         break;
     case MMIO(0x040001c0):
-        if constexpr (mask & 0xffff) system.spi.write_spicnt(value, mask);
+        if constexpr (mask & 0xffff) system.spi.write_spicnt(value, mask & 0xffff);
         if constexpr (mask & 0xffff0000) system.spi.write_spidata(value >> 16);
         break;
     case MMIO(0x04000204):
-        if constexpr (mask & 0xffff) logger.error("ARM7Memory: handle exmemstat write");
+        if constexpr (mask & 0xffff) system.write_exmemstat(value, mask & 0xffff);
         if constexpr (mask & 0xffff0000) system.wifi.write_wifiwaitcnt(value >> 16, mask >> 16);
         break;
     case MMIO(0x04000208):

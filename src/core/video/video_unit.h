@@ -35,7 +35,8 @@ public:
     void write_powcnt1(u16 value, u32 mask);
     void write_dispcapcnt(u32 value, u32 mask);
 
-    u32* get_framebuffer(Screen screen);
+    void submit_framebuffer(Screen screen, u32* target);
+
     u8* get_palette_ram() { return palette_ram.data(); }
     u8* get_oam() { return oam.data(); }
 

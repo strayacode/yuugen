@@ -40,7 +40,7 @@ public:
     void write_bldy(u16 value, u32 mask);
     void write_master_bright(u32 value, u32 mask);
 
-    u32* get_framebuffer() { return framebuffer.data(); }
+    void submit_framebuffer(u32* target);
     
 private:
     using AffineCallback = common::Callback<void(int pixel, int x, int y), 40>;
@@ -59,10 +59,22 @@ private:
     void render_objects(int line);
 
     u32 rgb555_to_rgb888(u32 colour);
-    void render_pixel(int x, int y, u32 colour);
+    u32 rgb555_to_rgb666(u32 colour);
+    u32 rgb666_to_rgb888(u32 colour);
+    void plot(int x, int y, u32 colour);
 
     void compose_scanline(int line);
     void compose_pixel(int x, int line);
+    void compose_pixel_with_special_effects(int x, int line);
+
+    enum SpecialEffect : u16 {
+        None = 0,
+        AlphaBlending = 1,
+        BrightnessIncrease = 2,
+        BrightnessDecrease = 3,
+    };
+
+    void blend(u32 top, u32 bottom, SpecialEffect special_effect);
 
     using TileRow = std::array<u16, 8>;
 
@@ -140,7 +152,7 @@ private:
             bool bg3_first_target : 1;
             bool obj_first_target : 1;
             bool bd_first_target : 1;
-            bool special_effects : 2;
+            SpecialEffect special_effect : 2;
             bool bg0_second_target : 1;
             bool bg1_second_target : 1;
             bool bg2_second_target : 1;

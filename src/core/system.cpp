@@ -48,6 +48,7 @@ void System::reset() {
     wramcnt = 0;
     haltcnt = 0;
     exmemcnt = 0;
+    exmemstat = 0;
     postflg7 = 0;
     postflg9 = 0;
     rcnt = 0;
@@ -112,6 +113,10 @@ void System::write_haltcnt(u8 value) {
 
 void System::write_exmemcnt(u16 value, u32 mask) {
     exmemcnt = (exmemcnt & ~mask) | (value & mask);
+}
+
+void System::write_exmemstat(u16 value, u32 mask) {
+    exmemstat = (exmemstat & ~mask) | (value & mask);
 }
 
 void System::run_thread() {

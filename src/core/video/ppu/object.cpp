@@ -146,7 +146,6 @@ void PPU::render_objects(int line) {
                 }
 
                 tile_addr += tile_x * 32;
-                // colour = 0x7fff;
                 colour = decode_obj_pixel_4bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
             }
 

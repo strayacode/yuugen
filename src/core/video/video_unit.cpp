@@ -71,11 +71,11 @@ void VideoUnit::write_dispcapcnt(u32 value, u32 mask) {
     }
 }
 
-u32* VideoUnit::get_framebuffer(Screen screen) {
+void VideoUnit::submit_framebuffer(Screen screen, u32* target) {
     if (powcnt1.display_swap == (screen == Screen::Top)) {
-        return ppu_a.get_framebuffer();
+        ppu_a.submit_framebuffer(target);
     } else {
-        return ppu_b.get_framebuffer();
+        ppu_b.submit_framebuffer(target);
     }
 }
 

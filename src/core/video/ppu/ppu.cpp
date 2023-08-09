@@ -172,11 +172,20 @@ void PPU::write_bldy(u16 value, u32 mask) {
 
 void PPU::write_master_bright(u32 value, u32 mask) {
     master_bright.data = (master_bright.data & ~mask) | (value & mask);
+    if (master_bright.mode != BrightnessMode::Disable) {
+        logger.error("PPU: handle brightness effect");
+    }
+}
+
+void PPU::submit_framebuffer(u32* target) {
+    for (int i = 0; i < 256 * 192; i++) {
+        target[i] = rgb666_to_rgb888(framebuffer[i]);
+    }
 }
 
 void PPU::render_blank_screen(int line) {
     for (int x = 0; x < 256; x++) {
-        render_pixel(x, line, 0xffffffff);
+        plot(x, line, 0xffffffff);
     }
 }
 
@@ -243,18 +252,32 @@ void PPU::render_vram_display(int line) {
     for (int x = 0; x < 256; x++) {
         u32 addr = (dispcnt.vram_block * 0x20000) + ((256 * line) + x) * 2;
         u16 data = lcdc.read<u16>(addr);
-        render_pixel(x, line, rgb555_to_rgb888(data) | 0xff000000);
+        plot(x, line, rgb555_to_rgb666(data));
     }
 }
 
 u32 PPU::rgb555_to_rgb888(u32 colour) {
-    u8 b = ((colour & 0x1f) * 255) / 31;
+    u8 r = ((colour & 0x1f) * 255) / 31;
     u8 g = (((colour >> 5) & 0x1f) * 255) / 31;
-    u8 r = (((colour >> 10) & 0x1f) * 255) / 31;
-    return (r << 16) | (g << 8) | b;
+    u8 b = (((colour >> 10) & 0x1f) * 255) / 31;
+    return (b << 16) | (g << 8) | r;
 }
 
-void PPU::render_pixel(int x, int y, u32 colour) {
+u32 PPU::rgb555_to_rgb666(u32 colour) {
+    u8 r = (colour & 0x1f) * 2;
+    u8 g = ((colour >> 5) & 0x1f) * 2;
+    u8 b = ((colour >> 10) & 0x1f) * 2;
+    return (b << 12) | (g << 6) | r;
+}
+
+u32 PPU::rgb666_to_rgb888(u32 colour) {
+    u8 r = ((colour & 0x3f) * 255) / 63;
+    u8 g = (((colour >> 6) & 0x3f) * 255) / 63;
+    u8 b = (((colour >> 12) & 0x3f) * 255) / 63;
+    return 0xff000000 | (b << 16) | (g << 8) | r;
+}
+
+void PPU::plot(int x, int y, u32 colour) {
     framebuffer[(256 * y) + x] = colour;
 }
 

@@ -40,6 +40,8 @@ public:
     u16 read_exmemcnt() { return exmemcnt; }
     void write_exmemcnt(u16 value, u32 mask);
 
+    void write_exmemstat(u16 value, u32 mask);
+
     u8 read_postflg7() { return postflg7; }
     u8 read_postflg9() { return postflg9; }
     u16 read_rcnt() { return rcnt; }
@@ -77,6 +79,7 @@ public:
     u8 wramcnt;
     u8 haltcnt;
     u16 exmemcnt;
+    u16 exmemstat;
     u8 postflg7;
     u8 postflg9;
     u16 rcnt;
