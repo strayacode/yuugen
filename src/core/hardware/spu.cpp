@@ -30,10 +30,10 @@ void SPU::write_channel(u32 addr, u32 value, u32 mask) {
         write_channel_timer(index, value, mask);
         break;
     case 0xa:
-        write_channel_timer(index, value, mask);
+        write_channel_loopstart(index, value, mask);
         break;
     case 0xc:
-        write_channel_timer(index, value, mask);
+        write_channel_length(index, value, mask);
         break;
     default:
         logger.todo("SPU: unhandled register %02x", addr & 0xf);

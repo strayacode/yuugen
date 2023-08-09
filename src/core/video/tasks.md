@@ -8,7 +8,7 @@
 
 # PPU:
 - [x] layer composition
-- [] blending
+- [x] special effects
 - [x] bg window
 - [] obj window
 - [x] bg mosaic
@@ -19,7 +19,7 @@
 - [x] affine bg rendering
 - [x] extended bg rendering
 - [x] large bg rendering
-- [] object rendering
+- [x] object rendering
 
 # GPU:
 TODO: add tasks later
