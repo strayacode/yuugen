@@ -2,11 +2,14 @@
 
 #include <array>
 #include "common/types.h"
+#include "core/scheduler.h"
 
 namespace core {
 
 class SPU {
 public:
+    SPU(Scheduler& scheduler);
+
     void reset();
 
     u16 read_soundcnt() { return soundcnt; }
@@ -16,11 +19,20 @@ public:
     void write_channel(u32 addr, u32 value, u32 mask);
 
 private:
-    void write_channel_control(int index, u32 value, u32 mask);
-    void write_channel_source(int index, u32 value, u32 mask);
-    void write_channel_timer(int index, u32 value, u32 mask);
-    void write_channel_loopstart(int index, u32 value, u32 mask);
-    void write_channel_length(int index, u32 value, u32 mask);
+    void write_channel_control(int id, u32 value, u32 mask);
+    void write_channel_source(int id, u32 value, u32 mask);
+    void write_channel_timer(int id, u32 value, u32 mask);
+    void write_channel_loopstart(int id, u32 value, u32 mask);
+    void write_channel_length(int id, u32 value, u32 mask);
+
+    void start_channel(int id);
+
+    enum AudioFormat : u32 {
+        PCM8 = 0,
+        PCM16 = 1,
+        ADPCM = 2,
+        Noise = 3,
+    };
 
     struct Channel {
         union Control {
@@ -34,7 +46,7 @@ private:
                 u32 : 1;
                 u32 duty : 3;
                 u32 repeat : 2;
-                u32 format : 2;
+                AudioFormat format : 2;
                 bool start : 1;
             };
 
@@ -60,6 +72,7 @@ private:
     std::array<Channel, 16> channels;
     u32 soundbias;
     u16 soundcnt;
+    Scheduler& scheduler;
 };
 
 } // namespace core
