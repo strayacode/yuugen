@@ -114,6 +114,10 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return system.ipc.read_ipcsync(arm::Arch::ARMv4);
     case MMIO(0x04000184):
         return system.ipc.read_ipcfifocnt(arm::Arch::ARMv4);
+    case MMIO(0x040001a0):
+        if constexpr (mask & 0xffff) value |= system.cartridge.read_auxspicnt();
+        if constexpr (mask & 0xffff0000) value |= system.cartridge.read_auxspidata() << 16;
+        return value;
     case MMIO(0x040001c0):
         if constexpr (mask & 0xffff) value |= system.spi.read_spicnt();
         if constexpr (mask & 0xff0000) value |= system.spi.read_spidata() << 16;
@@ -137,6 +141,10 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return system.spu.read_channel(addr);
     case MMIO(0x04000500):
         return system.spu.read_soundcnt();
+    case MMIO(0x04000508):
+        if constexpr (mask & 0xff) value |= system.spu.read_soundcapcnt(addr);
+        if constexpr (mask & 0xff00) value |= system.spu.read_soundcapcnt(addr) << 8;
+        return value;
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv4);
     default:
@@ -229,6 +237,10 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000188):
         system.ipc.write_ipcfifosend(arm::Arch::ARMv4, value);
+        break;
+    case MMIO(0x040001a0):
+        if constexpr (mask & 0xffff) system.cartridge.write_auxspicnt(value, mask);
+        if constexpr (mask & 0xffff0000) system.cartridge.write_auxspidata(value >> 16, mask >> 16);
         break;
     case MMIO(0x040001c0):
         if constexpr (mask & 0xffff) system.spi.write_spicnt(value, mask & 0xffff);

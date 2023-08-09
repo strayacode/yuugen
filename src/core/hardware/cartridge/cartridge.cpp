@@ -2,6 +2,9 @@
 #include "common/logger.h"
 #include "common/bits.h"
 #include "core/hardware/cartridge/cartridge.h"
+#include "core/hardware/cartridge/save_database.h"
+#include "core/hardware/cartridge/backup/no_backup.h"
+#include "core/hardware/cartridge/backup/flash_backup.h"
 #include "core/system.h"
 
 namespace core {
@@ -10,6 +13,7 @@ Cartridge::Cartridge(System& system) : system(system) {}
 
 void Cartridge::reset() {
     auxspicnt.data = 0;
+    auxspidata = 0;
     romctrl.data = 0;
     command_buffer = 0;
     command = 0;
@@ -29,6 +33,7 @@ void Cartridge::reset() {
 void Cartridge::load(const std::string& path) {
     memory_mapped_file.load(path);
     load_header();
+    load_backup(path);
     cartridge_inserted = true;
 }
 
@@ -55,6 +60,10 @@ void Cartridge::direct_boot() {
 
 void Cartridge::write_auxspicnt(u16 value, u32 mask) {
     auxspicnt.data = (auxspicnt.data & ~mask) | (value & mask);
+}
+
+void Cartridge::write_auxspidata(u16 value, u32 mask) {
+    logger.todo("Cartridge: handle auxpidata write");
 }
 
 void Cartridge::write_romctrl(u32 value, u32 mask) {
@@ -151,6 +160,37 @@ void Cartridge::load_header() {
     logger.debug("Cartridge: arm7 ram address %08x", header.arm7_ram_address);
     logger.debug("Cartridge: arm7 size %08x", header.arm7_size);
     logger.debug("Cartridge: header data loaded");
+}
+
+void Cartridge::load_backup(std::string path) {
+    std::string save_path = path.replace(path.begin(), path.begin() + 7, "../saves");
+    save_path.replace(save_path.find(".nds"), 4, ".sav");
+
+    for (int i = 0; i < 6776; i++) {
+        if (header.gamecode == save_database[i].gamecode) {
+            auto save_size = save_sizes[save_database[i].save_type];
+            switch (save_database[i].save_type) {
+            case 0:
+                backup = std::make_unique<NoBackup>();
+                return;
+            case 1:
+                logger.error("Cartridge: handle small eeprom");
+                return;
+            case 2: case 3: case 4:
+                logger.error("Cartridge: handle eeprom");
+                return;
+            case 5: case 6: case 7:
+                backup = std::make_unique<FlashBackup>(save_path, save_size);
+                return;
+            default:
+                logger.error("Cartridge: handle save type %d", save_database[i].save_type);
+            }
+        }
+    }
+
+    // if the game entry is not found in the save database,
+    // then default to flash with size 512kb
+    backup = std::make_unique<FlashBackup>(save_path, 0x80000);
 }
 
 void Cartridge::start_transfer() {

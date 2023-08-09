@@ -17,6 +17,7 @@ void SPU::reset() {
     channels.fill(Channel{});
     soundbias = 0;
     soundcnt.data = 0;
+    soundcapcnt.fill(0);
     
     buffer.fill(0);
     buffer_size = 0;

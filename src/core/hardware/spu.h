@@ -20,6 +20,7 @@ public:
 
     u16 read_soundcnt() { return soundcnt.data; }
     u32 read_channel(u32 addr);
+    u8 read_soundcapcnt(u32 addr) { return soundcapcnt[addr - 0x04000508]; }
 
     void write_soundcnt(u16 value, u32 mask);
     void write_soundbias(u32 value, u32 mask);
@@ -105,6 +106,7 @@ private:
     std::array<Channel, 16> channels;
     u32 soundbias;
     SOUNDCNT soundcnt;
+    std::array<u8, 8> soundcapcnt;
     EventType play_sample_event;
     std::shared_ptr<common::AudioDevice> audio_device;
 
