@@ -133,6 +133,8 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x04000304):
         return system.video_unit.read_powcnt1();
+    case MMIO(0x04000400) ... MMIO(0x040004fc):
+        return system.spu.read_channel(addr);
     case MMIO(0x04000500):
         return system.spu.read_soundcnt();
     case MMIO(0x04100000):
@@ -156,6 +158,36 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x04000004):
         if constexpr (mask & 0xffff) system.video_unit.write_dispstat(arm::Arch::ARMv4, value, mask);
         if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle vcount writes");
+        break;
+    case MMIO(0x040000b0):
+        system.dma7.write_source(0, value, mask);
+        break;
+    case MMIO(0x040000b4):
+        system.dma7.write_destination(0, value, mask);
+        break;
+    case MMIO(0x040000b8):
+        if constexpr (mask & 0xffff) system.dma7.write_length(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.dma7.write_control(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x040000bc):
+        system.dma7.write_source(1, value, mask);
+        break;
+    case MMIO(0x040000c0):
+        system.dma7.write_destination(1, value, mask);
+        break;
+    case MMIO(0x040000c4):
+        if constexpr (mask & 0xffff) system.dma7.write_length(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.dma7.write_control(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x040000c8):
+        system.dma7.write_source(2, value, mask);
+        break;
+    case MMIO(0x040000cc):
+        system.dma7.write_destination(2, value, mask);
+        break;
+    case MMIO(0x040000d0):
+        if constexpr (mask & 0xffff) system.dma7.write_length(2, value, mask);
+        if constexpr (mask & 0xffff0000) system.dma7.write_control(2, value >> 16, mask >> 16);
         break;
     case MMIO(0x040000d4):
         system.dma7.write_source(3, value, mask);

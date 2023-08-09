@@ -45,6 +45,9 @@ bool Application::initialise() {
         this->fps = fps;
     });
 
+    audio_device = std::make_shared<SDLAudioDevice>();
+    system.set_audio_device(audio_device);
+
     return true;
 }
 

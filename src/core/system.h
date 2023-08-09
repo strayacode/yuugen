@@ -4,6 +4,9 @@
 #include <array>
 #include <chrono>
 #include <ratio>
+#include <memory>
+#include "common/audio_device.h"
+#include "common/types.h"
 #include "core/config.h"
 #include "core/arm7/arm7.h"
 #include "core/arm9/arm9.h"
@@ -58,6 +61,8 @@ public:
 
     State get_state() { return state; }
 
+    void set_audio_device(std::shared_ptr<common::AudioDevice> audio_device);
+
     ARM7 arm7;
     ARM9 arm9;
     Cartridge cartridge;
@@ -104,8 +109,9 @@ private:
     using Frame = std::chrono::duration<int, std::ratio<1, 60>>;
 
     int frames;
-    bool framelimiter = false;
+    bool framelimiter = true;
     UpdateCallback update_callback;
+    std::shared_ptr<common::AudioDevice> audio_device;
 
     static constexpr int FPS_UPDATE_INTERVAL = 1000;
 };

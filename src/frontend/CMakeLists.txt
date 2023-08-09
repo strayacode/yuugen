@@ -2,6 +2,7 @@ set(SOURCES
     main.cpp
     application.h application.cpp
     imgui_video_device.h imgui_video_device.cpp
+    sdl_audio_device.h sdl_audio_device.cpp
     arm_debugger_window.h arm_debugger_window.cpp
     font_database.h
 )

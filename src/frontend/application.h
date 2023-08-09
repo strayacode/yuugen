@@ -2,12 +2,14 @@
 
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <memory>
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imfilebrowser.h"
 #include "common/types.h"
 #include "core/system.h"
+#include "frontend/sdl_audio_device.h"
 #include "frontend/imgui_video_device.h"
 #include "frontend/arm_debugger_window.h"
 #include "frontend/font_database.h"
@@ -67,4 +69,6 @@ private:
 
     ARMDebuggerWindow arm7_debugger_window;
     ARMDebuggerWindow arm9_debugger_window;
+
+    std::shared_ptr<common::AudioDevice> audio_device;
 };

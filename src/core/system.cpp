@@ -9,6 +9,7 @@ System::System() :
     arm9(*this),
     cartridge(*this),
     video_unit(*this),
+    spu(scheduler, arm7.get_memory()),
     dma7(scheduler, arm7.get_memory(), arm7.get_irq(), arm::Arch::ARMv4),
     dma9(scheduler, arm9.get_memory(), arm9.get_irq(), arm::Arch::ARMv5),
     ipc(arm7.get_irq(), arm9.get_irq()),
@@ -67,6 +68,8 @@ void System::start() {
         firmware_boot();
     }
 
+    audio_device->set_state(common::AudioState::Playing);
+
     thread_state = ThreadState::Running;
     state = State::Running;
     thread = std::thread{[this]() {
@@ -78,6 +81,8 @@ void System::stop() {
     if (thread_state == ThreadState::Idle) {
         return;
     }
+
+    audio_device->set_state(common::AudioState::Idle);
 
     thread_state = ThreadState::Idle;
     thread.join();
@@ -117,6 +122,11 @@ void System::write_exmemcnt(u16 value, u32 mask) {
 
 void System::write_exmemstat(u16 value, u32 mask) {
     exmemstat = (exmemstat & ~mask) | (value & mask);
+}
+
+void System::set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) {
+    this->audio_device = audio_device;
+    spu.set_audio_device(audio_device);
 }
 
 void System::run_thread() {
