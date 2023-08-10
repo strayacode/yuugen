@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "common/logger.h"
 #include "common/bits.h"
 #include "core/video/ppu/ppu.h"
@@ -68,6 +69,8 @@ void PPU::render_scanline(int line) {
         logger.error("PPU: handle main memory display");
         break;
     }
+
+    apply_master_brightness(line);
 
     // update mosaic vertical counter
     if (mosaic_bg_vertical_counter == mosaic.bg_height) {
@@ -172,9 +175,6 @@ void PPU::write_bldy(u16 value, u32 mask) {
 
 void PPU::write_master_bright(u32 value, u32 mask) {
     master_bright.data = (master_bright.data & ~mask) | (value & mask);
-    if (master_bright.mode != BrightnessMode::Disable) {
-        logger.error("PPU: handle brightness effect");
-    }
 }
 
 void PPU::submit_framebuffer(u32* target) {
@@ -325,6 +325,30 @@ void PPU::reset_layers() {
     for (int i = 0; i < 256; i++) {
         obj_buffer[i].priority = 4;
         obj_buffer[i].colour = colour_transparent;
+    }
+}
+
+void PPU::apply_master_brightness(int line) {
+    auto factor = std::min<u32>(16, master_bright.factor);
+    if (factor != 0) {
+        for (int x = 0; x < 256; x++) {
+            u32 pixel = framebuffer[(256 * line) + x];
+            u8 r = pixel & 0x3f;
+            u8 g = (pixel >> 6) & 0x3f;
+            u8 b = (pixel >> 12) & 0x3f;
+
+            if (master_bright.mode == BrightnessMode::Increase) {
+                u8 r1 = r + ((63 - r) * factor / 16);
+                u8 g1 = g + ((63 - g) * factor / 16);
+                u8 b1 = b + ((63 - b) * factor / 16);
+                framebuffer[(256 * line) + x] = (b1 << 12) | (g1 << 6) | r1;
+            } else if (master_bright.mode == BrightnessMode::Decrease) {
+                u8 r1 = r - (r * factor / 16);
+                u8 g1 = g - (g * factor / 16);
+                u8 b1 = b - (b * factor / 16);
+                framebuffer[(256 * line) + x] = (b1 << 12) | (g1 << 6) | r1;
+            }
+        }
     }
 }
 

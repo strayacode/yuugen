@@ -87,6 +87,7 @@ private:
     bool in_window_bounds(int coord, int start, int end);
 
     void reset_layers();
+    void apply_master_brightness(int line);
 
     union DISPCNT {
         struct {
@@ -176,8 +177,8 @@ private:
 
     enum BrightnessMode : u32 {
         Disable = 0,
-        Up = 1,
-        Down = 2,
+        Increase = 1,
+        Decrease = 2,
         Reserved = 3,
     };
 

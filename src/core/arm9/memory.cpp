@@ -48,6 +48,8 @@ u8 ARM9Memory::read_byte(u32 addr) {
         return mmio_read_byte(addr);
     case 0x06:
         return system.video_unit.vram.read<u8>(addr);
+    case 0x07:
+        return system.video_unit.read_oam<u8>(addr);
     case 0x08:
     case 0x09:
         if (common::get_bit<7>(system.exmemcnt)) {
@@ -92,6 +94,8 @@ u32 ARM9Memory::read_word(u32 addr) {
         return mmio_read_word(addr);
     case 0x06:
         return system.video_unit.vram.read<u32>(addr);
+    case 0x07:
+        return system.video_unit.read_oam<u32>(addr);
     case 0x08:
     case 0x09:
         if (common::get_bit<7>(system.exmemcnt)) {

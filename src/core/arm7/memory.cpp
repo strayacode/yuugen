@@ -44,6 +44,8 @@ u8 ARM7Memory::read_byte(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_byte(addr);
+    case 0x06:
+        return system.video_unit.vram.arm7_vram.read<u8>(addr);
     case 0x08:
     case 0x09:
         if (!common::get_bit<7>(system.exmemcnt)) {
@@ -62,6 +64,8 @@ u16 ARM7Memory::read_half(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_half(addr);
+    case 0x06:
+        return system.video_unit.vram.arm7_vram.read<u16>(addr);
     case 0x08:
     case 0x09:
         if (!common::get_bit<7>(system.exmemcnt)) {
@@ -81,7 +85,7 @@ u32 ARM7Memory::read_word(u32 addr) {
     case 0x04:
         return mmio_read_word(addr);
     case 0x06:
-        return system.video_unit.vram.read_arm7<u32>(addr);
+        return system.video_unit.vram.arm7_vram.read<u32>(addr);
     case 0x08:
     case 0x09:
         if (!common::get_bit<7>(system.exmemcnt)) {
@@ -101,6 +105,9 @@ void ARM7Memory::write_byte(u32 addr, u8 value) {
     case 0x04:
         mmio_write_byte(addr, value);
         break;
+    case 0x06:
+        system.video_unit.vram.arm7_vram.write<u8>(addr, value);
+        break;
     default:
         logger.warn("ARM7Memory: handle 8-bit write %08x = %02x", addr, value);
     }
@@ -111,6 +118,9 @@ void ARM7Memory::write_half(u32 addr, u16 value) {
     case 0x04:
         mmio_write_half(addr, value);
         break;
+    case 0x06:
+        system.video_unit.vram.arm7_vram.write<u16>(addr, value);
+        break;
     default:
         logger.warn("ARM7Memory: handle 16-bit write %08x = %02x", addr, value);
     }
@@ -120,6 +130,9 @@ void ARM7Memory::write_word(u32 addr, u32 value) {
     switch (addr >> 24) {
     case 0x04:
         mmio_write_word(addr, value);
+        break;
+    case 0x06:
+        system.video_unit.vram.arm7_vram.write<u32>(addr, value);
         break;
     case 0x08: case 0x09:
         // ignore gba cart writes
