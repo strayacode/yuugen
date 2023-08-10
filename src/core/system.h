@@ -46,8 +46,6 @@ public:
     u16 read_exmemstat() { return exmemstat; }
     void write_exmemstat(u16 value, u32 mask);
 
-    u8 read_postflg7() { return postflg7; }
-    u8 read_postflg9() { return postflg9; }
     u16 read_rcnt() { return rcnt; }
 
     using UpdateCallback = common::Callback<void(f32)>;
@@ -86,8 +84,6 @@ public:
     u8 haltcnt;
     u16 exmemcnt;
     u16 exmemstat;
-    u8 postflg7;
-    u8 postflg9;
     u16 rcnt;
 
 private:

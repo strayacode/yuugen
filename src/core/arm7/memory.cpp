@@ -148,4 +148,8 @@ void ARM7Memory::load_bios(const std::string& path) {
     bios = common::read<std::array<u8, 0x4000>>(file.get_pointer(0));
 }
 
+void ARM7Memory::write_postflg(u8 value) {
+    postflg |= value & 0x1;
+}
+
 } // namespace core

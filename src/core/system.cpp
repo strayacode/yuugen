@@ -50,8 +50,6 @@ void System::reset() {
     haltcnt = 0;
     exmemcnt = 0;
     exmemstat = 0;
-    postflg7 = 0;
-    postflg9 = 0;
     rcnt = 0;
 
     frames = 0;

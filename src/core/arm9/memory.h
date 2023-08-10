@@ -43,6 +43,9 @@ private:
 
     void load_bios(const std::string& path);
 
+    u8 read_postflg() { return postflg; }
+    void write_postflg(u8 value);
+
     System& system;
     u8 postflg;
     std::array<u8, 0x8000> bios;

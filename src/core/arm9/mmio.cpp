@@ -180,7 +180,7 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
     case MMIO(0x040002bc):
         return system.maths_unit.read_sqrt_param() >> 32;
     case MMIO(0x04000300):
-        if constexpr (mask & 0xff) value |= system.read_postflg9();
+        if constexpr (mask & 0xff) value |= read_postflg();
         return value;
     case MMIO(0x04000304):
         return system.video_unit.read_powcnt1();
@@ -444,7 +444,7 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         system.maths_unit.write_sqrt_param(static_cast<u64>(value) << 32, static_cast<u64>(mask) << 32);
         break;
     case MMIO(0x04000300):
-        if constexpr (mask & 0xff) postflg = value & 0x1;
+        if constexpr (mask & 0xff) write_postflg(value);
         break;
     case MMIO(0x04000304):
         system.video_unit.write_powcnt1(value, mask);

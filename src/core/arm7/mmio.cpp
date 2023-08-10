@@ -137,7 +137,7 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xff00) value |= static_cast<u32>(system.read_wramcnt()) << 8;
         return value;
     case MMIO(0x04000300):
-        if constexpr (mask & 0xff) value |= system.read_postflg7();
+        if constexpr (mask & 0xff) value |= read_postflg();
         return value;
     case MMIO(0x04000304):
         return system.video_unit.read_powcnt1();
@@ -264,7 +264,7 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         system.arm7.get_irq().write_irf(value, mask);
         break;
     case MMIO(0x04000300):
-        if constexpr (mask & 0xff) postflg = value & 0x1;
+        if constexpr (mask & 0xff) write_postflg(value);
         if constexpr (mask & 0xff00) system.write_haltcnt(value >> 8);
         break;
     case MMIO(0x04000304):
