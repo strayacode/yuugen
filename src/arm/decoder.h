@@ -31,8 +31,9 @@ public:
         register_arm("00010xx00101", &D::arm_saturating_add_subtract);
         register_arm("00001xxx1001", &D::arm_multiply_long);
         register_arm("000xxxxx1xx1", &D::arm_halfword_data_transfer);
-        register_arm("00x10x00xxxx", &D::arm_status_load);
-        register_arm("00x10x10xxxx", &D::arm_status_store);
+        register_arm("00010x000000", &D::arm_status_load);
+        register_arm("00010x100000", &D::arm_status_store_register);
+        register_arm("00110x10xxxx", &D::arm_status_store_immediate);
         register_arm("100xxxxxxxxx", &D::arm_block_data_transfer);
         register_arm("01xxxxxxxxxx", &D::arm_single_data_transfer);
         register_arm("00xxxxxxxxxx", &D::arm_data_processing);

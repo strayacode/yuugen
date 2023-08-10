@@ -28,7 +28,8 @@ public:
     std::string arm_multiply_long(u32 instruction);
     std::string arm_halfword_data_transfer(u32 instruction);
     std::string arm_status_load(u32 instruction);
-    std::string arm_status_store(u32 instruction);
+    std::string arm_status_store_register(u32 instruction);
+    std::string arm_status_store_immediate(u32 instruction);
     std::string arm_block_data_transfer(u32 instruction);
     std::string arm_single_data_transfer(u32 instruction);
     std::string arm_data_processing(u32 instruction);

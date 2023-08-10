@@ -502,15 +502,26 @@ void Interpreter::arm_status_load() {
     state.gpr[15] += 4;
 }
 
-void Interpreter::arm_status_store() {
+void Interpreter::arm_status_store_register() {
     auto opcode = ARMStatusStore::decode(instruction);
-    
-    u32 value = 0;
-    if (opcode.imm) {
-        value = opcode.rhs.rotated;
+    u32 value = state.gpr[opcode.rhs.rm];
+
+    if (opcode.spsr) {
+        state.spsr->data = (state.spsr->data & ~opcode.mask) | (value & opcode.mask);
     } else {
-        value = state.gpr[opcode.rhs.rm];
+        if (opcode.mask & 0xff) {
+            set_mode(static_cast<Mode>(value & 0x1f));
+        }
+
+        state.cpsr.data = (state.cpsr.data & ~opcode.mask) | (value & opcode.mask);
     }
+
+    state.gpr[15] += 4;
+}
+
+void Interpreter::arm_status_store_immediate() {
+    auto opcode = ARMStatusStore::decode(instruction);
+    u32 value = opcode.rhs.rotated;
 
     if (opcode.spsr) {
         state.spsr->data = (state.spsr->data & ~opcode.mask) | (value & opcode.mask);

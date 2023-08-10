@@ -70,8 +70,6 @@ void IPC::write_ipcsync(arm::Arch arch, u16 value, u32 mask) {
     if (tx_sync.send_irq && rx_sync.enable_irq) {
         rx_irq->raise(IRQ::Source::IPCSync);
     }
-
-    logger.log("ipcsync write %d %08x tx %08x rx %08x\n", static_cast<int>(arch), value, tx_sync.data, rx_sync.data);
 }
 
 void IPC::write_ipcfifocnt(arm::Arch arch, u16 value, u32 mask) {

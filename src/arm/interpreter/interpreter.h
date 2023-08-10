@@ -36,7 +36,8 @@ public:
     void arm_multiply_long();
     void arm_halfword_data_transfer();
     void arm_status_load();
-    void arm_status_store();
+    void arm_status_store_register();
+    void arm_status_store_immediate();
     void arm_block_data_transfer();
     void arm_single_data_transfer();
     void arm_data_processing();
