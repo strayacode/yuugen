@@ -26,6 +26,9 @@ void Interpreter::reset() {
     halted = false;
 }
 
+bool log = true;
+u64 i = 0;
+
 void Interpreter::run(int cycles) {
     while (cycles--) {
         if (halted) {
@@ -38,6 +41,15 @@ void Interpreter::run(int cycles) {
 
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
+
+        if (i == 1000000) {
+            log = false;
+        }
+
+        if (log) {
+            logger.log("arch %d ", static_cast<int>(arch));
+            log_state();
+        }
 
         if (state.cpsr.t) {
             state.gpr[15] &= ~0x1;
@@ -56,6 +68,8 @@ void Interpreter::run(int cycles) {
                 state.gpr[15] += 4;
             }
         }
+
+        i++;
     }
 }
 

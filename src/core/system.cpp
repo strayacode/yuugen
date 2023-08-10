@@ -154,8 +154,8 @@ void System::run_thread() {
 void System::run_frame() {
     auto frame_end = scheduler.get_current_time() + 560190;
     while (scheduler.get_current_time() < frame_end) {
-        arm7.run(1);
         arm9.run(2);
+        arm7.run(1);
         scheduler.tick(1);
         scheduler.run();
     }
