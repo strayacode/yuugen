@@ -147,19 +147,9 @@ private:
 
     union BLDCNT {
         struct {
-            bool bg0_first_target : 1;
-            bool bg1_first_target : 1;
-            bool bg2_first_target : 1;
-            bool bg3_first_target : 1;
-            bool obj_first_target : 1;
-            bool bd_first_target : 1;
+            u16 first_target : 6;
             SpecialEffect special_effect : 2;
-            bool bg0_second_target : 1;
-            bool bg1_second_target : 1;
-            bool bg2_second_target : 1;
-            bool bg3_second_target : 1;
-            bool obj_second_target : 1;
-            bool bd_second_target : 1;
+            u16 second_target : 6;
             u16 : 2;
         };
 

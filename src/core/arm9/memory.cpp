@@ -92,6 +92,8 @@ u32 ARM9Memory::read_word(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_word(addr);
+    case 0x05:
+        return system.video_unit.read_palette_ram<u32>(addr);
     case 0x06:
         return system.video_unit.vram.read<u32>(addr);
     case 0x07:

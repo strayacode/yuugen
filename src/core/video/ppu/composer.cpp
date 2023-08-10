@@ -45,10 +45,10 @@ void PPU::compose_pixel(int x, int line) {
 void PPU::compose_pixel_with_special_effects(int x, int line) {
     u8 enabled = calculate_enabled_layers(x, line);
     u16 backdrop = common::read<u16>(palette_ram);
-    std::array<u32, 2> pixels;
+    std::array<int, 2> targets;
     std::array<int, 2> priorities;
 
-    pixels.fill(backdrop);
+    targets.fill(5);
     priorities.fill(4);
     
     // find the 2 top-most background pixels
@@ -56,12 +56,12 @@ void PPU::compose_pixel_with_special_effects(int x, int line) {
         u16 bg_pixel = bg_layers[i][x];
         if (((enabled >> i) & 0x1) && bg_pixel != colour_transparent) {
             if (bgcnt[i].priority <= priorities[0]) {
-                pixels[1] = pixels[0];
+                targets[1] = targets[0];
                 priorities[1] = priorities[0];
-                pixels[0] = bg_pixel;
+                targets[0] = i;
                 priorities[0] = bgcnt[i].priority;
             } else if (bgcnt[i].priority <= priorities[1]) {
-                pixels[1] = bg_pixel;
+                targets[1] = i;
                 priorities[1] = bgcnt[i].priority;
             }
         }
@@ -71,10 +71,29 @@ void PPU::compose_pixel_with_special_effects(int x, int line) {
     // TODO: handle object window later
     if (dispcnt.enable_obj && obj_buffer[x].colour != colour_transparent) {
         if (obj_buffer[x].priority <= priorities[0]) {
-            pixels[1] = pixels[0];
-            pixels[0] = obj_buffer[x].colour;
+            targets[1] = targets[0];
+            targets[0] = 4;
         } else if (obj_buffer[x].priority <= priorities[1]) {
-            pixels[1] = obj_buffer[x].colour;
+            targets[1] = 4;
+        }
+    }
+
+    // map target indices to pixels
+    std::array<u32, 2> pixels;
+    for (int i = 0; i < 2; i++) {
+        switch (targets[i]) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            pixels[i] = bg_layers[targets[i]][x];
+            break;
+        case 4:
+            pixels[i] = obj_buffer[x].colour;
+            break;
+        case 5:
+            pixels[i] = backdrop;
+            break;
         }
     }
 
@@ -82,8 +101,16 @@ void PPU::compose_pixel_with_special_effects(int x, int line) {
     pixels[0] = rgb555_to_rgb666(pixels[0]);
     pixels[1] = rgb555_to_rgb666(pixels[1]);
 
-    u32 blended = blend(pixels[0], pixels[1], bldcnt.special_effect);
-    plot(x, line, blended);
+    bool top_selected = (bldcnt.first_target >> targets[0]) & 0x1;
+    bool bottom_selected = (bldcnt.second_target >> targets[1]) & 0x1;
+
+    // skip blending if the targets aren't selected
+    if (!top_selected || (bldcnt.special_effect == SpecialEffect::AlphaBlending && !bottom_selected)) {
+        plot(x, line, pixels[0]);
+        return;
+    }
+
+    plot(x, line, blend(pixels[0], pixels[1], bldcnt.special_effect));
 }
 
 u32 PPU::blend(u32 top, u32 bottom, SpecialEffect special_effect) {
