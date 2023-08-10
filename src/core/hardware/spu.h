@@ -20,7 +20,10 @@ public:
 
     u16 read_soundcnt() { return soundcnt.data; }
     u32 read_channel(u32 addr);
-    u8 read_soundcapcnt(u32 addr) { return soundcapcnt[addr - 0x04000508]; }
+    u8 read_sound_capture_control(int id) { return sound_capture_channels[id].control.data; }
+    void write_sound_capture_control(int id, u8 value);
+    void write_sound_capture_destination(int id, u32 value, u32 mask);
+    void write_sound_capture_length(int id, u32 value, u32 mask);
 
     void write_soundcnt(u16 value, u32 mask);
     void write_soundbias(u32 value, u32 mask);
@@ -88,6 +91,25 @@ private:
         bool adpcm_second_sample;
     };
 
+    struct SoundCaptureChannel {
+        union Control {
+            struct {
+                bool channel_control : 1;
+                bool source_selection : 1;
+                bool repeat : 1;
+                bool format : 1;
+                u8 : 3;
+                bool start : 1;
+            };
+
+            u8 data;
+        };
+
+        Control control;
+        u32 destination;
+        u32 length;
+    };
+
     union SOUNDCNT {
         struct {
             u16 master_volume : 7;
@@ -106,7 +128,7 @@ private:
     std::array<Channel, 16> channels;
     u32 soundbias;
     SOUNDCNT soundcnt;
-    std::array<u8, 8> soundcapcnt;
+    std::array<SoundCaptureChannel, 2> sound_capture_channels;
     EventType play_sample_event;
     std::shared_ptr<common::AudioDevice> audio_device;
 

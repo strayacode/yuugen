@@ -93,6 +93,8 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_winin();
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_a.read_winout() << 16;
         return value;
+    case MMIO(0x040000b0):
+        return system.dma9.read_source(0);
     case MMIO(0x040000b8):
         if constexpr (mask & 0xffff) value |= system.dma9.read_length(0);
         if constexpr (mask & 0xffff0000) value |= system.dma9.read_control(0) << 16;

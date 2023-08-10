@@ -5,6 +5,7 @@
 #include "core/hardware/cartridge/save_database.h"
 #include "core/hardware/cartridge/backup/no_backup.h"
 #include "core/hardware/cartridge/backup/flash_backup.h"
+#include "core/hardware/cartridge/backup/eeprom_backup.h"
 #include "core/system.h"
 
 namespace core {
@@ -28,6 +29,7 @@ void Cartridge::reset() {
     key1_code.fill(0);
     secure_area.fill(0);
     cartridge_inserted = false;
+    backup_write_count = 0;
 }
 
 void Cartridge::load(const std::string& path) {
@@ -62,8 +64,23 @@ void Cartridge::write_auxspicnt(u16 value, u32 mask) {
     auxspicnt.data = (auxspicnt.data & ~mask) | (value & mask);
 }
 
-void Cartridge::write_auxspidata(u16 value, u32 mask) {
-    logger.todo("Cartridge: handle auxpidata write");
+void Cartridge::write_auxspidata(u8 value) {
+    if (backup == nullptr) {
+        return;
+    }
+
+    if (backup_write_count == 0) {
+        backup->receive(value);
+        auxspidata = 0;
+    } else {
+        auxspidata = backup->transfer(value, backup_write_count);
+    }
+
+    if (auxspicnt.chipselect_hold) {
+        backup_write_count++;
+    } else {
+        backup_write_count = 0;
+    }
 }
 
 void Cartridge::write_romctrl(u32 value, u32 mask) {
@@ -177,7 +194,7 @@ void Cartridge::load_backup(std::string path) {
                 logger.error("Cartridge: handle small eeprom");
                 return;
             case 2: case 3: case 4:
-                logger.error("Cartridge: handle eeprom");
+                backup = std::make_unique<EEPROMBackup>(save_path, save_size);
                 return;
             case 5: case 6: case 7:
                 backup = std::make_unique<FlashBackup>(save_path, save_size);

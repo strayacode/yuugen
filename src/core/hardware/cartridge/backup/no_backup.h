@@ -13,6 +13,7 @@ public:
     void save() override;
     u8 transfer(u8 data, u32 write_count) override;
     void receive(u8 data) override;
+    u32 get_size() override;
 };
 
 } // namespace core

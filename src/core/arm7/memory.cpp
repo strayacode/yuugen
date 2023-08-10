@@ -1,5 +1,6 @@
 #include "common/logger.h"
 #include "common/regular_file.h"
+#include "common/bits.h"
 #include "common/memory.h"
 #include "core/arm7/arm7.h"
 #include "core/system.h"
@@ -43,6 +44,13 @@ u8 ARM7Memory::read_byte(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_byte(addr);
+    case 0x08:
+    case 0x09:
+        if (!common::get_bit<7>(system.exmemcnt)) {
+            return 0;
+        }
+        
+        return 0xff;
     default:
         logger.warn("ARM7Memory: handle 8-bit read %08x", addr);
     }
@@ -54,6 +62,13 @@ u16 ARM7Memory::read_half(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_half(addr);
+    case 0x08:
+    case 0x09:
+        if (!common::get_bit<7>(system.exmemcnt)) {
+            return 0;
+        }
+        
+        return 0xffff;
     default:
         logger.warn("ARM7Memory: handle 16-bit read %08x", addr);
     }
@@ -67,6 +82,13 @@ u32 ARM7Memory::read_word(u32 addr) {
         return mmio_read_word(addr);
     case 0x06:
         return system.video_unit.vram.read_arm7<u32>(addr);
+    case 0x08:
+    case 0x09:
+        if (!common::get_bit<7>(system.exmemcnt)) {
+            return 0;
+        }
+        
+        return 0xffffffff;
     default:
         logger.warn("ARM7Memory: handle 32-bit read %08x", addr);
     }

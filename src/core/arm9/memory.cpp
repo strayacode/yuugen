@@ -46,6 +46,15 @@ u8 ARM9Memory::read_byte(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_byte(addr);
+    case 0x06:
+        return system.video_unit.vram.read<u8>(addr);
+    case 0x08:
+    case 0x09:
+        if (common::get_bit<7>(system.exmemcnt)) {
+            return 0;
+        }
+        
+        return 0xff;
     default:
         logger.warn("ARM9Memory: handle 8-bit read %08x", addr);
     }
@@ -63,6 +72,13 @@ u16 ARM9Memory::read_half(u32 addr) {
         return system.video_unit.read_oam<u16>(addr);
     case 0x06:
         return system.video_unit.vram.read<u16>(addr);
+    case 0x08:
+    case 0x09:
+        if (common::get_bit<7>(system.exmemcnt)) {
+            return 0;
+        }
+        
+        return 0xffff;
     default:
         logger.warn("ARM9Memory: handle 16-bit read %08x", addr);
     }
@@ -96,6 +112,9 @@ void ARM9Memory::write_byte(u32 addr, u8 value) {
     switch (addr >> 24) {
     case 0x04:
         mmio_write_byte(addr, value);
+        break;
+    case 0x06:
+        system.video_unit.vram.write<u8>(addr, value);
         break;
     default:
         logger.warn("ARM9Memory: handle 8-bit write %08x = %02x", addr, value);

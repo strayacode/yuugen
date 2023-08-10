@@ -22,7 +22,7 @@ public:
     void write_auxspicnt(u16 value, u32 mask);
 
     u16 read_auxspidata() { return auxspidata; }
-    void write_auxspidata(u16 value, u32 mask);
+    void write_auxspidata(u8 value);
 
     u32 read_romctrl() { return romctrl.data; }
     void write_romctrl(u32 value, u32 mask);
@@ -105,7 +105,7 @@ private:
     };
 
     AUXSPICNT auxspicnt;
-    u16 auxspidata;
+    u8 auxspidata;
     ROMCTRL romctrl;
     u64 command_buffer;
     u64 command;
@@ -122,6 +122,7 @@ private:
     bool cartridge_inserted;
 
     std::unique_ptr<Backup> backup;
+    u32 backup_write_count;
 
     Header header;
     common::MemoryMappedFile memory_mapped_file;

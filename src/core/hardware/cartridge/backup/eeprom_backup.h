@@ -7,9 +7,9 @@
 
 namespace core {
 
-class FlashBackup : public Backup {
+class EEPROMBackup : public Backup {
 public:
-    FlashBackup(const std::string& path, u32 size);
+    EEPROMBackup(const std::string& path, u32 size);
 
     void reset() override;
     void save() override;

@@ -28,18 +28,19 @@ public:
 
     void trigger(Timing timing);
 
-    u16 read_length(int index);
-    u16 read_control(int index);
+    u32 read_source(int id) { return channels[id].source; }
+    u16 read_length(int id);
+    u16 read_control(int id);
     u32 read_dmafill(u32 addr);
 
-    void write_length(int index, u16 value, u32 mask);
-    void write_source(int index, u32 value, u32 mask);
-    void write_destination(int index, u32 value, u32 mask);
-    void write_control(int index, u16 value, u32 mask);
+    void write_length(int id, u16 value, u32 mask);
+    void write_source(int id, u32 value, u32 mask);
+    void write_destination(int id, u32 value, u32 mask);
+    void write_control(int id, u16 value, u32 mask);
     void write_dmafill(u32 addr, u32 value);
 
 private:
-    void transfer(int index);
+    void transfer(int id);
 
     enum AddressMode : u16 {
         Increment = 0,

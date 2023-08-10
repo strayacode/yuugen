@@ -32,32 +32,32 @@ void DMA::trigger(Timing timing) {
     }
 }
 
-u16 DMA::read_length(int index) {
-    return channels[index].length;
+u16 DMA::read_length(int id) {
+    return channels[id].length;
 }
 
-u16 DMA::read_control(int index) {
-    return ((channels[index].length >> 16) & 0x1f) | channels[index].control.data;
+u16 DMA::read_control(int id) {
+    return ((channels[id].length >> 16) & 0x1f) | channels[id].control.data;
 }
 
 u32 DMA::read_dmafill(u32 addr) {
     return dmafill[(addr - 0x040000e0) / 4];
 }
 
-void DMA::write_length(int index, u16 value, u32 mask) {
-    channels[index].length = (channels[index].length & ~mask) | (value & mask);
+void DMA::write_length(int id, u16 value, u32 mask) {
+    channels[id].length = (channels[id].length & ~mask) | (value & mask);
 }
 
-void DMA::write_source(int index, u32 value, u32 mask) {
-    channels[index].source = (channels[index].source & ~mask) | (value & mask);
+void DMA::write_source(int id, u32 value, u32 mask) {
+    channels[id].source = (channels[id].source & ~mask) | (value & mask);
 }
 
-void DMA::write_destination(int index, u32 value, u32 mask) {
-    channels[index].destination = (channels[index].destination & ~mask) | (value & mask);
+void DMA::write_destination(int id, u32 value, u32 mask) {
+    channels[id].destination = (channels[id].destination & ~mask) | (value & mask);
 }
 
-void DMA::write_control(int index, u16 value, u32 mask) {
-    auto& channel = channels[index];
+void DMA::write_control(int id, u16 value, u32 mask) {
+    auto& channel = channels[id];
     auto old_control = channel.control;
 
     channel.length &= 0xffff;
@@ -86,7 +86,7 @@ void DMA::write_control(int index, u16 value, u32 mask) {
     }
 
     if (channel.control.timing == Timing::Immediate) {
-        scheduler.add_event(1, &transfer_events[index]);
+        scheduler.add_event(1, &transfer_events[id]);
     }
 }
 
@@ -94,9 +94,9 @@ void DMA::write_dmafill(u32 addr, u32 value) {
     dmafill[(addr - 0x040000e0) / 4] = value;
 }
 
-void DMA::transfer(int index) {
+void DMA::transfer(int id) {
     // TODO: handle gxfifo transfer limit
-    auto& channel = channels[index];
+    auto& channel = channels[id];
     auto source_adjust = adjust_lut[channel.control.transfer_words][channel.control.source_control];
     auto destination_adjust = adjust_lut[channel.control.transfer_words][channel.control.destination_control];
 
@@ -115,7 +115,7 @@ void DMA::transfer(int index) {
     }
 
     if (channel.control.irq) {
-        switch (index) {
+        switch (id) {
         case 0:
             irq.raise(IRQ::Source::DMA0);
             break;

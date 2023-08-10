@@ -43,6 +43,7 @@ public:
     u16 read_exmemcnt() { return exmemcnt; }
     void write_exmemcnt(u16 value, u32 mask);
 
+    u16 read_exmemstat() { return exmemstat; }
     void write_exmemstat(u16 value, u32 mask);
 
     u8 read_postflg7() { return postflg7; }

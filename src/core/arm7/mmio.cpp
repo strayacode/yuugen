@@ -77,7 +77,7 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
     switch (MMIO(addr)) {
     case MMIO(0x04000004):
         if constexpr (mask & 0xffff) value |= system.video_unit.read_dispstat(arm::Arch::ARMv4);
-        if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle vcount read");
+        if constexpr (mask & 0xffff0000) value |= system.video_unit.read_vcount() << 16;
         return value;
     case MMIO(0x040000dc):
         if constexpr (mask & 0xffff) value |= system.dma7.read_length(3);
@@ -122,6 +122,10 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.spi.read_spicnt();
         if constexpr (mask & 0xff0000) value |= system.spi.read_spidata() << 16;
         return value;
+    case MMIO(0x04000204):
+        if constexpr (mask & 0xffff) value |= system.read_exmemstat();
+        if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle wifiwaitcnt reads");
+        return value;
     case MMIO(0x04000208):
         return system.arm7.get_irq().read_ime();
     case MMIO(0x04000210):
@@ -142,8 +146,8 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
     case MMIO(0x04000500):
         return system.spu.read_soundcnt();
     case MMIO(0x04000508):
-        if constexpr (mask & 0xff) value |= system.spu.read_soundcapcnt(addr);
-        if constexpr (mask & 0xff00) value |= system.spu.read_soundcapcnt(addr) << 8;
+        if constexpr (mask & 0xff) value |= system.spu.read_sound_capture_control(0);
+        if constexpr (mask & 0xff00) value |= system.spu.read_sound_capture_control(1) << 8;
         return value;
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv4);
@@ -240,7 +244,7 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x040001a0):
         if constexpr (mask & 0xffff) system.cartridge.write_auxspicnt(value, mask);
-        if constexpr (mask & 0xffff0000) system.cartridge.write_auxspidata(value >> 16, mask >> 16);
+        if constexpr (mask & 0xffff0000) system.cartridge.write_auxspidata(value >> 16);
         break;
     case MMIO(0x040001c0):
         if constexpr (mask & 0xffff) system.spi.write_spicnt(value, mask & 0xffff);
@@ -274,6 +278,22 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000504):
         system.spu.write_soundbias(value, mask);
+        break;
+    case MMIO(0x04000508):
+        if constexpr (mask & 0xff) system.spu.write_sound_capture_control(0, value);
+        if constexpr (mask & 0xff00) system.spu.write_sound_capture_control(1, value >> 8);
+        break;
+    case MMIO(0x04000510):
+        system.spu.write_sound_capture_destination(0, value, mask);
+        break;
+    case MMIO(0x04000514):
+        system.spu.write_sound_capture_length(0, value, mask);
+        break;
+    case MMIO(0x04000518):
+        system.spu.write_sound_capture_destination(1, value, mask);
+        break;
+    case MMIO(0x0400051c):
+        system.spu.write_sound_capture_length(1, value, mask);
         break;
     default:
         if (addr >= 0x04800000 && addr < 0x04900000) {

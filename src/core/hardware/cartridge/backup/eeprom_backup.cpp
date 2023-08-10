@@ -3,15 +3,15 @@
 #include <iostream>
 #include <algorithm>
 #include "common/logger.h"
-#include "core/hardware/cartridge/backup/flash_backup.h"
+#include "core/hardware/cartridge/backup/eeprom_backup.h"
 
 namespace core {
 
-FlashBackup::FlashBackup(const std::string& path, u32 size) : path(path), size(size) {
+EEPROMBackup::EEPROMBackup(const std::string& path, u32 size) : path(path), size(size) {
     reset();
 }
 
-void FlashBackup::reset() {
+void EEPROMBackup::reset() {
     command = 0;
     address = 0;
 
@@ -31,23 +31,33 @@ void FlashBackup::reset() {
     }
 }
 
-void FlashBackup::save() {
+void EEPROMBackup::save() {
     std::ofstream file(path, std::ios::out | std::ios::binary);
     std::copy(backup.begin(), backup.end(), std::ostream_iterator<u8>(file));
     file.close();
 }
 
-u8 FlashBackup::transfer(u8 data, u32 write_count) {
+u8 EEPROMBackup::transfer(u8 data, u32 write_count) {
     switch (command) {
-    case 0x00:
-        // ignore this for now, seems to a command specific to ir stuff for pokemon games
-        break;
-    case 0x03:
-        if (write_count < 4) {
-            address |= data << ((3 - write_count) * 8);
+    case 0x02:
+        if (write_count < ((size == 0x20000) ? 4 : 3)) {
+            address |= data << ((size == 0x20000 ? 3 : 2 - write_count) * 8);
         } else {
             if (address >= size) {
-                logger.error("FlashBackup: address is out of range");
+                logger.error("EEPROMBackup: address is out of range");
+            }
+
+            backup[address] = data;
+
+            address++;
+        }
+        break;
+    case 0x03:
+        if (write_count < ((size == 0x20000) ? 4 : 3)) {
+            address |= data << ((size == 0x20000 ? 3 : 2 - write_count) * 8);
+        } else {
+            if (address >= size) {
+                logger.error("EEPROMBackup: address is out of range");
             }
 
             return backup[address++];
@@ -55,31 +65,19 @@ u8 FlashBackup::transfer(u8 data, u32 write_count) {
         break;
     case 0x05:
         return (write_in_progress ? 1 : 0) | (write_enable_latch ? (1 << 1) : 0);
-    case 0x0a:
-        if (write_count < 4) {
-            address |= (data << ((3 - write_count) * 8));
-        } else {
-            if (address >= size) {
-                logger.error("FlashBackup: address is out of range");
-            }
-
-            backup[address++] = data;
-        }
-
-        break;
     default:
-        logger.error("FlashBackup: handle command %02x", command);
+        logger.error("EEPROMBackup: handle command %02x", command);
     }
 
     return 0;
 }
 
-void FlashBackup::receive(u8 data) {
+void EEPROMBackup::receive(u8 data) {
     command = data;
     address = 0;
 }
 
-u32 FlashBackup::get_size() {
+u32 EEPROMBackup::get_size() {
     return size;
 }
 

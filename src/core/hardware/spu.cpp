@@ -17,7 +17,7 @@ void SPU::reset() {
     channels.fill(Channel{});
     soundbias = 0;
     soundcnt.data = 0;
-    soundcapcnt.fill(0);
+    sound_capture_channels.fill(SoundCaptureChannel{});
     
     buffer.fill(0);
     buffer_size = 0;
@@ -51,6 +51,20 @@ u32 SPU::read_channel(u32 addr) {
     }
 
     return 0;
+}
+
+void SPU::write_sound_capture_control(int id, u8 value) {
+    sound_capture_channels[id].control.data = value;
+}
+
+void SPU::write_sound_capture_destination(int id, u32 value, u32 mask) {
+    mask &= 0x7fffffc;
+    sound_capture_channels[id].destination = (sound_capture_channels[id].destination & ~mask) | (value & mask);
+}
+
+void SPU::write_sound_capture_length(int id, u32 value, u32 mask) {
+    mask &= 0xffff;
+    sound_capture_channels[id].length = (sound_capture_channels[id].length & ~mask) | (value & mask);
 }
 
 void SPU::write_soundcnt(u16 value, u32 mask) {
@@ -145,7 +159,11 @@ void SPU::start_channel(int id) {
     case AudioFormat::PCM16:
         break;
     case AudioFormat::ADPCM:
-        logger.error("SPU: handle adpcm playback");
+        channel.adpcm_header = memory.read<u32, arm::Bus::System>(channel.internal_source);
+        channel.adpcm_value = static_cast<s16>(channel.adpcm_header);
+        channel.adpcm_index = std::min<u32>(common::get_field<16, 7>(channel.adpcm_header), static_cast<u32>(88));
+        channel.internal_source += 4;
+        break;
     case AudioFormat::Noise:
         logger.error("SPU: handle noise playback");
     }

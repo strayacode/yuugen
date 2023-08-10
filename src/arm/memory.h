@@ -34,17 +34,19 @@ public:
         static_assert(is_one_of_v<T, u8, u16, u32>, "T is not valid");
         addr &= ~(sizeof(T) - 1);
 
-        if constexpr (B != Bus::System) {
+        // TODO: add back
+        // if constexpr (B != Bus::System) {
             if (itcm.config.enable_reads && addr >= itcm.config.base && addr < itcm.config.limit) {
                 return common::read<T>(itcm.data, (addr - itcm.config.base) & itcm.mask);
             }
-        }
+        // }
 
-        if constexpr (B == Bus::Data) {
+        // TODO: add back
+        // if constexpr (B == Bus::Data) {
             if (dtcm.config.enable_reads && addr >= dtcm.config.base && addr < dtcm.config.limit) {
                 return common::read<T>(dtcm.data, (addr - dtcm.config.base) & dtcm.mask);
             }
-        }
+        // }
 
         auto pointer = read_table.get_pointer<T>(addr);
         if (pointer) {
@@ -65,19 +67,21 @@ public:
         static_assert(is_one_of_v<T, u8, u16, u32>, "T is not valid");
         addr &= ~(sizeof(T) - 1);
 
-        if constexpr (B != Bus::System) {
+        // TODO: add back
+        // if constexpr (B != Bus::System) {
             if (itcm.config.enable_writes && addr >= itcm.config.base && addr < itcm.config.limit) {
                 common::write<T>(itcm.data, value, (addr - itcm.config.base) & itcm.mask);
                 return;
             }
-        }
+        // }
 
-        if constexpr (B == Bus::Data) {
+        // TODO: add back
+        // if constexpr (B == Bus::Data) {
             if (dtcm.config.enable_writes && addr >= dtcm.config.base && addr < dtcm.config.limit) {
                 common::write<T>(dtcm.data, value, (addr - dtcm.config.base) & dtcm.mask);
                 return;
             }
-        }
+        // }
 
         auto pointer = write_table.get_pointer<T>(addr);
         if (pointer) {

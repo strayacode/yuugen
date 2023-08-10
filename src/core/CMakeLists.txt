@@ -27,6 +27,7 @@ add_library(core
     hardware/cartridge/backup/backup.h
     hardware/cartridge/backup/no_backup.h hardware/cartridge/backup/no_backup.cpp
     hardware/cartridge/backup/flash_backup.h hardware/cartridge/backup/flash_backup.cpp
+    hardware/cartridge/backup/eeprom_backup.h hardware/cartridge/backup/eeprom_backup.cpp
     hardware/input.h hardware/input.cpp
     hardware/spu.h hardware/spu.cpp
     hardware/dma.h hardware/dma.cpp
