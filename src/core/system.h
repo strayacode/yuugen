@@ -106,7 +106,7 @@ private:
     using Frame = std::chrono::duration<int, std::ratio<1, 60>>;
 
     int frames;
-    bool framelimiter = false;
+    bool framelimiter = true;
     UpdateCallback update_callback;
     std::shared_ptr<common::AudioDevice> audio_device;
 
