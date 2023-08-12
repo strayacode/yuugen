@@ -168,6 +168,7 @@ void SPU::start_channel(int id) {
         channel.adpcm_header = memory.read<u32, arm::Bus::System>(channel.internal_source);
         channel.adpcm_value = static_cast<s16>(channel.adpcm_header);
         channel.adpcm_index = std::min(common::get_field<16, 7>(channel.adpcm_header), static_cast<u32>(88));
+        channel.adpcm_second_sample = false;
         channel.internal_source += 4;
         break;
     case AudioFormat::Noise:
