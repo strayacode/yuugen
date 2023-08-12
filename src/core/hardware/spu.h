@@ -32,8 +32,6 @@ public:
 
     void fetch_samples(s16* stream, int no_samples);
 
-    u32 generate_sample();
-
 private:
     void write_channel_control(int id, u32 value, u32 mask);
     void write_channel_source(int id, u32 value, u32 mask);
@@ -113,14 +111,21 @@ private:
         u32 length;
     };
 
+    enum SampleOutput : u16 {
+        Mixer = 0,
+        Channel1 = 1,
+        Channel3 = 2,
+        Channel1And3 = 3,
+    };
+
     union SOUNDCNT {
         struct {
             u16 master_volume : 7;
             u16 : 1;
-            u16 left_output : 2;
-            u16 right_output : 2;
-            bool output_ch1_to_mixer : 1;
-            bool output_ch3_to_mixer : 1;
+            SampleOutput left_output : 2;
+            SampleOutput right_output : 2;
+            bool skip_ch1_mixer_output : 1;
+            bool skip_ch3_mixer_output : 1;
             u16 : 1;
             bool master_enable : 1;
         };
