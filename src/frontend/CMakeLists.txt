@@ -3,7 +3,7 @@ set(SOURCES
     application.h application.cpp
     imgui_video_device.h imgui_video_device.cpp
     sdl_audio_device.h sdl_audio_device.cpp
-    arm_debugger_window.h arm_debugger_window.cpp
+    widgets/cpu_debugger.h widgets/cpu_debugger.cpp
     font_database.h
 )
 

@@ -11,7 +11,7 @@
 #include "core/system.h"
 #include "frontend/sdl_audio_device.h"
 #include "frontend/imgui_video_device.h"
-#include "frontend/arm_debugger_window.h"
+#include "frontend/widgets/cpu_debugger.h"
 #include "frontend/font_database.h"
 
 class Application {
@@ -24,6 +24,14 @@ public:
     void handle_input();
     void setup_style();
     void render();
+
+    template <typename... Args>
+    void monospace_text(const char* fmt, Args... args) {
+        font_database.push_style(FontDatabase::Style::Monospace);
+        ImGui::Text(fmt, args...);
+
+        font_database.pop_style();
+    }
 
     bool running = true;
 
@@ -39,6 +47,8 @@ public:
     int window_width = 0;
     int window_height = 0;
 
+    FontDatabase font_database;
+
 private:
     void begin_fullscreen_window(const char *name, float padding = 0.0f);
     void end_fullscreen_window();
@@ -50,7 +60,7 @@ private:
     void boot_game(const std::string& path);
     void boot_firmware();
 
-    bool demo_window = false;
+    bool demo_window = true;
     core::System system;
 
     // TODO: combine top and bottom screen into single VideoDevice interface
@@ -65,10 +75,9 @@ private:
     ImVec4 window_bg = ImVec4(0.100f, 0.100f, 0.100f, 0.980f);
 
     f32 fps;
-    FontDatabase font_database;
-
-    ARMDebuggerWindow arm7_debugger_window;
-    ARMDebuggerWindow arm9_debugger_window;
+    
+    CPUDebugger arm7_debugger;
+    CPUDebugger arm9_debugger;
 
     std::shared_ptr<common::AudioDevice> audio_device;
 };

@@ -7,7 +7,7 @@ public:
     enum class Style {
         Regular,
         Large,
-        Debug,
+        Monospace,
     };
 
     void add_font(Style style, ImFont* font) {

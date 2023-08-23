@@ -2,7 +2,7 @@
 #include "common/string.h"
 #include "frontend/application.h"
 
-Application::Application() : arm7_debugger_window(system, system.arm7.get_cpu(), system.arm7.get_irq(), arm::Arch::ARMv4, font_database), arm9_debugger_window(system, system.arm9.get_cpu(), system.arm9.get_irq(), arm::Arch::ARMv5, font_database) {}
+Application::Application() {}
 
 bool Application::initialise() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) > 0) {
@@ -17,7 +17,7 @@ bool Application::initialise() {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    u32 window_flags =  SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+    u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     window = SDL_CreateWindow("yuugen", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
     gl_context = SDL_GL_CreateContext(window);
 
@@ -33,7 +33,7 @@ bool Application::initialise() {
 
     font_database.add_font(FontDatabase::Style::Regular, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-light.ttf", 16.0f));
     font_database.add_font(FontDatabase::Style::Large, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-light.ttf", 19.0f));
-    font_database.add_font(FontDatabase::Style::Debug, io.Fonts->AddFontFromFileTTF("../data/fonts/cascadia-mono.ttf", 13.0f));
+    font_database.add_font(FontDatabase::Style::Monospace, io.Fonts->AddFontFromFileTTF("../data/fonts/sf-mono-regular.otf", 15.0f));
 
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
@@ -190,8 +190,8 @@ void Application::render_menubar() {
         }
 
         if (ImGui::BeginMenu("Debug")) {
-            ImGui::MenuItem("ARM7", nullptr, arm7_debugger_window.get_visible_pointer());
-            ImGui::MenuItem("ARM9", nullptr, arm9_debugger_window.get_visible_pointer());
+            ImGui::MenuItem("ARM7", nullptr, arm7_debugger.get_visible_pointer());
+            ImGui::MenuItem("ARM9", nullptr, arm9_debugger.get_visible_pointer());
 
             ImGui::EndMenu();
         }
@@ -233,11 +233,13 @@ void Application::setup_style() {
     ImGui::GetStyle().PopupRounding = 0.0f;
     ImGui::GetStyle().ChildRounding = 0.0f;
     ImGui::GetStyle().GrabRounding = 4.0f;
+    ImGui::GetStyle().TabRounding = 0.0f;
     ImGui::GetStyle().ScrollbarSize = 10.0f;
     ImGui::GetStyle().ScrollbarRounding = 12.0f;
     ImGui::GetStyle().WindowTitleAlign = ImVec2(0.50f, 0.50f);
     ImGui::GetStyle().WindowMenuButtonPosition = ImGuiDir_None;
     ImGui::GetStyle().FramePadding = ImVec2(4.0f, 2.0f);
+    ImGui::GetStyle().ItemInnerSpacing = ImVec2(4.0f, 4.0f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBg] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive] = ImVec4(0.109f, 0.109f, 0.109f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_Header] = ImVec4(0.140f, 0.140f, 0.140f, 1.000f);
@@ -274,8 +276,8 @@ void Application::render() {
         ImGui::ShowDemoWindow();
     }
 
-    arm7_debugger_window.render();
-    arm9_debugger_window.render();
+    arm7_debugger.render(*this, system.arm7.get_cpu(), system.arm7.get_irq());
+    arm9_debugger.render(*this, system.arm9.get_cpu(), system.arm9.get_irq());
     
     ImGui::Render();
     glViewport(0, 0, 1280, 720);

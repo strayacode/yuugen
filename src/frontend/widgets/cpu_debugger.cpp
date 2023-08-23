@@ -1,19 +1,18 @@
-#include "imgui/imgui.h"
+#include "frontend/imgui/imgui.h"
 #include "common/string.h"
-#include "frontend/arm_debugger_window.h"
-#include "core/system.h"
+#include "frontend/widgets/cpu_debugger.h"
+#include "frontend/application.h"
 
-ARMDebuggerWindow::ARMDebuggerWindow(core::System& system, arm::CPU& cpu, core::IRQ& irq, arm::Arch arch, FontDatabase& font_database) : system(system), cpu(cpu), irq(irq), arch(arch), font_database(font_database) {}
-
-void ARMDebuggerWindow::render() {
+void CPUDebugger::render(Application& application, arm::CPU& cpu, core::IRQ& irq) {
     if (!visible) return;
 
-    ImGui::Begin(common::format("ARM%s Debugger", arch == arm::Arch::ARMv5 ? "9" : "7").c_str());
-
-    font_database.push_style(FontDatabase::Style::Debug);
+    ImGui::Begin(common::format("ARM%s Debugger", cpu.get_arch() == arm::Arch::ARMv5 ? "9" : "7").c_str());
 
     auto& state = cpu.get_state();
     ImGui::Text("Registers");
+
+    application.font_database.push_style(FontDatabase::Style::Monospace);
+
     ImGui::Text("r0: %08x r8:  %08x", state.gpr[0], state.gpr[8]);
     ImGui::Text("r1: %08x r9:  %08x", state.gpr[1], state.gpr[9]);
     ImGui::Text("r2: %08x r10: %08x", state.gpr[2], state.gpr[10]);
@@ -107,6 +106,7 @@ void ARMDebuggerWindow::render() {
     ImGui::SameLine();
     ImGui::Text("irf: %08x", irq.read_irf());
 
-    font_database.pop_style();
+    application.font_database.pop_style();
+
     ImGui::End();
 }

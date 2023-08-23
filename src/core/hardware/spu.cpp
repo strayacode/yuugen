@@ -63,7 +63,7 @@ void SPU::write_sound_capture_control(int id, u8 value) {
     sound_capture_channels[id].control.data = value;
 
     if (sound_capture_channels[id].control.start) {
-        logger.todo("SPU: handle sound capture");
+        logger.warn("SPU: handle sound capture");
     }
 }
 
