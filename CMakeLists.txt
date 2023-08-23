@@ -40,4 +40,4 @@ if(CPU_DEBUG)
     add_definitions(-DCPU_DEBUG)
 endif()
 
-add_subdirectory(Source)
+add_subdirectory(src)

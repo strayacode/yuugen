@@ -1,7 +1,0 @@
-add_subdirectory(Common)
-add_subdirectory(Core)
-add_subdirectory(AudioCommon)
-add_subdirectory(VideoCommon)
-add_subdirectory(VideoBackends2D)
-add_subdirectory(VideoBackends3D)
-add_subdirectory(Frontend)
