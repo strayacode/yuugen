@@ -1,12 +1,12 @@
 #include "common/logger.h"
-#include "arm/ir_interpreter/ir_interpreter.h"
+#include "arm/jit_common/jit.h"
 #include "arm/disassembler/disassembler.h"
 
 namespace arm {
 
-IRInterpreter::IRInterpreter(Arch arch, Memory& memory, Coprocessor& coprocessor) : arch(arch), memory(memory), coprocessor(coprocessor) {}
+Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor) : arch(arch), memory(memory), coprocessor(coprocessor) {}
 
-void IRInterpreter::reset() {
+void Jit::reset() {
     state.gpr.fill(0);
 
     for (int i = 0; i < 6; i++) {
@@ -16,24 +16,49 @@ void IRInterpreter::reset() {
 
     state.cpsr.data = 0xd3;
     set_mode(Mode::SVC);
-    pipeline.fill(0);
     irq = false;
     halted = false;
 }
 
-void IRInterpreter::run(int cycles) {
-    logger.todo("IRInterpreter: handle execution");
+void Jit::run(int cycles) {
+    // while (cycles--) {
+    //     if (halted) {
+    //         return;
+    //     }
+
+    //     if (irq && !state.cpsr.i) {
+    //         handle_interrupt();
+    //     }
+
+    //     instruction = pipeline[0];
+    //     pipeline[0] = pipeline[1];
+
+    //     if (state.cpsr.t) {
+    //         state.gpr[15] &= ~0x1;
+    //         pipeline[1] = code_read_half(state.gpr[15]);
+
+    //         auto handler = decoder.get_thumb_handler(instruction);
+    //         (this->*handler)();
+    //     } else {
+    //         state.gpr[15] &= ~0x3;
+    //         pipeline[1] = code_read_word(state.gpr[15]);
+
+    //         if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
+    //             auto handler = decoder.get_arm_handler(instruction);
+    //             (this->*handler)();
+    //         } else {
+    //             state.gpr[15] += 4;
+    //         }
+    //     }
+    // }
+    logger.todo("Jit: handle execution");
 }
 
-void IRInterpreter::flush_pipeline() {
-    if (state.cpsr.t) {
-        thumb_flush_pipeline();
-    } else {
-        arm_flush_pipeline();
-    }
+void Jit::flush_pipeline() {
+    // nop for the jit
 }
 
-void IRInterpreter::set_mode(Mode mode) {
+void Jit::set_mode(Mode mode) {
     mode = static_cast<Mode>(static_cast<u8>(mode) & 0x1f);
     auto old_bank = get_bank(state.cpsr.mode);
     auto new_bank = get_bank(mode);
@@ -68,41 +93,23 @@ void IRInterpreter::set_mode(Mode mode) {
     }
 }
 
-void IRInterpreter::update_irq(bool irq) {
+void Jit::update_irq(bool irq) {
     this->irq = irq;
 }
 
-bool IRInterpreter::is_halted() {
+bool Jit::is_halted() {
     return halted;
 }
 
-void IRInterpreter::update_halted(bool halted) {
+void Jit::update_halted(bool halted) {
     this->halted = halted;
 }
 
-Arch IRInterpreter::get_arch() {
+Arch Jit::get_arch() {
     return arch;
 }
 
-void IRInterpreter::illegal_instruction() {
-    logger.error("IRInterpreter: illegal instruction %08x at pc = %08x", instruction, state.gpr[15]);
-}
-
-void IRInterpreter::arm_flush_pipeline() {
-    state.gpr[15] &= ~3;
-    pipeline[0] = code_read_word(state.gpr[15]);
-    pipeline[1] = code_read_word(state.gpr[15] + 4);
-    state.gpr[15] += 8;
-}
-
-void IRInterpreter::thumb_flush_pipeline() {
-    state.gpr[15] &= ~1;
-    pipeline[0] = code_read_half(state.gpr[15]);
-    pipeline[1] = code_read_half(state.gpr[15] + 2);
-    state.gpr[15] += 4;
-}
-
-Bank IRInterpreter::get_bank(Mode mode) {
+Bank Jit::get_bank(Mode mode) {
     switch (mode) {
     case Mode::USR: case Mode::SYS:
         return Bank::USR;
@@ -117,48 +124,48 @@ Bank IRInterpreter::get_bank(Mode mode) {
     case Mode::UND:
         return Bank::UND;
     default:
-        logger.warn("IRInterpreter: mode %02x doesn't have a bank", static_cast<u8>(mode));
+        logger.warn("Jit: mode %02x doesn't have a bank", static_cast<u8>(mode));
         return Bank::USR;
     }
 }
 
-u16 IRInterpreter::code_read_half(u32 addr) {
+u16 Jit::code_read_half(u32 addr) {
     return memory.read<u16, Bus::Code>(addr);
 }
 
-u32 IRInterpreter::code_read_word(u32 addr) {
+u32 Jit::code_read_word(u32 addr) {
     return memory.read<u32, Bus::Code>(addr);
 }
 
-u8 IRInterpreter::read_byte(u32 addr) {
+u8 Jit::read_byte(u32 addr) {
     return memory.read<u8, Bus::Data>(addr);
 }
 
-u16 IRInterpreter::read_half(u32 addr) {
+u16 Jit::read_half(u32 addr) {
     return memory.read<u16, Bus::Data>(addr);
 }
 
-u32 IRInterpreter::read_word(u32 addr) {
+u32 Jit::read_word(u32 addr) {
     return memory.read<u32, Bus::Data>(addr);
 }
 
-u32 IRInterpreter::read_word_rotate(u32 addr) {
+u32 Jit::read_word_rotate(u32 addr) {
     u32 value = memory.read<u32, Bus::Data>(addr);
     int amount = (addr & 0x3) * 8;
     return common::rotate_right(value, amount);
 }
 
-void IRInterpreter::write_byte(u32 addr, u8 data) {
+void Jit::write_byte(u32 addr, u8 data) {
     // TODO: handle potential code invalidation
     memory.write<u8, Bus::Data>(addr, data);
 }
 
-void IRInterpreter::write_half(u32 addr, u16 data) {
+void Jit::write_half(u32 addr, u16 data) {
     // TODO: handle potential code invalidation
     memory.write<u16, Bus::Data>(addr, data);
 }
 
-void IRInterpreter::write_word(u32 addr, u32 data) {
+void Jit::write_word(u32 addr, u32 data) {
     // TODO: handle potential code invalidation
     memory.write<u32, Bus::Data>(addr, data);
 }

@@ -8,7 +8,8 @@ add_library(arm
     interpreter/instructions/alu.cpp interpreter/instructions/arm.cpp
     interpreter/instructions/thumb.cpp
 
-    ir_interpreter/ir_interpreter.h ir_interpreter/ir_interpreter.cpp
+    jit_common/jit.h jit_common/jit.cpp
+    jit_common/basic_block.h jit_common/block_cache.h
 
     disassembler/disassembler.h disassembler/disassembler.cpp
     disassembler/arm.cpp disassembler/thumb.cpp

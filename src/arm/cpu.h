@@ -58,7 +58,6 @@ enum Condition : u8 {
 
 enum class Backend {
     Interpreter,
-    IRInterpreter,
     Jit,
 };
 

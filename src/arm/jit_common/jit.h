@@ -10,9 +10,9 @@
 
 namespace arm {
 
-class IRInterpreter : public CPU {
+class Jit : public CPU {
 public:
-    IRInterpreter(Arch arch, Memory& memory, Coprocessor& coprocessor);
+    Jit(Arch arch, Memory& memory, Coprocessor& coprocessor);
 
     void reset() override;
     void run(int cycles) override;
@@ -23,12 +23,7 @@ public:
     void update_halted(bool halted) override;
     Arch get_arch() override;
 
-    void illegal_instruction();
-
 private:
-    void arm_flush_pipeline();
-    void thumb_flush_pipeline();
-
     Bank get_bank(Mode mode);
 
     u16 code_read_half(u32 addr);
@@ -45,8 +40,6 @@ private:
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;
-    std::array<u32, 2> pipeline;
-    u32 instruction;
     bool irq;
     bool halted;
 };
