@@ -1,14 +1,18 @@
 add_library(arm
     arch.h
     coprocessor.h
-    page_table.h
     memory.h
     cpu.h state.h
+
     interpreter/interpreter.h interpreter/interpreter.cpp
     interpreter/instructions/alu.cpp interpreter/instructions/arm.cpp
     interpreter/instructions/thumb.cpp
+
+    ir_interpreter/ir_interpreter.h ir_interpreter/ir_interpreter.cpp
+
     disassembler/disassembler.h disassembler/disassembler.cpp
     disassembler/arm.cpp disassembler/thumb.cpp
+
     decoder.h instructions.h
 )
 

@@ -17,8 +17,8 @@ System::System() :
     timers7(scheduler, arm7.get_irq()),
     timers9(scheduler, arm9.get_irq())
 {
-    arm7.select_backend(arm::Backend::Interpreter);
-    arm9.select_backend(arm::Backend::Interpreter);
+    arm7.select_backend(arm::Backend::IRInterpreter);
+    arm9.select_backend(arm::Backend::IRInterpreter);
 }
 
 System::~System() {

@@ -58,8 +58,8 @@ enum Condition : u8 {
 
 enum class Backend {
     Interpreter,
-    CachedInterpreter,
-    Recompiler,
+    IRInterpreter,
+    Jit,
 };
 
 class CPU {

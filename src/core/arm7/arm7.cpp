@@ -1,5 +1,6 @@
 #include "common/logger.h"
 #include "arm/interpreter/interpreter.h"
+#include "arm/ir_interpreter/ir_interpreter.h"
 #include "core/arm7/arm7.h"
 #include "core/system.h"
 
@@ -21,7 +22,10 @@ void ARM7::select_backend(arm::Backend backend) {
     switch (backend) {
     case arm::Backend::Interpreter:
         cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv4, memory, coprocessor);
-        break; 
+        break;
+    case arm::Backend::IRInterpreter:
+        cpu = std::make_unique<arm::IRInterpreter>(arm::Arch::ARMv4, memory, coprocessor);
+        break;
     default:
         logger.error("ARM7: unknown backend");
     }
