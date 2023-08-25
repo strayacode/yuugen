@@ -150,22 +150,37 @@ void System::run_thread() {
 }
 
 void System::run_frame() {
-    auto frame_end = scheduler.get_current_time() + 560190;
-    while (scheduler.get_current_time() < frame_end) {
-        arm9.run(2);
-        arm7.run(1);
-        scheduler.tick(1);
-        scheduler.run();
-    }
-
     // auto frame_end = scheduler.get_current_time() + 560190;
     // while (scheduler.get_current_time() < frame_end) {
-    //     u64 cycles = std::min(static_cast<u64>(16), scheduler.get_event_time() - scheduler.get_current_time());
+    //     // initially assume that both cpus are halted, meaning we can safely skip until the next
+    //     // scheduler event
+    //     auto cycles = scheduler.get_event_time() - scheduler.get_current_time();
+
+    //     // if either cpu is not halted then we must enforce a max timeslice of 32 cycles (later on
+    //     // this will be increased when instructions aren't 1 cpi anymore)
+    //     if (!arm7.is_halted() || !arm9.is_halted()) {
+    //         cycles = std::min(static_cast<u64>(32), cycles);
+    //     }
+        
+    //     arm9.run(2 * cycles);
     //     arm7.run(cycles);
-    //     arm9.run(cycles * 2);
     //     scheduler.tick(cycles);
     //     scheduler.run();
     // }
+
+    auto frame_end = scheduler.get_current_time() + 560190;
+    while (scheduler.get_current_time() < frame_end) {
+        auto cycles = scheduler.get_event_time() - scheduler.get_current_time();
+
+        if (!arm7.is_halted() || !arm9.is_halted()) {
+            cycles = std::min(static_cast<u64>(32), cycles);
+        }
+
+        arm9.run(2 * cycles);
+        arm7.run(cycles);
+        scheduler.tick(cycles);
+        scheduler.run();
+    }
 
     // TODO: move this to VideoUnit when hblank or end of frame occurs
     video_unit.ppu_a.on_finish_frame();

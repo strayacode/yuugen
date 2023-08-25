@@ -18,6 +18,7 @@ public:
     void run(int cycles);
     void select_backend(arm::Backend backend);
     void direct_boot();
+    bool is_halted();
     ARM9Memory& get_memory() { return memory; }
     ARM9Coprocessor& get_coprocessor() { return coprocessor; }
     IRQ& get_irq() { return irq; }

@@ -7,6 +7,7 @@
 #include "arm/coprocessor.h"
 #include "arm/decoder.h"
 #include "arm/instructions.h"
+#include "arm/jit/block_cache.h"
 
 namespace arm {
 
@@ -37,11 +38,16 @@ private:
     void write_half(u32 addr, u16 data);
     void write_word(u32 addr, u32 data);
 
+    void handle_interrupt();
+
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;
     bool irq;
     bool halted;
+
+    BlockCache block_cache;
+    int cycles_available;
 };
 
 } // namespace arm

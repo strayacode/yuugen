@@ -27,36 +27,36 @@ void Interpreter::reset() {
 }
 
 void Interpreter::run(int cycles) {
-    while (cycles--) {
-        if (halted) {
-            return;
-        }
+    // while (cycles--) {
+    //     if (halted) {
+    //         return;
+    //     }
 
-        if (irq && !state.cpsr.i) {
-            handle_interrupt();
-        }
+    //     if (irq && !state.cpsr.i) {
+    //         handle_interrupt();
+    //     }
 
-        instruction = pipeline[0];
-        pipeline[0] = pipeline[1];
+    //     instruction = pipeline[0];
+    //     pipeline[0] = pipeline[1];
 
-        if (state.cpsr.t) {
-            state.gpr[15] &= ~0x1;
-            pipeline[1] = code_read_half(state.gpr[15]);
+    //     if (state.cpsr.t) {
+    //         state.gpr[15] &= ~0x1;
+    //         pipeline[1] = code_read_half(state.gpr[15]);
 
-            auto handler = decoder.get_thumb_handler(instruction);
-            (this->*handler)();
-        } else {
-            state.gpr[15] &= ~0x3;
-            pipeline[1] = code_read_word(state.gpr[15]);
+    //         auto handler = decoder.get_thumb_handler(instruction);
+    //         (this->*handler)();
+    //     } else {
+    //         state.gpr[15] &= ~0x3;
+    //         pipeline[1] = code_read_word(state.gpr[15]);
 
-            if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
-                auto handler = decoder.get_arm_handler(instruction);
-                (this->*handler)();
-            } else {
-                state.gpr[15] += 4;
-            }
-        }
-    }
+    //         if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
+    //             auto handler = decoder.get_arm_handler(instruction);
+    //             (this->*handler)();
+    //         } else {
+    //             state.gpr[15] += 4;
+    //         }
+    //     }
+    // }
 }
 
 void Interpreter::flush_pipeline() {

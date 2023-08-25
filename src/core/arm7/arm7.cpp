@@ -1,6 +1,6 @@
 #include "common/logger.h"
 #include "arm/interpreter/interpreter.h"
-#include "arm/jit_common/jit.h"
+#include "arm/jit/jit.h"
 #include "core/arm7/arm7.h"
 #include "core/system.h"
 
@@ -47,6 +47,10 @@ void ARM7::direct_boot() {
     state.cpsr.data = 0xdf;
     cpu->set_mode(arm::Mode::SYS);
     cpu->flush_pipeline();
+}
+
+bool ARM7::is_halted() {
+    return cpu->is_halted();
 }
 
 } // namespace core

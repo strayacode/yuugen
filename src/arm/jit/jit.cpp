@@ -1,5 +1,5 @@
 #include "common/logger.h"
-#include "arm/jit_common/jit.h"
+#include "arm/jit/jit.h"
 #include "arm/disassembler/disassembler.h"
 
 namespace arm {
@@ -18,10 +18,18 @@ void Jit::reset() {
     set_mode(Mode::SVC);
     irq = false;
     halted = false;
+    block_cache.reset();
+    cycles_available = 0;
 }
 
 void Jit::run(int cycles) {
-    // while (cycles--) {
+    // cycles_available += cycles;
+
+    // if (cycles_available < cycles) {
+    //     return;
+    // }
+
+    // while (cycles_available > 0) {
     //     if (halted) {
     //         return;
     //     }
@@ -29,6 +37,8 @@ void Jit::run(int cycles) {
     //     if (irq && !state.cpsr.i) {
     //         handle_interrupt();
     //     }
+
+    //     BasicBlock* basic_block = block_cache.lookup()
 
     //     instruction = pipeline[0];
     //     pipeline[0] = pipeline[1];
@@ -51,7 +61,7 @@ void Jit::run(int cycles) {
     //         }
     //     }
     // }
-    logger.todo("Jit: handle execution");
+    logger.todo("Jit: handle execution at pc %08x", state.gpr[15]);
 }
 
 void Jit::flush_pipeline() {
@@ -168,6 +178,22 @@ void Jit::write_half(u32 addr, u16 data) {
 void Jit::write_word(u32 addr, u32 data) {
     // TODO: handle potential code invalidation
     memory.write<u32, Bus::Data>(addr, data);
+}
+
+void Jit::handle_interrupt() {
+    halted = false;
+    state.spsr_banked[Bank::IRQ].data = state.cpsr.data;
+    set_mode(Mode::IRQ);
+    state.cpsr.i = true;
+    
+    if (state.cpsr.t) {
+        state.cpsr.t = false;
+        state.gpr[14] = state.gpr[15];
+    } else {
+        state.gpr[14] = state.gpr[15] - 4;
+    }
+
+    state.gpr[15] = coprocessor.get_exception_base() + 0x18 + 4;
 }
 
 } // namespace arm
