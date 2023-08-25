@@ -133,10 +133,8 @@ void Application::handle_input() {
 }
 
 void Application::render_screens() {
-    system.video_unit.submit_framebuffer(core::Screen::Top, top_screen.get_framebuffer());
-    system.video_unit.submit_framebuffer(core::Screen::Bottom, bottom_screen.get_framebuffer());
-    top_screen.update_texture();
-    bottom_screen.update_texture();
+    top_screen.update_texture(system.video_unit.fetch_framebuffer(core::Screen::Top));
+    bottom_screen.update_texture(system.video_unit.fetch_framebuffer(core::Screen::Bottom));
 
     const f64 scale_x = static_cast<f64>(window_width) / 256;
     const f64 scale_y = static_cast<f64>(window_height) / 384;

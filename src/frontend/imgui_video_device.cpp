@@ -1,12 +1,8 @@
 #include "frontend/imgui_video_device.h"
 
-ImGuiVideoDevice::ImGuiVideoDevice() {
-    framebuffer.fill(0x00000000);
-}
-
-void ImGuiVideoDevice::update_texture() {
+void ImGuiVideoDevice::update_texture(u32* pointer) {
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer.data());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pointer);
 }
 
 void ImGuiVideoDevice::destroy() {

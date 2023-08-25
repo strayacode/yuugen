@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <mutex>
 #include "common/types.h"
 #include "common/callback.h"
 #include "core/video/vram_region.h"
@@ -40,7 +41,8 @@ public:
     void write_bldy(u16 value, u32 mask);
     void write_master_bright(u32 value, u32 mask);
 
-    void submit_framebuffer(u32* target);
+    u32* fetch_framebuffer();
+    void on_finish_frame();
     
 private:
     using AffineCallback = common::Callback<void(int pixel, int x, int y), 40>;
@@ -231,6 +233,8 @@ private:
     int mosaic_bg_vertical_counter;
 
     std::array<u32, 256 * 192> framebuffer;
+    std::array<u32, 256 * 192> converted_framebuffer;
+    std::mutex converted_framebuffer_mutex;
     std::array<std::array<u16, 256>, 4> bg_layers;
     std::array<Object, 256> obj_buffer;
     

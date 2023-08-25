@@ -166,6 +166,10 @@ void System::run_frame() {
     //     scheduler.tick(cycles);
     //     scheduler.run();
     // }
+
+    // TODO: move this to VideoUnit when hblank or end of frame occurs
+    video_unit.ppu_a.on_finish_frame();
+    video_unit.ppu_b.on_finish_frame();
 }
 
 void System::direct_boot() {
