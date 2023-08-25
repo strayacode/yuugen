@@ -40,6 +40,7 @@ void PPU::reset() {
     mosaic_bg_vertical_counter = 0;
 
     framebuffer.fill(0);
+    converted_framebuffer.fill(0);
     reset_layers();
 }
 
@@ -177,9 +178,15 @@ void PPU::write_master_bright(u32 value, u32 mask) {
     master_bright.data = (master_bright.data & ~mask) | (value & mask);
 }
 
-void PPU::submit_framebuffer(u32* target) {
+u32* PPU::fetch_framebuffer() {
+    std::lock_guard<std::mutex> converted_framebuffer_lock{converted_framebuffer_mutex};
+    return converted_framebuffer.data();
+}
+
+void PPU::on_finish_frame() {
+    std::lock_guard<std::mutex> converted_framebuffer_lock{converted_framebuffer_mutex};
     for (int i = 0; i < 256 * 192; i++) {
-        target[i] = rgb666_to_rgb888(framebuffer[i]);
+        converted_framebuffer[i] = rgb666_to_rgb888(framebuffer[i]);
     }
 }
 
