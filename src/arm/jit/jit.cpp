@@ -4,7 +4,11 @@
 
 namespace arm {
 
-Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor) : arch(arch), memory(memory), coprocessor(coprocessor) {}
+Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor) : arch(arch), memory(memory), coprocessor(coprocessor), translator(*this) {
+    // configure jit settings
+    // TODO: use a global settings struct to configure the jit
+    config.block_size = 32;
+}
 
 void Jit::reset() {
     state.gpr.fill(0);
@@ -23,45 +27,48 @@ void Jit::reset() {
 }
 
 void Jit::run(int cycles) {
-    // cycles_available += cycles;
+    cycles_available += cycles;
 
-    // if (cycles_available < cycles) {
-    //     return;
-    // }
+    while (cycles_available > 0) {
+        if (halted) {
+            return;
+        }
 
-    // while (cycles_available > 0) {
-    //     if (halted) {
-    //         return;
-    //     }
+        if (irq && !state.cpsr.i) {
+            handle_interrupt();
+        }
 
-    //     if (irq && !state.cpsr.i) {
-    //         handle_interrupt();
-    //     }
+        BasicBlock::Key key{state};
 
-    //     BasicBlock* basic_block = block_cache.lookup()
+        // logger.todo("Jit: handle execution at pc %08x mode %02x is arm %d key %016lx", key.get_pc(), static_cast<int>(key.get_mode()), key.is_arm(), key.value);
 
-    //     instruction = pipeline[0];
-    //     pipeline[0] = pipeline[1];
+        BasicBlock* basic_block = block_cache.get(key);
+        if (!basic_block) {
+            basic_block = compile(key);
+            logger.todo("Jit: handle compilation to ir opcodes");
+        }
 
-    //     if (state.cpsr.t) {
-    //         state.gpr[15] &= ~0x1;
-    //         pipeline[1] = code_read_half(state.gpr[15]);
+        // instruction = pipeline[0];
+        // pipeline[0] = pipeline[1];
 
-    //         auto handler = decoder.get_thumb_handler(instruction);
-    //         (this->*handler)();
-    //     } else {
-    //         state.gpr[15] &= ~0x3;
-    //         pipeline[1] = code_read_word(state.gpr[15]);
+        // if (state.cpsr.t) {
+        //     state.gpr[15] &= ~0x1;
+        //     pipeline[1] = code_read_half(state.gpr[15]);
 
-    //         if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
-    //             auto handler = decoder.get_arm_handler(instruction);
-    //             (this->*handler)();
-    //         } else {
-    //             state.gpr[15] += 4;
-    //         }
-    //     }
-    // }
-    logger.todo("Jit: handle execution at pc %08x", state.gpr[15]);
+        //     auto handler = decoder.get_thumb_handler(instruction);
+        //     (this->*handler)();
+        // } else {
+        //     state.gpr[15] &= ~0x3;
+        //     pipeline[1] = code_read_word(state.gpr[15]);
+
+        //     if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
+        //         auto handler = decoder.get_arm_handler(instruction);
+        //         (this->*handler)();
+        //     } else {
+        //         state.gpr[15] += 4;
+        //     }
+        // }
+    }
 }
 
 void Jit::flush_pipeline() {
@@ -194,6 +201,15 @@ void Jit::handle_interrupt() {
     }
 
     state.gpr[15] = coprocessor.get_exception_base() + 0x18 + 4;
+}
+
+BasicBlock* Jit::compile(BasicBlock::Key key) {
+    BasicBlock* basic_block = new BasicBlock(key);
+    translator.translate(*basic_block);
+
+    // TODO: compile with selected backend
+
+    return basic_block;
 }
 
 } // namespace arm

@@ -8,6 +8,8 @@
 #include "arm/decoder.h"
 #include "arm/instructions.h"
 #include "arm/jit/block_cache.h"
+#include "arm/jit/config.h"
+#include "arm/jit/translator.h"
 
 namespace arm {
 
@@ -24,6 +26,11 @@ public:
     void update_halted(bool halted) override;
     Arch get_arch() override;
 
+    Arch arch;
+    Memory& memory;
+    Coprocessor& coprocessor;
+    Config config;
+    
 private:
     Bank get_bank(Mode mode);
 
@@ -40,14 +47,14 @@ private:
 
     void handle_interrupt();
 
-    Arch arch;
-    Memory& memory;
-    Coprocessor& coprocessor;
+    BasicBlock* compile(BasicBlock::Key key);
+
     bool irq;
     bool halted;
 
     BlockCache block_cache;
     int cycles_available;
+    Translator translator;
 };
 
 } // namespace arm

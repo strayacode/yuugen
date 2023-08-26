@@ -10,7 +10,11 @@ add_library(arm
 
     jit/jit.h jit/jit.cpp
     jit/basic_block.h jit/block_cache.h
+    jit/config.h
+    jit/translator.h jit/translator.cpp
     jit/ir/opcodes.h
+    jit/backend/backend.h
+    jit/backend/ir_interpreter/ir_interpreter.h jit/backend/ir_interpreter/ir_interpreter.cpp
 
     disassembler/disassembler.h disassembler/disassembler.cpp
     disassembler/arm.cpp disassembler/thumb.cpp
