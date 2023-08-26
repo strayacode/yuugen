@@ -21,10 +21,6 @@ struct BasicBlock {
             return common::get_field<0, 31>(value) << 1;
         }
 
-        Mode get_mode() {
-            return static_cast<Mode>(common::get_field<31, 5>(value));
-        }
-
         bool is_arm() {
             return !common::get_bit<36>(value);
         }
@@ -35,6 +31,7 @@ struct BasicBlock {
     BasicBlock(Key key) : key(key) {}
 
     Key key;
+    Mode mode;
     JitFunction jit_function = nullptr;
     std::vector<std::unique_ptr<IROpcode>> opcodes;
 };

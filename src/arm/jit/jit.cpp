@@ -47,27 +47,6 @@ void Jit::run(int cycles) {
             basic_block = compile(key);
             logger.todo("Jit: handle compilation to ir opcodes");
         }
-
-        // instruction = pipeline[0];
-        // pipeline[0] = pipeline[1];
-
-        // if (state.cpsr.t) {
-        //     state.gpr[15] &= ~0x1;
-        //     pipeline[1] = code_read_half(state.gpr[15]);
-
-        //     auto handler = decoder.get_thumb_handler(instruction);
-        //     (this->*handler)();
-        // } else {
-        //     state.gpr[15] &= ~0x3;
-        //     pipeline[1] = code_read_word(state.gpr[15]);
-
-        //     if (evaluate_condition(static_cast<Condition>(instruction >> 28))) {
-        //         auto handler = decoder.get_arm_handler(instruction);
-        //         (this->*handler)();
-        //     } else {
-        //         state.gpr[15] += 4;
-        //     }
-        // }
     }
 }
 
@@ -126,6 +105,23 @@ Arch Jit::get_arch() {
     return arch;
 }
 
+u32 Jit::get_gpr(GPR gpr) {
+    return state.gpr[gpr];
+}
+
+void Jit::set_gpr(GPR gpr, u32 value) {
+    if (gpr == GPR::PC) {
+        // for pc writes, we need to consider the effects of the pipeline
+        if (state.cpsr.t) {
+            state.gpr[GPR::PC] = value + 4;
+        } else {
+            state.gpr[GPR::PC] = value + 8;
+        }
+    } else {
+        state.gpr[gpr] = value;
+    }
+}
+
 Bank Jit::get_bank(Mode mode) {
     switch (mode) {
     case Mode::USR: case Mode::SYS:
@@ -144,14 +140,6 @@ Bank Jit::get_bank(Mode mode) {
         logger.warn("Jit: mode %02x doesn't have a bank", static_cast<u8>(mode));
         return Bank::USR;
     }
-}
-
-u16 Jit::code_read_half(u32 addr) {
-    return memory.read<u16, Bus::Code>(addr);
-}
-
-u32 Jit::code_read_word(u32 addr) {
-    return memory.read<u32, Bus::Code>(addr);
 }
 
 u8 Jit::read_byte(u32 addr) {

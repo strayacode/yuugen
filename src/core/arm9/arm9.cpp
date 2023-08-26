@@ -50,8 +50,12 @@ void ARM9::direct_boot() {
     coprocessor.write(9, 1, 1, 0x00000020);
 
     auto& state = cpu->get_state();
-    state.gpr[12] = state.gpr[14] = state.gpr[15] = system.cartridge.get_arm9_entrypoint();
-    state.gpr[13] = 0x03002f7c;
+
+    cpu->set_gpr(12, system.cartridge.get_arm9_entrypoint());
+    cpu->set_gpr(GPR::SP, 0x03002f7c);
+    cpu->set_gpr(GPR::LR, system.cartridge.get_arm9_entrypoint());
+    cpu->set_gpr(GPR::PC, system.cartridge.get_arm9_entrypoint());
+
     state.gpr_banked[arm::Bank::IRQ][5] = 0x03003f80;
     state.gpr_banked[arm::Bank::SVC][5] = 0x03003fc0;
 

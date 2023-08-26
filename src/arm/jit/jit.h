@@ -9,7 +9,7 @@
 #include "arm/instructions.h"
 #include "arm/jit/block_cache.h"
 #include "arm/jit/config.h"
-#include "arm/jit/translator.h"
+#include "arm/jit/ir/translator.h"
 
 namespace arm {
 
@@ -26,6 +26,10 @@ public:
     void update_halted(bool halted) override;
     Arch get_arch() override;
 
+    u32 get_gpr(GPR gpr) override;
+    void set_gpr(GPR gpr, u32 value) override;
+    void set_gpr(GPR gpr, Mode mode, u32 value);
+
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;
@@ -34,8 +38,6 @@ public:
 private:
     Bank get_bank(Mode mode);
 
-    u16 code_read_half(u32 addr);
-    u32 code_read_word(u32 addr);
     u8 read_byte(u32 addr);
     u16 read_half(u32 addr);
     u32 read_word(u32 addr);
