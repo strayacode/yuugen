@@ -5,6 +5,7 @@
 #include "common/bits.h"
 #include "arm/jit/ir/opcodes.h"
 #include "arm/state.h"
+#include "arm/cpu.h"
 
 namespace arm {
 
@@ -17,7 +18,7 @@ struct BasicBlock {
             value |= common::get_field<0, 6>(static_cast<u64>(state.cpsr.data)) << 31;
         }
 
-        u32 get_pc() {
+        u32 get_address() {
             return common::get_field<0, 31>(value) << 1;
         }
 
@@ -31,7 +32,7 @@ struct BasicBlock {
     BasicBlock(Key key) : key(key) {}
 
     Key key;
-    Mode mode;
+    Condition condition;
     JitFunction jit_function = nullptr;
     std::vector<std::unique_ptr<IROpcode>> opcodes;
 };

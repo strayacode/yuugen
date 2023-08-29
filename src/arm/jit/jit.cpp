@@ -39,13 +39,13 @@ void Jit::run(int cycles) {
 
         BasicBlock::Key key{state};
 
-        // logger.todo("Jit: handle execution at pc %08x mode %02x is arm %d key %016lx", key.get_pc(), static_cast<int>(key.get_mode()), key.is_arm(), key.value);
-
         BasicBlock* basic_block = block_cache.get(key);
         if (!basic_block) {
             basic_block = compile(key);
             logger.todo("Jit: handle compilation to ir opcodes");
         }
+
+        logger.todo("Jit: handle compilation of ir opcodes into executable code");
     }
 }
 

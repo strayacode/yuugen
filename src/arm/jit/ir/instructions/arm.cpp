@@ -1,4 +1,5 @@
 #include "common/logger.h"
+#include "arm/instructions.h"
 #include "arm/jit/ir/translator.h"
 
 namespace arm {
@@ -68,6 +69,15 @@ void Translator::arm_single_data_transfer() {
 }
 
 void Translator::arm_data_processing() {
+    auto opcode = ARMDataProcessing::decode(instruction);
+
+    // TODO: do early pc increment and carry set/clear
+    // TODO: do barrel shifter
+
+    // TODO: do different data processing ops translation
+
+    // TODO: check for pc writes
+
     logger.todo("Translator: handle arm_data_processing");
 }
 
