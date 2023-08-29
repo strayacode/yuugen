@@ -66,16 +66,20 @@ public:
     virtual ~CPU() = default;
     virtual void reset() = 0;
     virtual void run(int cycles) = 0;
-    virtual void flush_pipeline() = 0;
-    virtual void set_mode(Mode mode) = 0;
     virtual void update_irq(bool irq) = 0;
     virtual bool is_halted() = 0;
     virtual void update_halted(bool halted) = 0;
     virtual Arch get_arch() = 0;
 
     virtual u32 get_gpr(GPR gpr) = 0;
+    virtual u32 get_gpr(GPR gpr, Mode mode) = 0;
     virtual void set_gpr(GPR gpr, u32 value) = 0;
     virtual void set_gpr(GPR gpr, Mode mode, u32 value) = 0;
+
+    virtual StatusRegister get_cpsr() = 0;
+    virtual void set_cpsr(StatusRegister value) = 0;
+    virtual StatusRegister get_spsr(Mode mode) = 0;
+    virtual void set_spsr(Mode mode, StatusRegister value) = 0;
 
     State& get_state() { return state; }
 

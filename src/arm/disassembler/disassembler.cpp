@@ -28,7 +28,7 @@ std::string Disassembler::illegal_instruction(u32 instruction) {
     return "...";
 }
 
-const char* Disassembler::get_register_name(Reg reg) {
+const char* Disassembler::get_register_name(GPR reg) {
     return register_names[reg];
 }
 

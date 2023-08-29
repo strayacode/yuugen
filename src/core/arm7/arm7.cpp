@@ -37,16 +37,17 @@ void ARM7::direct_boot() {
     memory.write<u8, Bus::Data>(0x04000300, 0x01); // postflg (arm7)
     memory.write<u16, Bus::Data>(0x04000504, 0x0200); // soundbias
 
-    auto& state = cpu->get_state();
-    state.gpr[12] = state.gpr[14] = state.gpr[15] = system.cartridge.get_arm7_entrypoint();
-    state.gpr[13] = 0x0380fd80;
-    state.gpr_banked[arm::Bank::IRQ][5] = 0x0380ff80;
-    state.gpr_banked[arm::Bank::SVC][5] = 0x0380ffc0;
+    cpu->set_gpr(arm::GPR::R12, system.cartridge.get_arm7_entrypoint());
+    cpu->set_gpr(arm::GPR::SP, 0x0380fd80);
+    cpu->set_gpr(arm::GPR::SP, arm::Mode::IRQ, 0x0380ff80);
+    cpu->set_gpr(arm::GPR::SP, arm::Mode::SVC, 0x0380ffc0);
+    cpu->set_gpr(arm::GPR::LR, system.cartridge.get_arm7_entrypoint());
+    cpu->set_gpr(arm::GPR::PC, system.cartridge.get_arm7_entrypoint());
 
     // enter system mode
-    state.cpsr.data = 0xdf;
-    cpu->set_mode(arm::Mode::SYS);
-    cpu->flush_pipeline();
+    auto cpsr = cpu->get_cpsr();
+    cpsr.mode = arm::Mode::SYS;
+    cpu->set_cpsr(cpsr);
 }
 
 bool ARM7::is_halted() {

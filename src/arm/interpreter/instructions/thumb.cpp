@@ -243,7 +243,7 @@ void Interpreter::thumb_branch_conditional() {
 
 void Interpreter::thumb_software_interrupt() {
     state.spsr_banked[Bank::SVC].data = state.cpsr.data;
-    set_mode(Mode::SVC);
+    switch_mode(Mode::SVC);
 
     state.cpsr.t = false;
     state.cpsr.i = true;

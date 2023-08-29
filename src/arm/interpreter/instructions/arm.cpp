@@ -116,7 +116,7 @@ void Interpreter::arm_data_processing() {
     if (opcode.rd == 15) {
         if (opcode.set_flags) {
             auto spsr = *state.spsr;
-            set_mode(spsr.mode);
+            switch_mode(spsr.mode);
             state.cpsr = spsr;
         }
 
@@ -405,7 +405,7 @@ void Interpreter::arm_branch_link_exchange_register() {
 
 void Interpreter::arm_software_interrupt() {
     state.spsr_banked[Bank::SVC].data = state.cpsr.data;
-    set_mode(Mode::SVC);
+    switch_mode(Mode::SVC);
 
     state.cpsr.i = true;
     state.gpr[14] = state.gpr[15] - 4;
@@ -510,7 +510,7 @@ void Interpreter::arm_status_store_register() {
         state.spsr->data = (state.spsr->data & ~opcode.mask) | (value & opcode.mask);
     } else {
         if (opcode.mask & 0xff) {
-            set_mode(static_cast<Mode>(value & 0x1f));
+            switch_mode(static_cast<Mode>(value & 0x1f));
         }
 
         state.cpsr.data = (state.cpsr.data & ~opcode.mask) | (value & opcode.mask);
@@ -527,7 +527,7 @@ void Interpreter::arm_status_store_immediate() {
         state.spsr->data = (state.spsr->data & ~opcode.mask) | (value & opcode.mask);
     } else {
         if (opcode.mask & 0xff) {
-            set_mode(static_cast<Mode>(value & 0x1f));
+            switch_mode(static_cast<Mode>(value & 0x1f));
         }
 
         state.cpsr.data = (state.cpsr.data & ~opcode.mask) | (value & opcode.mask);
@@ -579,7 +579,7 @@ void Interpreter::arm_block_data_transfer() {
 
     bool user_switch_mode = opcode.psr && (!opcode.load || !opcode.r15_in_rlist);
     if (user_switch_mode) {
-        set_mode(Mode::USR);
+        switch_mode(Mode::USR);
     }
 
     for (int i = first; i < 16; i++) {
@@ -621,7 +621,7 @@ void Interpreter::arm_block_data_transfer() {
     } 
 
     if (user_switch_mode) {
-        set_mode(old_mode);
+        switch_mode(old_mode);
         if (opcode.load && opcode.r15_in_rlist) {
             logger.todo("Interpreter: handle loading into r15 in user mode");
         }

@@ -49,20 +49,17 @@ void ARM9::direct_boot() {
     coprocessor.write(9, 1, 0, 0x0300000a);
     coprocessor.write(9, 1, 1, 0x00000020);
 
-    auto& state = cpu->get_state();
-
-    cpu->set_gpr(12, system.cartridge.get_arm9_entrypoint());
-    cpu->set_gpr(GPR::SP, 0x03002f7c);
-    cpu->set_gpr(GPR::LR, system.cartridge.get_arm9_entrypoint());
-    cpu->set_gpr(GPR::PC, system.cartridge.get_arm9_entrypoint());
-
-    state.gpr_banked[arm::Bank::IRQ][5] = 0x03003f80;
-    state.gpr_banked[arm::Bank::SVC][5] = 0x03003fc0;
+    cpu->set_gpr(arm::GPR::R12, system.cartridge.get_arm9_entrypoint());
+    cpu->set_gpr(arm::GPR::SP, 0x03002f7c);
+    cpu->set_gpr(arm::GPR::SP, arm::Mode::IRQ, 0x03003f80);
+    cpu->set_gpr(arm::GPR::SP, arm::Mode::SVC, 0x03003fc0);
+    cpu->set_gpr(arm::GPR::LR, system.cartridge.get_arm9_entrypoint());
+    cpu->set_gpr(arm::GPR::PC, system.cartridge.get_arm9_entrypoint());
 
     // enter system mode
-    state.cpsr.data = 0xdf;
-    cpu->set_mode(arm::Mode::SYS);
-    cpu->flush_pipeline();
+    auto cpsr = cpu->get_cpsr();
+    cpsr.mode = arm::Mode::SYS;
+    cpu->set_cpsr(cpsr);
 }
 
 bool ARM9::is_halted() {

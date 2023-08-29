@@ -19,16 +19,20 @@ public:
 
     void reset() override;
     void run(int cycles) override;
-    void flush_pipeline() override;
-    void set_mode(Mode mode) override;
     void update_irq(bool irq) override;
     bool is_halted() override;
     void update_halted(bool halted) override;
     Arch get_arch() override;
 
     u32 get_gpr(GPR gpr) override;
+    u32 get_gpr(GPR gpr, Mode mode) override;
     void set_gpr(GPR gpr, u32 value) override;
-    void set_gpr(GPR gpr, Mode mode, u32 value);
+    void set_gpr(GPR gpr, Mode mode, u32 value) override;
+
+    StatusRegister get_cpsr() override;
+    void set_cpsr(StatusRegister value) override;
+    StatusRegister get_spsr(Mode mode) override;
+    void set_spsr(Mode mode, StatusRegister value) override;
 
     Arch arch;
     Memory& memory;
@@ -36,7 +40,11 @@ public:
     Config config;
     
 private:
-    Bank get_bank(Mode mode);
+    bool has_spsr(Mode mode);
+    u32* get_pointer_to_gpr(GPR gpr, Mode mode);
+    StatusRegister* get_pointer_to_cpsr();
+    StatusRegister* get_pointer_to_spsr(Mode mode);
+    Bank get_bank_from_mode(Mode mode);
 
     u8 read_byte(u32 addr);
     u16 read_half(u32 addr);

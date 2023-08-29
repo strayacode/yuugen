@@ -19,7 +19,6 @@ void Jit::reset() {
     }
 
     state.cpsr.data = 0xd3;
-    set_mode(Mode::SVC);
     irq = false;
     halted = false;
     block_cache.reset();
@@ -50,45 +49,6 @@ void Jit::run(int cycles) {
     }
 }
 
-void Jit::flush_pipeline() {
-    // nop for the jit
-}
-
-void Jit::set_mode(Mode mode) {
-    mode = static_cast<Mode>(static_cast<u8>(mode) & 0x1f);
-    auto old_bank = get_bank(state.cpsr.mode);
-    auto new_bank = get_bank(mode);
-
-    if (new_bank != Bank::USR) {
-        state.spsr = &state.spsr_banked[new_bank];
-    } else {
-        state.spsr = &state.cpsr;
-    }
-
-    state.cpsr.mode = mode;
-
-    // no need to bank switch if no change in banks used
-    if (old_bank == new_bank) {
-        return;
-    }
-
-    if (old_bank == Bank::FIQ || new_bank == Bank::FIQ) {
-        for (int i = 0; i < 7; i++) {
-            state.gpr_banked[old_bank][i] = state.gpr[i + 8];
-        }
-
-        for (int i = 0; i < 7; i++) {
-            state.gpr[i + 8] = state.gpr_banked[new_bank][i];
-        }
-    } else {
-        state.gpr_banked[old_bank][5] = state.gpr[13];
-        state.gpr_banked[old_bank][6] = state.gpr[14];
-
-        state.gpr[13] = state.gpr_banked[new_bank][5];
-        state.gpr[14] = state.gpr_banked[new_bank][6];
-    }
-}
-
 void Jit::update_irq(bool irq) {
     this->irq = irq;
 }
@@ -106,10 +66,18 @@ Arch Jit::get_arch() {
 }
 
 u32 Jit::get_gpr(GPR gpr) {
-    return state.gpr[gpr];
+    return get_gpr(gpr, state.cpsr.mode);
+}
+
+u32 Jit::get_gpr(GPR gpr, Mode mode) {
+    return *get_pointer_to_gpr(gpr, mode);
 }
 
 void Jit::set_gpr(GPR gpr, u32 value) {
+    set_gpr(gpr, state.cpsr.mode, value);
+}
+
+void Jit::set_gpr(GPR gpr, Mode mode, u32 value) {
     if (gpr == GPR::PC) {
         // for pc writes, we need to consider the effects of the pipeline
         if (state.cpsr.t) {
@@ -118,14 +86,54 @@ void Jit::set_gpr(GPR gpr, u32 value) {
             state.gpr[GPR::PC] = value + 8;
         }
     } else {
-        state.gpr[gpr] = value;
+        *get_pointer_to_gpr(gpr, mode) = value;
     }
 }
 
-Bank Jit::get_bank(Mode mode) {
+StatusRegister Jit::get_cpsr() {
+    return state.cpsr;
+}
+
+void Jit::set_cpsr(StatusRegister value) {
+    state.cpsr = value;
+}
+
+StatusRegister Jit::get_spsr(Mode mode) {
+    return *get_pointer_to_spsr(mode);
+}
+
+void Jit::set_spsr(Mode mode, StatusRegister value) {
+    *get_pointer_to_spsr(mode) = value;
+}
+
+bool Jit::has_spsr(Mode mode) {
+    return mode != Mode::USR && mode != Mode::SYS;
+}
+
+u32* Jit::get_pointer_to_gpr(GPR gpr, Mode mode) {
+    // TODO: profile this to see if it should be optimised
+    auto start = mode == Mode::FIQ ? GPR::R8 : GPR::R13;
+    if (has_spsr(mode) && gpr >= start && gpr <= GPR::R14) {
+        return &state.gpr_banked[get_bank_from_mode(mode)][gpr - 8];
+    } else {
+        return &state.gpr[gpr];
+    }
+}
+
+StatusRegister* Jit::get_pointer_to_cpsr() {
+    return &state.cpsr;
+}
+
+StatusRegister* Jit::get_pointer_to_spsr(Mode mode) {
+    if (!has_spsr(mode)) {
+        logger.error("Jit: mode %02x doesn't have a spsr", static_cast<u8>(mode));
+    }
+
+    return &state.spsr_banked[get_bank_from_mode(mode)];
+}
+
+Bank Jit::get_bank_from_mode(Mode mode) {
     switch (mode) {
-    case Mode::USR: case Mode::SYS:
-        return Bank::USR;
     case Mode::FIQ:
         return Bank::FIQ;
     case Mode::IRQ:
@@ -176,19 +184,7 @@ void Jit::write_word(u32 addr, u32 data) {
 }
 
 void Jit::handle_interrupt() {
-    halted = false;
-    state.spsr_banked[Bank::IRQ].data = state.cpsr.data;
-    set_mode(Mode::IRQ);
-    state.cpsr.i = true;
-    
-    if (state.cpsr.t) {
-        state.cpsr.t = false;
-        state.gpr[14] = state.gpr[15];
-    } else {
-        state.gpr[14] = state.gpr[15] - 4;
-    }
-
-    state.gpr[15] = coprocessor.get_exception_base() + 0x18 + 4;
+    logger.todo("Jit: handle interrupts");
 }
 
 BasicBlock* Jit::compile(BasicBlock::Key key) {
