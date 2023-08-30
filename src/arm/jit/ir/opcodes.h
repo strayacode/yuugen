@@ -9,4 +9,16 @@ struct IROpcode {
     virtual std::string to_string() = 0;
 };
 
+struct IRSetCarry : IROpcode {
+    std::string to_string() override {
+        return "sec";
+    }
+};
+
+struct IRClearCarry : IROpcode {
+    std::string to_string() override {
+        return "clc";
+    }
+};
+
 } // namespace arm

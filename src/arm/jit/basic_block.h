@@ -2,7 +2,9 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 #include "common/bits.h"
+#include "common/string.h"
 #include "arm/jit/ir/opcodes.h"
 #include "arm/state.h"
 #include "arm/cpu.h"
@@ -30,6 +32,19 @@ struct BasicBlock {
     };
 
     BasicBlock(Key key) : key(key) {}
+
+    std::string dump() {
+        std::string message;
+        u32 pc = key.get_address();
+        auto instruction_size = key.is_arm() ? sizeof(u32) : sizeof(u16);
+
+        for (auto& opcode : opcodes) {
+            message += common::format("%08x: %s\n", pc, opcode->to_string().c_str());
+            pc += instruction_size;
+        }
+
+        return message;
+    }
 
     Key key;
     Condition condition;

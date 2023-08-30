@@ -2,7 +2,6 @@
 #include "common/types.h"
 #include "common/bits.h"
 #include "arm/jit/ir/translator.h"
-#include "arm/jit/ir/emitter.h"
 #include "arm/jit/jit.h"
 #include "arm/decoder.h"
 
@@ -16,7 +15,10 @@ void Translator::translate(BasicBlock& basic_block) {
     Emitter emitter{basic_block};
     auto key = basic_block.key;
     auto is_arm = key.is_arm();
+
+    // TODO: make this an attribute in BasicBlock
     auto instruction_size = key.is_arm() ? sizeof(u32) : sizeof(u16);
+    
     u32 code_address = key.get_address() - 2 * instruction_size;
     
     logger.debug("Translator: translate basic block instruction size %d pc %08x", instruction_size, code_address);
@@ -42,7 +44,7 @@ void Translator::translate(BasicBlock& basic_block) {
             }
 
             auto handler = decoder.get_arm_handler(instruction);
-            (this->*handler)();
+            (this->*handler)(emitter);
         } else {
             logger.todo("Translator: handle thumb translation");
         }
@@ -51,7 +53,7 @@ void Translator::translate(BasicBlock& basic_block) {
     }
 }
 
-void Translator::illegal_instruction() {
+void Translator::illegal_instruction([[maybe_unused]] Emitter& emitter) {
     logger.error("Translator: illegal instruction %08x at pc = %08x", instruction, jit.get_state().gpr[15]);
 }
 
