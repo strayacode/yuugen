@@ -81,6 +81,7 @@ void Translator::arm_data_processing(Emitter& emitter) {
         opcode.opcode == ARMDataProcessing::Opcode::RSC;
 
     bool update_carry = opcode.set_flags && !carry_done_in_opcode;
+    bool early_advance_pc = false;
     IRValue op2;
 
     if (opcode.imm) {
@@ -94,16 +95,26 @@ void Translator::arm_data_processing(Emitter& emitter) {
                 emitter.clear_carry();
             }
         }
-
-        logger.todo("Translator: handle immediate arm data processing");
     } else {
         logger.todo("Translator: handle register arm data processing");
     }
 
-    // TODO: do early pc increment and carry set/clear
+    // TODO: do early pc increment
     // TODO: do barrel shifter
 
-    // TODO: do different data processing ops translation
+    switch (opcode.opcode) {
+    case ARMDataProcessing::Opcode::MOV:
+        emitter.move(op2, opcode.set_flags);
+        break;
+    default:
+        logger.todo("Translator: handle data processing opcode %d", static_cast<u8>(opcode.opcode));
+    }
+
+    if (opcode.rd == 15) {
+        logger.todo("Translator: handle pc write in data processing");
+    } else if (!early_advance_pc) {
+        logger.todo("Translator: advance pc at end of arm_data_processing");
+    }
 
     // TODO: check for pc writes
 
