@@ -1,3 +1,4 @@
+#include "common/logger.h"
 #include "arm/jit/ir/opcodes.h"
 #include "arm/jit/ir/emitter.h"
 

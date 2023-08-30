@@ -85,8 +85,7 @@ void Translator::arm_data_processing(Emitter& emitter) {
     IRValue op2;
 
     if (opcode.imm) {
-        IRConstant constant{opcode.rhs.imm.rotated};
-        op2 = IRValue{constant};
+        op2 = IRConstant{opcode.rhs.imm.rotated};
 
         if (update_carry && opcode.rhs.imm.shift != 0) {
             if (common::get_bit<31>(opcode.rhs.imm.rotated)) {
@@ -109,6 +108,8 @@ void Translator::arm_data_processing(Emitter& emitter) {
     default:
         logger.todo("Translator: handle data processing opcode %d", static_cast<u8>(opcode.opcode));
     }
+
+    emitter.basic_block.dump();
 
     if (opcode.rd == 15) {
         logger.todo("Translator: handle pc write in data processing");
