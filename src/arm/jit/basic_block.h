@@ -32,18 +32,22 @@ struct BasicBlock {
             return !common::get_bit<36>(value);
         }
 
+        u32 get_instruction_size() {
+            return is_arm() ? sizeof(u32) : sizeof(u16);
+        }
+
         u64 value = 0;
     };
 
     BasicBlock(Key key) : key(key) {}
 
     void dump() {
-        auto instruction_size = key.is_arm() ? sizeof(u32) : sizeof(u16);
+        auto instruction_size = key.get_instruction_size();
         u32 pc = key.get_address() - 2 * instruction_size;
         logger.debug("basic block key: %016lx address: %08x arm: %d mode: %02x", key, pc, key.is_arm(), static_cast<u8>(key.get_mode()));
         
         for (auto& opcode : opcodes) {
-            logger.debug("%s\n", opcode->to_string().c_str());
+            logger.debug("%s", opcode->to_string().c_str());
         }
     }
 

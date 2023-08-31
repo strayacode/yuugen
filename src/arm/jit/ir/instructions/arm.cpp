@@ -109,17 +109,11 @@ void Translator::arm_data_processing(Emitter& emitter) {
         logger.todo("Translator: handle data processing opcode %d", static_cast<u8>(opcode.opcode));
     }
 
-    emitter.basic_block.dump();
-
     if (opcode.rd == 15) {
         logger.todo("Translator: handle pc write in data processing");
     } else if (!early_advance_pc) {
-        logger.todo("Translator: advance pc at end of arm_data_processing");
+        emitter.advance_pc();
     }
-
-    // TODO: check for pc writes
-
-    logger.todo("Translator: handle arm_data_processing");
 }
 
 void Translator::arm_coprocessor_register_transfer(Emitter& emitter) {

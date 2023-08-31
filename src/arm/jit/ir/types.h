@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/types.h"
+#include "common/string.h"
 #include "arm/cpu.h"
 #include "arm/state.h"
 
@@ -55,6 +56,16 @@ struct IRValue {
 struct GuestRegister {
     GPR gpr;
     Mode mode;
+
+    std::string to_string() {
+        auto start = mode == Mode::FIQ ? GPR::R8 : GPR::R13;
+        auto has_spsr = mode != Mode::USR && mode != Mode::SYS;
+        if (has_spsr && gpr >= start && gpr <= GPR::R14) {
+            return common::format("r%d_%s", gpr, mode_to_string(mode).c_str());
+        } else {
+            return common::format("r%d", gpr);
+        }
+    }
 };
 
 } // namespace arm

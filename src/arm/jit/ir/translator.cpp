@@ -18,7 +18,7 @@ void Translator::translate(BasicBlock& basic_block) {
 
     // TODO: make this an attribute in BasicBlock
     auto instruction_size = key.is_arm() ? sizeof(u32) : sizeof(u16);
-    
+
     u32 code_address = key.get_address() - 2 * instruction_size;
     
     logger.debug("Translator: translate basic block instruction size %d pc %08x", instruction_size, code_address);
@@ -26,6 +26,7 @@ void Translator::translate(BasicBlock& basic_block) {
     for (int i = 0; i < jit.config.block_size; i++) {
         if (is_arm) {
             instruction = code_read_word(code_address);
+            logger.debug("read instruction %08x at address %08x", instruction, code_address);
             Condition condition = static_cast<Condition>(common::get_field<28, 4>(instruction));
 
             if (condition == Condition::NV && jit.arch == Arch::ARMv5) {
@@ -51,6 +52,8 @@ void Translator::translate(BasicBlock& basic_block) {
 
         code_address += instruction_size;
     }
+
+    emitter.basic_block.dump();
 }
 
 void Translator::illegal_instruction([[maybe_unused]] Emitter& emitter) {
