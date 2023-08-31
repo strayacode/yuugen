@@ -37,6 +37,14 @@ struct IRValue {
     IRValue(IRVariable variable) : type(IRValueType::Variable), variable(variable) {}
     IRValue(IRConstant constant) : type(IRValueType::Constant), constant(constant) {}
 
+    bool is_variable() {
+        return type == IRValueType::Variable;
+    }
+
+    bool is_constant() {
+        return type == IRValueType::Constant;
+    }
+
     std::string to_string() {
         if (type == IRValueType::Variable) {
             return variable.to_string();
