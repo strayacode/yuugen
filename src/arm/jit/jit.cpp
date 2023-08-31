@@ -1,13 +1,23 @@
 #include "common/logger.h"
 #include "arm/jit/jit.h"
+#include "arm/jit/location.h"
+#include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 #include "arm/disassembler/disassembler.h"
 
 namespace arm {
 
-Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor) : arch(arch), memory(memory), coprocessor(coprocessor), translator(*this) {
+Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor), translator(*this) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
     config.block_size = 32;
+
+    switch (backend_type) {
+    case BackendType::IRInterpreter:
+        backend = std::make_unique<IRInterpreter>();
+        break;
+    default:
+        logger.todo("Jit: unsupported jit backend");
+    }
 }
 
 void Jit::reset() {
@@ -21,7 +31,7 @@ void Jit::reset() {
     state.cpsr.data = 0xd3;
     irq = false;
     halted = false;
-    block_cache.reset();
+    // block_cache.reset();
     cycles_available = 0;
 }
 
@@ -37,15 +47,15 @@ void Jit::run(int cycles) {
             handle_interrupt();
         }
 
-        BasicBlock::Key key{state};
-
-        BasicBlock* basic_block = block_cache.get(key);
-        if (!basic_block) {
-            basic_block = compile(key);
-            logger.todo("Jit: handle compilation to ir opcodes");
+        Location location{state};
+        if (!backend->has_code_at(location)) {
+            BasicBlock basic_block{location};
+            translator.translate(basic_block);
+            backend->compile(basic_block);
         }
 
-        logger.todo("Jit: handle compilation of ir opcodes into executable code");
+        // TODO: return the cycles elapsed from this function
+        backend->run(location);
     }
 }
 
@@ -185,15 +195,6 @@ void Jit::write_word(u32 addr, u32 data) {
 
 void Jit::handle_interrupt() {
     logger.todo("Jit: handle interrupts");
-}
-
-BasicBlock* Jit::compile(BasicBlock::Key key) {
-    BasicBlock* basic_block = new BasicBlock(key);
-    translator.translate(*basic_block);
-
-    // TODO: compile with selected backend
-
-    return basic_block;
 }
 
 } // namespace arm

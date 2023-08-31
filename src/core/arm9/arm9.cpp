@@ -1,6 +1,7 @@
 #include "common/logger.h"
 #include "arm/interpreter/interpreter.h"
 #include "arm/jit/jit.h"
+#include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 #include "core/arm9/arm9.h"
 #include "core/system.h"
 
@@ -18,13 +19,13 @@ void ARM9::run(int cycles) {
     cpu->run(cycles);
 }
 
-void ARM9::select_backend(arm::Backend backend) {
+void ARM9::select_backend(arm::BackendType backend) {
     switch (backend) {
-    case arm::Backend::Interpreter:
+    case arm::BackendType::Interpreter:
         cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv5, memory, coprocessor);
         break;
-    case arm::Backend::Jit:
-        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv5, memory, coprocessor);
+    case arm::BackendType::IRInterpreter:
+        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv5, memory, coprocessor, arm::BackendType::IRInterpreter);
         break;
     default:
         logger.error("ARM9: unknown backend");

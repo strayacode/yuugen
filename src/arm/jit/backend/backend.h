@@ -1,11 +1,17 @@
 #pragma once
 
+#include "arm/jit/basic_block.h"
+#include "arm/jit/location.h"
+
 namespace arm {
 
 struct Backend {
     virtual ~Backend() = default;
 
-    virtual Code compile(BasicBlock& basic_block) = 0;
+    virtual void reset() = 0;
+    virtual bool has_code_at(Location location) = 0;
+    virtual void compile(BasicBlock& basic_block) = 0;
+    virtual void run(Location location) = 0;
 };
 
 } // namespace arm

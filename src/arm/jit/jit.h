@@ -1,21 +1,22 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include "arm/cpu.h"
 #include "arm/arch.h"
 #include "arm/memory.h"
 #include "arm/coprocessor.h"
 #include "arm/decoder.h"
 #include "arm/instructions.h"
-#include "arm/jit/block_cache.h"
 #include "arm/jit/config.h"
 #include "arm/jit/ir/translator.h"
+#include "arm/jit/backend/backend.h"
 
 namespace arm {
 
 class Jit : public CPU {
 public:
-    Jit(Arch arch, Memory& memory, Coprocessor& coprocessor);
+    Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type);
 
     void reset() override;
     void run(int cycles) override;
@@ -57,12 +58,11 @@ private:
 
     void handle_interrupt();
 
-    BasicBlock* compile(BasicBlock::Key key);
-
     bool irq;
     bool halted;
 
-    BlockCache block_cache;
+    // BlockCache block_cache;
+    std::unique_ptr<Backend> backend;
     int cycles_available;
     Translator translator;
 };

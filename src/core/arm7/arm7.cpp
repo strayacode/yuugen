@@ -18,13 +18,13 @@ void ARM7::run(int cycles) {
     cpu->run(cycles);
 }
 
-void ARM7::select_backend(arm::Backend backend) {
+void ARM7::select_backend(arm::BackendType backend) {
     switch (backend) {
-    case arm::Backend::Interpreter:
+    case arm::BackendType::Interpreter:
         cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv4, memory, coprocessor);
         break;
-    case arm::Backend::Jit:
-        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv4, memory, coprocessor);
+    case arm::BackendType::IRInterpreter:
+        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv4, memory, coprocessor, arm::BackendType::IRInterpreter);
         break;
     default:
         logger.error("ARM7: unknown backend");

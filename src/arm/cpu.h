@@ -56,9 +56,10 @@ enum Condition : u8 {
     NV = 15,
 };
 
-enum class Backend {
+enum class BackendType {
     Interpreter,
-    Jit,
+    IRInterpreter,
+    Recompiler,
 };
 
 class CPU {

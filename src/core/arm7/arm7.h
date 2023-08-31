@@ -16,7 +16,7 @@ public:
 
     void reset();
     void run(int cycles);
-    void select_backend(arm::Backend backend);
+    void select_backend(arm::BackendType backend);
     void direct_boot();
     bool is_halted();
     ARM7Memory& get_memory() { return memory; }

@@ -9,7 +9,8 @@ add_library(arm
     interpreter/instructions/thumb.cpp
 
     jit/jit.h jit/jit.cpp
-    jit/basic_block.h jit/block_cache.h
+    jit/basic_block.h
+    jit/location.h jit/code_cache.h
     jit/config.h
     jit/ir/emitter.h jit/ir/emitter.cpp
     jit/ir/translator.h jit/ir/translator.cpp

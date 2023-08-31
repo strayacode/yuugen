@@ -13,18 +13,14 @@ Translator::Translator(Jit& jit) : jit(jit) {}
 
 void Translator::translate(BasicBlock& basic_block) {
     Emitter emitter{basic_block};
-    auto key = basic_block.key;
-    auto is_arm = key.is_arm();
-
-    // TODO: make this an attribute in BasicBlock
-    auto instruction_size = key.is_arm() ? sizeof(u32) : sizeof(u16);
-
-    u32 code_address = key.get_address() - 2 * instruction_size;
+    auto location = basic_block.location;
+    auto instruction_size = location.get_instruction_size();
+    u32 code_address = location.get_address() - 2 * instruction_size;
     
     logger.debug("Translator: translate basic block instruction size %d pc %08x", instruction_size, code_address);
 
     for (int i = 0; i < jit.config.block_size; i++) {
-        if (is_arm) {
+        if (location.is_arm()) {
             instruction = code_read_word(code_address);
             logger.debug("read instruction %08x at address %08x", instruction, code_address);
             Condition condition = static_cast<Condition>(common::get_field<28, 4>(instruction));

@@ -22,7 +22,7 @@ public:
     }
 
 private:
-    // maps a starting pc to a BasicBlock
+    // maps a key to a BasicBlock
     std::unordered_map<u64, std::unique_ptr<BasicBlock>> block_map;
 };
 
