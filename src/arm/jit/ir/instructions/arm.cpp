@@ -102,9 +102,11 @@ void Translator::arm_data_processing(Emitter& emitter) {
     // TODO: do barrel shifter
 
     switch (opcode.opcode) {
-    case ARMDataProcessing::Opcode::MOV:
-        emitter.move(op2, opcode.set_flags);
+    case ARMDataProcessing::Opcode::MOV: {
+        auto dst = emitter.move(op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
         break;
+    }
     default:
         logger.todo("Translator: handle data processing opcode %d", static_cast<u8>(opcode.opcode));
     }

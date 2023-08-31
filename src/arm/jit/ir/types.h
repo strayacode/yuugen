@@ -13,13 +13,13 @@ enum class IRValueType {
 };
 
 struct IRVariable {
-    IRVariable(int id) : id(id) {}
+    IRVariable(u32 id) : id(id) {}
 
     std::string to_string() {
         return common::format("%%%d", id);
     }
 
-    int id;
+    u32 id;
 };
 
 struct IRConstant {
@@ -41,8 +41,12 @@ struct IRValue {
         return type == IRValueType::Variable;
     }
 
-    bool is_constant() {
-        return type == IRValueType::Constant;
+    IRVariable& as_variable() {
+        return variable;
+    }
+
+    IRConstant& as_constant() {
+        return constant;
     }
 
     std::string to_string() {

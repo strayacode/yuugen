@@ -61,10 +61,9 @@ private:
     bool irq;
     bool halted;
 
-    // BlockCache block_cache;
-    std::unique_ptr<Backend> backend;
     int cycles_available;
     Translator translator;
+    std::unique_ptr<Backend> backend;
 };
 
 } // namespace arm

@@ -69,7 +69,7 @@ private:
     u16 code_read_half(u32 addr);
     u32 code_read_word(u32 addr);
 
-    u32 instruction;
+    u32 instruction{0};
     Jit& jit;
 };
 

@@ -46,10 +46,13 @@ void Translator::translate(BasicBlock& basic_block) {
             logger.todo("Translator: handle thumb translation");
         }
 
+        // TODO: for now each instruction takes only 1 cycle,
+        // but in the future we should at compile time figure out instruction timings
+        // with I, N and S cycles
+        basic_block.cycles++;
+
         code_address += instruction_size;
     }
-
-    emitter.basic_block.dump();
 }
 
 void Translator::illegal_instruction([[maybe_unused]] Emitter& emitter) {

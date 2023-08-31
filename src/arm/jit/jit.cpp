@@ -13,7 +13,7 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
 
     switch (backend_type) {
     case BackendType::IRInterpreter:
-        backend = std::make_unique<IRInterpreter>();
+        backend = std::make_unique<IRInterpreter>(*this);
         break;
     default:
         logger.todo("Jit: unsupported jit backend");
@@ -31,8 +31,8 @@ void Jit::reset() {
     state.cpsr.data = 0xd3;
     irq = false;
     halted = false;
-    // block_cache.reset();
     cycles_available = 0;
+    backend->reset();
 }
 
 void Jit::run(int cycles) {
@@ -42,6 +42,8 @@ void Jit::run(int cycles) {
         if (halted) {
             return;
         }
+
+        logger.debug("Jit: cycles left in this timeslice: %d", cycles_available);
 
         if (irq && !state.cpsr.i) {
             handle_interrupt();
@@ -55,7 +57,7 @@ void Jit::run(int cycles) {
         }
 
         // TODO: return the cycles elapsed from this function
-        backend->run(location);
+        cycles_available -= backend->run(location);
     }
 }
 

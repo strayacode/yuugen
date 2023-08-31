@@ -20,9 +20,10 @@ void Emitter::clear_carry() {
     push<IRClearCarry>();
 }
 
-void Emitter::move(IRValue src, bool set_flags) {
+IRVariable Emitter::move(IRValue src, bool set_flags) {
     auto dst = create_variable();
     push<IRMove>(dst, src, set_flags);
+    return dst;
 }
 
 void Emitter::advance_pc() {

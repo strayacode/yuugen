@@ -4,17 +4,22 @@
 #include <memory>
 #include <variant>
 #include "arm/jit/basic_block.h"
+#include "arm/jit/ir/types.h"
 #include "arm/jit/backend/backend.h"
 #include "arm/jit/backend/code_cache.h"
 
 namespace arm {
 
+class Jit;
+
 class IRInterpreter : public Backend {
 public:
+    IRInterpreter(Jit& jit);
+
     virtual void reset() override;
     virtual bool has_code_at(Location location) override;
     virtual void compile(BasicBlock& basic_block) override;
-    virtual void run(Location location) override;
+    virtual int run(Location location) override;
 
 private:
     using IROpcodeVariant = std::variant<
@@ -33,7 +38,17 @@ private:
         IROpcodeVariant opcode_variant;
     };
 
+    struct CompiledBlock {
+        int cycles;
+        std::vector<CompiledInstruction> instructions;
+    };
+
     CompiledInstruction compile_ir_opcode(std::unique_ptr<IROpcode>& opcode);
+
+    u32& get(IRVariable& variable);
+    u32& get_or_allocate(IRVariable& variable);
+    void assign_variable(IRVariable& variable, u32 value);
+    u32 resolve_value(IRValue& value);
 
     void handle_set_carry(IROpcodeVariant& opcode_variant);
     void handle_clear_carry(IROpcodeVariant& opcode_variant);
@@ -42,8 +57,9 @@ private:
     void handle_store_gpr(IROpcodeVariant& opcode_variant);
     void handle_add(IROpcodeVariant& opcode_variant);
 
-    CodeCache<std::vector<CompiledInstruction>> code_cache;
+    CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;
+    Jit& jit;
 };
 
 } // namespace arm

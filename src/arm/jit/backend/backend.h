@@ -11,7 +11,7 @@ struct Backend {
     virtual void reset() = 0;
     virtual bool has_code_at(Location location) = 0;
     virtual void compile(BasicBlock& basic_block) = 0;
-    virtual void run(Location location) = 0;
+    virtual int run(Location location) = 0;
 };
 
 } // namespace arm
