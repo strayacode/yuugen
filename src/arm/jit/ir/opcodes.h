@@ -74,14 +74,14 @@ struct IRLoadGPR : IROpcode {
 };
 
 struct IRStoreGPR : IROpcode {
-    IRStoreGPR(GuestRegister dst, IRVariable src) : IROpcode(IROpcodeType::StoreGPR), dst(dst), src(src) {}
+    IRStoreGPR(GuestRegister dst, IRValue src) : IROpcode(IROpcodeType::StoreGPR), dst(dst), src(src) {}
 
     std::string to_string() override {
         return common::format("st %s, %s", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     GuestRegister dst;
-    IRVariable src;
+    IRValue src;
 };
 
 struct IRAdd : IROpcode {

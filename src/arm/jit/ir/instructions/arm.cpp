@@ -114,7 +114,7 @@ void Translator::arm_data_processing(Emitter& emitter) {
     if (opcode.rd == 15) {
         logger.todo("Translator: handle pc write in data processing");
     } else if (!early_advance_pc) {
-        emitter.advance_pc();
+        emit_advance_pc(emitter);
     }
 }
 

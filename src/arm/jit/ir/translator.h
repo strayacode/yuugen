@@ -66,9 +66,13 @@ public:
     void illegal_instruction(Emitter& emitter);
 
 private:
+    void emit_advance_pc(Emitter& emitter);
+
     u16 code_read_half(u32 addr);
     u32 code_read_word(u32 addr);
 
+    u32 instruction_size{0};
+    u32 code_address{0};
     u32 instruction{0};
     Jit& jit;
 };

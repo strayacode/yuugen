@@ -26,13 +26,6 @@ IRVariable Emitter::move(IRValue src, bool set_flags) {
     return dst;
 }
 
-void Emitter::advance_pc() {
-    // TODO: could this potentially be optimised by just storing the constant code_address + 12?
-    auto pc = load_gpr(GPR::PC);
-    auto updated_pc = add(pc, IRConstant{basic_block.location.get_instruction_size()}, false);
-    store_gpr(GPR::PC, updated_pc);
-}
-
 IRVariable Emitter::load_gpr(GPR gpr) {
     auto dst = create_variable();
     GuestRegister src{gpr, basic_block.location.get_mode()};
@@ -40,7 +33,7 @@ IRVariable Emitter::load_gpr(GPR gpr) {
     return dst;
 }
 
-void Emitter::store_gpr(GPR gpr, IRVariable src) {
+void Emitter::store_gpr(GPR gpr, IRValue src) {
     GuestRegister dst{gpr, basic_block.location.get_mode()};
     push<IRStoreGPR>(dst, src);
 }

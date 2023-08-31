@@ -31,7 +31,6 @@ int IRInterpreter::run(Location location)  {
     auto& compiled_block = code_cache.get(location);
     for (auto& compiled_instruction : compiled_block.instructions) {
         (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);
-        logger.debug("after executing instruction: pc: %08x", jit.get_gpr(GPR::PC));
     }
 
     return compiled_block.cycles;
@@ -91,7 +90,6 @@ void IRInterpreter::handle_clear_carry(IROpcodeVariant& opcode_variant) {
 
 void IRInterpreter::handle_move(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRMove>(opcode_variant);
-    logger.debug("execute %s", opcode.to_string().c_str());
     auto value = resolve_value(opcode.src);
     assign_variable(opcode.dst, value);
 
@@ -102,21 +100,18 @@ void IRInterpreter::handle_move(IROpcodeVariant& opcode_variant) {
 
 void IRInterpreter::handle_load_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadGPR>(opcode_variant);
-    logger.debug("execute %s", opcode.to_string().c_str());
     auto value = jit.get_gpr(opcode.src.gpr, opcode.src.mode);
     assign_variable(opcode.dst, value);
 }
 
 void IRInterpreter::handle_store_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreGPR>(opcode_variant);
-    logger.debug("execute %s", opcode.to_string().c_str());
-    auto& value = get(opcode.src);
+    auto value = resolve_value(opcode.src);
     jit.set_gpr(opcode.dst.gpr, opcode.dst.mode, value);
 }
 
 void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRAdd>(opcode_variant);
-    logger.debug("execute %s", opcode.to_string().c_str());
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
     assign_variable(opcode.dst, lhs + rhs);

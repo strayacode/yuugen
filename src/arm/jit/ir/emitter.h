@@ -17,9 +17,8 @@ public:
     void set_carry();
     void clear_carry();
     IRVariable move(IRValue src, bool set_flags);
-    void advance_pc();
     IRVariable load_gpr(GPR gpr);
-    void store_gpr(GPR gpr, IRVariable src);
+    void store_gpr(GPR gpr, IRValue src);
     IRVariable add(IRValue lhs, IRValue rhs, bool set_flags);
 
 private:
