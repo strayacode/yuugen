@@ -9,14 +9,13 @@ add_library(arm
     interpreter/instructions/thumb.cpp
 
     jit/jit.h jit/jit.cpp
-    jit/basic_block.h
-    jit/location.h jit/code_cache.h
-    jit/config.h
+    jit/basic_block.h jit/config.h
+    jit/location.h
     jit/ir/emitter.h jit/ir/emitter.cpp
     jit/ir/translator.h jit/ir/translator.cpp
     jit/ir/opcodes.h jit/ir/types.h
     jit/ir/instructions/arm.cpp jit/ir/instructions/thumb.cpp
-    jit/backend/backend.h
+    jit/backend/backend.h jit/backend/code_cache.h
     jit/backend/ir_interpreter/ir_interpreter.h jit/backend/ir_interpreter/ir_interpreter.cpp
 
     disassembler/disassembler.h disassembler/disassembler.cpp
