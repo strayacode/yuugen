@@ -1,5 +1,6 @@
 #pragma once
 
+#include "arm/cpu.h"
 #include "arm/jit/basic_block.h"
 #include "arm/jit/ir/emitter.h"
 
@@ -9,7 +10,7 @@ class Jit;
 
 class Translator {
 public:
-    Translator(Jit& jit);
+    Translator(Arch arch, Jit& jit);
 
     void translate(BasicBlock& basic_block);
 
@@ -79,6 +80,7 @@ private:
     u32 instruction_size{0};
     u32 code_address{0};
     u32 instruction{0};
+    Arch arch;
     Jit& jit;
 };
 

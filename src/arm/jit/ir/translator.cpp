@@ -9,7 +9,7 @@ namespace arm {
 
 static Decoder<Translator> decoder;
 
-Translator::Translator(Jit& jit) : jit(jit) {}
+Translator::Translator(Arch arch, Jit& jit) : arch(arch), jit(jit) {}
 
 void Translator::translate(BasicBlock& basic_block) {
     Emitter emitter{basic_block};

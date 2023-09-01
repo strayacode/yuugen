@@ -57,7 +57,64 @@ Translator::BlockStatus Translator::arm_multiply_long(Emitter& emitter) {
 }
 
 Translator::BlockStatus Translator::arm_halfword_data_transfer(Emitter& emitter) {
-    logger.todo("Translator: handle arm_halfword_data_transfer");
+    auto opcode = ARMHalfwordDataTransfer::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("Translator: handle rd == 15 in arm_halfword_data_transfer");
+    }
+
+    IRValue op2;
+    IRVariable addr = emitter.load_gpr(opcode.rn);
+    bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
+
+    if (opcode.imm) {
+        op2 = IRConstant{opcode.rhs.imm};
+    } else {
+        op2 = emitter.load_gpr(opcode.rhs.rm);
+    }
+
+    if (!opcode.up) {
+        logger.todo("Translator: arm_halfword_data_transfer handle down");
+    }
+
+    if (opcode.pre) {
+        addr = emitter.add(addr, op2, false);
+    }
+
+    emit_advance_pc(emitter);
+
+    if (opcode.half && opcode.sign) {
+        if (opcode.load) {
+            logger.todo("Translator: handle ldrsh");
+        } else if (arch == Arch::ARMv5) {
+
+            logger.todo("Translator: handle strd");
+        }
+    } else if (opcode.half) {
+        if (opcode.load) {
+            logger.todo("Translator: handle ldrh");
+        } else {
+            IRVariable src = emitter.load_gpr(opcode.rd);
+            emitter.memory_write(addr, src, AccessType::Half);
+        }
+    } else if (opcode.sign) {
+        if (opcode.load) {
+            logger.todo("Translator: handle ldrsb");
+        } else if (arch == Arch::ARMv5) {
+            logger.todo("Translator: handle ldrd");
+        }
+    }
+
+    if (do_writeback) {
+        if (!opcode.pre) {
+            auto base = emitter.load_gpr(opcode.rn);
+            auto new_base = emitter.add(base, op2, false);
+            emitter.store_gpr(opcode.rn, new_base);
+        } else if (opcode.writeback) {
+            emitter.store_gpr(opcode.rn, addr);
+        }
+    }
+
     return BlockStatus::Continue;
 }
 

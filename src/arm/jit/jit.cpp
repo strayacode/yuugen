@@ -6,7 +6,7 @@
 
 namespace arm {
 
-Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor), translator(*this) {
+Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor), translator(arch, *this) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
     config.block_size = 32;
