@@ -95,15 +95,22 @@ void Translator::arm_single_data_transfer(Emitter& emitter) {
             logger.todo("Translator: handle read word and rotate");
         }
     } else {
+        IRVariable src = emitter.load_gpr(opcode.rd);
         if (opcode.byte) {
             logger.todo("Translator: handle write byte");
         } else {
-            logger.todo("Translator: handle write word");
+            emitter.memory_write(addr, src, AccessType::Word);
         }
     }
 
     if (do_writeback) {
-        logger.todo("Translator: handle arm_single_data_transfer writeback");
+        if (!opcode.pre) {
+            auto base = emitter.load_gpr(opcode.rn);
+            auto new_base = emitter.add(base, op2, false);
+            emitter.store_gpr(opcode.rn, new_base);
+        } else if (opcode.writeback) {
+            emitter.store_gpr(opcode.rn, addr);
+        }
     }
 
     if (opcode.load && opcode.rd == 15) {

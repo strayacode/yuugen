@@ -62,4 +62,8 @@ IRVariable Emitter::logical_shift_right(IRValue src, IRValue amount, bool set_ca
     return dst;
 }
 
+void Emitter::memory_write(IRValue addr, IRVariable src, AccessType access_type) {
+    push<IRMemoryWrite>(addr, src, access_type);
+}
+
 } // namespace arm

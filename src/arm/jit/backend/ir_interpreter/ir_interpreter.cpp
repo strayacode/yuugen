@@ -111,6 +111,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_and, *opcode->as<IRAnd>()};
     case IROpcodeType::LogicalShiftRight:
         return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
+    case IROpcodeType::MemoryWrite:
+        return {&IRInterpreter::handle_memory_write, *opcode->as<IRMemoryWrite>()};
     }
 }
 
@@ -209,6 +211,12 @@ void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) 
     if (opcode.set_carry) {
         logger.todo("handle_logical_shift_right: handle set carry");
     }
+}
+
+void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRMemoryWrite>(opcode_variant);
+
+    logger.todo("IRInterpreter: handle_memory_write");
 }
 
 } // namespace arm

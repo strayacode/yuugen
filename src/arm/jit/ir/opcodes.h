@@ -152,8 +152,6 @@ struct IRLogicalShiftRight : IROpcode {
 struct IRMemoryWrite : IROpcode {
     IRMemoryWrite(IRValue addr, IRVariable src, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_type(access_type) {}
 
-    std::string 
-
     std::string to_string() {
         switch (access_type) {
         case AccessType::Byte:
@@ -168,6 +166,6 @@ struct IRMemoryWrite : IROpcode {
     IRValue addr;
     IRVariable src;
     AccessType access_type;
-}
+};
 
 } // namespace arm

@@ -23,6 +23,7 @@ public:
     IRVariable logical_shift_left(IRValue operand, IRValue amount, bool set_carry);
     IRVariable _and(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable logical_shift_right(IRValue operand, IRValue amount, bool set_carry);
+    void memory_write(IRValue addr, IRVariable src, AccessType access_type);
     
 private:
     template <typename T, typename... Args>
