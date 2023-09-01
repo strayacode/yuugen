@@ -80,14 +80,14 @@ void Translator::arm_data_processing(Emitter& emitter) {
         opcode.opcode == ARMDataProcessing::Opcode::SBC ||
         opcode.opcode == ARMDataProcessing::Opcode::RSC;
 
-    bool update_carry = opcode.set_flags && !carry_done_in_opcode;
+    bool set_carry = opcode.set_flags && !carry_done_in_opcode;
     bool early_advance_pc = false;
     IRValue op2;
 
     if (opcode.imm) {
         op2 = IRConstant{opcode.rhs.imm.rotated};
 
-        if (update_carry && opcode.rhs.imm.shift != 0) {
+        if (set_carry && opcode.rhs.imm.shift != 0) {
             if (common::get_bit<31>(opcode.rhs.imm.rotated)) {
                 emitter.set_carry();
             } else {
@@ -95,13 +95,39 @@ void Translator::arm_data_processing(Emitter& emitter) {
             }
         }
     } else {
-        logger.todo("Translator: handle register arm data processing");
+        IRValue amount;
+        op2 = emitter.load_gpr(opcode.rhs.reg.rm);
+
+        if (opcode.rhs.reg.imm) {
+            amount = IRConstant{opcode.rhs.reg.amount.imm};
+        } else {
+            // TODO: do early pc increment
+            logger.todo("Translator: handle arm data processing shift by register");
+        }
+
+        switch (opcode.rhs.reg.shift_type) {
+        case ShiftType::LSL:
+            op2 = emitter.logical_shift_left(op2, amount, set_carry);
+            break;
+        case ShiftType::LSR:
+            op2 = emitter.logical_shift_right(op2, amount, set_carry);
+            break;
+        case ShiftType::ASR:
+            logger.todo("Translator: handle asr");
+            break;
+        case ShiftType::ROR:
+            logger.todo("Translator: handle ror");
+            break;
+        }
     }
 
-    // TODO: do early pc increment
-    // TODO: do barrel shifter
-
     switch (opcode.opcode) {
+    case ARMDataProcessing::Opcode::AND: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        auto dst = emitter._and(op1, op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
+        break;
+    }
     case ARMDataProcessing::Opcode::MOV: {
         auto dst = emitter.move(op2, opcode.set_flags);
         emitter.store_gpr(opcode.rd, dst);

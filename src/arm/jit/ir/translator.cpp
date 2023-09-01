@@ -32,7 +32,7 @@ void Translator::translate(BasicBlock& basic_block) {
             if (i == 0) {
                 // if this is the first instruction in the block then that
                 // will signify the condition of all instructions in the block
-                basic_block.condition = condition; 
+                basic_block.condition = condition;
             } else if (condition != basic_block.condition) {
                 // if any of the following instructions doesn't have the same condition
                 // then the block is terminated
@@ -50,6 +50,7 @@ void Translator::translate(BasicBlock& basic_block) {
         // with I, N and S cycles
         basic_block.cycles++;
 
+        basic_block.num_instructions++;
         code_address += instruction_size;
     }
 

@@ -44,4 +44,22 @@ IRVariable Emitter::add(IRValue lhs, IRValue rhs, bool set_flags) {
     return dst;
 }
 
+IRVariable Emitter::logical_shift_left(IRValue src, IRValue amount, bool set_carry) {
+    auto dst = create_variable();
+    push<IRLogicalShiftLeft>(dst, src, amount, set_carry);
+    return dst;
+}
+
+IRVariable Emitter::_and(IRValue lhs, IRValue rhs, bool set_flags) {
+    auto dst = create_variable();
+    push<IRAnd>(dst, lhs, rhs, set_flags);
+    return dst;
+}
+
+IRVariable Emitter::logical_shift_right(IRValue src, IRValue amount, bool set_carry) {
+    auto dst = create_variable();
+    push<IRLogicalShiftRight>(dst, src, amount, set_carry);
+    return dst;
+}
+
 } // namespace arm

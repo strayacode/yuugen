@@ -3,6 +3,9 @@
 #include <string>
 #include "common/string.h"
 #include "common/logger.h"
+#include "arm/cpu.h"
+#include "arm/state.h"
+#include "arm/disassembler/disassembler.h"
 #include "arm/jit/ir/types.h"
 
 namespace arm {
@@ -14,6 +17,9 @@ enum class IROpcodeType {
     LoadGPR,
     StoreGPR,
     Add,
+    LogicalShiftLeft,
+    And,
+    LogicalShiftRight,
 };
 
 struct IROpcode {
@@ -95,6 +101,45 @@ struct IRAdd : IROpcode {
     IRValue lhs;
     IRValue rhs;
     bool set_flags;
+};
+
+struct IRLogicalShiftLeft : IROpcode {
+    IRLogicalShiftLeft(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::LogicalShiftLeft), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
+
+    std::string to_string() {
+        return common::format("lsl%s %s, %s, %s", set_carry ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+    bool set_carry;
+};
+
+struct IRAnd : IROpcode {
+    IRAnd(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::And), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("and%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+    bool set_flags;
+};
+
+struct IRLogicalShiftRight : IROpcode {
+    IRLogicalShiftRight(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::LogicalShiftRight), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
+
+    std::string to_string() {
+        return common::format("lsr%s %s, %s, %s", set_carry ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+    bool set_carry;
 };
 
 } // namespace arm

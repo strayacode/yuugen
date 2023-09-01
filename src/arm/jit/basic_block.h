@@ -28,6 +28,7 @@ struct BasicBlock {
     Location location;
     Condition condition;
     int cycles{0};
+    int num_instructions{0};
     std::vector<std::unique_ptr<IROpcode>> opcodes;
 };
 

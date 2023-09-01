@@ -19,6 +19,9 @@ bool IRInterpreter::has_code_at(Location location) {
 void IRInterpreter::compile(BasicBlock& basic_block)  {
     CompiledBlock compiled_block;
     compiled_block.cycles = basic_block.cycles;
+    compiled_block.num_instructions = basic_block.num_instructions;
+    compiled_block.condition = basic_block.condition;
+    compiled_block.location = basic_block.location;
     
     for (auto& opcode : basic_block.opcodes) {
         compiled_block.instructions.push_back(compile_ir_opcode(opcode));
@@ -29,11 +32,62 @@ void IRInterpreter::compile(BasicBlock& basic_block)  {
 
 int IRInterpreter::run(Location location)  {
     auto& compiled_block = code_cache.get(location);
-    for (auto& compiled_instruction : compiled_block.instructions) {
-        (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);
-    }
+    if (evaluate_condition(compiled_block.condition)) {
+        for (auto& compiled_instruction : compiled_block.instructions) {
+            (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);
+        }
 
-    return compiled_block.cycles;
+        return compiled_block.cycles;
+    } else {
+        u32 pc_after_block = jit.get_gpr(GPR::PC) + ((compiled_block.num_instructions - 2) * compiled_block.location.get_instruction_size());
+        jit.set_gpr(GPR::PC, pc_after_block);
+
+        // when all instructions fail the condition check,
+        // then each one takes 1 cycle (for fetching the instruction)
+        return compiled_block.num_instructions;
+    }
+}
+
+bool IRInterpreter::evaluate_condition(Condition condition) {
+    bool n = flags & 8;
+    bool z = flags & 4;
+    bool c = flags & 2;
+    bool v = flags & 1;
+
+    switch (condition) {
+    case Condition::EQ:
+        return z;
+    case Condition::NE:
+        return !z;
+    case Condition::CS:
+        return c;
+    case Condition::CC:
+        return !c;
+    case Condition::MI:
+        return n;
+    case Condition::PL:
+        return !n;
+    case Condition::VS:
+        return v;
+    case Condition::VC:
+        return !v;
+    case Condition::HI:
+        return c && !z;
+    case Condition::LS:
+        return !c || z;
+    case Condition::GE:
+        return n == v;
+    case Condition::LT:
+        return n != v;
+    case Condition::GT:
+        return !z && (n == v);
+    case Condition::LE:
+        return z || (n != v);
+    case Condition::AL:
+        return true;
+    case Condition::NV:
+        return false;
+    }
 }
 
 IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
@@ -51,6 +105,12 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_store_gpr, *opcode->as<IRStoreGPR>()};
     case IROpcodeType::Add:
         return {&IRInterpreter::handle_add, *opcode->as<IRAdd>()};
+    case IROpcodeType::LogicalShiftLeft:
+        return {&IRInterpreter::handle_logical_shift_left, *opcode->as<IRLogicalShiftLeft>()};
+    case IROpcodeType::And:
+        return {&IRInterpreter::handle_and, *opcode->as<IRAnd>()};
+    case IROpcodeType::LogicalShiftRight:
+        return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
     }
 }
 
@@ -118,6 +178,36 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
 
     if (opcode.set_flags) {
         logger.todo("handle_add: handle set flags");
+    }
+}
+
+void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRLogicalShiftLeft>(opcode_variant);
+
+    logger.todo("IRInterpreter: handle_logical_shift_left");
+
+    if (opcode.set_carry) {
+        logger.todo("handle_logical_shift_left: handle set carry");
+    }
+}
+
+void IRInterpreter::handle_and(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRAnd>(opcode_variant);
+
+    logger.todo("IRInterpreter: handle_and");
+
+    if (opcode.set_flags) {
+        logger.todo("handle_and: handle set flags");
+    }
+}
+
+void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRLogicalShiftRight>(opcode_variant);
+
+    logger.todo("IRInterpreter: handle_logical_shift_right");
+
+    if (opcode.set_carry) {
+        logger.todo("handle_logical_shift_right: handle set carry");
     }
 }
 

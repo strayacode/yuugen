@@ -22,13 +22,18 @@ public:
     virtual int run(Location location) override;
 
 private:
+    bool evaluate_condition(Condition condition);
+
     using IROpcodeVariant = std::variant<
         IRSetCarry,
         IRClearCarry,
         IRMove,
         IRLoadGPR,
         IRStoreGPR,
-        IRAdd
+        IRAdd,
+        IRLogicalShiftLeft,
+        IRAnd,
+        IRLogicalShiftRight
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -40,6 +45,9 @@ private:
 
     struct CompiledBlock {
         int cycles;
+        int num_instructions;
+        Condition condition;
+        Location location;
         std::vector<CompiledInstruction> instructions;
     };
 
@@ -56,9 +64,13 @@ private:
     void handle_load_gpr(IROpcodeVariant& opcode_variant);
     void handle_store_gpr(IROpcodeVariant& opcode_variant);
     void handle_add(IROpcodeVariant& opcode_variant);
+    void handle_logical_shift_left(IROpcodeVariant& opcode_variant);
+    void handle_and(IROpcodeVariant& opcode_variant);
+    void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;
+    u8 flags{0};
     Jit& jit;
 };
 

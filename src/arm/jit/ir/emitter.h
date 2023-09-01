@@ -20,7 +20,10 @@ public:
     IRVariable load_gpr(GPR gpr);
     void store_gpr(GPR gpr, IRValue src);
     IRVariable add(IRValue lhs, IRValue rhs, bool set_flags);
-
+    IRVariable logical_shift_left(IRValue operand, IRValue amount, bool set_carry);
+    IRVariable _and(IRValue lhs, IRValue rhs, bool set_flags);
+    IRVariable logical_shift_right(IRValue operand, IRValue amount, bool set_carry);
+    
 private:
     template <typename T, typename... Args>
     void push(Args... args) {

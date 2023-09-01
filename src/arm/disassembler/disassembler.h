@@ -8,12 +8,13 @@ namespace arm {
 
 class Disassembler {
 public:
-    Disassembler();
-
     std::string disassemble_arm(u32 instruction);
     std::string disassemble_thumb(u16 instruction);
     const char* get_register_name(GPR reg);
-    const char* get_condition_name(Condition condition);
+    
+    static const char* disassemble_condition(Condition condition) {
+        return condition_names[condition];
+    }
 
     // arm instruction handlers
     std::string arm_branch_link_maybe_exchange(u32 instruction);
@@ -78,7 +79,7 @@ private:
         "r8", "r9", "r10", "r11", "r12", "sp", "lr", "pc"
     }; 
 
-    std::array<const char*, 16> condition_names = {
+    static constexpr std::array<const char*, 16> condition_names = {
         "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
         "hi", "ls", "ge", "lt", "gt", "le", "", "nv"
     }; 
