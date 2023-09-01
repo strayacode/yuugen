@@ -72,4 +72,8 @@ IRVariable Emitter::sub(IRValue lhs, IRValue rhs, bool set_flags) {
     return dst;
 }
 
+void Emitter::store_flags(Flags flags) {
+    push<IRStoreFlags>(flags);
+}
+
 } // namespace arm

@@ -80,4 +80,13 @@ struct GuestRegister {
     }
 };
 
+enum Flags : u8 {
+    N = (1 << 3),
+    Z = (1 << 2),
+    C = (1 << 1),
+    V = (1 << 0),
+    NZ = N | Z,
+    NZCV = N | Z | C | V,
+};
+
 } // namespace arm

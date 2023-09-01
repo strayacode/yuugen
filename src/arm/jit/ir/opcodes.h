@@ -22,6 +22,7 @@ enum class IROpcodeType {
     LogicalShiftRight,
     MemoryWrite,
     Sub,
+    StoreFlags,
 };
 
 enum class AccessType {
@@ -151,7 +152,7 @@ struct IRLogicalShiftRight : IROpcode {
 };
 
 struct IRMemoryWrite : IROpcode {
-    IRMemoryWrite(IRValue addr, IRVariable src, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_type(access_type) {}
+    IRMemoryWrite(IRValue addr, IRValue src, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_type(access_type) {}
 
     std::string to_string() {
         switch (access_type) {
@@ -165,7 +166,7 @@ struct IRMemoryWrite : IROpcode {
     }
 
     IRValue addr;
-    IRVariable src;
+    IRValue src;
     AccessType access_type;
 };
 
@@ -180,6 +181,41 @@ struct IRSub : IROpcode {
     IRValue lhs;
     IRValue rhs;
     bool set_flags;
+};
+
+struct IRStoreFlags : IROpcode {
+    IRStoreFlags(Flags flags) : IROpcode(IROpcodeType::StoreFlags), flags(flags) {}
+
+    std::string flags_to_string(Flags flags) {
+        if (flags == 0) {
+            return "";
+        }
+
+        std::string result = ".";
+        if (flags & Flags::N) {
+            result += "n";
+        }
+
+        if (flags & Flags::Z) {
+            result += "z";
+        }
+
+        if (flags & Flags::C) {
+            result += "c";
+        }
+
+        if (flags & Flags::V) {
+            result += "v";
+        }
+
+        return result;
+    }
+
+    std::string to_string() override {
+        return common::format("stflg%s", flags_to_string(flags).c_str());
+    }
+
+    Flags flags;
 };
 
 } // namespace arm

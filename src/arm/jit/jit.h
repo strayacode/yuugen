@@ -35,6 +35,15 @@ public:
     StatusRegister get_spsr(Mode mode) override;
     void set_spsr(Mode mode, StatusRegister value) override;
 
+    u8 read_byte(u32 addr);
+    u16 read_half(u32 addr);
+    u32 read_word(u32 addr);
+    u32 read_word_rotate(u32 addr);
+
+    void write_byte(u32 addr, u8 data);
+    void write_half(u32 addr, u16 data);
+    void write_word(u32 addr, u32 data);
+
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;
@@ -46,15 +55,6 @@ private:
     StatusRegister* get_pointer_to_cpsr();
     StatusRegister* get_pointer_to_spsr(Mode mode);
     Bank get_bank_from_mode(Mode mode);
-
-    u8 read_byte(u32 addr);
-    u16 read_half(u32 addr);
-    u32 read_word(u32 addr);
-    u32 read_word_rotate(u32 addr);
-
-    void write_byte(u32 addr, u8 data);
-    void write_half(u32 addr, u16 data);
-    void write_word(u32 addr, u32 data);
 
     void handle_interrupt();
 

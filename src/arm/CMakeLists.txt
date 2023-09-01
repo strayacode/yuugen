@@ -3,6 +3,7 @@ add_library(arm
     coprocessor.h
     memory.h
     cpu.h state.h
+    arithmetic.h arithmetic.cpp
 
     interpreter/interpreter.h interpreter/interpreter.cpp
     interpreter/instructions/alu.cpp interpreter/instructions/arm.cpp

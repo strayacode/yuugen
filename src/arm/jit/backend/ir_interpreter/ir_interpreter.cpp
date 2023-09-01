@@ -1,5 +1,6 @@
 #include <cassert>
 #include "common/logger.h"
+#include "arm/arithmetic.h"
 #include "arm/jit/jit.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 
@@ -49,10 +50,10 @@ int IRInterpreter::run(Location location)  {
 }
 
 bool IRInterpreter::evaluate_condition(Condition condition) {
-    bool n = flags & 8;
-    bool z = flags & 4;
-    bool c = flags & 2;
-    bool v = flags & 1;
+    bool n = flags & Flags::N;
+    bool z = flags & Flags::Z;
+    bool c = flags & Flags::C;
+    bool v = flags & Flags::V;
 
     switch (condition) {
     case Condition::EQ:
@@ -115,6 +116,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_memory_write, *opcode->as<IRMemoryWrite>()};
     case IROpcodeType::Sub:
         return {&IRInterpreter::handle_sub, *opcode->as<IRSub>()};
+    case IROpcodeType::StoreFlags:
+        return {&IRInterpreter::handle_store_flags, *opcode->as<IRStoreFlags>()};
     }
 }
 
@@ -141,6 +144,14 @@ u32 IRInterpreter::resolve_value(IRValue& value) {
         return get(value.as_variable());
     } else {
         return value.as_constant().value;
+    }
+}
+
+void IRInterpreter::update_flag(Flags to_update, bool value) {
+    if (value) {
+        flags = static_cast<Flags>(flags | to_update);
+    } else {
+        flags = static_cast<Flags>(flags & ~to_update);
     }
 }
 
@@ -217,14 +228,39 @@ void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) 
 
 void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRMemoryWrite>(opcode_variant);
+    auto addr = resolve_value(opcode.addr);
+    auto src = resolve_value(opcode.src);
 
-    logger.todo("IRInterpreter: handle_memory_write");
+    switch (opcode.access_type) {
+    case AccessType::Byte:
+        jit.write_byte(addr, src);
+        break;
+    case AccessType::Half:
+        jit.write_half(addr, src);
+        break;
+    case AccessType::Word:
+        jit.write_word(addr, src);
+        break;
+    }
 }
 
 void IRInterpreter::handle_sub(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRSub>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs - rhs;
+    assign_variable(opcode.dst, result);
 
-    logger.todo("IRInterpreter: handle_sub");
+    if (opcode.set_flags) {
+        update_flag(Flags::N, result >> 31);
+        update_flag(Flags::Z, result == 0);
+        update_flag(Flags::C, lhs >= rhs);
+        update_flag(Flags::V, calculate_sub_overflow(lhs, rhs, result));
+    }
+}
+
+void IRInterpreter::handle_store_flags(IROpcodeVariant& opcode_variant) {
+    logger.todo("IRInterpreter: handle_store_flags");
 }
 
 } // namespace arm

@@ -302,6 +302,17 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
         break;
     }
 
+    if (opcode.set_flags) {
+        std::array<Flags, 16> flags{
+            Flags::NZ, Flags::NZ, Flags::NZCV, Flags::NZCV,
+            Flags::NZCV, Flags::NZCV, Flags::NZCV, Flags::NZCV,
+            Flags::NZ, Flags::NZ, Flags::NZCV, Flags::NZCV,
+            Flags::NZ, Flags::NZ, Flags::NZ, Flags::NZ
+        };
+
+        emitter.store_flags(flags[static_cast<int>(opcode.opcode)]);
+    }
+
     if (opcode.rd == 15) {
         logger.todo("Translator: handle pc write in data processing");
     } else if (!early_advance_pc) {

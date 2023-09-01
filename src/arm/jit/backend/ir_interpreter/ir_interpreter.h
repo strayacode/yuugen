@@ -35,7 +35,8 @@ private:
         IRAnd,
         IRLogicalShiftRight,
         IRMemoryWrite,
-        IRSub
+        IRSub,
+        IRStoreFlags
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -59,6 +60,7 @@ private:
     u32& get_or_allocate(IRVariable& variable);
     void assign_variable(IRVariable& variable, u32 value);
     u32 resolve_value(IRValue& value);
+    void update_flag(Flags to_update, bool value);
 
     void handle_set_carry(IROpcodeVariant& opcode_variant);
     void handle_clear_carry(IROpcodeVariant& opcode_variant);
@@ -71,10 +73,11 @@ private:
     void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_memory_write(IROpcodeVariant& opcode_variant);
     void handle_sub(IROpcodeVariant& opcode_variant);
+    void handle_store_flags(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;
-    u8 flags{0};
+    Flags flags{0};
     Jit& jit;
 };
 

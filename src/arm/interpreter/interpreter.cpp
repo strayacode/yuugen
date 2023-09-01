@@ -280,14 +280,6 @@ void Interpreter::write_word(u32 addr, u32 data) {
     memory.write<u32, Bus::Data>(addr, data);
 }
 
-bool Interpreter::calculate_add_overflow(u32 op1, u32 op2, u32 result) {
-    return (~(op1 ^ op2) & (op2 ^ result)) >> 31;
-}
-
-bool Interpreter::calculate_sub_overflow(u32 op1, u32 op2, u32 result) {
-    return ((op1 ^ op2) & (op1 ^ result)) >> 31;
-}
-
 void Interpreter::handle_interrupt() {
     halted = false;
     state.spsr_banked[Bank::IRQ].data = state.cpsr.data;

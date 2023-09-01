@@ -118,6 +118,39 @@ void Jit::set_spsr(Mode mode, StatusRegister value) {
     *get_pointer_to_spsr(mode) = value;
 }
 
+u8 Jit::read_byte(u32 addr) {
+    return memory.read<u8, Bus::Data>(addr);
+}
+
+u16 Jit::read_half(u32 addr) {
+    return memory.read<u16, Bus::Data>(addr);
+}
+
+u32 Jit::read_word(u32 addr) {
+    return memory.read<u32, Bus::Data>(addr);
+}
+
+u32 Jit::read_word_rotate(u32 addr) {
+    u32 value = memory.read<u32, Bus::Data>(addr);
+    int amount = (addr & 0x3) * 8;
+    return common::rotate_right(value, amount);
+}
+
+void Jit::write_byte(u32 addr, u8 data) {
+    // TODO: handle potential code invalidation
+    memory.write<u8, Bus::Data>(addr, data);
+}
+
+void Jit::write_half(u32 addr, u16 data) {
+    // TODO: handle potential code invalidation
+    memory.write<u16, Bus::Data>(addr, data);
+}
+
+void Jit::write_word(u32 addr, u32 data) {
+    // TODO: handle potential code invalidation
+    memory.write<u32, Bus::Data>(addr, data);
+}
+
 bool Jit::has_spsr(Mode mode) {
     return mode != Mode::USR && mode != Mode::SYS;
 }
@@ -160,39 +193,6 @@ Bank Jit::get_bank_from_mode(Mode mode) {
         logger.warn("Jit: mode %02x doesn't have a bank", static_cast<u8>(mode));
         return Bank::USR;
     }
-}
-
-u8 Jit::read_byte(u32 addr) {
-    return memory.read<u8, Bus::Data>(addr);
-}
-
-u16 Jit::read_half(u32 addr) {
-    return memory.read<u16, Bus::Data>(addr);
-}
-
-u32 Jit::read_word(u32 addr) {
-    return memory.read<u32, Bus::Data>(addr);
-}
-
-u32 Jit::read_word_rotate(u32 addr) {
-    u32 value = memory.read<u32, Bus::Data>(addr);
-    int amount = (addr & 0x3) * 8;
-    return common::rotate_right(value, amount);
-}
-
-void Jit::write_byte(u32 addr, u8 data) {
-    // TODO: handle potential code invalidation
-    memory.write<u8, Bus::Data>(addr, data);
-}
-
-void Jit::write_half(u32 addr, u16 data) {
-    // TODO: handle potential code invalidation
-    memory.write<u16, Bus::Data>(addr, data);
-}
-
-void Jit::write_word(u32 addr, u32 data) {
-    // TODO: handle potential code invalidation
-    memory.write<u32, Bus::Data>(addr, data);
 }
 
 void Jit::handle_interrupt() {
