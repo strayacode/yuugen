@@ -21,6 +21,7 @@ enum class IROpcodeType {
     And,
     LogicalShiftRight,
     MemoryWrite,
+    Sub,
 };
 
 enum class AccessType {
@@ -155,17 +156,30 @@ struct IRMemoryWrite : IROpcode {
     std::string to_string() {
         switch (access_type) {
         case AccessType::Byte:
-            return common::format("stmem.b %s, %s", addr.to_string().c_str(), src.to_string().c_str());
+            return common::format("stmem.b %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         case AccessType::Half:
-            return common::format("stmem.h %s, %s", addr.to_string().c_str(), src.to_string().c_str());
+            return common::format("stmem.h %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         case AccessType::Word:
-            return common::format("stmem.w %s, %s", addr.to_string().c_str(), src.to_string().c_str());
+            return common::format("stmem.w %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         }
     }
 
     IRValue addr;
     IRVariable src;
     AccessType access_type;
+};
+
+struct IRSub : IROpcode {
+    IRSub(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Sub), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("sub%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+    bool set_flags;
 };
 
 } // namespace arm

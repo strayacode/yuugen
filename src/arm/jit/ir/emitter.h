@@ -24,6 +24,7 @@ public:
     IRVariable _and(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable logical_shift_right(IRValue operand, IRValue amount, bool set_carry);
     void memory_write(IRValue addr, IRVariable src, AccessType access_type);
+    IRVariable sub(IRValue lhs, IRValue rhs, bool set_flags);
     
 private:
     template <typename T, typename... Args>

@@ -66,4 +66,10 @@ void Emitter::memory_write(IRValue addr, IRVariable src, AccessType access_type)
     push<IRMemoryWrite>(addr, src, access_type);
 }
 
+IRVariable Emitter::sub(IRValue lhs, IRValue rhs, bool set_flags) {
+    auto dst = create_variable();
+    push<IRSub>(dst, lhs, rhs, set_flags);
+    return dst;
+}
+
 } // namespace arm

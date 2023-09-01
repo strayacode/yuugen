@@ -34,7 +34,8 @@ private:
         IRLogicalShiftLeft,
         IRAnd,
         IRLogicalShiftRight,
-        IRMemoryWrite
+        IRMemoryWrite,
+        IRSub
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -69,6 +70,7 @@ private:
     void handle_and(IROpcodeVariant& opcode_variant);
     void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_memory_write(IROpcodeVariant& opcode_variant);
+    void handle_sub(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;

@@ -250,13 +250,56 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
         emitter.store_gpr(opcode.rd, dst);
         break;
     }
+    case ARMDataProcessing::Opcode::EOR:
+        logger.todo("Translator: handle sub");
+        break;
+    case ARMDataProcessing::Opcode::SUB: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        auto dst = emitter.sub(op1, op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
+        break;
+    }
+    case ARMDataProcessing::Opcode::RSB:
+       logger.todo("Translator: handle rsb");
+        break;
+    case ARMDataProcessing::Opcode::ADD:
+        logger.todo("Translator: handle add");
+        break;
+    case ARMDataProcessing::Opcode::ADC:
+        logger.todo("Translator: handle adc");
+        break;
+    case ARMDataProcessing::Opcode::SBC:
+        logger.todo("Translator: handle sbc");
+        break;
+    case ARMDataProcessing::Opcode::RSC:
+        logger.todo("Translator: handle rsc");
+        break;
+    case ARMDataProcessing::Opcode::TST:
+        logger.todo("Translator: handle tst");
+        break;
+    case ARMDataProcessing::Opcode::TEQ:
+        logger.todo("Translator: handle teq");
+        break;
+    case ARMDataProcessing::Opcode::CMP:
+        logger.todo("Translator: handle cmp");
+        break;
+    case ARMDataProcessing::Opcode::CMN:
+        logger.todo("Translator: handle cmn");
+        break;
+    case ARMDataProcessing::Opcode::ORR:
+        logger.todo("Translator: handle orr");
+        break;
     case ARMDataProcessing::Opcode::MOV: {
         auto dst = emitter.move(op2, opcode.set_flags);
         emitter.store_gpr(opcode.rd, dst);
         break;
     }
-    default:
-        logger.todo("Translator: handle data processing opcode %d", static_cast<u8>(opcode.opcode));
+    case ARMDataProcessing::Opcode::BIC:
+        logger.todo("Translator: handle bic");
+        break;
+    case ARMDataProcessing::Opcode::MVN:
+        logger.todo("Translator: handle mvn");
+        break;
     }
 
     if (opcode.rd == 15) {
