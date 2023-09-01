@@ -3,96 +3,119 @@
 
 namespace arm {
 
-void Translator::thumb_alu_immediate(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_alu_immediate(Emitter& emitter) {
     logger.todo("Translator: handle thumb_alu_immediate");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_branch_link_offset(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_branch_link_offset(Emitter& emitter) {
     logger.todo("Translator: handle thumb_branch_link_offset");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_branch_link_setup(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_branch_link_setup(Emitter& emitter) {
     logger.todo("Translator: handle thumb_branch_link_setup");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_branch_link_exchange_offset(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_branch_link_exchange_offset(Emitter& emitter) {
     logger.todo("Translator: handle thumb_branch_link_exchange_offset");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_branch(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_branch(Emitter& emitter) {
     logger.todo("Translator: handle thumb_branch");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_push_pop(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_push_pop(Emitter& emitter) {
     logger.todo("Translator: handle thumb_push_pop");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_data_processing_register(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_data_processing_register(Emitter& emitter) {
     logger.todo("Translator: handle thumb_data_processing_register");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_special_data_processing(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_special_data_processing(Emitter& emitter) {
     logger.todo("Translator: handle thumb_special_data_processing");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_branch_link_exchange(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_branch_link_exchange(Emitter& emitter) {
     logger.todo("Translator: handle thumb_branch_link_exchange");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_branch_exchange(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_branch_exchange(Emitter& emitter) {
     logger.todo("Translator: handle thumb_branch_exchange");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_load_store_register_offset(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_load_store_register_offset(Emitter& emitter) {
     logger.todo("Translator: handle thumb_load_store_register_offset");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_load_store_signed(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_load_store_signed(Emitter& emitter) {
     logger.todo("Translator: handle thumb_load_store_signed");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_load_pc(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_load_pc(Emitter& emitter) {
     logger.todo("Translator: handle thumb_load_pc");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_load_store_sp_relative(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_load_store_sp_relative(Emitter& emitter) {
     logger.todo("Translator: handle thumb_load_store_sp_relative");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_load_store_halfword(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_load_store_halfword(Emitter& emitter) {
     logger.todo("Translator: handle thumb_load_store_halfword");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_add_subtract(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_add_subtract(Emitter& emitter) {
     logger.todo("Translator: handle thumb_add_subtract");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_shift_immediate(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_shift_immediate(Emitter& emitter) {
     logger.todo("Translator: handle thumb_shift_immediate");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_software_interrupt(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_software_interrupt(Emitter& emitter) {
     logger.todo("Translator: handle thumb_software_interrupt");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_branch_conditional(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_branch_conditional(Emitter& emitter) {
     logger.todo("Translator: handle thumb_branch_conditional");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_load_store_multiple(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_load_store_multiple(Emitter& emitter) {
     logger.todo("Translator: handle thumb_load_store_multiple");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_load_store_immediate(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_load_store_immediate(Emitter& emitter) {
     logger.todo("Translator: handle thumb_load_store_immediate");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_add_sp_pc(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_add_sp_pc(Emitter& emitter) {
     logger.todo("Translator: handle thumb_add_sp_pc");
+    return BlockStatus::Continue;
 }
 
-void Translator::thumb_adjust_stack_pointer(Emitter& emitter) {
+Translator::BlockStatus Translator::thumb_adjust_stack_pointer(Emitter& emitter) {
     logger.todo("Translator: handle thumb_adjust_stack_pointer");
+    return BlockStatus::Continue;
 }
 
 } // namespace arm

@@ -13,57 +13,62 @@ public:
 
     void translate(BasicBlock& basic_block);
 
+    enum class BlockStatus {
+        Break,
+        Continue,
+    };
+
     // arm instruction handlers
-    void arm_branch_link_maybe_exchange(Emitter& emitter);
-    void arm_branch_exchange(Emitter& emitter);
-    void arm_count_leading_zeroes(Emitter& emitter);
-    void arm_branch_link(Emitter& emitter);
-    void arm_branch_link_exchange(Emitter& emitter);
-    void arm_branch_link_exchange_register(Emitter& emitter);
-    void arm_single_data_swap(Emitter& emitter);
-    void arm_multiply(Emitter& emitter);
-    void arm_saturating_add_subtract(Emitter& emitter);
-    void arm_multiply_long(Emitter& emitter);
-    void arm_halfword_data_transfer(Emitter& emitter);
-    void arm_status_load(Emitter& emitter);
-    void arm_status_store_register(Emitter& emitter);
-    void arm_status_store_immediate(Emitter& emitter);
-    void arm_block_data_transfer(Emitter& emitter);
-    void arm_single_data_transfer(Emitter& emitter);
-    void arm_data_processing(Emitter& emitter);
-    void arm_coprocessor_register_transfer(Emitter& emitter);
-    void arm_software_interrupt(Emitter& emitter);
-    void arm_signed_multiply_accumulate_long(Emitter& emitter);
-    void arm_signed_multiply_word(Emitter& emitter);
-    void arm_signed_multiply(Emitter& emitter);
-    void arm_breakpoint(Emitter& emitter);
+    BlockStatus arm_branch_link_maybe_exchange(Emitter& emitter);
+    BlockStatus arm_branch_exchange(Emitter& emitter);
+    BlockStatus arm_count_leading_zeroes(Emitter& emitter);
+    BlockStatus arm_branch_link(Emitter& emitter);
+    BlockStatus arm_branch_link_exchange(Emitter& emitter);
+    BlockStatus arm_branch_link_exchange_register(Emitter& emitter);
+    BlockStatus arm_single_data_swap(Emitter& emitter);
+    BlockStatus arm_multiply(Emitter& emitter);
+    BlockStatus arm_saturating_add_subtract(Emitter& emitter);
+    BlockStatus arm_multiply_long(Emitter& emitter);
+    BlockStatus arm_halfword_data_transfer(Emitter& emitter);
+    BlockStatus arm_status_load(Emitter& emitter);
+    BlockStatus arm_status_store_register(Emitter& emitter);
+    BlockStatus arm_status_store_immediate(Emitter& emitter);
+    BlockStatus arm_block_data_transfer(Emitter& emitter);
+    BlockStatus arm_single_data_transfer(Emitter& emitter);
+    BlockStatus arm_data_processing(Emitter& emitter);
+    BlockStatus arm_coprocessor_register_transfer(Emitter& emitter);
+    BlockStatus arm_software_interrupt(Emitter& emitter);
+    BlockStatus arm_signed_multiply_accumulate_long(Emitter& emitter);
+    BlockStatus arm_signed_multiply_word(Emitter& emitter);
+    BlockStatus arm_signed_multiply(Emitter& emitter);
+    BlockStatus arm_breakpoint(Emitter& emitter);
 
     // thumb instruction handlers
-    void thumb_alu_immediate(Emitter& emitter);
-    void thumb_branch_link_offset(Emitter& emitter);
-    void thumb_branch_link_setup(Emitter& emitter);
-    void thumb_branch_link_exchange_offset(Emitter& emitter);
-    void thumb_branch(Emitter& emitter);
-    void thumb_push_pop(Emitter& emitter);
-    void thumb_data_processing_register(Emitter& emitter);
-    void thumb_special_data_processing(Emitter& emitter);
-    void thumb_branch_link_exchange(Emitter& emitter);
-    void thumb_branch_exchange(Emitter& emitter);
-    void thumb_load_store_register_offset(Emitter& emitter);
-    void thumb_load_store_signed(Emitter& emitter);
-    void thumb_load_pc(Emitter& emitter);
-    void thumb_load_store_sp_relative(Emitter& emitter);
-    void thumb_load_store_halfword(Emitter& emitter);
-    void thumb_add_subtract(Emitter& emitter);
-    void thumb_shift_immediate(Emitter& emitter);
-    void thumb_software_interrupt(Emitter& emitter);
-    void thumb_branch_conditional(Emitter& emitter);
-    void thumb_load_store_multiple(Emitter& emitter);
-    void thumb_load_store_immediate(Emitter& emitter);
-    void thumb_add_sp_pc(Emitter& emitter);
-    void thumb_adjust_stack_pointer(Emitter& emitter);
+    BlockStatus thumb_alu_immediate(Emitter& emitter);
+    BlockStatus thumb_branch_link_offset(Emitter& emitter);
+    BlockStatus thumb_branch_link_setup(Emitter& emitter);
+    BlockStatus thumb_branch_link_exchange_offset(Emitter& emitter);
+    BlockStatus thumb_branch(Emitter& emitter);
+    BlockStatus thumb_push_pop(Emitter& emitter);
+    BlockStatus thumb_data_processing_register(Emitter& emitter);
+    BlockStatus thumb_special_data_processing(Emitter& emitter);
+    BlockStatus thumb_branch_link_exchange(Emitter& emitter);
+    BlockStatus thumb_branch_exchange(Emitter& emitter);
+    BlockStatus thumb_load_store_register_offset(Emitter& emitter);
+    BlockStatus thumb_load_store_signed(Emitter& emitter);
+    BlockStatus thumb_load_pc(Emitter& emitter);
+    BlockStatus thumb_load_store_sp_relative(Emitter& emitter);
+    BlockStatus thumb_load_store_halfword(Emitter& emitter);
+    BlockStatus thumb_add_subtract(Emitter& emitter);
+    BlockStatus thumb_shift_immediate(Emitter& emitter);
+    BlockStatus thumb_software_interrupt(Emitter& emitter);
+    BlockStatus thumb_branch_conditional(Emitter& emitter);
+    BlockStatus thumb_load_store_multiple(Emitter& emitter);
+    BlockStatus thumb_load_store_immediate(Emitter& emitter);
+    BlockStatus thumb_add_sp_pc(Emitter& emitter);
+    BlockStatus thumb_adjust_stack_pointer(Emitter& emitter);
 
-    void illegal_instruction(Emitter& emitter);
+    BlockStatus illegal_instruction(Emitter& emitter);
 
 private:
     void emit_advance_pc(Emitter& emitter);

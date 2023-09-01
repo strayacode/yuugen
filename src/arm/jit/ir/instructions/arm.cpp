@@ -6,67 +6,82 @@
 
 namespace arm {
 
-void Translator::arm_branch_link_maybe_exchange(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_link_maybe_exchange(Emitter& emitter) {
     logger.todo("Translator: handle arm_branch_link_maybe_exchange");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_branch_exchange(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_exchange(Emitter& emitter) {
     logger.todo("Translator: handle arm_branch_exchange");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_count_leading_zeroes(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_count_leading_zeroes(Emitter& emitter) {
     logger.todo("Translator: handle arm_count_leading_zeroes");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_branch_link(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_link(Emitter& emitter) {
     logger.todo("Translator: handle arm_branch_link");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_branch_link_exchange(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_link_exchange(Emitter& emitter) {
     logger.todo("Translator: handle arm_branch_link_exchange");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_branch_link_exchange_register(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_link_exchange_register(Emitter& emitter) {
     logger.todo("Translator: handle arm_branch_link_exchange_register");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_single_data_swap(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_single_data_swap(Emitter& emitter) {
     logger.todo("Translator: handle arm_single_data_swap");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_multiply(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_multiply(Emitter& emitter) {
     logger.todo("Translator: handle arm_multiply");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_saturating_add_subtract(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_saturating_add_subtract(Emitter& emitter) {
     logger.todo("Translator: handle arm_saturating_add_subtract");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_multiply_long(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_multiply_long(Emitter& emitter) {
     logger.todo("Translator: handle arm_multiply_long");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_halfword_data_transfer(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_halfword_data_transfer(Emitter& emitter) {
     logger.todo("Translator: handle arm_halfword_data_transfer");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_status_load(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_status_load(Emitter& emitter) {
     logger.todo("Translator: handle arm_status_load");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_status_store_register(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_status_store_register(Emitter& emitter) {
     logger.todo("Translator: handle arm_status_store_register");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_status_store_immediate(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_status_store_immediate(Emitter& emitter) {
     logger.todo("Translator: handle arm_status_store_immediate");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_block_data_transfer(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_block_data_transfer(Emitter& emitter) {
     logger.todo("Translator: handle arm_block_data_transfer");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_single_data_transfer(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_single_data_transfer(Emitter& emitter) {
     auto opcode = ARMSingleDataTransfer::decode(instruction);
     IRValue op2;
     IRVariable addr = emitter.load_gpr(opcode.rn);
@@ -116,9 +131,11 @@ void Translator::arm_single_data_transfer(Emitter& emitter) {
     if (opcode.load && opcode.rd == 15) {
         logger.todo("Translator: handle arm_single_data_transfer pc write");
     }
+
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_data_processing(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
     auto opcode = ARMDataProcessing::decode(instruction);
 
     // TODO: only some opcodes rely on the barrel shifter to update the carry flag,
@@ -190,30 +207,38 @@ void Translator::arm_data_processing(Emitter& emitter) {
     } else if (!early_advance_pc) {
         emit_advance_pc(emitter);
     }
+
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_coprocessor_register_transfer(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_coprocessor_register_transfer(Emitter& emitter) {
     logger.todo("Translator: handle arm_coprocessor_register_transfer");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_software_interrupt(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_software_interrupt(Emitter& emitter) {
     logger.todo("Translator: handle arm_software_interrupt");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_signed_multiply_accumulate_long(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_signed_multiply_accumulate_long(Emitter& emitter) {
     logger.todo("Translator: handle arm_signed_multiply_accumulate_long");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_signed_multiply_word(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_signed_multiply_word(Emitter& emitter) {
     logger.todo("Translator: handle arm_signed_multiply_word");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_signed_multiply(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_signed_multiply(Emitter& emitter) {
     logger.todo("Translator: handle arm_signed_multiply");
+    return BlockStatus::Continue;
 }
 
-void Translator::arm_breakpoint(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_breakpoint(Emitter& emitter) {
     logger.todo("Translator: handle arm_breakpoint");
+    return BlockStatus::Continue;
 }
 
 

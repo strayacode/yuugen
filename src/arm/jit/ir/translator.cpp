@@ -40,7 +40,11 @@ void Translator::translate(BasicBlock& basic_block) {
             }
 
             auto handler = decoder.get_arm_handler(instruction);
-            (this->*handler)(emitter);
+            auto status = (this->*handler)(emitter);
+
+            if (status == BlockStatus::Break) {
+                break;
+            }
         } else {
             logger.todo("Translator: handle thumb translation");
         }
@@ -57,8 +61,9 @@ void Translator::translate(BasicBlock& basic_block) {
     basic_block.dump();
 }
 
-void Translator::illegal_instruction([[maybe_unused]] Emitter& emitter) {
+Translator::BlockStatus Translator::illegal_instruction([[maybe_unused]] Emitter& emitter) {
     logger.error("Translator: illegal instruction %08x at pc = %08x", instruction, jit.get_state().gpr[15]);
+    return BlockStatus::Break;
 }
 
 void Translator::emit_advance_pc(Emitter& emitter) {
