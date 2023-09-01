@@ -20,6 +20,13 @@ enum class IROpcodeType {
     LogicalShiftLeft,
     And,
     LogicalShiftRight,
+    MemoryWrite,
+};
+
+enum class AccessType {
+    Byte,
+    Half,
+    Word,
 };
 
 struct IROpcode {
@@ -141,5 +148,26 @@ struct IRLogicalShiftRight : IROpcode {
     IRValue amount;
     bool set_carry;
 };
+
+struct IRMemoryWrite : IROpcode {
+    IRMemoryWrite(IRValue addr, IRVariable src, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_type(access_type) {}
+
+    std::string 
+
+    std::string to_string() {
+        switch (access_type) {
+        case AccessType::Byte:
+            return common::format("stmem.b %s, %s", addr.to_string().c_str(), src.to_string().c_str());
+        case AccessType::Half:
+            return common::format("stmem.h %s, %s", addr.to_string().c_str(), src.to_string().c_str());
+        case AccessType::Word:
+            return common::format("stmem.w %s, %s", addr.to_string().c_str(), src.to_string().c_str());
+        }
+    }
+
+    IRValue addr;
+    IRVariable src;
+    AccessType access_type;
+}
 
 } // namespace arm

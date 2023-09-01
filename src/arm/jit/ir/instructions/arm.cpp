@@ -67,7 +67,48 @@ void Translator::arm_block_data_transfer(Emitter& emitter) {
 }
 
 void Translator::arm_single_data_transfer(Emitter& emitter) {
-    logger.todo("Translator: handle arm_single_data_transfer");
+    auto opcode = ARMSingleDataTransfer::decode(instruction);
+    IRValue op2;
+    IRVariable addr = emitter.load_gpr(opcode.rn);
+    bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
+
+    if (opcode.imm) {
+        op2 = IRConstant{opcode.rhs.imm};
+    } else {
+        logger.todo("Translator: arm_single_data_transfer handle barrel shifter");
+    }
+
+    if (!opcode.up) {
+        logger.todo("Translator: arm_single_data_transfer handle down");
+    }
+
+    if (opcode.pre) {
+        addr = emitter.add(addr, op2, false);
+    }
+
+    emit_advance_pc(emitter);
+
+    if (opcode.load) {
+        if (opcode.byte) {
+            logger.todo("Translator: handle load byte");
+        } else {
+            logger.todo("Translator: handle read word and rotate");
+        }
+    } else {
+        if (opcode.byte) {
+            logger.todo("Translator: handle write byte");
+        } else {
+            logger.todo("Translator: handle write word");
+        }
+    }
+
+    if (do_writeback) {
+        logger.todo("Translator: handle arm_single_data_transfer writeback");
+    }
+
+    if (opcode.load && opcode.rd == 15) {
+        logger.todo("Translator: handle arm_single_data_transfer pc write");
+    }
 }
 
 void Translator::arm_data_processing(Emitter& emitter) {
