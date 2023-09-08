@@ -23,6 +23,11 @@ enum class IROpcodeType {
     SetFlags,
     StoreFlags,
     Compare,
+    LoadCPSR,
+    LoadSPSR,
+    Or,
+    StoreCPSR,
+    StoreSPSR
 };
 
 enum class AccessType {
@@ -90,7 +95,7 @@ struct IRLoadGPR : IROpcode {
     IRLoadGPR(IRVariable dst, GuestRegister src) : IROpcode(IROpcodeType::LoadGPR), dst(dst), src(src) {}
 
     std::string to_string() override {
-        return common::format("ldr %s, %s", dst.to_string().c_str(), src.to_string().c_str());
+        return common::format("ld %s, %s", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     IRVariable dst;
@@ -101,7 +106,7 @@ struct IRStoreGPR : IROpcode {
     IRStoreGPR(GuestRegister dst, IRValue src) : IROpcode(IROpcodeType::StoreGPR), dst(dst), src(src) {}
 
     std::string to_string() override {
-        return common::format("str %s, %s", dst.to_string().c_str(), src.to_string().c_str());
+        return common::format("st %s, %s", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     GuestRegister dst;
@@ -166,11 +171,11 @@ struct IRMemoryWrite : IROpcode {
     std::string to_string() {
         switch (access_type) {
         case AccessType::Byte:
-            return common::format("strmem.b %s, %s", src.to_string().c_str(), addr.to_string().c_str());
+            return common::format("stmem.b %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         case AccessType::Half:
-            return common::format("strmem.h %s, %s", src.to_string().c_str(), addr.to_string().c_str());
+            return common::format("stmem.h %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         case AccessType::Word:
-            return common::format("strmem.w %s, %s", src.to_string().c_str(), addr.to_string().c_str());
+            return common::format("stmem.w %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         }
     }
 
@@ -196,7 +201,7 @@ struct IRSetFlags : IROpcode {
     IRSetFlags(Flags flags, Flags value) : IROpcode(IROpcodeType::SetFlags), flags(flags), value(value) {}
 
     std::string to_string() override {
-        return common::format("setflg%s, %s", flags_to_string(flags).c_str(), flags_to_string(value).c_str());
+        return common::format("upflg%s, %s", flags_to_string(flags).c_str(), flags_to_string(value).c_str());
     }
 
     Flags flags;
@@ -207,7 +212,7 @@ struct IRStoreFlags : IROpcode {
     IRStoreFlags(Flags flags) : IROpcode(IROpcodeType::StoreFlags), flags(flags) {}
 
     std::string to_string() override {
-        return common::format("strflg%s", flags_to_string(flags).c_str());
+        return common::format("stflg%s", flags_to_string(flags).c_str());
     }
 
     Flags flags;
@@ -222,6 +227,59 @@ struct IRCompare : IROpcode {
 
     IRValue lhs;
     IRValue rhs;
+};
+
+struct IRLoadCPSR : IROpcode {
+    IRLoadCPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadCPSR), dst(dst) {}
+
+    std::string to_string() override {
+        return common::format("ldcpsr");
+    }
+
+    IRVariable dst;
+};
+
+struct IRLoadSPSR : IROpcode {
+    IRLoadSPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadSPSR), dst(dst) {}
+
+    std::string to_string() override {
+        return common::format("ldspsr");
+    }
+
+    IRVariable dst;
+};
+
+struct IROr : IROpcode {
+    IROr(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Or), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("or%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+    bool set_flags;
+};
+
+struct IRStoreCPSR : IROpcode {
+    IRStoreCPSR(IRValue src) : IROpcode(IROpcodeType::StoreCPSR), src(src) {}
+
+    std::string to_string() override {
+        return common::format("stcpsr");
+    }
+
+    IRValue src;
+};
+
+struct IRStoreSPSR : IROpcode {
+    IRStoreSPSR(IRVariable src) : IROpcode(IROpcodeType::StoreSPSR), src(src) {}
+
+    std::string to_string() override {
+        return common::format("stspsr");
+    }
+
+    IRVariable src;
 };
 
 } // namespace arm

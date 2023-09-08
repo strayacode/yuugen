@@ -42,7 +42,7 @@ IRVariable Emitter::logical_shift_left(IRValue src, IRValue amount, bool set_car
     return dst;
 }
 
-IRVariable Emitter::_and(IRValue lhs, IRValue rhs, bool set_flags) {
+IRVariable Emitter::andd(IRValue lhs, IRValue rhs, bool set_flags) {
     auto dst = create_variable();
     push<IRAnd>(dst, lhs, rhs, set_flags);
     return dst;
@@ -74,6 +74,32 @@ void Emitter::store_flags(Flags flags) {
 
 void Emitter::compare(IRValue lhs, IRValue rhs) {
     push<IRCompare>(lhs, rhs);
+}
+
+IRVariable Emitter::load_cpsr() {
+    auto dst = create_variable();
+    push<IRLoadCPSR>(dst);
+    return dst;
+}
+
+IRVariable Emitter::load_spsr() {
+    auto dst = create_variable();
+    push<IRLoadSPSR>(dst);
+    return dst;
+}
+
+IRVariable Emitter::orr(IRValue lhs, IRValue rhs, bool set_flags) {
+    auto dst = create_variable();
+    push<IROr>(dst, lhs, rhs, set_flags);
+    return dst;
+}
+
+void Emitter::store_cpsr(IRVariable src) {
+    push<IRStoreCPSR>(src);
+}
+
+void Emitter::store_spsr(IRVariable src) {
+    push<IRStoreSPSR>(src);
 }
 
 } // namespace arm

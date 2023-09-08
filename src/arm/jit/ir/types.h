@@ -13,6 +13,7 @@ enum class IRValueType {
 };
 
 struct IRVariable {
+    IRVariable() {}
     IRVariable(u32 id) : id(id) {}
 
     std::string to_string() {

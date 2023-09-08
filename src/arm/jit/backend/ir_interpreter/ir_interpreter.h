@@ -36,7 +36,12 @@ private:
         IRSub,
         IRSetFlags,
         IRStoreFlags,
-        IRCompare
+        IRCompare,
+        IRLoadCPSR,
+        IRLoadSPSR,
+        IROr,
+        IRStoreCPSR,
+        IRStoreSPSR
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -76,6 +81,11 @@ private:
     void handle_set_flags(IROpcodeVariant& opcode_variant);
     void handle_store_flags(IROpcodeVariant& opcode_variant);
     void handle_compare(IROpcodeVariant& opcode_variant);
+    void handle_load_cpsr(IROpcodeVariant& opcode_variant);
+    void handle_load_spsr(IROpcodeVariant& opcode_variant);
+    void handle_or(IROpcodeVariant& opcode_variant);
+    void handle_store_cpsr(IROpcodeVariant& opcode_variant);
+    void handle_store_spsr(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;

@@ -133,7 +133,30 @@ Translator::BlockStatus Translator::arm_status_load(Emitter& emitter) {
 }
 
 Translator::BlockStatus Translator::arm_status_store_register(Emitter& emitter) {
-    logger.todo("Translator: handle arm_status_store_register");
+    auto opcode = ARMStatusStore::decode(instruction);
+    auto value = emitter.load_gpr(opcode.rhs.rm);
+    auto value_masked = emitter.andd(value, IRConstant{opcode.mask}, false);
+    IRVariable psr;
+
+    if (opcode.spsr) {
+        psr = emitter.load_spsr();
+    } else {
+        psr = emitter.load_cpsr();
+    }
+
+    auto psr_masked = emitter.andd(psr, IRConstant{~opcode.mask}, false);
+    auto psr_new = emitter.orr(psr_masked, value_masked, false);
+
+    if (opcode.spsr) {
+        logger.todo("Translator: modify spsr");
+    } else {
+        emitter.store_cpsr(psr_new);
+        
+        if (opcode.mask & 0xff) {
+            return BlockStatus::Break;
+        }
+    }
+
     return BlockStatus::Continue;
 }
 
@@ -259,7 +282,7 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND: {
         IRValue op1 = emitter.load_gpr(opcode.rn);
-        auto dst = emitter._and(op1, op2, opcode.set_flags);
+        auto dst = emitter.andd(op1, op2, opcode.set_flags);
         emitter.store_gpr(opcode.rd, dst);
         break;
     }
@@ -275,9 +298,12 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
     case ARMDataProcessing::Opcode::RSB:
        logger.todo("Translator: handle rsb");
         break;
-    case ARMDataProcessing::Opcode::ADD:
-        logger.todo("Translator: handle add");
+    case ARMDataProcessing::Opcode::ADD: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        auto dst = emitter.add(op1, op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
         break;
+    }
     case ARMDataProcessing::Opcode::ADC:
         logger.todo("Translator: handle adc");
         break;
