@@ -30,8 +30,8 @@ Translator::BlockStatus Translator::arm_branch_link(Emitter& emitter) {
         emit_link(emitter);
     }
 
-    logger.debug("branch to %08x", code_address + opcode.offset);
-    emitter.store_gpr(GPR::PC, IRConstant{code_address + opcode.offset});
+    auto target_address = code_address + opcode.offset + (2 * instruction_size);
+    emitter.store_gpr(GPR::PC, IRConstant{target_address});
     return BlockStatus::Break;
 }
 

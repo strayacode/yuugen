@@ -249,6 +249,7 @@ void IRInterpreter::handle_sub(IROpcodeVariant& opcode_variant) {
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
     auto result = lhs - rhs;
+    
     assign_variable(opcode.dst, result);
 
     if (opcode.set_flags) {

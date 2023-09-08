@@ -20,6 +20,13 @@ void Translator::translate(BasicBlock& basic_block) {
     logger.debug("Translator: translate basic block instruction size %d pc %08x", instruction_size, code_address);
 
     for (int i = 0; i < jit.config.block_size; i++) {
+        // TODO: for now each instruction takes only 1 cycle,
+        // but in the future we should at compile time figure out instruction timings
+        // with I, N and S cycles
+        basic_block.cycles++;
+
+        basic_block.num_instructions++;
+
         if (location.is_arm()) {
             instruction = code_read_word(code_address);
             Condition condition = static_cast<Condition>(common::get_field<28, 4>(instruction));
@@ -49,12 +56,6 @@ void Translator::translate(BasicBlock& basic_block) {
             logger.todo("Translator: handle thumb translation");
         }
 
-        // TODO: for now each instruction takes only 1 cycle,
-        // but in the future we should at compile time figure out instruction timings
-        // with I, N and S cycles
-        basic_block.cycles++;
-
-        basic_block.num_instructions++;
         code_address += instruction_size;
     }
 
