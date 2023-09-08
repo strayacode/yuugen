@@ -29,12 +29,7 @@ void Translator::translate(BasicBlock& basic_block) {
 
         if (location.is_arm()) {
             instruction = code_read_word(code_address);
-            Condition condition = static_cast<Condition>(common::get_field<28, 4>(instruction));
-
-            if (condition == Condition::NV && jit.arch == Arch::ARMv5) {
-                // on armv5 nv instructions are treated as unconditional
-                condition = Condition::AL;
-            }
+            auto condition = evaluate_arm_condition();
 
             if (i == 0) {
                 // if this is the first instruction in the block then that
@@ -53,7 +48,25 @@ void Translator::translate(BasicBlock& basic_block) {
                 break;
             }
         } else {
-            logger.todo("Translator: handle thumb translation");
+            instruction = code_read_half(code_address);
+            auto condition = evaluate_thumb_condition();
+
+            if (i == 0) {
+                // if this is the first instruction in the block then that
+                // will signify the condition of all instructions in the block
+                basic_block.condition = condition;
+            } else if (condition != basic_block.condition) {
+                // if any of the following instructions doesn't have the same condition
+                // then the block is terminated
+                break;
+            }
+
+            auto handler = decoder.get_thumb_handler(instruction);
+            auto status = (this->*handler)(emitter);
+
+            if (status == BlockStatus::Break) {
+                break;
+            }
         }
 
         code_address += instruction_size;
@@ -72,7 +85,6 @@ void Translator::emit_advance_pc(Emitter& emitter) {
 }
 
 void Translator::emit_link(Emitter& emitter) {
-    logger.todo("lr is now %08x", code_address + instruction_size);
     emitter.store_gpr(GPR::LR, IRConstant{code_address + instruction_size});
 }
 
@@ -82,6 +94,30 @@ u16 Translator::code_read_half(u32 addr) {
 
 u32 Translator::code_read_word(u32 addr) {
     return jit.memory.read<u32, Bus::Code>(addr);
+}
+
+Condition Translator::evaluate_arm_condition() {
+    Condition condition = static_cast<Condition>(common::get_field<28, 4>(instruction));
+    if (condition == Condition::NV && jit.arch == Arch::ARMv5) {
+        // on armv5 nv instructions are treated as unconditional
+        return Condition::AL;
+    } else {
+        return condition;
+    }
+}
+
+Condition Translator::evaluate_thumb_condition() {
+    auto type = common::get_field<12, 4>(instruction);
+    if (type == 0xd) {
+        Condition condition = static_cast<Condition>(common::get_field<8, 4>(instruction));
+        if (condition == Condition::NV) {
+            return Condition::AL;
+        } else {
+            return condition;
+        }
+    }
+
+    return Condition::AL;
 }
 
 } // namespace arm
