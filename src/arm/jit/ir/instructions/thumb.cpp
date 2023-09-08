@@ -1,5 +1,8 @@
 #include "common/logger.h"
+#include "common/bits.h"
+#include "arm/instructions.h"
 #include "arm/jit/ir/translator.h"
+#include "arm/jit/ir/types.h"
 
 namespace arm {
 
@@ -24,8 +27,10 @@ Translator::BlockStatus Translator::thumb_branch_link_exchange_offset(Emitter& e
 }
 
 Translator::BlockStatus Translator::thumb_branch(Emitter& emitter) {
-    logger.todo("Translator: handle thumb_branch");
-    return BlockStatus::Continue;
+    auto opcode = ThumbBranch::decode(instruction);
+    auto target_address = code_address + opcode.offset + (2 * instruction_size);
+    emitter.store_gpr(GPR::PC, IRConstant{target_address});
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::thumb_push_pop(Emitter& emitter) {
@@ -94,8 +99,10 @@ Translator::BlockStatus Translator::thumb_software_interrupt(Emitter& emitter) {
 }
 
 Translator::BlockStatus Translator::thumb_branch_conditional(Emitter& emitter) {
-    logger.todo("Translator: handle thumb_branch_conditional");
-    return BlockStatus::Continue;
+    auto opcode = ThumbBranchConditional::decode(instruction);
+    auto target_address = code_address + opcode.offset + (2 * instruction_size);
+    emitter.store_gpr(GPR::PC, IRConstant{target_address});
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::thumb_load_store_multiple(Emitter& emitter) {
