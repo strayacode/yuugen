@@ -7,8 +7,11 @@
 namespace arm {
 
 Translator::BlockStatus Translator::arm_branch_link_maybe_exchange(Emitter& emitter) {
-    logger.todo("Translator: handle arm_branch_link_maybe_exchange");
-    return BlockStatus::Continue;
+    if (emitter.basic_block.condition != Condition::NV) {
+        return arm_branch_link(emitter);
+    } else {
+        return arm_branch_link_exchange(emitter);
+    }
 }
 
 Translator::BlockStatus Translator::arm_branch_exchange(Emitter& emitter) {
@@ -22,8 +25,14 @@ Translator::BlockStatus Translator::arm_count_leading_zeroes(Emitter& emitter) {
 }
 
 Translator::BlockStatus Translator::arm_branch_link(Emitter& emitter) {
-    logger.todo("Translator: handle arm_branch_link");
-    return BlockStatus::Continue;
+    auto opcode = ARMBranchLink::decode(instruction);
+    if (opcode.link) {
+        emit_link(emitter);
+    }
+
+    logger.debug("branch to %08x", code_address + opcode.offset);
+    emitter.store_gpr(GPR::PC, IRConstant{code_address + opcode.offset});
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_branch_link_exchange(Emitter& emitter) {

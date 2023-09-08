@@ -70,6 +70,11 @@ void Translator::emit_advance_pc(Emitter& emitter) {
     emitter.store_gpr(GPR::PC, IRConstant{code_address + instruction_size});
 }
 
+void Translator::emit_link(Emitter& emitter) {
+    logger.todo("lr is now %08x", code_address + instruction_size);
+    emitter.store_gpr(GPR::LR, IRConstant{code_address + instruction_size});
+}
+
 u16 Translator::code_read_half(u32 addr) {
     return jit.memory.read<u16, Bus::Code>(addr);
 }

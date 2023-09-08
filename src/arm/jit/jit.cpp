@@ -43,8 +43,6 @@ void Jit::run(int cycles) {
             return;
         }
 
-        logger.debug("Jit: cycles left in this timeslice: %d", cycles_available);
-
         if (irq && !state.cpsr.i) {
             handle_interrupt();
         }

@@ -26,6 +26,8 @@ public:
     void memory_write(IRValue addr, IRVariable src, AccessType access_type);
     IRVariable sub(IRValue lhs, IRValue rhs, bool set_flags);
     void store_flags(Flags flags);
+
+    BasicBlock& basic_block;
     
 private:
     template <typename T, typename... Args>
@@ -34,7 +36,6 @@ private:
     }
 
     u32 next_variable_id{0};
-    BasicBlock& basic_block;
 };
 
 } // namespace arm
