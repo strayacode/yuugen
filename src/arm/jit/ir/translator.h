@@ -74,6 +74,7 @@ public:
 private:
     void emit_advance_pc(Emitter& emitter);
     void emit_link(Emitter& emitter);
+    void emit_set_carry(Emitter& emitter);
 
     u16 code_read_half(u32 addr);
     u32 code_read_word(u32 addr);

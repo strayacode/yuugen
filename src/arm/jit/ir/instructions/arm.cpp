@@ -211,7 +211,13 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
         opcode.opcode == ARMDataProcessing::Opcode::SBC ||
         opcode.opcode == ARMDataProcessing::Opcode::RSC;
 
+    bool is_comparison = opcode.opcode != ARMDataProcessing::Opcode::TST &&
+        opcode.opcode != ARMDataProcessing::Opcode::TEQ &&
+        opcode.opcode != ARMDataProcessing::Opcode::CMP &&
+        opcode.opcode != ARMDataProcessing::Opcode::CMN;
+
     bool set_carry = opcode.set_flags && !carry_done_in_opcode;
+    bool update_flags = opcode.set_flags && (opcode.rd != GPR::PC || is_comparison);
     bool early_advance_pc = false;
     IRValue op2;
 
@@ -219,11 +225,9 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
         op2 = IRConstant{opcode.rhs.imm.rotated};
 
         if (set_carry && opcode.rhs.imm.shift != 0) {
-            if (common::get_bit<31>(opcode.rhs.imm.rotated)) {
-                emitter.set_carry();
-            } else {
-                emitter.clear_carry();
-            }
+            auto carry = common::get_bit<31>(opcode.rhs.imm.rotated) != 0 ? Flags::C : Flags::None;
+            emitter.set_flags(Flags::C, carry);
+            emitter.store_flags(Flags::C);
         }
     } else {
         IRValue amount;
@@ -289,9 +293,11 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
     case ARMDataProcessing::Opcode::TEQ:
         logger.todo("Translator: handle teq");
         break;
-    case ARMDataProcessing::Opcode::CMP:
-        logger.todo("Translator: handle cmp");
+    case ARMDataProcessing::Opcode::CMP: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        emitter.compare(op1, op2);
         break;
+    }
     case ARMDataProcessing::Opcode::CMN:
         logger.todo("Translator: handle cmn");
         break;
@@ -311,7 +317,7 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
         break;
     }
 
-    if (opcode.set_flags) {
+    if (update_flags) {
         std::array<Flags, 16> flags{
             Flags::NZ, Flags::NZ, Flags::NZCV, Flags::NZCV,
             Flags::NZCV, Flags::NZCV, Flags::NZCV, Flags::NZCV,

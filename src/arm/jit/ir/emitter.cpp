@@ -12,14 +12,6 @@ IRVariable Emitter::create_variable() {
     return variable;
 }
 
-void Emitter::set_carry() {
-    push<IRSetCarry>();
-}
-
-void Emitter::clear_carry() {
-    push<IRClearCarry>();
-}
-
 IRVariable Emitter::move(IRValue src, bool set_flags) {
     auto dst = create_variable();
     push<IRMove>(dst, src, set_flags);
@@ -72,8 +64,16 @@ IRVariable Emitter::sub(IRValue lhs, IRValue rhs, bool set_flags) {
     return dst;
 }
 
+void Emitter::set_flags(Flags flags, Flags value) {
+    push<IRSetFlags>(flags, value);
+}
+
 void Emitter::store_flags(Flags flags) {
     push<IRStoreFlags>(flags);
+}
+
+void Emitter::compare(IRValue lhs, IRValue rhs) {
+    push<IRCompare>(lhs, rhs);
 }
 
 } // namespace arm

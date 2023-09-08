@@ -85,6 +85,7 @@ enum Flags : u8 {
     Z = (1 << 2),
     C = (1 << 1),
     V = (1 << 0),
+    None = 0,
     NZ = N | Z,
     NZCV = N | Z | C | V,
 };
