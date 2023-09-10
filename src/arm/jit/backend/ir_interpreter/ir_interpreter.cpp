@@ -112,8 +112,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_memory_write, *opcode->as<IRMemoryWrite>()};
     case IROpcodeType::Sub:
         return {&IRInterpreter::handle_sub, *opcode->as<IRSub>()};
-    case IROpcodeType::SetFlags:
-        return {&IRInterpreter::handle_set_flags, *opcode->as<IRSetFlags>()};
+    case IROpcodeType::UpdateFlag:
+        return {&IRInterpreter::handle_update_flag, *opcode->as<IRUpdateFlag>()};
     case IROpcodeType::StoreFlags:
         return {&IRInterpreter::handle_store_flags, *opcode->as<IRStoreFlags>()};
     case IROpcodeType::Compare:
@@ -268,23 +268,9 @@ void IRInterpreter::handle_sub(IROpcodeVariant& opcode_variant) {
     }
 }
 
-void IRInterpreter::handle_set_flags(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRSetFlags>(opcode_variant);
-    if (opcode.flags & Flags::N) {
-        update_flag(Flags::N, opcode.value & Flags::N);
-    }
-
-    if (opcode.flags & Flags::Z) {
-        update_flag(Flags::Z, opcode.value & Flags::Z);
-    }
-
-    if (opcode.flags & Flags::C) {
-        update_flag(Flags::C, opcode.value & Flags::C);
-    }
-
-    if (opcode.flags & Flags::V) {
-        update_flag(Flags::V, opcode.value & Flags::V);
-    }
+void IRInterpreter::handle_update_flag(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRUpdateFlag>(opcode_variant);
+    update_flag(opcode.flag, opcode.value);
 }
 
 void IRInterpreter::handle_store_flags(IROpcodeVariant& opcode_variant) {

@@ -23,7 +23,7 @@ public:
     IRVariable logical_shift_right(IRValue operand, IRValue amount, bool set_carry);
     void memory_write(IRValue addr, IRVariable src, AccessType access_type);
     IRVariable sub(IRValue lhs, IRValue rhs, bool set_flags);
-    void set_flags(Flags flags, Flags value);
+    void update_flag(Flags flag, bool value);
     void store_flags(Flags flags);
     void compare(IRValue lhs, IRValue rhs);
     IRVariable load_cpsr();
@@ -34,8 +34,8 @@ public:
     IRVariable arithmetic_shift_right(IRValue operand, IRValue amount, bool set_carry);
     IRVariable rotate_right(IRValue operand, IRValue amount, bool set_carry);
 
-    BasicBlock& basic_block;
-    
+    BasicBlock& get_basic_block() { return basic_block; }
+
 private:
     template <typename T, typename... Args>
     void push(Args... args) {
@@ -43,6 +43,7 @@ private:
     }
 
     u32 next_variable_id{0};
+    BasicBlock& basic_block;
 };
 
 } // namespace arm

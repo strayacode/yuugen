@@ -64,8 +64,8 @@ IRVariable Emitter::sub(IRValue lhs, IRValue rhs, bool set_flags) {
     return dst;
 }
 
-void Emitter::set_flags(Flags flags, Flags value) {
-    push<IRSetFlags>(flags, value);
+void Emitter::update_flag(Flags flag, bool value) {
+    push<IRUpdateFlag>(flag, value);
 }
 
 void Emitter::store_flags(Flags flags) {

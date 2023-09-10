@@ -9,10 +9,10 @@ namespace arm {
 
 static Decoder<Translator> decoder;
 
-Translator::Translator(Arch arch, Jit& jit) : arch(arch), jit(jit) {}
+Translator::Translator(Jit& jit, Emitter& emitter) : jit(jit), emitter(emitter) {}
 
-void Translator::translate(BasicBlock& basic_block) {
-    Emitter emitter{basic_block};
+void Translator::translate() {
+    auto& basic_block = emitter.get_basic_block();
     auto location = basic_block.location;
     instruction_size = location.get_instruction_size();
     code_address = location.get_address() - 2 * instruction_size;
@@ -24,7 +24,6 @@ void Translator::translate(BasicBlock& basic_block) {
         // but in the future we should at compile time figure out instruction timings
         // with I, N and S cycles
         basic_block.cycles++;
-
         basic_block.num_instructions++;
 
         if (location.is_arm()) {
@@ -42,7 +41,7 @@ void Translator::translate(BasicBlock& basic_block) {
             }
 
             auto handler = decoder.get_arm_handler(instruction);
-            auto status = (this->*handler)(emitter);
+            auto status = (this->*handler)();
 
             if (status == BlockStatus::Break) {
                 break;
@@ -62,7 +61,7 @@ void Translator::translate(BasicBlock& basic_block) {
             }
 
             auto handler = decoder.get_thumb_handler(instruction);
-            auto status = (this->*handler)(emitter);
+            auto status = (this->*handler)();
 
             if (status == BlockStatus::Break) {
                 break;
@@ -75,20 +74,20 @@ void Translator::translate(BasicBlock& basic_block) {
     basic_block.dump();
 }
 
-Translator::BlockStatus Translator::illegal_instruction([[maybe_unused]] Emitter& emitter) {
+Translator::BlockStatus Translator::illegal_instruction() {
     logger.error("Translator: illegal instruction %08x at pc = %08x", instruction, jit.get_state().gpr[15]);
     return BlockStatus::Break;
 }
 
-void Translator::emit_advance_pc(Emitter& emitter) {
+void Translator::emit_advance_pc() {
     emitter.store_gpr(GPR::PC, IRConstant{code_address + instruction_size});
 }
 
-void Translator::emit_link(Emitter& emitter) {
+void Translator::emit_link() {
     emitter.store_gpr(GPR::LR, IRConstant{code_address + instruction_size});
 }
 
-IRVariable Translator::emit_barrel_shifter(Emitter& emitter, IRValue value, ShiftType shift_type, IRValue amount, bool set_carry) {
+IRVariable Translator::emit_barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount, bool set_carry) {
     switch (shift_type) {
     case ShiftType::LSL:
         return emitter.logical_shift_left(value, amount, set_carry);

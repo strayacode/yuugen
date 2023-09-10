@@ -1,12 +1,13 @@
 #include "common/logger.h"
 #include "arm/jit/jit.h"
 #include "arm/jit/location.h"
+#include "arm/jit/ir/translator.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 #include "arm/disassembler/disassembler.h"
 
 namespace arm {
 
-Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor), translator(arch, *this) {
+Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
     config.block_size = 32;
@@ -50,7 +51,9 @@ void Jit::run(int cycles) {
         Location location{state};
         if (!backend->has_code_at(location)) {
             BasicBlock basic_block{location};
-            translator.translate(basic_block);
+            Emitter emitter{basic_block};
+            Translator translator{*this, emitter};
+            translator.translate();
             backend->compile(basic_block);
         }
 

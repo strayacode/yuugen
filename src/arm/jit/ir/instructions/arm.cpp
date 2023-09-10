@@ -3,31 +3,32 @@
 #include "arm/instructions.h"
 #include "arm/jit/ir/translator.h"
 #include "arm/jit/ir/types.h"
+#include "arm/jit/jit.h"
 
 namespace arm {
 
-Translator::BlockStatus Translator::arm_branch_link_maybe_exchange(Emitter& emitter) {
-    if (emitter.basic_block.condition != Condition::NV) {
-        return arm_branch_link(emitter);
+Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
+    if (emitter.get_basic_block().condition != Condition::NV) {
+        return arm_branch_link();
     } else {
-        return arm_branch_link_exchange(emitter);
+        return arm_branch_link_exchange();
     }
 }
 
-Translator::BlockStatus Translator::arm_branch_exchange(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_exchange() {
     logger.todo("Translator: handle arm_branch_exchange");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_count_leading_zeroes(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_count_leading_zeroes() {
     logger.todo("Translator: handle arm_count_leading_zeroes");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_branch_link(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_link() {
     auto opcode = ARMBranchLink::decode(instruction);
     if (opcode.link) {
-        emit_link(emitter);
+        emit_link();
     }
 
     auto target_address = code_address + opcode.offset + (2 * instruction_size);
@@ -35,37 +36,37 @@ Translator::BlockStatus Translator::arm_branch_link(Emitter& emitter) {
     return BlockStatus::Break;
 }
 
-Translator::BlockStatus Translator::arm_branch_link_exchange(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_link_exchange() {
     logger.todo("Translator: handle arm_branch_link_exchange");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_branch_link_exchange_register(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_branch_link_exchange_register() {
     logger.todo("Translator: handle arm_branch_link_exchange_register");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_single_data_swap(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_single_data_swap() {
     logger.todo("Translator: handle arm_single_data_swap");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_multiply(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_multiply() {
     logger.todo("Translator: handle arm_multiply");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_saturating_add_subtract(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_saturating_add_subtract() {
     logger.todo("Translator: handle arm_saturating_add_subtract");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_multiply_long(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_multiply_long() {
     logger.todo("Translator: handle arm_multiply_long");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_halfword_data_transfer(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     auto opcode = ARMHalfwordDataTransfer::decode(instruction);
 
     if (opcode.rd == 15) {
@@ -90,12 +91,12 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer(Emitter& emitter)
         addr = emitter.add(addr, op2, false);
     }
 
-    emit_advance_pc(emitter);
+    emit_advance_pc();
 
     if (opcode.half && opcode.sign) {
         if (opcode.load) {
             logger.todo("Translator: handle ldrsh");
-        } else if (arch == Arch::ARMv5) {
+        } else if (jit.arch == Arch::ARMv5) {
 
             logger.todo("Translator: handle strd");
         }
@@ -109,7 +110,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer(Emitter& emitter)
     } else if (opcode.sign) {
         if (opcode.load) {
             logger.todo("Translator: handle ldrsb");
-        } else if (arch == Arch::ARMv5) {
+        } else if (jit.arch == Arch::ARMv5) {
             logger.todo("Translator: handle ldrd");
         }
     }
@@ -127,12 +128,12 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer(Emitter& emitter)
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_status_load(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_status_load() {
     logger.todo("Translator: handle arm_status_load");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_status_store_register(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_status_store_register() {
     auto opcode = ARMStatusStore::decode(instruction);
     auto value = emitter.load_gpr(opcode.rhs.rm);
     auto value_masked = emitter.andd(value, IRConstant{opcode.mask}, false);
@@ -160,17 +161,17 @@ Translator::BlockStatus Translator::arm_status_store_register(Emitter& emitter) 
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_status_store_immediate(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_status_store_immediate() {
     logger.todo("Translator: handle arm_status_store_immediate");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_block_data_transfer(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_block_data_transfer() {
     logger.todo("Translator: handle arm_block_data_transfer");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_single_data_transfer(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_single_data_transfer() {
     auto opcode = ARMSingleDataTransfer::decode(instruction);
     IRValue op2;
     IRVariable addr = emitter.load_gpr(opcode.rn);
@@ -190,7 +191,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer(Emitter& emitter) {
         addr = emitter.add(addr, op2, false);
     }
 
-    emit_advance_pc(emitter);
+    emit_advance_pc();
 
     if (opcode.load) {
         if (opcode.byte) {
@@ -224,7 +225,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer(Emitter& emitter) {
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_data_processing() {
     auto opcode = ARMDataProcessing::decode(instruction);
 
     // TODO: only some opcodes rely on the barrel shifter to update the carry flag,
@@ -249,7 +250,7 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
 
         if (set_carry && opcode.rhs.imm.shift != 0) {
             auto carry = common::get_bit<31>(opcode.rhs.imm.rotated) != 0 ? Flags::C : Flags::None;
-            emitter.set_flags(Flags::C, carry);
+            emitter.update_flag(Flags::C, carry);
             emitter.store_flags(Flags::C);
         }
     } else {
@@ -263,7 +264,7 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
             logger.todo("Translator: handle arm data processing shift by register");
         }
 
-        op2 = emit_barrel_shifter(emitter, op2, opcode.rhs.reg.shift_type, amount, set_carry);
+        op2 = emit_barrel_shifter(op2, opcode.rhs.reg.shift_type, amount, set_carry);
         if (set_carry) {
             emitter.store_flags(Flags::C);
         }
@@ -347,38 +348,38 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
     if (opcode.rd == 15) {
         logger.todo("Translator: handle pc write in data processing");
     } else if (!early_advance_pc) {
-        emit_advance_pc(emitter);
+        emit_advance_pc();
     }
 
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_coprocessor_register_transfer(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_coprocessor_register_transfer() {
     logger.todo("Translator: handle arm_coprocessor_register_transfer");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_software_interrupt(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_software_interrupt() {
     logger.todo("Translator: handle arm_software_interrupt");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_signed_multiply_accumulate_long(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_signed_multiply_accumulate_long() {
     logger.todo("Translator: handle arm_signed_multiply_accumulate_long");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_signed_multiply_word(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_signed_multiply_word() {
     logger.todo("Translator: handle arm_signed_multiply_word");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_signed_multiply(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_signed_multiply() {
     logger.todo("Translator: handle arm_signed_multiply");
     return BlockStatus::Continue;
 }
 
-Translator::BlockStatus Translator::arm_breakpoint(Emitter& emitter) {
+Translator::BlockStatus Translator::arm_breakpoint() {
     logger.todo("Translator: handle arm_breakpoint");
     return BlockStatus::Continue;
 }

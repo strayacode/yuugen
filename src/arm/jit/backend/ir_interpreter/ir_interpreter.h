@@ -34,7 +34,7 @@ private:
         IRLogicalShiftRight,
         IRMemoryWrite,
         IRSub,
-        IRSetFlags,
+        IRUpdateFlag,
         IRStoreFlags,
         IRCompare,
         IRLoadCPSR,
@@ -78,7 +78,7 @@ private:
     void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_memory_write(IROpcodeVariant& opcode_variant);
     void handle_sub(IROpcodeVariant& opcode_variant);
-    void handle_set_flags(IROpcodeVariant& opcode_variant);
+    void handle_update_flag(IROpcodeVariant& opcode_variant);
     void handle_store_flags(IROpcodeVariant& opcode_variant);
     void handle_compare(IROpcodeVariant& opcode_variant);
     void handle_load_cpsr(IROpcodeVariant& opcode_variant);

@@ -20,7 +20,7 @@ enum class IROpcodeType {
     LogicalShiftRight,
     MemoryWrite,
     Sub,
-    SetFlags,
+    UpdateFlag,
     StoreFlags,
     Compare,
     LoadCPSR,
@@ -38,7 +38,7 @@ enum class AccessType {
 
 static std::string flags_to_string(Flags flags) {
     if (flags == 0) {
-        return "none";
+        return ".none";
     }
 
     std::string result = ".";
@@ -59,6 +59,14 @@ static std::string flags_to_string(Flags flags) {
     }
 
     return result;
+}
+
+static std::string bool_to_string(bool value) {
+    if (value) {
+        return "true";
+    } else {
+        return "false";
+    }
 }
 
 struct IROpcode {
@@ -171,11 +179,11 @@ struct IRMemoryWrite : IROpcode {
     std::string to_string() {
         switch (access_type) {
         case AccessType::Byte:
-            return common::format("stmem.b %s, %s", src.to_string().c_str(), addr.to_string().c_str());
+            return common::format("stb %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         case AccessType::Half:
-            return common::format("stmem.h %s, %s", src.to_string().c_str(), addr.to_string().c_str());
+            return common::format("sth %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         case AccessType::Word:
-            return common::format("stmem.w %s, %s", src.to_string().c_str(), addr.to_string().c_str());
+            return common::format("stw %s, %s", src.to_string().c_str(), addr.to_string().c_str());
         }
     }
 
@@ -197,15 +205,15 @@ struct IRSub : IROpcode {
     bool set_flags;
 };
 
-struct IRSetFlags : IROpcode {
-    IRSetFlags(Flags flags, Flags value) : IROpcode(IROpcodeType::SetFlags), flags(flags), value(value) {}
+struct IRUpdateFlag : IROpcode {
+    IRUpdateFlag(Flags flag, bool value) : IROpcode(IROpcodeType::UpdateFlag), flag(flag), value(value) {}
 
     std::string to_string() override {
-        return common::format("upflg%s, %s", flags_to_string(flags).c_str(), flags_to_string(value).c_str());
+        return common::format("upflg%s, %s", flags_to_string(flag).c_str(), bool_to_string(value).c_str());
     }
 
-    Flags flags;
-    Flags value;
+    Flags flag;
+    bool value;
 };
 
 struct IRStoreFlags : IROpcode {

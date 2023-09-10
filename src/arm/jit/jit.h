@@ -9,7 +9,6 @@
 #include "arm/decoder.h"
 #include "arm/instructions.h"
 #include "arm/jit/config.h"
-#include "arm/jit/ir/translator.h"
 #include "arm/jit/backend/backend.h"
 
 namespace arm {
@@ -62,7 +61,6 @@ private:
     bool halted;
 
     int cycles_available;
-    Translator translator;
     std::unique_ptr<Backend> backend;
 };
 
