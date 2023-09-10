@@ -263,19 +263,9 @@ Translator::BlockStatus Translator::arm_data_processing(Emitter& emitter) {
             logger.todo("Translator: handle arm data processing shift by register");
         }
 
-        switch (opcode.rhs.reg.shift_type) {
-        case ShiftType::LSL:
-            op2 = emitter.logical_shift_left(op2, amount, set_carry);
-            break;
-        case ShiftType::LSR:
-            op2 = emitter.logical_shift_right(op2, amount, set_carry);
-            break;
-        case ShiftType::ASR:
-            logger.todo("Translator: handle asr");
-            break;
-        case ShiftType::ROR:
-            logger.todo("Translator: handle ror");
-            break;
+        op2 = emit_barrel_shifter(emitter, op2, opcode.rhs.reg.shift_type, amount, set_carry);
+        if (set_carry) {
+            emitter.store_flags(Flags::C);
         }
     }
 

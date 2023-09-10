@@ -89,7 +89,15 @@ Translator::BlockStatus Translator::thumb_add_subtract(Emitter& emitter) {
 }
 
 Translator::BlockStatus Translator::thumb_shift_immediate(Emitter& emitter) {
-    logger.todo("Translator: handle thumb_shift_immediate");
+    auto opcode = ThumbShiftImmediate::decode(instruction);
+    auto src = emitter.load_gpr(opcode.rs);
+    auto value = emit_barrel_shifter(emitter, src, opcode.shift_type, IRConstant{opcode.amount}, true);
+    emitter.store_flags(Flags::C);
+
+    auto dst = emitter.move(value, true);
+    emitter.store_flags(Flags::NZ);
+
+    emit_advance_pc(emitter);
     return BlockStatus::Continue;
 }
 

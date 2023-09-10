@@ -102,4 +102,16 @@ void Emitter::store_spsr(IRVariable src) {
     push<IRStoreSPSR>(src);
 }
 
+IRVariable Emitter::arithmetic_shift_right(IRValue operand, IRValue amount, bool set_carry) {
+    auto dst = create_variable();
+    logger.todo("Emitter: handle arithmetic_shift_right");
+    return dst;
+}
+
+IRVariable Emitter::rotate_right(IRValue operand, IRValue amount, bool set_carry) {
+    auto dst = create_variable();
+    logger.todo("Emitter: handle rotate_right");
+    return dst;
+}
+
 } // namespace arm

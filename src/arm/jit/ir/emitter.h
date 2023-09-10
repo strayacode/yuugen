@@ -31,6 +31,8 @@ public:
     IRVariable orr(IRValue lhs, IRValue rhs, bool set_flags);
     void store_cpsr(IRVariable src);
     void store_spsr(IRVariable src);
+    IRVariable arithmetic_shift_right(IRValue operand, IRValue amount, bool set_carry);
+    IRVariable rotate_right(IRValue operand, IRValue amount, bool set_carry);
 
     BasicBlock& basic_block;
     

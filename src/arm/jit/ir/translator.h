@@ -1,6 +1,7 @@
 #pragma once
 
 #include "arm/cpu.h"
+#include "arm/instructions.h"
 #include "arm/jit/basic_block.h"
 #include "arm/jit/ir/emitter.h"
 
@@ -75,6 +76,7 @@ private:
     void emit_advance_pc(Emitter& emitter);
     void emit_link(Emitter& emitter);
     void emit_set_carry(Emitter& emitter);
+    IRVariable emit_barrel_shifter(Emitter& emitter, IRValue value, ShiftType shift_type, IRValue amount, bool set_carry);
 
     u16 code_read_half(u32 addr);
     u32 code_read_word(u32 addr);

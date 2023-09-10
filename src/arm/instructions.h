@@ -476,7 +476,7 @@ struct ThumbShiftImmediate {
 
     GPR rd;
     GPR rs;
-    int amount;
+    u32 amount;
     ShiftType shift_type;
 };
 

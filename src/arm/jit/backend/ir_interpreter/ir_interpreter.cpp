@@ -171,7 +171,8 @@ void IRInterpreter::handle_move(IROpcodeVariant& opcode_variant) {
     assign_variable(opcode.dst, value);
 
     if (opcode.set_flags) {
-        logger.todo("handle_move: handle set flags");
+        update_flag(Flags::N, value >> 31);
+        update_flag(Flags::Z, value == 0);
     }
 }
 
@@ -200,11 +201,13 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
 
 void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLogicalShiftLeft>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    auto [result, carry] = lsl(value, amount);
+    assign_variable(opcode.dst, result);
 
-    logger.todo("IRInterpreter: handle_logical_shift_left");
-
-    if (opcode.set_carry) {
-        logger.todo("handle_logical_shift_left: handle set carry");
+    if (opcode.set_carry && carry) {
+        update_flag(Flags::C, *carry);
     }
 }
 
