@@ -249,8 +249,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
         op2 = IRConstant{opcode.rhs.imm.rotated};
 
         if (set_carry && opcode.rhs.imm.shift != 0) {
-            auto carry = common::get_bit<31>(opcode.rhs.imm.rotated) != 0 ? Flags::C : Flags::None;
-            emitter.update_flag(Flags::C, carry);
+            emitter.update_flag(Flags::C, common::get_bit<31>(opcode.rhs.imm.rotated));
             emitter.store_flags(Flags::C);
         }
     } else {

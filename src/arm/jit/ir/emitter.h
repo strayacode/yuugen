@@ -18,9 +18,9 @@ public:
     IRVariable load_gpr(GPR gpr);
     void store_gpr(GPR gpr, IRValue src);
     IRVariable add(IRValue lhs, IRValue rhs, bool set_flags);
-    IRVariable logical_shift_left(IRValue operand, IRValue amount, bool set_carry);
+    IRVariable logical_shift_left(IRValue src, IRValue amount, bool set_carry);
     IRVariable andd(IRValue lhs, IRValue rhs, bool set_flags);
-    IRVariable logical_shift_right(IRValue operand, IRValue amount, bool set_carry);
+    IRVariable logical_shift_right(IRValue src, IRValue amount, bool set_carry);
     void memory_write(IRValue addr, IRVariable src, AccessType access_type);
     IRVariable sub(IRValue lhs, IRValue rhs, bool set_flags);
     void update_flag(Flags flag, bool value);
@@ -31,8 +31,8 @@ public:
     IRVariable orr(IRValue lhs, IRValue rhs, bool set_flags);
     void store_cpsr(IRVariable src);
     void store_spsr(IRVariable src);
-    IRVariable arithmetic_shift_right(IRValue operand, IRValue amount, bool set_carry);
-    IRVariable rotate_right(IRValue operand, IRValue amount, bool set_carry);
+    IRVariable arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry);
+    IRVariable rotate_right(IRValue src, IRValue amount, bool set_carry);
 
     BasicBlock& get_basic_block() { return basic_block; }
 

@@ -128,6 +128,10 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_store_cpsr, *opcode->as<IRStoreCPSR>()};
     case IROpcodeType::StoreSPSR:
         return {&IRInterpreter::handle_store_spsr, *opcode->as<IRStoreSPSR>()};
+    case IROpcodeType::ArithmeticShiftRight:
+        return {&IRInterpreter::handle_arithmetic_shift_right, *opcode->as<IRArithmeticShiftRight>()};
+    case IROpcodeType::RotateRight:
+        return {&IRInterpreter::handle_rotate_right, *opcode->as<IRRotateRight>()};
     }
 }
 
@@ -324,6 +328,14 @@ void IRInterpreter::handle_store_cpsr(IROpcodeVariant& opcode_variant) {
 void IRInterpreter::handle_store_spsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreSPSR>(opcode_variant);
     logger.todo("IRInterpreter: handle_store_spsr");
+}
+
+void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant) {
+    logger.todo("IRInterpreter: handle_arithmetic_shift_right");
+}
+
+void IRInterpreter::handle_rotate_right(IROpcodeVariant& opcode_variant) {
+    logger.todo("IRInterpreter: handle_rotate_right");
 }
 
 } // namespace arm

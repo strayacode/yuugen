@@ -27,7 +27,9 @@ enum class IROpcodeType {
     LoadSPSR,
     Or,
     StoreCPSR,
-    StoreSPSR
+    StoreSPSR,
+    ArithmeticShiftRight,
+    RotateRight,
 };
 
 enum class AccessType {
@@ -288,6 +290,32 @@ struct IRStoreSPSR : IROpcode {
     }
 
     IRVariable src;
+};
+
+struct IRArithmeticShiftRight : IROpcode {
+    IRArithmeticShiftRight(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::ArithmeticShiftRight), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
+
+    std::string to_string() {
+        return common::format("asr%s %s, %s, %s", set_carry ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+    bool set_carry;
+};
+
+struct IRRotateRight : IROpcode {
+    IRRotateRight(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::RotateRight), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
+
+    std::string to_string() {
+        return common::format("ror%s %s, %s, %s", set_carry ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+    bool set_carry;
 };
 
 } // namespace arm
