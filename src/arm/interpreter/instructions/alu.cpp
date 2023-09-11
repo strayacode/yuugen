@@ -5,19 +5,21 @@
 
 namespace arm {
 
-u32 Interpreter::barrel_shifter(u32 value, ShiftType shift_type, int amount, bool& carry, bool imm) {
+std::tuple<u32, std::optional<bool>> Interpreter::barrel_shifter(u32 value, ShiftType shift_type, int amount, bool imm) {
     switch (shift_type) {
     case ShiftType::LSL:
-        return alu_lsl(value, amount, carry);
+        return lsl(value, amount);
     case ShiftType::LSR:
-        return alu_lsr(value, amount, carry, imm);
+        return lsr(value, amount, imm);
     case ShiftType::ASR:
-        return alu_asr(value, amount, carry, imm);
+        return asr(value, amount, imm);
     case ShiftType::ROR:
-        return alu_ror(value, amount, carry, imm);
+        if (imm && amount == 0) {
+            return rrx(value, state.cpsr.c);
+        } else {
+            return ror(value, amount);
+        }
     }
-    
-    return value;
 }
 
 u32 Interpreter::alu_mov(u32 op2, bool set_flags) {

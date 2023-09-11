@@ -9,16 +9,20 @@ void Interpreter::arm_data_processing() {
     auto opcode = ARMDataProcessing::decode(instruction);
     u32 op1 = state.gpr[opcode.rn];
     u32 op2 = 0;
-    bool carry = state.cpsr.c;
+    bool carry_done_in_opcode = opcode.opcode == ARMDataProcessing::Opcode::ADC ||
+        opcode.opcode == ARMDataProcessing::Opcode::SBC ||
+        opcode.opcode == ARMDataProcessing::Opcode::RSC;
+
+    bool set_carry = opcode.set_flags && !carry_done_in_opcode;
 
     if (opcode.imm) {
         op2 = opcode.rhs.imm.rotated;
-        if (opcode.rhs.imm.shift != 0) {
-            carry = op2 >> 31;
+        if (set_carry && opcode.rhs.imm.shift != 0) {
+            state.cpsr.c = op2 >> 31;
         }
     } else {
         int amount = 0;
-        op2 = state.gpr[opcode.rhs.reg.rm];
+        u32 src = state.gpr[opcode.rhs.reg.rm];
 
         if (opcode.rhs.reg.imm) {
             amount = opcode.rhs.reg.amount.imm;
@@ -30,27 +34,23 @@ void Interpreter::arm_data_processing() {
             }
 
             if (opcode.rhs.reg.rm == 15) {
-                op2 += 4;
+                src += 4;
             }
         }
 
-        op2 = barrel_shifter(op2, opcode.rhs.reg.shift_type, amount, carry, opcode.rhs.reg.imm);
+        auto [result, carry] = barrel_shifter(src, opcode.rhs.reg.shift_type, amount, opcode.rhs.reg.imm);
+        op2 = result;
+        if (set_carry && carry) {
+            state.cpsr.c = *carry;
+        }
     }
 
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND:
         state.gpr[opcode.rd] = alu_and(op1, op2, opcode.set_flags);
-        if (opcode.set_flags) {
-            state.cpsr.c = carry;
-        }
-
         break;
     case ARMDataProcessing::Opcode::EOR:
         state.gpr[opcode.rd] = alu_eor(op1, op2, opcode.set_flags);
-        if (opcode.set_flags) {
-            state.cpsr.c = carry;
-        }
-
         break;
     case ARMDataProcessing::Opcode::SUB:
         state.gpr[opcode.rd] = alu_sub(op1, op2, opcode.set_flags);
@@ -72,11 +72,9 @@ void Interpreter::arm_data_processing() {
         break;
     case ARMDataProcessing::Opcode::TST:
         alu_tst(op1, op2);
-        state.cpsr.c = carry;
         break;
     case ARMDataProcessing::Opcode::TEQ:
         alu_teq(op1, op2);
-        state.cpsr.c = carry;
         break;
     case ARMDataProcessing::Opcode::CMP:
         alu_cmp(op1, op2);
@@ -86,31 +84,15 @@ void Interpreter::arm_data_processing() {
         break;
     case ARMDataProcessing::Opcode::ORR:
         state.gpr[opcode.rd] = alu_orr(op1, op2, opcode.set_flags);
-        if (opcode.set_flags) {
-            state.cpsr.c = carry;
-        }
-
         break;
     case ARMDataProcessing::Opcode::MOV:
         state.gpr[opcode.rd] = alu_mov(op2, opcode.set_flags);
-        if (opcode.set_flags) {
-            state.cpsr.c = carry;
-        }
-        
         break;
     case ARMDataProcessing::Opcode::BIC:
         state.gpr[opcode.rd] = alu_bic(op1, op2, opcode.set_flags);
-        if (opcode.set_flags) {
-            state.cpsr.c = carry;
-        }
-
         break;
     case ARMDataProcessing::Opcode::MVN:
         state.gpr[opcode.rd] = alu_mvn(op2, opcode.set_flags);
-        if (opcode.set_flags) {
-            state.cpsr.c = carry;
-        }
-
         break;
     }
 
@@ -647,8 +629,12 @@ void Interpreter::arm_single_data_transfer() {
     if (opcode.imm) {
         op2 = opcode.rhs.imm;
     } else {
-        bool carry = state.cpsr.c;
-        op2 = barrel_shifter(state.gpr[opcode.rhs.reg.rm], opcode.rhs.reg.shift_type, opcode.rhs.reg.amount, carry, true);
+        auto [result, carry] = barrel_shifter(state.gpr[opcode.rhs.reg.rm], opcode.rhs.reg.shift_type, opcode.rhs.reg.amount, true);
+        op2 = result;
+        if (carry) {
+            state.cpsr.c = *carry;
+            logger.debug("set carry to %d", *carry);
+        } 
     }
 
     if (!opcode.up) {

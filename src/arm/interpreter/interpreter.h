@@ -97,7 +97,7 @@ private:
     void set_nz(u32 result);
 
     // alu helpers
-    u32 barrel_shifter(u32 value, ShiftType shift_type, int amount, bool& carry, bool imm);
+    std::tuple<u32, std::optional<bool>> barrel_shifter(u32 value, ShiftType shift_type, int amount, bool imm);
     u32 alu_mov(u32 op2, bool set_flags);
     u32 alu_mvn(u32 op2, bool set_flags);
     void alu_teq(u32 op1, u32 op2);

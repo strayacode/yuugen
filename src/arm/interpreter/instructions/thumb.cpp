@@ -20,10 +20,12 @@ void Interpreter::thumb_add_subtract() {
 
 void Interpreter::thumb_shift_immediate() {
     auto opcode = ThumbShiftImmediate::decode(instruction);
-    bool carry = state.cpsr.c;
+    auto [result, carry] = barrel_shifter(state.gpr[opcode.rs], opcode.shift_type, opcode.amount, true);
+    state.gpr[opcode.rd] = result;
+    if (carry) {
+        state.cpsr.c = *carry;
+    }
 
-    state.gpr[opcode.rd] = barrel_shifter(state.gpr[opcode.rs], opcode.shift_type, opcode.amount, carry, true);
-    state.cpsr.c = carry;
     set_nz(state.gpr[opcode.rd]);
     state.gpr[15] += 2;
 }

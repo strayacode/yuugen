@@ -1,4 +1,5 @@
 #include "common/bits.h"
+#include "common/logger.h"
 #include "arm/arithmetic.h"
 
 namespace arm {
@@ -59,8 +60,12 @@ std::tuple<u32, std::optional<bool>> ror(u32 value, int amount) {
     return {result, result >> 31};
 }
 
-std::tuple<u32, bool> rrx(u32 value, int amount, bool carry) {
-    return {(carry << 31) | (value >> 1), value & 0x1};
+std::tuple<u32, std::optional<bool>> rrx(u32 value, bool carry) {
+    logger.debug("rrx value %08x carry %d", value, carry);
+    auto msb = carry << 31;
+    carry = value & 1;
+    logger.debug("rrx computed carry %d", carry);
+    return {(value >> 1) | msb, carry};
 }
 
 bool calculate_add_overflow(u32 lhs, u32 rhs, u32 result) {
