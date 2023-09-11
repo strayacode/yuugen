@@ -42,6 +42,10 @@ struct IRValue {
         return type == IRValueType::Variable;
     }
 
+    bool is_constant() {
+        return type == IRValueType::Constant;
+    }
+
     IRVariable& as_variable() {
         return variable;
     }
