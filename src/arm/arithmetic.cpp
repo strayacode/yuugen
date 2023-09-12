@@ -61,10 +61,8 @@ std::tuple<u32, std::optional<bool>> ror(u32 value, int amount) {
 }
 
 std::tuple<u32, std::optional<bool>> rrx(u32 value, bool carry) {
-    logger.debug("rrx value %08x carry %d", value, carry);
     auto msb = carry << 31;
     carry = value & 1;
-    logger.debug("rrx computed carry %d", carry);
     return {(value >> 1) | msb, carry};
 }
 

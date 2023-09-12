@@ -633,8 +633,9 @@ void Interpreter::arm_single_data_transfer() {
         op2 = result;
         if (carry) {
             state.cpsr.c = *carry;
-            logger.debug("set carry to %d", *carry);
-        } 
+        }
+
+        printf("ldr/str value %08x result %08x carry %d\n", state.gpr[opcode.rhs.reg.rm], op2, state.cpsr.c);
     }
 
     if (!opcode.up) {
