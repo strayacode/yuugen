@@ -631,11 +631,6 @@ void Interpreter::arm_single_data_transfer() {
     } else {
         auto [result, carry] = barrel_shifter(state.gpr[opcode.rhs.reg.rm], opcode.rhs.reg.shift_type, opcode.rhs.reg.amount, true);
         op2 = result;
-        if (carry) {
-            state.cpsr.c = *carry;
-        }
-
-        printf("ldr/str value %08x result %08x carry %d\n", state.gpr[opcode.rhs.reg.rm], op2, state.cpsr.c);
     }
 
     if (!opcode.up) {

@@ -173,7 +173,7 @@ void System::run_frame() {
         auto cycles = scheduler.get_event_time() - scheduler.get_current_time();
 
         if (!arm7.is_halted() || !arm9.is_halted()) {
-            cycles = std::min(static_cast<u64>(32), cycles);
+            cycles = std::min(static_cast<u64>(16), cycles);
         }
 
         arm9.run(2 * cycles);
