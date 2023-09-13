@@ -21,7 +21,7 @@ public:
     IRVariable logical_shift_left(IRValue src, IRValue amount, bool set_carry);
     IRVariable and_(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable logical_shift_right(IRValue src, IRValue amount, bool set_carry);
-    void memory_write(IRValue addr, IRVariable src, AccessType access_type);
+    void memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type);
     IRVariable sub(IRValue lhs, IRValue rhs, bool set_flags);
     void update_flag(Flags flag, bool value);
     void store_flags(Flags flags);
@@ -33,6 +33,7 @@ public:
     void store_spsr(IRVariable src);
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry);
     IRVariable rotate_right(IRValue src, IRValue amount, bool set_carry);
+    IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
 
     BasicBlock& get_basic_block() { return basic_block; }
 

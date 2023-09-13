@@ -105,7 +105,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
             logger.todo("Translator: handle ldrh");
         } else {
             IRVariable src = emitter.load_gpr(opcode.rd);
-            emitter.memory_write(addr, src, AccessType::Half);
+            emitter.memory_write(addr, src, AccessSize::Half, AccessType::Aligned);
         }
     } else if (opcode.sign) {
         if (opcode.load) {
@@ -196,17 +196,20 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     emit_advance_pc();
 
     if (opcode.load) {
+        IRVariable dst;
         if (opcode.byte) {
             logger.todo("Translator: handle load byte");
         } else {
-            logger.todo("Translator: handle read word and rotate");
+            dst = emitter.memory_read(addr, AccessSize::Word, AccessType::Unaligned);
         }
+
+        emitter.store_gpr(opcode.rd, dst);
     } else {
         IRVariable src = emitter.load_gpr(opcode.rd);
         if (opcode.byte) {
             logger.todo("Translator: handle write byte");
         } else {
-            emitter.memory_write(addr, src, AccessType::Word);
+            emitter.memory_write(addr, src, AccessSize::Word, AccessType::Aligned);
         }
     }
 

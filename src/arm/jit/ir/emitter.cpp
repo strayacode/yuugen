@@ -54,8 +54,8 @@ IRVariable Emitter::logical_shift_right(IRValue src, IRValue amount, bool set_ca
     return dst;
 }
 
-void Emitter::memory_write(IRValue addr, IRVariable src, AccessType access_type) {
-    push<IRMemoryWrite>(addr, src, access_type);
+void Emitter::memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type) {
+    push<IRMemoryWrite>(addr, src, access_size, access_type);
 }
 
 IRVariable Emitter::sub(IRValue lhs, IRValue rhs, bool set_flags) {
@@ -111,6 +111,12 @@ IRVariable Emitter::arithmetic_shift_right(IRValue src, IRValue amount, bool set
 IRVariable Emitter::rotate_right(IRValue src, IRValue amount, bool set_carry) {
     auto dst = create_variable();
     push<IRRotateRight>(dst, src, amount, set_carry);
+    return dst;
+}
+
+IRVariable Emitter::memory_read(IRValue addr, AccessSize access_size, AccessType access_type) {
+    auto dst = create_variable();
+    push<IRMemoryRead>(dst, addr, access_size, access_type);
     return dst;
 }
 

@@ -30,13 +30,42 @@ enum class IROpcodeType {
     StoreSPSR,
     ArithmeticShiftRight,
     RotateRight,
+    MemoryRead,
 };
 
-enum class AccessType {
+enum class AccessSize {
     Byte,
     Half,
     Word,
 };
+
+enum class AccessType {
+    Aligned,
+    Unaligned,
+    Signed,
+};
+
+static std::string access_size_to_string(AccessSize access_size) {
+    switch (access_size) {
+    case AccessSize::Byte:
+        return ".b";
+    case AccessSize::Half:
+        return ".h";
+    case AccessSize::Word:
+        return ".w";
+    }
+}
+
+static std::string access_type_to_string(AccessType access_type) {
+    switch (access_type) {
+    case AccessType::Aligned:
+        return ".a";
+    case AccessType::Unaligned:
+        return ".u";
+    case AccessType::Signed:
+        return ".s";
+    }
+}
 
 static std::string flags_to_string(Flags flags) {
     if (flags == 0) {
@@ -176,21 +205,15 @@ struct IRLogicalShiftRight : IROpcode {
 };
 
 struct IRMemoryWrite : IROpcode {
-    IRMemoryWrite(IRValue addr, IRValue src, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_type(access_type) {}
+    IRMemoryWrite(IRValue addr, IRValue src, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_size(access_size), access_type(access_type) {}
 
     std::string to_string() {
-        switch (access_type) {
-        case AccessType::Byte:
-            return common::format("stb %s, %s", src.to_string().c_str(), addr.to_string().c_str());
-        case AccessType::Half:
-            return common::format("sth %s, %s", src.to_string().c_str(), addr.to_string().c_str());
-        case AccessType::Word:
-            return common::format("stw %s, %s", src.to_string().c_str(), addr.to_string().c_str());
-        }
+        return common::format("st%s%s%s, %s", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), src.to_string().c_str(), addr.to_string().c_str());
     }
 
     IRValue addr;
     IRValue src;
+    AccessSize access_size;
     AccessType access_type;
 };
 
@@ -316,6 +339,19 @@ struct IRRotateRight : IROpcode {
     IRValue src;
     IRValue amount;
     bool set_carry;
+};
+
+struct IRMemoryRead : IROpcode {
+    IRMemoryRead(IRVariable dst, IRValue addr, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryRead), dst(dst), addr(addr), access_size(access_size), access_type(access_type) {}
+
+    std::string to_string() {
+        return common::format("ld%s%s%s, %s", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), dst.to_string().c_str(), addr.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue addr;
+    AccessSize access_size;
+    AccessType access_type;
 };
 
 } // namespace arm

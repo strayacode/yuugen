@@ -132,6 +132,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_arithmetic_shift_right, *opcode->as<IRArithmeticShiftRight>()};
     case IROpcodeType::RotateRight:
         return {&IRInterpreter::handle_rotate_right, *opcode->as<IRRotateRight>()};
+    case IROpcodeType::MemoryRead:
+        return {&IRInterpreter::handle_memory_read, *opcode->as<IRMemoryRead>()};
     }
 }
 
@@ -250,14 +252,14 @@ void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {
     auto addr = resolve_value(opcode.addr);
     auto src = resolve_value(opcode.src);
 
-    switch (opcode.access_type) {
-    case AccessType::Byte:
+    switch (opcode.access_size) {
+    case AccessSize::Byte:
         jit.write_byte(addr, src);
         break;
-    case AccessType::Half:
+    case AccessSize::Half:
         jit.write_half(addr, src);
         break;
-    case AccessType::Word:
+    case AccessSize::Word:
         jit.write_word(addr, src);
         break;
     }
@@ -352,6 +354,44 @@ void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_varian
 
 void IRInterpreter::handle_rotate_right(IROpcodeVariant& opcode_variant) {
     logger.todo("IRInterpreter: handle_rotate_right");
+}
+
+void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRMemoryRead>(opcode_variant);
+    auto addr = resolve_value(opcode.addr);
+    
+    switch (opcode.access_size) {
+    case AccessSize::Byte:
+        if (opcode.access_type == AccessType::Signed) {
+            logger.todo("handle signed byte read");
+        } else {
+            logger.todo("handle regular byte read");
+        }
+        
+        break;
+    case AccessSize::Half:
+        switch (opcode.access_type) {
+        case AccessType::Aligned:
+            logger.todo("handle aligned half read");
+            break;
+        case AccessType::Unaligned:
+            logger.todo("handle unaligned half read");
+            break;
+        case AccessType::Signed:
+            logger.todo("handle signed half read");
+            break;
+        }
+        
+        break;
+    case AccessSize::Word:
+        if (opcode.access_type == AccessType::Unaligned) {
+            assign_variable(opcode.dst, jit.read_word_rotate(addr));
+        } else {
+            logger.todo("handle regular word read");
+        }
+
+        break;
+    }
 }
 
 } // namespace arm

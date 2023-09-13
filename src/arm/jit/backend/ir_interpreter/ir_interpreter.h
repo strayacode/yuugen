@@ -43,7 +43,8 @@ private:
         IRStoreCPSR,
         IRStoreSPSR,
         IRArithmeticShiftRight,
-        IRRotateRight
+        IRRotateRight,
+        IRMemoryRead
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -91,6 +92,7 @@ private:
     void handle_store_spsr(IROpcodeVariant& opcode_variant);
     void handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
     void handle_rotate_right(IROpcodeVariant& opcode_variant);
+    void handle_memory_read(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;
