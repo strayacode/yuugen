@@ -31,6 +31,7 @@ enum class IROpcodeType {
     ArithmeticShiftRight,
     RotateRight,
     MemoryRead,
+    Bic,
 };
 
 enum class AccessSize {
@@ -352,6 +353,19 @@ struct IRMemoryRead : IROpcode {
     IRValue addr;
     AccessSize access_size;
     AccessType access_type;
+};
+
+struct IRBic : IROpcode {
+    IRBic(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Bic), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("cic%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+    bool set_flags;
 };
 
 } // namespace arm

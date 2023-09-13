@@ -330,9 +330,12 @@ Translator::BlockStatus Translator::arm_data_processing() {
         emitter.store_gpr(opcode.rd, dst);
         break;
     }
-    case ARMDataProcessing::Opcode::BIC:
-        logger.todo("Translator: handle bic");
+    case ARMDataProcessing::Opcode::BIC: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        auto dst = emitter.bic(op1, op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
         break;
+    }
     case ARMDataProcessing::Opcode::MVN:
         logger.todo("Translator: handle mvn");
         break;

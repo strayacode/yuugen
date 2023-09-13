@@ -34,6 +34,7 @@ public:
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry);
     IRVariable rotate_right(IRValue src, IRValue amount, bool set_carry);
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
+    IRVariable bic(IRValue lhs, IRValue rhs, bool set_flags);
 
     BasicBlock& get_basic_block() { return basic_block; }
 

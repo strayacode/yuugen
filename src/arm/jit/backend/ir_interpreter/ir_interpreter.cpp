@@ -134,6 +134,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_rotate_right, *opcode->as<IRRotateRight>()};
     case IROpcodeType::MemoryRead:
         return {&IRInterpreter::handle_memory_read, *opcode->as<IRMemoryRead>()};
+    case IROpcodeType::Bic:
+        return {&IRInterpreter::handle_bic, *opcode->as<IRBic>()};
     }
 }
 
@@ -391,6 +393,19 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
         }
 
         break;
+    }
+}
+
+void IRInterpreter::handle_bic(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRBic>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs & ~rhs;
+    assign_variable(opcode.dst, result);
+
+    if (opcode.set_flags) {
+        update_flag(Flags::N, result >> 31);
+        update_flag(Flags::Z, result == 0);
     }
 }
 

@@ -120,4 +120,10 @@ IRVariable Emitter::memory_read(IRValue addr, AccessSize access_size, AccessType
     return dst;
 }
 
+IRVariable Emitter::bic(IRValue lhs, IRValue rhs, bool set_flags) {
+    auto dst = create_variable();
+    push<IRBic>(dst, lhs, rhs, set_flags);
+    return dst;
+}
+
 } // namespace arm
