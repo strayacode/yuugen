@@ -148,6 +148,8 @@ Translator::BlockStatus Translator::arm_status_store_register() {
     auto psr_masked = emitter.and_(psr, IRConstant{~opcode.mask}, false);
     auto psr_new = emitter.or_(psr_masked, value_masked, false);
 
+    emit_advance_pc();
+
     if (opcode.spsr) {
         logger.todo("Translator: modify spsr");
     } else {

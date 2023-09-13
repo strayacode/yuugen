@@ -36,8 +36,6 @@ void Jit::reset() {
     backend->reset();
 }
 
-int i = 0;
-
 void Jit::run(int cycles) {
     cycles_available += cycles;
 
@@ -50,9 +48,9 @@ void Jit::run(int cycles) {
             handle_interrupt();
         }
 
-        if (arch == Arch::ARMv5) {
-            log_state();
-        }
+        // if (arch == Arch::ARMv5) {
+        //     log_state();
+        // }
         
         Location location{state};
         if (!backend->has_code_at(location)) {
