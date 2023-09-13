@@ -50,8 +50,8 @@ void Jit::run(int cycles) {
             handle_interrupt();
         }
 
-        if (i == 7) {
-            logger.todo("check stuff");
+        if (arch == Arch::ARMv5) {
+            log_state();
         }
         
         Location location{state};
@@ -65,7 +65,6 @@ void Jit::run(int cycles) {
 
         // TODO: return the cycles elapsed from this function
         cycles_available -= backend->run(location);
-        i++;
     }
 }
 

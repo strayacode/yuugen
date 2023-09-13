@@ -169,6 +169,12 @@ void IRInterpreter::update_flag(Flags to_update, bool value) {
     }
 }
 
+void IRInterpreter::dump_variables() {
+    for (u64 i = 0; i < variables.size(); i++) {
+        logger.debug("%%%d: %08x", i, variables[i]);
+    }
+}
+
 void IRInterpreter::handle_move(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRMove>(opcode_variant);
     auto value = resolve_value(opcode.src);
@@ -196,7 +202,8 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRAdd>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
-    assign_variable(opcode.dst, lhs + rhs);
+    auto result = lhs + rhs;
+    assign_variable(opcode.dst, result);
 
     if (opcode.set_flags) {
         logger.todo("handle_add: handle set flags");
@@ -220,7 +227,7 @@ void IRInterpreter::handle_and(IROpcodeVariant& opcode_variant) {
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
     auto result = lhs & rhs;
-    assign_variable(opcode.dst, rhs);
+    assign_variable(opcode.dst, result);
 
     if (opcode.set_flags) {
         update_flag(Flags::N, result >> 31);
@@ -310,7 +317,7 @@ void IRInterpreter::handle_or(IROpcodeVariant& opcode_variant) {
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
     auto result = lhs | rhs;
-    assign_variable(opcode.dst, rhs);
+    assign_variable(opcode.dst, result);
 
     if (opcode.set_flags) {
         update_flag(Flags::N, result >> 31);
@@ -320,8 +327,9 @@ void IRInterpreter::handle_or(IROpcodeVariant& opcode_variant) {
 
 void IRInterpreter::handle_store_cpsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreCPSR>(opcode_variant);
+    auto src = resolve_value(opcode.src);
     StatusRegister psr;
-    psr.data = resolve_value(opcode.src);
+    psr.data = src;
     jit.set_cpsr(psr);
 }
 

@@ -68,6 +68,7 @@ private:
     void assign_variable(IRVariable& variable, u32 value);
     u32 resolve_value(IRValue& value);
     void update_flag(Flags to_update, bool value);
+    void dump_variables();
 
     void handle_set_carry(IROpcodeVariant& opcode_variant);
     void handle_clear_carry(IROpcodeVariant& opcode_variant);
