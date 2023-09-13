@@ -19,7 +19,7 @@ public:
     void store_gpr(GPR gpr, IRValue src);
     IRVariable add(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable logical_shift_left(IRValue src, IRValue amount, bool set_carry);
-    IRVariable andd(IRValue lhs, IRValue rhs, bool set_flags);
+    IRVariable and_(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable logical_shift_right(IRValue src, IRValue amount, bool set_carry);
     void memory_write(IRValue addr, IRVariable src, AccessType access_type);
     IRVariable sub(IRValue lhs, IRValue rhs, bool set_flags);
@@ -28,7 +28,7 @@ public:
     void compare(IRValue lhs, IRValue rhs);
     IRVariable load_cpsr();
     IRVariable load_spsr();
-    IRVariable orr(IRValue lhs, IRValue rhs, bool set_flags);
+    IRVariable or_(IRValue lhs, IRValue rhs, bool set_flags);
     void store_cpsr(IRVariable src);
     void store_spsr(IRVariable src);
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry);

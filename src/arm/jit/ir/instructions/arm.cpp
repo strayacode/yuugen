@@ -136,7 +136,7 @@ Translator::BlockStatus Translator::arm_status_load() {
 Translator::BlockStatus Translator::arm_status_store_register() {
     auto opcode = ARMStatusStore::decode(instruction);
     auto value = emitter.load_gpr(opcode.rhs.rm);
-    auto value_masked = emitter.andd(value, IRConstant{opcode.mask}, false);
+    auto value_masked = emitter.and_(value, IRConstant{opcode.mask}, false);
     IRVariable psr;
 
     if (opcode.spsr) {
@@ -145,8 +145,8 @@ Translator::BlockStatus Translator::arm_status_store_register() {
         psr = emitter.load_cpsr();
     }
 
-    auto psr_masked = emitter.andd(psr, IRConstant{~opcode.mask}, false);
-    auto psr_new = emitter.orr(psr_masked, value_masked, false);
+    auto psr_masked = emitter.and_(psr, IRConstant{~opcode.mask}, false);
+    auto psr_new = emitter.or_(psr_masked, value_masked, false);
 
     if (opcode.spsr) {
         logger.todo("Translator: modify spsr");
@@ -272,7 +272,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND: {
         IRValue op1 = emitter.load_gpr(opcode.rn);
-        auto dst = emitter.andd(op1, op2, opcode.set_flags);
+        auto dst = emitter.and_(op1, op2, opcode.set_flags);
         emitter.store_gpr(opcode.rd, dst);
         break;
     }

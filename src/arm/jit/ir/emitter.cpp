@@ -42,7 +42,7 @@ IRVariable Emitter::logical_shift_left(IRValue src, IRValue amount, bool set_car
     return dst;
 }
 
-IRVariable Emitter::andd(IRValue lhs, IRValue rhs, bool set_flags) {
+IRVariable Emitter::and_(IRValue lhs, IRValue rhs, bool set_flags) {
     auto dst = create_variable();
     push<IRAnd>(dst, lhs, rhs, set_flags);
     return dst;
@@ -88,7 +88,7 @@ IRVariable Emitter::load_spsr() {
     return dst;
 }
 
-IRVariable Emitter::orr(IRValue lhs, IRValue rhs, bool set_flags) {
+IRVariable Emitter::or_(IRValue lhs, IRValue rhs, bool set_flags) {
     auto dst = create_variable();
     push<IROr>(dst, lhs, rhs, set_flags);
     return dst;

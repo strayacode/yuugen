@@ -243,7 +243,7 @@ struct IRLoadCPSR : IROpcode {
     IRLoadCPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadCPSR), dst(dst) {}
 
     std::string to_string() override {
-        return common::format("ldcpsr");
+        return common::format("ldcpsr %s", dst.to_string().c_str());
     }
 
     IRVariable dst;
@@ -253,7 +253,7 @@ struct IRLoadSPSR : IROpcode {
     IRLoadSPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadSPSR), dst(dst) {}
 
     std::string to_string() override {
-        return common::format("ldspsr");
+        return common::format("ldspsr %s", dst.to_string().c_str());
     }
 
     IRVariable dst;
@@ -276,7 +276,7 @@ struct IRStoreCPSR : IROpcode {
     IRStoreCPSR(IRValue src) : IROpcode(IROpcodeType::StoreCPSR), src(src) {}
 
     std::string to_string() override {
-        return common::format("stcpsr");
+        return common::format("stcpsr %s", src.to_string().c_str());
     }
 
     IRValue src;
@@ -286,7 +286,7 @@ struct IRStoreSPSR : IROpcode {
     IRStoreSPSR(IRVariable src) : IROpcode(IROpcodeType::StoreSPSR), src(src) {}
 
     std::string to_string() override {
-        return common::format("stspsr");
+        return common::format("stspsr %s", src.to_string().c_str());
     }
 
     IRVariable src;
