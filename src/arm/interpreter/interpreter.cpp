@@ -36,6 +36,10 @@ void Interpreter::run(int cycles) {
             handle_interrupt();
         }
 
+        if (arch == Arch::ARMv5) {
+            log_state();
+        }
+
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];
 
@@ -311,11 +315,10 @@ void Interpreter::undefined_exception() {
 
 void Interpreter::log_state() {
     for (int i = 0; i < 16; i++) {
-        logger.log("r%d: %08x ", i, state.gpr[i]);
+        logger.log("r%d: %08x ", i, get_gpr(static_cast<GPR>(i)));
     }
 
-    logger.log("cpsr: %08x ", state.cpsr.data);
-    logger.log("%08x\n", instruction);
+    logger.log("cpsr: %08x\n", get_cpsr().data);
 }
 
 } // namespace arm

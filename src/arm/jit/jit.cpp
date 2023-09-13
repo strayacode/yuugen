@@ -10,7 +10,7 @@ namespace arm {
 Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
-    config.block_size = 32;
+    config.block_size = 1;
 
     switch (backend_type) {
     case BackendType::IRInterpreter:
@@ -48,6 +48,10 @@ void Jit::run(int cycles) {
             handle_interrupt();
         }
 
+        if (arch == Arch::ARMv5) {
+            log_state();
+        }
+        
         Location location{state};
         if (!backend->has_code_at(location)) {
             BasicBlock basic_block{location};
@@ -198,6 +202,14 @@ Bank Jit::get_bank_from_mode(Mode mode) {
 
 void Jit::handle_interrupt() {
     logger.todo("Jit: handle interrupts");
+}
+
+void Jit::log_state() {
+    for (int i = 0; i < 16; i++) {
+        logger.log("r%d: %08x ", i, get_gpr(static_cast<GPR>(i)));
+    }
+
+    logger.log("cpsr: %08x\n", get_cpsr().data);
 }
 
 } // namespace arm

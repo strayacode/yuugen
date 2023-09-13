@@ -56,6 +56,7 @@ private:
     Bank get_bank_from_mode(Mode mode);
 
     void handle_interrupt();
+    void log_state();
 
     bool irq;
     bool halted;

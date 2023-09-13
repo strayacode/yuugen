@@ -50,17 +50,17 @@ void ARM9::direct_boot() {
     coprocessor.write(9, 1, 0, 0x0300000a);
     coprocessor.write(9, 1, 1, 0x00000020);
 
+    // enter system mode
+    auto cpsr = cpu->get_cpsr();
+    cpsr.mode = arm::Mode::SYS;
+    cpu->set_cpsr(cpsr);
+
     cpu->set_gpr(arm::GPR::R12, system.cartridge.get_arm9_entrypoint());
     cpu->set_gpr(arm::GPR::SP, 0x03002f7c);
     cpu->set_gpr(arm::GPR::SP, arm::Mode::IRQ, 0x03003f80);
     cpu->set_gpr(arm::GPR::SP, arm::Mode::SVC, 0x03003fc0);
     cpu->set_gpr(arm::GPR::LR, system.cartridge.get_arm9_entrypoint());
     cpu->set_gpr(arm::GPR::PC, system.cartridge.get_arm9_entrypoint());
-
-    // enter system mode
-    auto cpsr = cpu->get_cpsr();
-    cpsr.mode = arm::Mode::SYS;
-    cpu->set_cpsr(cpsr);
 }
 
 bool ARM9::is_halted() {
