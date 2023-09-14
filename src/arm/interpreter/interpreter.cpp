@@ -36,9 +36,9 @@ void Interpreter::run(int cycles) {
             handle_interrupt();
         }
 
-        if (arch == Arch::ARMv5) {
-            log_state();
-        }
+        // if (arch == Arch::ARMv5) {
+        //     log_state();
+        // }
 
         instruction = pipeline[0];
         pipeline[0] = pipeline[1];

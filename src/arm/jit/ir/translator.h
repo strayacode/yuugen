@@ -75,7 +75,7 @@ public:
 private:
     void emit_advance_pc();
     void emit_link();
-    void emit_set_carry();
+    void emit_branch(IRValue address);
     IRVariable emit_barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount, bool set_carry);
 
     u16 code_read_half(u32 addr);

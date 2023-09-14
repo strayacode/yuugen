@@ -45,7 +45,8 @@ private:
         IRArithmeticShiftRight,
         IRRotateRight,
         IRMemoryRead,
-        IRBic
+        IRBic,
+        IRBranch
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -95,6 +96,7 @@ private:
     void handle_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_memory_read(IROpcodeVariant& opcode_variant);
     void handle_bic(IROpcodeVariant& opcode_variant);
+    void handle_branch(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;

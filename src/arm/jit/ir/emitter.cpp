@@ -126,4 +126,8 @@ IRVariable Emitter::bic(IRValue lhs, IRValue rhs, bool set_flags) {
     return dst;
 }
 
+void Emitter::branch(IRValue address, bool is_arm) {
+    push<IRBranch>(address, is_arm);
+}
+
 } // namespace arm

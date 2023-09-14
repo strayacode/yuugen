@@ -32,6 +32,7 @@ enum class IROpcodeType {
     RotateRight,
     MemoryRead,
     Bic,
+    Branch,
 };
 
 enum class AccessSize {
@@ -209,7 +210,7 @@ struct IRMemoryWrite : IROpcode {
     IRMemoryWrite(IRValue addr, IRValue src, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_size(access_size), access_type(access_type) {}
 
     std::string to_string() {
-        return common::format("st%s%s%s, %s", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), src.to_string().c_str(), addr.to_string().c_str());
+        return common::format("st%s%s %s, %s", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), src.to_string().c_str(), addr.to_string().c_str());
     }
 
     IRValue addr;
@@ -346,7 +347,7 @@ struct IRMemoryRead : IROpcode {
     IRMemoryRead(IRVariable dst, IRValue addr, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryRead), dst(dst), addr(addr), access_size(access_size), access_type(access_type) {}
 
     std::string to_string() {
-        return common::format("ld%s%s%s, %s", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), dst.to_string().c_str(), addr.to_string().c_str());
+        return common::format("ld%s%s %s, %s", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), dst.to_string().c_str(), addr.to_string().c_str());
     }
 
     IRVariable dst;
@@ -359,13 +360,24 @@ struct IRBic : IROpcode {
     IRBic(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Bic), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
 
     std::string to_string() override {
-        return common::format("cic%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+        return common::format("bic%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
     }
 
     IRVariable dst;
     IRValue lhs;
     IRValue rhs;
     bool set_flags;
+};
+
+struct IRBranch : IROpcode {
+    IRBranch(IRValue address, bool is_arm) : IROpcode(IROpcodeType::Branch), address(address), is_arm(is_arm) {}
+
+    std::string to_string() override {
+        return common::format("b %s", address.to_string().c_str());
+    }
+
+    IRValue address;
+    bool is_arm;
 };
 
 } // namespace arm

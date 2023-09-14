@@ -8,7 +8,7 @@
 namespace arm {
 
 Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
-    if (emitter.get_basic_block().condition != Condition::NV) {
+    if (emitter.basic_block.condition != Condition::NV) {
         return arm_branch_link();
     } else {
         return arm_branch_link_exchange();
@@ -17,6 +17,7 @@ Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
 
 Translator::BlockStatus Translator::arm_branch_exchange() {
     auto opcode = ARMBranchExchange::decode(instruction);
+    auto address = emitter.load_gpr(opcode.rm);
     logger.todo("Translator: handle arm_branch_exchange");
     return BlockStatus::Break;
 }
@@ -32,8 +33,7 @@ Translator::BlockStatus Translator::arm_branch_link() {
         emit_link();
     }
 
-    auto target_address = code_address + opcode.offset + (2 * instruction_size);
-    emitter.store_gpr(GPR::PC, IRConstant{target_address});
+    emit_branch(IRConstant{code_address + opcode.offset});
     return BlockStatus::Break;
 }
 

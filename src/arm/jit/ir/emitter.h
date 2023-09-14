@@ -35,8 +35,9 @@ public:
     IRVariable rotate_right(IRValue src, IRValue amount, bool set_carry);
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
     IRVariable bic(IRValue lhs, IRValue rhs, bool set_flags);
+    void branch(IRValue address, bool is_arm);
 
-    BasicBlock& get_basic_block() { return basic_block; }
+    BasicBlock& basic_block;
 
 private:
     template <typename T, typename... Args>
@@ -45,7 +46,6 @@ private:
     }
 
     u32 next_variable_id{0};
-    BasicBlock& basic_block;
 };
 
 } // namespace arm

@@ -136,6 +136,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_memory_read, *opcode->as<IRMemoryRead>()};
     case IROpcodeType::Bic:
         return {&IRInterpreter::handle_bic, *opcode->as<IRBic>()};
+    case IROpcodeType::Branch:
+        return {&IRInterpreter::handle_branch, *opcode->as<IRBranch>()};
     }
 }
 
@@ -407,6 +409,17 @@ void IRInterpreter::handle_bic(IROpcodeVariant& opcode_variant) {
         update_flag(Flags::N, result >> 31);
         update_flag(Flags::Z, result == 0);
     }
+}
+
+void IRInterpreter::handle_branch(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRBranch>(opcode_variant);
+    auto address = resolve_value(opcode.address);
+    auto instruction_size = opcode.is_arm ? sizeof(u32) : sizeof(u16);
+    auto address_mask = ~(instruction_size - 1);
+
+    address += 2 * instruction_size;
+    address &= address_mask;
+    jit.set_gpr(GPR::PC, address);
 }
 
 } // namespace arm

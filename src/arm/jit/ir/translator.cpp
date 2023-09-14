@@ -12,7 +12,7 @@ static Decoder<Translator> decoder;
 Translator::Translator(Jit& jit, Emitter& emitter) : jit(jit), emitter(emitter) {}
 
 void Translator::translate() {
-    auto& basic_block = emitter.get_basic_block();
+    auto& basic_block = emitter.basic_block;
     auto location = basic_block.location;
     instruction_size = location.get_instruction_size();
     code_address = location.get_address() - 2 * instruction_size;
@@ -85,6 +85,10 @@ void Translator::emit_advance_pc() {
 
 void Translator::emit_link() {
     emitter.store_gpr(GPR::LR, IRConstant{code_address + instruction_size});
+}
+
+void Translator::emit_branch(IRValue address) {
+    emitter.branch(address, emitter.basic_block.location.is_arm());
 }
 
 IRVariable Translator::emit_barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount, bool set_carry) {
