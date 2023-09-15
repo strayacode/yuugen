@@ -36,6 +36,7 @@ public:
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
     IRVariable bic(IRValue lhs, IRValue rhs, bool set_flags);
     void branch(IRValue address, bool is_arm);
+    void branch_exchange(IRValue address, ExchangeType exchange_type);
 
     BasicBlock& basic_block;
 

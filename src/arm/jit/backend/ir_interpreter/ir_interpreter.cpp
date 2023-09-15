@@ -138,6 +138,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_bic, *opcode->as<IRBic>()};
     case IROpcodeType::Branch:
         return {&IRInterpreter::handle_branch, *opcode->as<IRBranch>()};
+    case IROpcodeType::BranchExchange:
+        return {&IRInterpreter::handle_branch_exchange, *opcode->as<IRBranchExchange>()};
     }
 }
 
@@ -415,6 +417,27 @@ void IRInterpreter::handle_branch(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRBranch>(opcode_variant);
     auto address = resolve_value(opcode.address);
     auto instruction_size = opcode.is_arm ? sizeof(u32) : sizeof(u16);
+    auto address_mask = ~(instruction_size - 1);
+
+    address += 2 * instruction_size;
+    address &= address_mask;
+    jit.set_gpr(GPR::PC, address);
+}
+
+void IRInterpreter::handle_branch_exchange(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRBranchExchange>(opcode_variant);
+    auto address = resolve_value(opcode.address);
+    bool is_arm;
+
+    switch (opcode.exchange_type) {
+    case ExchangeType::Bit0:
+        is_arm = !(address & 0x1);
+        break;
+    }
+
+    jit.state.cpsr.t = !is_arm;
+
+    auto instruction_size = is_arm ? sizeof(u32) : sizeof(u16);
     auto address_mask = ~(instruction_size - 1);
 
     address += 2 * instruction_size;

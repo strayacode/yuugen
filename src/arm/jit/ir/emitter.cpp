@@ -130,4 +130,8 @@ void Emitter::branch(IRValue address, bool is_arm) {
     push<IRBranch>(address, is_arm);
 }
 
+void Emitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
+    push<IRBranchExchange>(address, exchange_type);
+}
+
 } // namespace arm

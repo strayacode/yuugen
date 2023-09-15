@@ -33,6 +33,7 @@ enum class IROpcodeType {
     MemoryRead,
     Bic,
     Branch,
+    BranchExchange,
 };
 
 enum class AccessSize {
@@ -45,6 +46,10 @@ enum class AccessType {
     Aligned,
     Unaligned,
     Signed,
+};
+
+enum class ExchangeType {
+    Bit0,
 };
 
 static std::string access_size_to_string(AccessSize access_size) {
@@ -99,6 +104,13 @@ static std::string bool_to_string(bool value) {
         return "true";
     } else {
         return "false";
+    }
+}
+
+static std::string exchange_type_to_string(ExchangeType exchange_type) {
+    switch (exchange_type) {
+    case ExchangeType::Bit0:
+        return ".bit0";
     }
 }
 
@@ -378,6 +390,17 @@ struct IRBranch : IROpcode {
 
     IRValue address;
     bool is_arm;
+};
+
+struct IRBranchExchange : IROpcode {
+    IRBranchExchange(IRValue address, ExchangeType exchange_type) : IROpcode(IROpcodeType::BranchExchange), address(address), exchange_type(exchange_type) {}
+
+    std::string to_string() override {
+        return common::format("bx%s %s", exchange_type_to_string(exchange_type).c_str(), address.to_string().c_str());
+    }
+
+    IRValue address;
+    ExchangeType exchange_type;
 };
 
 } // namespace arm
