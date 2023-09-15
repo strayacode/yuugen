@@ -75,7 +75,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     }
 
     IRValue op2;
-    IRVariable addr = emitter.load_gpr(opcode.rn);
+    IRVariable address = emitter.load_gpr(opcode.rn);
     bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
 
     if (opcode.imm) {
@@ -89,7 +89,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     }
 
     if (opcode.pre) {
-        addr = emitter.add(addr, op2, false);
+        address = emitter.add(address, op2, false);
     }
 
     emit_advance_pc();
@@ -106,7 +106,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
             logger.todo("Translator: handle ldrh");
         } else {
             IRVariable src = emitter.load_gpr(opcode.rd);
-            emitter.memory_write(addr, src, AccessSize::Half, AccessType::Aligned);
+            emitter.memory_write(address, src, AccessSize::Half, AccessType::Aligned);
         }
     } else if (opcode.sign) {
         if (opcode.load) {
@@ -122,7 +122,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
             auto new_base = emitter.add(base, op2, false);
             emitter.store_gpr(opcode.rn, new_base);
         } else if (opcode.writeback) {
-            emitter.store_gpr(opcode.rn, addr);
+            emitter.store_gpr(opcode.rn, address);
         }
     }
 
@@ -170,14 +170,108 @@ Translator::BlockStatus Translator::arm_status_store_immediate() {
 }
 
 Translator::BlockStatus Translator::arm_block_data_transfer() {
-    logger.todo("Translator: handle arm_block_data_transfer");
+    auto opcode = ARMBlockDataTransfer::decode(instruction);
+    auto address = emitter.load_gpr(opcode.rn);
+    auto first = 0;
+    u32 bytes = 0;
+    auto old_mode = emitter.basic_block.location.get_mode();
+    IRValue new_base;
+
+    if (opcode.rlist != 0) {
+        for (int i = 15; i >= 0; i--) {
+            if (opcode.rlist & (1 << i)) {
+                first = i;
+                bytes += 4;
+            }
+        }
+    } else {
+        bytes = 0x40;
+        if (jit.arch == Arch::ARMv4) {
+            opcode.rlist = 1 << 15;
+            opcode.r15_in_rlist = true;
+        }
+    }
+
+    if (opcode.up) {
+        new_base = emitter.add(address, IRConstant{bytes}, false);
+    } else {
+        opcode.pre = !opcode.pre;
+        address = emitter.sub(address, IRConstant{bytes}, false);
+        new_base = emitter.move(address, false);
+    }
+
+    emit_advance_pc();
+
+    // TODO: make sure this is correct
+    // stm armv4: store old base if rb is first in rlist, otherwise store new base
+    // stm armv5: always store old base
+    if (opcode.writeback && !opcode.load) {
+        if ((jit.arch == Arch::ARMv4) && (first != opcode.rn)) {
+            emitter.store_gpr(opcode.rn, new_base);
+        }
+    }
+
+    bool user_switch_mode = opcode.psr && (!opcode.load || !opcode.r15_in_rlist);
+    if (user_switch_mode) {
+        logger.todo("Translator: handle user switch mode");
+    }
+
+    for (int i = first; i < 16; i++) {
+        if (!(opcode.rlist & (1 << i))) {
+            continue;
+        }
+
+        if (opcode.pre) {
+            address = emitter.add(address, IRConstant{4}, false);
+        }
+
+        if (opcode.load) {
+            auto data = emitter.memory_read(address, AccessSize::Word, AccessType::Aligned);
+            emitter.store_gpr(static_cast<GPR>(i), data);
+        } else {
+            auto data = emitter.load_gpr(static_cast<GPR>(i));
+            emitter.memory_write(address, data, AccessSize::Word, AccessType::Aligned);
+        }
+
+        if (!opcode.pre) {
+            address = emitter.add(address, IRConstant{4}, false);
+        } 
+    }
+
+    if (opcode.writeback) {
+        // TODO: make sure this is correct
+        // ldm armv4: writeback if rn is not in rlist
+        // ldm armv5: writeback if rn is only register or not the last register in rlist
+        if (opcode.load) {
+            if (jit.arch == Arch::ARMv5) {
+                if ((opcode.rlist == (1 << opcode.rn)) || !((opcode.rlist >> opcode.rn) == 1)) {
+                    emitter.store_gpr(opcode.rn, new_base);
+                }
+            } else {
+                if (!(opcode.rlist & (1 << opcode.rn))) {
+                    emitter.store_gpr(opcode.rn, new_base);
+                }
+            }
+        } else {
+            emitter.store_gpr(opcode.rn, new_base);
+        }
+    } 
+
+    if (user_switch_mode) {
+        logger.todo("Translator: handle user switch mode");
+    }
+
+    if (opcode.load && opcode.r15_in_rlist) {
+        logger.todo("Translator: handle ldm r15");
+    }
+
     return BlockStatus::Continue;
 }
 
 Translator::BlockStatus Translator::arm_single_data_transfer() {
     auto opcode = ARMSingleDataTransfer::decode(instruction);
     IRValue op2;
-    IRVariable addr = emitter.load_gpr(opcode.rn);
+    IRVariable address = emitter.load_gpr(opcode.rn);
     bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
 
     if (opcode.imm) {
@@ -191,7 +285,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     }
 
     if (opcode.pre) {
-        addr = emitter.add(addr, op2, false);
+        address = emitter.add(address, op2, false);
     }
 
     emit_advance_pc();
@@ -201,7 +295,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
         if (opcode.byte) {
             logger.todo("Translator: handle load byte");
         } else {
-            dst = emitter.memory_read(addr, AccessSize::Word, AccessType::Unaligned);
+            dst = emitter.memory_read(address, AccessSize::Word, AccessType::Unaligned);
         }
 
         emitter.store_gpr(opcode.rd, dst);
@@ -210,7 +304,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
         if (opcode.byte) {
             logger.todo("Translator: handle write byte");
         } else {
-            emitter.memory_write(addr, src, AccessSize::Word, AccessType::Aligned);
+            emitter.memory_write(address, src, AccessSize::Word, AccessType::Aligned);
         }
     }
 
@@ -220,7 +314,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
             auto new_base = emitter.add(base, op2, false);
             emitter.store_gpr(opcode.rn, new_base);
         } else if (opcode.writeback) {
-            emitter.store_gpr(opcode.rn, addr);
+            emitter.store_gpr(opcode.rn, address);
         }
     }
 

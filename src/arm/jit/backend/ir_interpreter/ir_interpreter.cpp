@@ -393,7 +393,7 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
         if (opcode.access_type == AccessType::Unaligned) {
             assign_variable(opcode.dst, jit.read_word_rotate(addr));
         } else {
-            logger.todo("handle regular word read");
+            assign_variable(opcode.dst, jit.read_word(addr));
         }
 
         break;
