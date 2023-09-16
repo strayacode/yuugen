@@ -37,6 +37,7 @@ public:
     IRVariable bic(IRValue lhs, IRValue rhs, bool set_flags);
     void branch(IRValue address, bool is_arm);
     void branch_exchange(IRValue address, ExchangeType exchange_type);
+    IRVariable multiply(IRValue lhs, IRValue rhs, bool set_flags);
 
     BasicBlock& basic_block;
 

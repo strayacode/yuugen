@@ -103,7 +103,8 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
         }
     } else if (opcode.half) {
         if (opcode.load) {
-            logger.todo("Translator: handle ldrh");
+            auto dst = emitter.memory_read(address, AccessSize::Half, AccessType::Aligned);
+            emitter.store_gpr(opcode.rd, dst);
         } else {
             IRVariable src = emitter.load_gpr(opcode.rd);
             emitter.memory_write(address, src, AccessSize::Half, AccessType::Aligned);
@@ -281,7 +282,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     }
 
     if (!opcode.up) {
-        logger.todo("Translator: arm_single_data_transfer handle down");
+        op2 = emitter.multiply(op2, IRConstant{static_cast<u32>(-1)}, false);
     }
 
     if (opcode.pre) {

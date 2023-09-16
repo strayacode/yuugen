@@ -134,4 +134,10 @@ void Emitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
     push<IRBranchExchange>(address, exchange_type);
 }
 
+IRVariable Emitter::multiply(IRValue lhs, IRValue rhs, bool set_flags) {
+    auto dst = create_variable();
+    push<IRMultiply>(dst, lhs, rhs, set_flags);
+    return dst;
+}
+
 } // namespace arm

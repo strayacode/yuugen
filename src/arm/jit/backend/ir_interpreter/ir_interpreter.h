@@ -47,7 +47,8 @@ private:
         IRMemoryRead,
         IRBic,
         IRBranch,
-        IRBranchExchange
+        IRBranchExchange,
+        IRMultiply
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -99,6 +100,7 @@ private:
     void handle_bic(IROpcodeVariant& opcode_variant);
     void handle_branch(IROpcodeVariant& opcode_variant);
     void handle_branch_exchange(IROpcodeVariant& opcode_variant);
+    void handle_multiply(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;

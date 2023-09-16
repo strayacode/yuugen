@@ -140,6 +140,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_branch, *opcode->as<IRBranch>()};
     case IROpcodeType::BranchExchange:
         return {&IRInterpreter::handle_branch_exchange, *opcode->as<IRBranchExchange>()};
+    case IROpcodeType::Multiply:
+        return {&IRInterpreter::handle_multiply, *opcode->as<IRMultiply>()};
     }
 }
 
@@ -442,6 +444,19 @@ void IRInterpreter::handle_branch_exchange(IROpcodeVariant& opcode_variant) {
 
     address &= address_mask;
     jit.set_gpr(GPR::PC, address);
+}
+
+void IRInterpreter::handle_multiply(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRMultiply>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs * rhs;
+    assign_variable(opcode.dst, result);
+
+    if (opcode.set_flags) {
+        update_flag(Flags::N, result >> 31);
+        update_flag(Flags::Z, result == 0);
+    }
 }
 
 } // namespace arm

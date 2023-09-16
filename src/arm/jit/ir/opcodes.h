@@ -34,6 +34,7 @@ enum class IROpcodeType {
     Bic,
     Branch,
     BranchExchange,
+    Multiply,
 };
 
 enum class AccessSize {
@@ -401,6 +402,19 @@ struct IRBranchExchange : IROpcode {
 
     IRValue address;
     ExchangeType exchange_type;
+};
+
+struct IRMultiply : IROpcode {
+    IRMultiply(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Multiply), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("mul%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+    bool set_flags;
 };
 
 } // namespace arm
