@@ -302,7 +302,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     } else {
         IRVariable src = emitter.load_gpr(opcode.rd);
         if (opcode.byte) {
-            logger.todo("Translator: handle write byte");
+            emitter.memory_write(address, src, AccessSize::Byte, AccessType::Aligned);
         } else {
             emitter.memory_write(address, src, AccessSize::Word, AccessType::Aligned);
         }
