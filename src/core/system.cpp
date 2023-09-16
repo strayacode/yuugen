@@ -52,18 +52,18 @@ void System::reset() {
     rcnt = 0;
 
     frames = 0;
-}
-
-void System::start() {
-    // stop the previous thread if one was running
-    stop();
-    reset();
 
     if (config.boot_mode == BootMode::Direct) {
         direct_boot();
     } else {
         firmware_boot();
     }
+}
+
+void System::start() {
+    // stop the previous thread if one was running
+    stop();
+    reset();
 
     audio_device->set_state(common::AudioState::Playing);
 
