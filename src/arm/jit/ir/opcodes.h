@@ -35,6 +35,11 @@ enum class IROpcodeType {
     Branch,
     BranchExchange,
     Multiply,
+    ExclusiveOr,
+    Test,
+    AddCarry,
+    MoveNegate,
+    CompareNegate,
 };
 
 enum class AccessSize {
@@ -415,6 +420,66 @@ struct IRMultiply : IROpcode {
     IRValue lhs;
     IRValue rhs;
     bool set_flags;
+};
+
+struct IRExclusiveOr : IROpcode {
+    IRExclusiveOr(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::ExclusiveOr), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("xor%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+    bool set_flags;
+};
+
+struct IRTest : IROpcode {
+    IRTest(IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Test), lhs(lhs), rhs(rhs) {}
+
+    std::string to_string() override {
+        return common::format("tst.s %s, %s", lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRValue lhs;
+    IRValue rhs;
+};
+
+struct IRAddCarry : IROpcode {
+    IRAddCarry(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::AddCarry), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("adc%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+    bool set_flags;
+};
+
+struct IRMoveNegate : IROpcode {
+    IRMoveNegate(IRVariable dst, IRValue src, bool set_flags) : IROpcode(IROpcodeType::MoveNegate), dst(dst), src(src), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("mvn%s %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    bool set_flags;
+};
+
+struct IRCompareNegate : IROpcode {
+    IRCompareNegate(IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::CompareNegate), lhs(lhs), rhs(rhs) {}
+
+    std::string to_string() override {
+        return common::format("cmn.s %s, %s", lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRValue lhs;
+    IRValue rhs;
 };
 
 } // namespace arm

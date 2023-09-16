@@ -294,7 +294,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     if (opcode.load) {
         IRVariable dst;
         if (opcode.byte) {
-            logger.todo("Translator: handle load byte");
+            dst = emitter.memory_read(address, AccessSize::Byte, AccessType::Aligned);
         } else {
             dst = emitter.memory_read(address, AccessSize::Word, AccessType::Unaligned);
         }
@@ -377,9 +377,12 @@ Translator::BlockStatus Translator::arm_data_processing() {
         emitter.store_gpr(opcode.rd, dst);
         break;
     }
-    case ARMDataProcessing::Opcode::EOR:
-        logger.todo("Translator: handle sub");
+    case ARMDataProcessing::Opcode::EOR: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        auto dst = emitter.exclusive_or(op1, op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
         break;
+    }
     case ARMDataProcessing::Opcode::SUB: {
         IRValue op1 = emitter.load_gpr(opcode.rn);
         auto dst = emitter.sub(op1, op2, opcode.set_flags);
@@ -395,18 +398,23 @@ Translator::BlockStatus Translator::arm_data_processing() {
         emitter.store_gpr(opcode.rd, dst);
         break;
     }
-    case ARMDataProcessing::Opcode::ADC:
-        logger.todo("Translator: handle adc");
+    case ARMDataProcessing::Opcode::ADC: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        auto dst = emitter.add_carry(op1, op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
         break;
+    }
     case ARMDataProcessing::Opcode::SBC:
         logger.todo("Translator: handle sbc");
         break;
     case ARMDataProcessing::Opcode::RSC:
         logger.todo("Translator: handle rsc");
         break;
-    case ARMDataProcessing::Opcode::TST:
-        logger.todo("Translator: handle tst");
+    case ARMDataProcessing::Opcode::TST: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        emitter.test(op1, op2);
         break;
+    }
     case ARMDataProcessing::Opcode::TEQ:
         logger.todo("Translator: handle teq");
         break;
@@ -415,12 +423,17 @@ Translator::BlockStatus Translator::arm_data_processing() {
         emitter.compare(op1, op2);
         break;
     }
-    case ARMDataProcessing::Opcode::CMN:
-        logger.todo("Translator: handle cmn");
+    case ARMDataProcessing::Opcode::CMN: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        emitter.compare_negate(op1, op2);
         break;
-    case ARMDataProcessing::Opcode::ORR:
-        logger.todo("Translator: handle orr");
+    }
+    case ARMDataProcessing::Opcode::ORR: {
+        IRValue op1 = emitter.load_gpr(opcode.rn);
+        auto dst = emitter.or_(op1, op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
         break;
+    }
     case ARMDataProcessing::Opcode::MOV: {
         auto dst = emitter.move(op2, opcode.set_flags);
         emitter.store_gpr(opcode.rd, dst);
@@ -432,9 +445,11 @@ Translator::BlockStatus Translator::arm_data_processing() {
         emitter.store_gpr(opcode.rd, dst);
         break;
     }
-    case ARMDataProcessing::Opcode::MVN:
-        logger.todo("Translator: handle mvn");
+    case ARMDataProcessing::Opcode::MVN: {
+        auto dst = emitter.move_negate(op2, opcode.set_flags);
+        emitter.store_gpr(opcode.rd, dst);
         break;
+    }
     }
 
     if (update_flags) {

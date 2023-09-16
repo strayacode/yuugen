@@ -48,7 +48,7 @@ bool Application::initialise() {
     audio_device = std::make_shared<SDLAudioDevice>();
     system.set_audio_device(audio_device);
 
-    system.select_cpu_backend(arm::BackendType::Interpreter);
+    system.select_cpu_backend(arm::BackendType::IRInterpreter);
     return true;
 }
 

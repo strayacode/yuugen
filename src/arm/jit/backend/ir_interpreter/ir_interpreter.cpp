@@ -142,6 +142,16 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_branch_exchange, *opcode->as<IRBranchExchange>()};
     case IROpcodeType::Multiply:
         return {&IRInterpreter::handle_multiply, *opcode->as<IRMultiply>()};
+    case IROpcodeType::ExclusiveOr:
+        return {&IRInterpreter::handle_exclusive_or, *opcode->as<IRExclusiveOr>()};
+    case IROpcodeType::Test:
+        return {&IRInterpreter::handle_test, *opcode->as<IRTest>()};
+    case IROpcodeType::AddCarry:
+        return {&IRInterpreter::handle_add_carry, *opcode->as<IRAddCarry>()};
+    case IROpcodeType::MoveNegate:
+        return {&IRInterpreter::handle_move_negate, *opcode->as<IRMoveNegate>()};
+    case IROpcodeType::CompareNegate:
+        return {&IRInterpreter::handle_compare_negate, *opcode->as<IRCompareNegate>()};
     }
 }
 
@@ -216,7 +226,10 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
     assign_variable(opcode.dst, result);
 
     if (opcode.set_flags) {
-        logger.todo("handle_add: handle set flags");
+        update_flag(Flags::N, result >> 31);
+        update_flag(Flags::Z, result == 0);
+        update_flag(Flags::C, result < lhs);
+        update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
     }
 }
 
@@ -247,11 +260,13 @@ void IRInterpreter::handle_and(IROpcodeVariant& opcode_variant) {
 
 void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLogicalShiftRight>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    auto [result, carry] = lsr(value, amount, opcode.amount.is_constant());
+    assign_variable(opcode.dst, result);
 
-    logger.todo("IRInterpreter: handle_logical_shift_right");
-
-    if (opcode.set_carry) {
-        logger.todo("handle_logical_shift_right: handle set carry");
+    if (opcode.set_carry && carry) {
+        update_flag(Flags::C, *carry);
     }
 }
 
@@ -373,7 +388,7 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
         if (opcode.access_type == AccessType::Signed) {
             logger.todo("handle signed byte read");
         } else {
-            logger.todo("handle regular byte read");
+            assign_variable(opcode.dst, jit.read_byte(addr));
         }
         
         break;
@@ -457,6 +472,70 @@ void IRInterpreter::handle_multiply(IROpcodeVariant& opcode_variant) {
         update_flag(Flags::N, result >> 31);
         update_flag(Flags::Z, result == 0);
     }
+}
+
+void IRInterpreter::handle_exclusive_or(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRExclusiveOr>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs ^ rhs;
+    assign_variable(opcode.dst, result);
+
+    if (opcode.set_flags) {
+        update_flag(Flags::N, result >> 31);
+        update_flag(Flags::Z, result == 0);
+    }
+}
+
+void IRInterpreter::handle_test(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRTest>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs & rhs;
+
+    update_flag(Flags::N, result >> 31);
+    update_flag(Flags::Z, result == 0);
+}
+
+void IRInterpreter::handle_add_carry(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRAddCarry>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto carry = flags & Flags::C;
+    u64 result64 = static_cast<u64>(lhs) + static_cast<u64>(rhs) + static_cast<u64>(carry);
+    u32 result = static_cast<u32>(result64);
+    assign_variable(opcode.dst, result);
+
+    if (opcode.set_flags) {
+        update_flag(Flags::N, result >> 31);
+        update_flag(Flags::Z, result == 0);
+        update_flag(Flags::C, result64 >> 32);
+        update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
+    }
+}
+
+void IRInterpreter::handle_move_negate(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRMoveNegate>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto result = ~value;
+    assign_variable(opcode.dst, result);
+
+    if (opcode.set_flags) {
+        update_flag(Flags::N, result >> 31);
+        update_flag(Flags::Z, result == 0);
+    }
+}
+
+void IRInterpreter::handle_compare_negate(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRCompareNegate>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs + rhs;
+
+    update_flag(Flags::N, result >> 31);
+    update_flag(Flags::Z, result == 0);
+    update_flag(Flags::C, result < lhs);
+    update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
 }
 
 } // namespace arm

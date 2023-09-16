@@ -48,7 +48,12 @@ private:
         IRBic,
         IRBranch,
         IRBranchExchange,
-        IRMultiply
+        IRMultiply,
+        IRExclusiveOr,
+        IRTest,
+        IRAddCarry,
+        IRMoveNegate,
+        IRCompareNegate
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -101,6 +106,11 @@ private:
     void handle_branch(IROpcodeVariant& opcode_variant);
     void handle_branch_exchange(IROpcodeVariant& opcode_variant);
     void handle_multiply(IROpcodeVariant& opcode_variant);
+    void handle_exclusive_or(IROpcodeVariant& opcode_variant);
+    void handle_test(IROpcodeVariant& opcode_variant);
+    void handle_add_carry(IROpcodeVariant& opcode_variant);
+    void handle_move_negate(IROpcodeVariant& opcode_variant);
+    void handle_compare_negate(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;

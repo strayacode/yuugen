@@ -140,4 +140,30 @@ IRVariable Emitter::multiply(IRValue lhs, IRValue rhs, bool set_flags) {
     return dst;
 }
 
+IRVariable Emitter::exclusive_or(IRValue lhs, IRValue rhs, bool set_flags) {
+    auto dst = create_variable();
+    push<IRExclusiveOr>(dst, lhs, rhs, set_flags);
+    return dst;
+}
+
+void Emitter::test(IRValue lhs, IRValue rhs) {
+    push<IRTest>(lhs, rhs);
+}
+
+IRVariable Emitter::add_carry(IRValue lhs, IRValue rhs, bool set_flags) {
+    auto dst = create_variable();
+    push<IRAddCarry>(dst, lhs, rhs, set_flags);
+    return dst;
+}
+
+IRVariable Emitter::move_negate(IRValue src, bool set_flags) {
+    auto dst = create_variable();
+    push<IRMoveNegate>(dst, src, set_flags);
+    return dst;
+}
+
+void Emitter::compare_negate(IRValue lhs, IRValue rhs) {
+    push<IRCompareNegate>(lhs, rhs);
+}
+
 } // namespace arm

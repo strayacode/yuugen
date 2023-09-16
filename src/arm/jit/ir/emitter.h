@@ -38,6 +38,11 @@ public:
     void branch(IRValue address, bool is_arm);
     void branch_exchange(IRValue address, ExchangeType exchange_type);
     IRVariable multiply(IRValue lhs, IRValue rhs, bool set_flags);
+    IRVariable exclusive_or(IRValue lhs, IRValue rhs, bool set_flags);
+    void test(IRValue lhs, IRValue rhs);
+    IRVariable add_carry(IRValue lhs, IRValue rhs, bool set_flags);
+    IRVariable move_negate(IRValue src, bool set_flags);
+    void compare_negate(IRValue lhs, IRValue rhs);
 
     BasicBlock& basic_block;
 
