@@ -295,7 +295,7 @@ void IRInterpreter::handle_update_flag(IROpcodeVariant& opcode_variant) {
 void IRInterpreter::handle_store_flags(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreFlags>(opcode_variant);
     u32 flags_mask = opcode.flags << 28;
-    jit.state.cpsr.data = (jit.state.cpsr.data & ~flags_mask) | (flags & flags_mask);
+    jit.state.cpsr.data = (jit.state.cpsr.data & ~flags_mask) | ((flags << 28) & flags_mask);
 }
 
 void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {

@@ -4,12 +4,12 @@
 void compare_states(arm::Arch arch, arm::CPU& a, arm::CPU& b) {
     for (int i = 0; i < 16; i++) {
         if (a.get_gpr(static_cast<arm::GPR>(i)) != b.get_gpr(static_cast<arm::GPR>(i))) {
-            logger.error("%s r%d mismatch: %08x != %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", i, a.get_gpr(static_cast<arm::GPR>(i)), b.get_gpr(static_cast<arm::GPR>(i)));
+            logger.error("%s r%d mismatch: expected: %08x got: %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", i, a.get_gpr(static_cast<arm::GPR>(i)), b.get_gpr(static_cast<arm::GPR>(i)));
         }
     }
 
     if (a.get_cpsr().data != b.get_cpsr().data) {
-        logger.error("%s cpsr mismatch: %08x != %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", a.get_cpsr().data, b.get_cpsr().data);
+        logger.error("%s cpsr mismatch: expected: %08x got: %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", a.get_cpsr().data, b.get_cpsr().data);
     }
 }
 
