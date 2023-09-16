@@ -16,10 +16,7 @@ System::System() :
     spi(*this),
     timers7(scheduler, arm7.get_irq()),
     timers9(scheduler, arm9.get_irq())
-{
-    arm7.select_backend(arm::BackendType::IRInterpreter);
-    arm9.select_backend(arm::BackendType::IRInterpreter);
-}
+{}
 
 System::~System() {
     stop();
@@ -92,6 +89,11 @@ void System::set_game_path(const std::string& game_path) {
 
 void System::set_boot_mode(BootMode boot_mode) {
     config.boot_mode = boot_mode;
+}
+
+void System::select_cpu_backend(arm::BackendType backend_type) {
+    arm7.select_backend(backend_type);
+    arm9.select_backend(backend_type);
 }
 
 void System::write_wramcnt(u8 value) {
