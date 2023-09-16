@@ -1,15 +1,23 @@
 #include "common/logger.h"
 #include "core/system.h"
 
-void compare_states(arm::State& a, arm::State& b) {
-    logger.todo("handle comparing state");
+void compare_states(arm::Arch arch, arm::CPU& a, arm::CPU& b) {
+    for (int i = 0; i < 16; i++) {
+        if (a.get_gpr(static_cast<arm::GPR>(i)) != b.get_gpr(static_cast<arm::GPR>(i))) {
+            logger.error("%s r%d mismatch: %08x != %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", i, a.get_gpr(static_cast<arm::GPR>(i)), b.get_gpr(static_cast<arm::GPR>(i)));
+        }
+    }
+
+    if (a.get_cpsr().data != b.get_cpsr().data) {
+        logger.error("%s cpsr mismatch: %08x != %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", a.get_cpsr().data, b.get_cpsr().data);
+    }
 }
 
 void run_and_compare_cpus(arm::CPU& a, arm::CPU& b, int cycles) {
     for (int i = 0; i < cycles; i++) {
         a.run(1);
         b.run(1);
-        compare_states(a.get_state(), b.get_state());
+        compare_states(a.get_arch(), a, b);
     }
 }
 
