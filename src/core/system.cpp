@@ -16,7 +16,9 @@ System::System() :
     spi(*this),
     timers7(scheduler, arm7.get_irq()),
     timers9(scheduler, arm9.get_irq())
-{}
+{
+    main_memory = std::make_unique<std::array<u8, 0x400000>>();
+}
 
 System::~System() {
     stop();
@@ -41,7 +43,7 @@ void System::reset() {
     timers9.reset();
     wifi.reset();
 
-    main_memory.fill(0);
+    main_memory->fill(0);
     shared_wram.fill(0);
     wramcnt = 0;
     haltcnt = 0;
