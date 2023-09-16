@@ -440,7 +440,6 @@ void IRInterpreter::handle_branch_exchange(IROpcodeVariant& opcode_variant) {
     auto instruction_size = is_arm ? sizeof(u32) : sizeof(u16);
     auto address_mask = ~(instruction_size - 1);
 
-    address += 2 * instruction_size;
     address &= address_mask;
     jit.set_gpr(GPR::PC, address);
 }
