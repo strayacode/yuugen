@@ -336,10 +336,10 @@ Translator::BlockStatus Translator::arm_data_processing() {
         opcode.opcode == ARMDataProcessing::Opcode::SBC ||
         opcode.opcode == ARMDataProcessing::Opcode::RSC;
 
-    bool is_comparison = opcode.opcode != ARMDataProcessing::Opcode::TST &&
-        opcode.opcode != ARMDataProcessing::Opcode::TEQ &&
-        opcode.opcode != ARMDataProcessing::Opcode::CMP &&
-        opcode.opcode != ARMDataProcessing::Opcode::CMN;
+    bool is_comparison = opcode.opcode == ARMDataProcessing::Opcode::TST ||
+        opcode.opcode == ARMDataProcessing::Opcode::TEQ ||
+        opcode.opcode == ARMDataProcessing::Opcode::CMP ||
+        opcode.opcode == ARMDataProcessing::Opcode::CMN;
 
     bool set_carry = opcode.set_flags && !carry_done_in_opcode;
     bool update_flags = opcode.set_flags && (opcode.rd != GPR::PC || is_comparison);
@@ -448,8 +448,16 @@ Translator::BlockStatus Translator::arm_data_processing() {
         emitter.store_flags(flags[static_cast<int>(opcode.opcode)]);
     }
 
-    if (opcode.rd == 15) {
-        logger.todo("Translator: handle pc write in data processing");
+    if (opcode.rd == 15 && opcode.set_flags) {
+        emit_copy_spsr_to_cpsr();
+    }
+
+    if (opcode.rd == 15 && !is_comparison) {
+        if (opcode.set_flags) {
+            logger.todo("Translator: handle pc write in data processing with set flags (t bit might change)");
+        }
+
+        return BlockStatus::Break;
     } else if (!early_advance_pc) {
         emit_advance_pc();
     }
