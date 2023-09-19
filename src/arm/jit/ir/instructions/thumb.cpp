@@ -12,25 +12,25 @@ Translator::BlockStatus Translator::thumb_alu_immediate() {
 
     switch (opcode.opcode) {
     case ThumbALUImmediate::Opcode::MOV:
-        emitter.store_gpr(opcode.rd, imm);
-        emitter.update_flag(Flags::N, false);
-        emitter.update_flag(Flags::Z, opcode.imm == 0);
+        ir.store_gpr(opcode.rd, imm);
+        ir.update_flag(Flags::N, false);
+        ir.update_flag(Flags::Z, opcode.imm == 0);
         break;
     case ThumbALUImmediate::Opcode::CMP: {
-        auto value = emitter.load_gpr(opcode.rd);
-        emitter.compare(value, imm);
+        auto value = ir.load_gpr(opcode.rd);
+        ir.compare(value, imm);
         break;
     }
     case ThumbALUImmediate::Opcode::ADD: {
-        auto value = emitter.load_gpr(opcode.rd);
-        auto result = emitter.add(value, imm, true);
-        emitter.store_gpr(opcode.rd, result);
+        auto value = ir.load_gpr(opcode.rd);
+        auto result = ir.add(value, imm, true);
+        ir.store_gpr(opcode.rd, result);
         break;
     }
     case ThumbALUImmediate::Opcode::SUB: {
-        auto value = emitter.load_gpr(opcode.rd);
-        auto result = emitter.sub(value, imm, true);
-        emitter.store_gpr(opcode.rd, result);
+        auto value = ir.load_gpr(opcode.rd);
+        auto result = ir.sub(value, imm, true);
+        ir.store_gpr(opcode.rd, result);
         break;
     }
     }
@@ -57,7 +57,7 @@ Translator::BlockStatus Translator::thumb_branch_link_exchange_offset() {
 Translator::BlockStatus Translator::thumb_branch() {
     auto opcode = ThumbBranch::decode(instruction);
     auto target_address = code_address + opcode.offset + (2 * instruction_size);
-    emitter.store_gpr(GPR::PC, IRConstant{target_address});
+    ir.store_gpr(GPR::PC, IRConstant{target_address});
     return BlockStatus::Break;
 }
 
@@ -118,13 +118,13 @@ Translator::BlockStatus Translator::thumb_add_subtract() {
 
 Translator::BlockStatus Translator::thumb_shift_immediate() {
     auto opcode = ThumbShiftImmediate::decode(instruction);
-    auto src = emitter.load_gpr(opcode.rs);
+    auto src = ir.load_gpr(opcode.rs);
     auto value = emit_barrel_shifter(src, opcode.shift_type, IRConstant{opcode.amount}, true);
-    emitter.store_flags(Flags::C);
+    ir.store_flags(Flags::C);
 
-    auto dst = emitter.move(value, true);
-    emitter.store_gpr(opcode.rd, dst);
-    emitter.store_flags(Flags::NZ);
+    auto dst = ir.move(value, true);
+    ir.store_gpr(opcode.rd, dst);
+    ir.store_flags(Flags::NZ);
 
     emit_advance_pc();
     return BlockStatus::Continue;
@@ -138,7 +138,7 @@ Translator::BlockStatus Translator::thumb_software_interrupt() {
 Translator::BlockStatus Translator::thumb_branch_conditional() {
     auto opcode = ThumbBranchConditional::decode(instruction);
     auto target_address = code_address + opcode.offset + (2 * instruction_size);
-    emitter.store_gpr(GPR::PC, IRConstant{target_address});
+    ir.store_gpr(GPR::PC, IRConstant{target_address});
     return BlockStatus::Break;
 }
 

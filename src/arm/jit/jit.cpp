@@ -55,8 +55,8 @@ void Jit::run(int cycles) {
         Location location{state};
         if (!backend->has_code_at(location)) {
             BasicBlock basic_block{location};
-            Emitter emitter{basic_block};
-            Translator translator{*this, emitter};
+            IREmitter ir{basic_block};
+            Translator translator{*this, ir};
             translator.translate();
             backend->compile(basic_block);
         }

@@ -9,10 +9,10 @@ namespace arm {
 
 static Decoder<Translator> decoder;
 
-Translator::Translator(Jit& jit, Emitter& emitter) : jit(jit), emitter(emitter) {}
+Translator::Translator(Jit& jit, IREmitter& ir) : jit(jit), ir(ir) {}
 
 void Translator::translate() {
-    auto& basic_block = emitter.basic_block;
+    auto& basic_block = ir.basic_block;
     auto location = basic_block.location;
     instruction_size = location.get_instruction_size();
     code_address = location.get_address() - 2 * instruction_size;
@@ -80,33 +80,33 @@ Translator::BlockStatus Translator::illegal_instruction() {
 }
 
 void Translator::emit_advance_pc() {
-    emitter.store_gpr(GPR::PC, IRConstant{code_address + instruction_size});
+    ir.store_gpr(GPR::PC, IRConstant{code_address + instruction_size});
 }
 
 void Translator::emit_link() {
-    emitter.store_gpr(GPR::LR, IRConstant{code_address + instruction_size});
+    ir.store_gpr(GPR::LR, IRConstant{code_address + instruction_size});
 }
 
 void Translator::emit_branch(IRValue address) {
-    emitter.branch(address, emitter.basic_block.location.is_arm());
+    ir.branch(address, ir.basic_block.location.is_arm());
 }
 
 IRVariable Translator::emit_barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount, bool set_carry) {
     switch (shift_type) {
     case ShiftType::LSL:
-        return emitter.logical_shift_left(value, amount, set_carry);
+        return ir.logical_shift_left(value, amount, set_carry);
     case ShiftType::LSR:
-        return emitter.logical_shift_right(value, amount, set_carry);
+        return ir.logical_shift_right(value, amount, set_carry);
     case ShiftType::ASR:
-        return emitter.arithmetic_shift_right(value, amount, set_carry);
+        return ir.arithmetic_shift_right(value, amount, set_carry);
     case ShiftType::ROR:
-        return emitter.rotate_right(value, amount, set_carry);
+        return ir.rotate_right(value, amount, set_carry);
     }
 }
 
 void Translator::emit_copy_spsr_to_cpsr() {
-    auto spsr = emitter.load_spsr();
-    emitter.store_cpsr(spsr);
+    auto spsr = ir.load_spsr();
+    ir.store_cpsr(spsr);
 }
 
 u16 Translator::code_read_half(u32 addr) {

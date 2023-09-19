@@ -3,7 +3,7 @@
 #include "arm/cpu.h"
 #include "arm/instructions.h"
 #include "arm/jit/basic_block.h"
-#include "arm/jit/ir/emitter.h"
+#include "arm/jit/ir/ir_emitter.h"
 
 namespace arm {
 
@@ -11,7 +11,7 @@ class Jit;
 
 class Translator {
 public:
-    Translator(Jit& jit, Emitter& emitter);
+    Translator(Jit& jit, IREmitter& ir);
 
     void translate();
 
@@ -89,7 +89,7 @@ private:
     u32 code_address{0};
     u32 instruction{0};
     Jit& jit;
-    Emitter& emitter;
+    IREmitter& ir;
 };
 
 } // namespace arm

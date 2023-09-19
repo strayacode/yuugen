@@ -8,9 +8,9 @@
 
 namespace arm {
 
-class Emitter {
+class IREmitter {
 public:
-    Emitter(BasicBlock& basic_block);
+    IREmitter(BasicBlock& basic_block);
 
     IRVariable create_variable();
 

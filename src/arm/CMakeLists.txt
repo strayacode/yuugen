@@ -12,7 +12,7 @@ add_library(arm
     jit/jit.h jit/jit.cpp
     jit/basic_block.h jit/config.h
     jit/location.h
-    jit/ir/emitter.h jit/ir/emitter.cpp
+    jit/ir/ir_emitter.h jit/ir/ir_emitter.cpp
     jit/ir/translator.h jit/ir/translator.cpp
     jit/ir/opcodes.h jit/ir/types.h
     jit/ir/instructions/arm.cpp jit/ir/instructions/thumb.cpp
