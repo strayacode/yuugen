@@ -341,6 +341,9 @@ Translator::BlockStatus Translator::arm_data_processing() {
         opcode.opcode == ARMDataProcessing::Opcode::CMP ||
         opcode.opcode == ARMDataProcessing::Opcode::CMN;
 
+    bool uses_op1 = opcode.opcode != ARMDataProcessing::Opcode::MOV &&
+        opcode.opcode != ARMDataProcessing::Opcode::MVN;
+
     bool set_carry = opcode.set_flags && !carry_done_in_opcode;
     bool update_flags = opcode.set_flags && (opcode.rd != GPR::PC || is_comparison);
     bool early_advance_pc = false;
@@ -371,86 +374,66 @@ Translator::BlockStatus Translator::arm_data_processing() {
         }
     }
 
+    IRValue op1;
+    IRVariable result;
+
+    if (uses_op1) {
+        op1 = ir.load_gpr(opcode.rn);
+    }
+
     switch (opcode.opcode) {
-    case ARMDataProcessing::Opcode::AND: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
-        auto dst = ir.and_(op1, op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
+    case ARMDataProcessing::Opcode::AND:
+        result = ir.and_(op1, op2, opcode.set_flags);
         break;
-    }
-    case ARMDataProcessing::Opcode::EOR: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
-        auto dst = ir.exclusive_or(op1, op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
+    case ARMDataProcessing::Opcode::EOR:
+        result = ir.exclusive_or(op1, op2, opcode.set_flags);
         break;
-    }
-    case ARMDataProcessing::Opcode::SUB: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
-        auto dst = ir.sub(op1, op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
+    case ARMDataProcessing::Opcode::SUB:
+        result = ir.sub(op1, op2, opcode.set_flags);
         break;
-    }
     case ARMDataProcessing::Opcode::RSB:
         logger.todo("Translator: handle rsb");
         break;
-    case ARMDataProcessing::Opcode::ADD: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
-        auto dst = ir.add(op1, op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
+    case ARMDataProcessing::Opcode::ADD:
+        result = ir.add(op1, op2, opcode.set_flags);
         break;
-    }
-    case ARMDataProcessing::Opcode::ADC: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
-        auto dst = ir.add_carry(op1, op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
+    case ARMDataProcessing::Opcode::ADC:
+        result = ir.add_carry(op1, op2, opcode.set_flags);
         break;
-    }
     case ARMDataProcessing::Opcode::SBC:
         logger.todo("Translator: handle sbc");
         break;
     case ARMDataProcessing::Opcode::RSC:
         logger.todo("Translator: handle rsc");
         break;
-    case ARMDataProcessing::Opcode::TST: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
+    case ARMDataProcessing::Opcode::TST:
         ir.test(op1, op2);
         break;
-    }
     case ARMDataProcessing::Opcode::TEQ:
         logger.todo("Translator: handle teq");
         break;
-    case ARMDataProcessing::Opcode::CMP: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
+    case ARMDataProcessing::Opcode::CMP:
         ir.compare(op1, op2);
         break;
-    }
-    case ARMDataProcessing::Opcode::CMN: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
+    case ARMDataProcessing::Opcode::CMN:
         ir.compare_negate(op1, op2);
         break;
-    }
-    case ARMDataProcessing::Opcode::ORR: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
-        auto dst = ir.or_(op1, op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
+    case ARMDataProcessing::Opcode::ORR:
+        result = ir.or_(op1, op2, opcode.set_flags);
+        break;
+    case ARMDataProcessing::Opcode::MOV:
+        result = ir.move(op2, opcode.set_flags);
+        break;
+    case ARMDataProcessing::Opcode::BIC:
+        result = ir.bic(op1, op2, opcode.set_flags);
+        break;
+    case ARMDataProcessing::Opcode::MVN:
+        result = ir.move_negate(op2, opcode.set_flags);
         break;
     }
-    case ARMDataProcessing::Opcode::MOV: {
-        auto dst = ir.move(op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
-        break;
-    }
-    case ARMDataProcessing::Opcode::BIC: {
-        IRValue op1 = ir.load_gpr(opcode.rn);
-        auto dst = ir.bic(op1, op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
-        break;
-    }
-    case ARMDataProcessing::Opcode::MVN: {
-        auto dst = ir.move_negate(op2, opcode.set_flags);
-        ir.store_gpr(opcode.rd, dst);
-        break;
-    }
+
+    if (result.is_assigned()) {
+        ir.store_gpr(opcode.rd, result);
     }
 
     if (update_flags) {
