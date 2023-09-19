@@ -3,7 +3,7 @@
 #include <memory>
 #include "common/types.h"
 #include "arm/jit/basic_block.h"
-#include "arm/jit/ir/types.h"
+#include "arm/jit/ir/value.h"
 #include "arm/cpu.h"
 
 namespace arm {
@@ -14,9 +14,15 @@ public:
 
     IRVariable create_variable();
 
-    IRVariable move(IRValue src, bool set_flags);
+    // state opcodes
     IRVariable load_gpr(GPR gpr);
     void store_gpr(GPR gpr, IRValue src);
+    IRVariable load_cpsr();
+    void store_cpsr(IRVariable src);
+    IRVariable load_spsr();
+    void store_spsr(IRVariable src);
+
+    IRVariable move(IRValue src, bool set_flags);
     IRVariable add(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable logical_shift_left(IRValue src, IRValue amount, bool set_carry);
     IRVariable and_(IRValue lhs, IRValue rhs, bool set_flags);
@@ -26,11 +32,9 @@ public:
     void update_flag(Flags flag, bool value);
     void store_flags(Flags flags);
     void compare(IRValue lhs, IRValue rhs);
-    IRVariable load_cpsr();
-    IRVariable load_spsr();
+    
+    
     IRVariable or_(IRValue lhs, IRValue rhs, bool set_flags);
-    void store_cpsr(IRVariable src);
-    void store_spsr(IRVariable src);
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry);
     IRVariable rotate_right(IRValue src, IRValue amount, bool set_carry);
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);

@@ -2,7 +2,7 @@
 #include "common/bits.h"
 #include "arm/instructions.h"
 #include "arm/jit/ir/translator.h"
-#include "arm/jit/ir/types.h"
+#include "arm/jit/ir/value.h"
 #include "arm/jit/jit.h"
 
 namespace arm {

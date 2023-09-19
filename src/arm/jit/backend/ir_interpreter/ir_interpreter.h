@@ -4,7 +4,7 @@
 #include <memory>
 #include <variant>
 #include "arm/jit/basic_block.h"
-#include "arm/jit/ir/types.h"
+#include "arm/jit/ir/value.h"
 #include "arm/jit/backend/backend.h"
 #include "arm/jit/backend/code_cache.h"
 

@@ -12,12 +12,6 @@ IRVariable IREmitter::create_variable() {
     return variable;
 }
 
-IRVariable IREmitter::move(IRValue src, bool set_flags) {
-    auto dst = create_variable();
-    push<IRMove>(dst, src, set_flags);
-    return dst;
-}
-
 IRVariable IREmitter::load_gpr(GPR gpr) {
     auto dst = create_variable();
     GuestRegister src{gpr, basic_block.location.get_mode()};
@@ -28,6 +22,32 @@ IRVariable IREmitter::load_gpr(GPR gpr) {
 void IREmitter::store_gpr(GPR gpr, IRValue src) {
     GuestRegister dst{gpr, basic_block.location.get_mode()};
     push<IRStoreGPR>(dst, src);
+}
+
+IRVariable IREmitter::load_cpsr() {
+    auto dst = create_variable();
+    push<IRLoadCPSR>(dst);
+    return dst;
+}
+
+void IREmitter::store_cpsr(IRVariable src) {
+    push<IRStoreCPSR>(src);
+}
+
+IRVariable IREmitter::load_spsr() {
+    auto dst = create_variable();
+    push<IRLoadSPSR>(dst);
+    return dst;
+}
+
+void IREmitter::store_spsr(IRVariable src) {
+    push<IRStoreSPSR>(src);
+}
+
+IRVariable IREmitter::move(IRValue src, bool set_flags) {
+    auto dst = create_variable();
+    push<IRMove>(dst, src, set_flags);
+    return dst;
 }
 
 IRVariable IREmitter::add(IRValue lhs, IRValue rhs, bool set_flags) {
@@ -76,30 +96,10 @@ void IREmitter::compare(IRValue lhs, IRValue rhs) {
     push<IRCompare>(lhs, rhs);
 }
 
-IRVariable IREmitter::load_cpsr() {
-    auto dst = create_variable();
-    push<IRLoadCPSR>(dst);
-    return dst;
-}
-
-IRVariable IREmitter::load_spsr() {
-    auto dst = create_variable();
-    push<IRLoadSPSR>(dst);
-    return dst;
-}
-
 IRVariable IREmitter::or_(IRValue lhs, IRValue rhs, bool set_flags) {
     auto dst = create_variable();
     push<IROr>(dst, lhs, rhs, set_flags);
     return dst;
-}
-
-void IREmitter::store_cpsr(IRVariable src) {
-    push<IRStoreCPSR>(src);
-}
-
-void IREmitter::store_spsr(IRVariable src) {
-    push<IRStoreSPSR>(src);
 }
 
 IRVariable IREmitter::arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry) {

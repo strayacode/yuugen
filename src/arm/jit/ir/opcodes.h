@@ -6,14 +6,20 @@
 #include "arm/cpu.h"
 #include "arm/state.h"
 #include "arm/disassembler/disassembler.h"
-#include "arm/jit/ir/types.h"
+#include "arm/jit/ir/value.h"
 
 namespace arm {
 
 enum class IROpcodeType {
-    Move,
+    // state opcodes
     LoadGPR,
     StoreGPR,
+    LoadCPSR,
+    LoadSPSR,
+    StoreCPSR,
+    StoreSPSR,
+
+    Move,
     Add,
     LogicalShiftLeft,
     And,
@@ -23,11 +29,7 @@ enum class IROpcodeType {
     UpdateFlag,
     StoreFlags,
     Compare,
-    LoadCPSR,
-    LoadSPSR,
     Or,
-    StoreCPSR,
-    StoreSPSR,
     ArithmeticShiftRight,
     RotateRight,
     MemoryRead,
@@ -138,23 +140,11 @@ struct IROpcode {
     IROpcodeType type;
 };
 
-struct IRMove : IROpcode {
-    IRMove(IRVariable dst, IRValue src, bool set_flags) : IROpcode(IROpcodeType::Move), dst(dst), src(src), set_flags(set_flags) {}
-
-    std::string to_string() override {
-        return common::format("mov%s %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue src;
-    bool set_flags;
-};
-
 struct IRLoadGPR : IROpcode {
     IRLoadGPR(IRVariable dst, GuestRegister src) : IROpcode(IROpcodeType::LoadGPR), dst(dst), src(src) {}
 
     std::string to_string() override {
-        return common::format("ld %s, %s", dst.to_string().c_str(), src.to_string().c_str());
+        return common::format("load %s, %s", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     IRVariable dst;
@@ -165,11 +155,63 @@ struct IRStoreGPR : IROpcode {
     IRStoreGPR(GuestRegister dst, IRValue src) : IROpcode(IROpcodeType::StoreGPR), dst(dst), src(src) {}
 
     std::string to_string() override {
-        return common::format("st %s, %s", dst.to_string().c_str(), src.to_string().c_str());
+        return common::format("store %s, %s", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     GuestRegister dst;
     IRValue src;
+};
+
+struct IRLoadCPSR : IROpcode {
+    IRLoadCPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadCPSR), dst(dst) {}
+
+    std::string to_string() override {
+        return common::format("ldcpsr %s", dst.to_string().c_str());
+    }
+
+    IRVariable dst;
+};
+
+struct IRStoreCPSR : IROpcode {
+    IRStoreCPSR(IRValue src) : IROpcode(IROpcodeType::StoreCPSR), src(src) {}
+
+    std::string to_string() override {
+        return common::format("stcpsr %s", src.to_string().c_str());
+    }
+
+    IRValue src;
+};
+
+struct IRLoadSPSR : IROpcode {
+    IRLoadSPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadSPSR), dst(dst) {}
+
+    std::string to_string() override {
+        return common::format("ldspsr %s", dst.to_string().c_str());
+    }
+
+    IRVariable dst;
+};
+
+struct IRStoreSPSR : IROpcode {
+    IRStoreSPSR(IRVariable src) : IROpcode(IROpcodeType::StoreSPSR), src(src) {}
+
+    std::string to_string() override {
+        return common::format("stspsr %s", src.to_string().c_str());
+    }
+
+    IRVariable src;
+};
+
+struct IRMove : IROpcode {
+    IRMove(IRVariable dst, IRValue src, bool set_flags) : IROpcode(IROpcodeType::Move), dst(dst), src(src), set_flags(set_flags) {}
+
+    std::string to_string() override {
+        return common::format("mov%s %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    bool set_flags;
 };
 
 struct IRAdd : IROpcode {
@@ -282,26 +324,6 @@ struct IRCompare : IROpcode {
     IRValue rhs;
 };
 
-struct IRLoadCPSR : IROpcode {
-    IRLoadCPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadCPSR), dst(dst) {}
-
-    std::string to_string() override {
-        return common::format("ldcpsr %s", dst.to_string().c_str());
-    }
-
-    IRVariable dst;
-};
-
-struct IRLoadSPSR : IROpcode {
-    IRLoadSPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadSPSR), dst(dst) {}
-
-    std::string to_string() override {
-        return common::format("ldspsr %s", dst.to_string().c_str());
-    }
-
-    IRVariable dst;
-};
-
 struct IROr : IROpcode {
     IROr(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Or), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
 
@@ -313,26 +335,6 @@ struct IROr : IROpcode {
     IRValue lhs;
     IRValue rhs;
     bool set_flags;
-};
-
-struct IRStoreCPSR : IROpcode {
-    IRStoreCPSR(IRValue src) : IROpcode(IROpcodeType::StoreCPSR), src(src) {}
-
-    std::string to_string() override {
-        return common::format("stcpsr %s", src.to_string().c_str());
-    }
-
-    IRValue src;
-};
-
-struct IRStoreSPSR : IROpcode {
-    IRStoreSPSR(IRVariable src) : IROpcode(IROpcodeType::StoreSPSR), src(src) {}
-
-    std::string to_string() override {
-        return common::format("stspsr %s", src.to_string().c_str());
-    }
-
-    IRVariable src;
 };
 
 struct IRArithmeticShiftRight : IROpcode {

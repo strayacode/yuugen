@@ -20,7 +20,11 @@ struct IRVariable {
         return common::format("%%%d", id);
     }
 
-    u32 id;
+    bool is_assigned() {
+        return id != 0xffffffff;
+    }
+
+    u32 id{0xffffffff};
 };
 
 struct IRConstant {
