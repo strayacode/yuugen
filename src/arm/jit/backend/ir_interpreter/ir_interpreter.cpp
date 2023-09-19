@@ -376,7 +376,15 @@ void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_varian
 }
 
 void IRInterpreter::handle_rotate_right(IROpcodeVariant& opcode_variant) {
-    logger.todo("IRInterpreter: handle_rotate_right");
+    auto& opcode = std::get<IRRotateRight>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    auto [result, carry] = ror(value, amount);
+    assign_variable(opcode.dst, result);
+
+    if (opcode.set_carry && carry) {
+        update_flag(Flags::C, *carry);
+    }
 }
 
 void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {

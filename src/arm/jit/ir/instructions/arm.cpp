@@ -360,8 +360,9 @@ Translator::BlockStatus Translator::arm_data_processing() {
         if (opcode.rhs.reg.imm) {
             amount = IRConstant{opcode.rhs.reg.amount.imm};
         } else {
-            // TODO: do early pc increment
-            logger.todo("Translator: handle arm data processing shift by register");
+            amount = emitter.load_gpr(opcode.rhs.reg.amount.rs);
+            emit_advance_pc();
+            early_advance_pc = true;
         }
 
         op2 = emit_barrel_shifter(op2, opcode.rhs.reg.shift_type, amount, set_carry);
@@ -390,7 +391,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
         break;
     }
     case ARMDataProcessing::Opcode::RSB:
-       logger.todo("Translator: handle rsb");
+        logger.todo("Translator: handle rsb");
         break;
     case ARMDataProcessing::Opcode::ADD: {
         IRValue op1 = emitter.load_gpr(opcode.rn);
@@ -509,6 +510,5 @@ Translator::BlockStatus Translator::arm_breakpoint() {
     logger.todo("Translator: handle arm_breakpoint");
     return BlockStatus::Continue;
 }
-
 
 } // namespace arm
