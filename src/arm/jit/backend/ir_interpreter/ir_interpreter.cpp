@@ -50,10 +50,11 @@ int IRInterpreter::run(Location location)  {
 }
 
 bool IRInterpreter::evaluate_condition(Condition condition) {
-    bool n = flags & Flags::N;
-    bool z = flags & Flags::Z;
-    bool c = flags & Flags::C;
-    bool v = flags & Flags::V;
+    auto cpsr = jit.get_cpsr(); 
+    bool n = cpsr.n;
+    bool z = cpsr.z;
+    bool c = cpsr.c;
+    bool v = cpsr.v;
 
     switch (condition) {
     case Condition::EQ:
