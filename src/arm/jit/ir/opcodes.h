@@ -23,6 +23,10 @@ enum class IROpcodeType {
     BitwiseAnd,
     BitwiseOr,
 
+    // arithmetic opcodes
+    Add,
+    Sub,
+
     // flag opcodes
     GetNZ,
     GetNZCV,
@@ -30,11 +34,9 @@ enum class IROpcodeType {
     // misc opcodes
     Copy,
     
-    Add,
     LogicalShiftLeft,
     LogicalShiftRight,
     MemoryWrite,
-    Sub,
     UpdateFlag,
     StoreFlags,
     Compare,
@@ -246,6 +248,18 @@ struct IRAdd : IROpcode {
     IRValue rhs;
 };
 
+struct IRSub : IROpcode {
+    IRSub(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Sub), dst(dst), lhs(lhs), rhs(rhs) {}
+
+    std::string to_string() override {
+        return common::format("%s = sub(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+};
+
 struct IRGetNZ : IROpcode {
     IRGetNZ(IRVariable dst, IRValue cpsr, IRValue value) : IROpcode(IROpcodeType::GetNZ), dst(dst), cpsr(cpsr), value(value) {}
 
@@ -318,19 +332,6 @@ struct IRMemoryWrite : IROpcode {
     IRValue src;
     AccessSize access_size;
     AccessType access_type;
-};
-
-struct IRSub : IROpcode {
-    IRSub(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Sub), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
-
-    std::string to_string() override {
-        return common::format("sub%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue lhs;
-    IRValue rhs;
-    bool set_flags;
 };
 
 struct IRUpdateFlag : IROpcode {

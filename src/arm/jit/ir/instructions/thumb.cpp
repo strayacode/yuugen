@@ -8,31 +8,36 @@ namespace arm {
 
 Translator::BlockStatus Translator::thumb_alu_immediate() {
     auto opcode = ThumbALUImmediate::decode(instruction);
-    IRConstant imm{opcode.imm};
+    bool uses_op1 = opcode.opcode != ThumbALUImmediate::Opcode::MOV; 
+    
+    IRVariable op1;
+    IRConstant op2{opcode.imm};
+    IRVariable result;
+
+    if (uses_op1) {
+        op1 = ir.load_gpr(opcode.rd);
+    }
 
     switch (opcode.opcode) {
     case ThumbALUImmediate::Opcode::MOV:
-        ir.store_gpr(opcode.rd, imm);
-        ir.update_flag(Flags::N, false);
-        ir.update_flag(Flags::Z, opcode.imm == 0);
+        result = ir.copy(op2);
+        ir.update_nz(result);
         break;
-    case ThumbALUImmediate::Opcode::CMP: {
-        auto value = ir.load_gpr(opcode.rd);
-        ir.compare(value, imm);
+    case ThumbALUImmediate::Opcode::CMP:
+        ir.compare(op1, op2);
+        break;
+    case ThumbALUImmediate::Opcode::ADD:
+        result = ir.add(op1, op2);
+        ir.update_nzcv(result);
+        break;
+    case ThumbALUImmediate::Opcode::SUB:
+        result = ir.sub(op1, op2);
+        ir.update_nzcv(result);
         break;
     }
-    case ThumbALUImmediate::Opcode::ADD: {
-        auto value = ir.load_gpr(opcode.rd);
-        auto result = ir.add(value, imm);
+
+    if (result.is_assigned()) {
         ir.store_gpr(opcode.rd, result);
-        break;
-    }
-    case ThumbALUImmediate::Opcode::SUB: {
-        auto value = ir.load_gpr(opcode.rd);
-        auto result = ir.sub(value, imm, true);
-        ir.store_gpr(opcode.rd, result);
-        break;
-    }
     }
 
     emit_advance_pc();

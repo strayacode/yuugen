@@ -102,6 +102,10 @@ private:
     void handle_bitwise_and(IROpcodeVariant& opcode_variant);
     void handle_bitwise_or(IROpcodeVariant& opcode_variant);
 
+    // arithmetic opcodes
+    void handle_add(IROpcodeVariant& opcode_variant);
+    void handle_sub(IROpcodeVariant& opcode_variant);
+
     // flag opcodes
     void handle_get_nz(IROpcodeVariant& opcode_variant);
     void handle_get_nzcv(IROpcodeVariant& opcode_variant);
@@ -111,11 +115,10 @@ private:
 
     void handle_set_carry(IROpcodeVariant& opcode_variant);
     void handle_clear_carry(IROpcodeVariant& opcode_variant);
-    void handle_add(IROpcodeVariant& opcode_variant);
+    
     void handle_logical_shift_left(IROpcodeVariant& opcode_variant);
     void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_memory_write(IROpcodeVariant& opcode_variant);
-    void handle_sub(IROpcodeVariant& opcode_variant);
     void handle_update_flag(IROpcodeVariant& opcode_variant);
     void handle_store_flags(IROpcodeVariant& opcode_variant);
     void handle_compare(IROpcodeVariant& opcode_variant);

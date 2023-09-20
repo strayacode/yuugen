@@ -196,7 +196,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
         new_base = ir.add(address, IRConstant{bytes});
     } else {
         opcode.pre = !opcode.pre;
-        address = ir.sub(address, IRConstant{bytes}, false);
+        address = ir.sub(address, IRConstant{bytes});
         new_base = ir.copy(address);
     }
 
@@ -391,9 +391,13 @@ Translator::BlockStatus Translator::arm_data_processing() {
     // case ARMDataProcessing::Opcode::EOR:
     //     result = ir.exclusive_or(op1, op2, opcode.set_flags);
     //     break;
-    // case ARMDataProcessing::Opcode::SUB:
-    //     result = ir.sub(op1, op2, opcode.set_flags);
-    //     break;
+    case ARMDataProcessing::Opcode::SUB:
+        result = ir.sub(op1, op2);
+        if (opcode.set_flags) {
+            ir.update_nzcv(result);
+        }
+
+        break;
     // case ARMDataProcessing::Opcode::RSB:
     //     logger.todo("Translator: handle rsb");
     //     break;

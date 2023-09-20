@@ -29,6 +29,7 @@ public:
 
     // arithmetic opcodes
     IRVariable add(IRValue lhs, IRValue rhs);
+    IRVariable sub(IRValue lhs, IRValue rhs);
 
     // flag opcodes
     void update_nz(IRValue src);
@@ -40,7 +41,6 @@ public:
     IRVariable logical_shift_left(IRValue src, IRValue amount, bool set_carry);
     IRVariable logical_shift_right(IRValue src, IRValue amount, bool set_carry);
     void memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type);
-    IRVariable sub(IRValue lhs, IRValue rhs, bool set_flags);
     void update_flag(Flags flag, bool value);
     void store_flags(Flags flags);
     void compare(IRValue lhs, IRValue rhs);

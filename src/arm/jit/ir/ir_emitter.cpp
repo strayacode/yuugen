@@ -67,6 +67,12 @@ IRVariable IREmitter::add(IRValue lhs, IRValue rhs) {
     return dst;
 }
 
+IRVariable IREmitter::sub(IRValue lhs, IRValue rhs) {
+    auto dst = create_variable();
+    push<IRSub>(dst, lhs, rhs);
+    return dst;
+}
+
 void IREmitter::update_nz(IRValue src) {
     auto cpsr = load_cpsr();
     auto dst = create_variable();
@@ -101,12 +107,6 @@ IRVariable IREmitter::logical_shift_right(IRValue src, IRValue amount, bool set_
 
 void IREmitter::memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type) {
     push<IRMemoryWrite>(addr, src, access_size, access_type);
-}
-
-IRVariable IREmitter::sub(IRValue lhs, IRValue rhs, bool set_flags) {
-    auto dst = create_variable();
-    push<IRSub>(dst, lhs, rhs, set_flags);
-    return dst;
 }
 
 void IREmitter::update_flag(Flags flag, bool value) {

@@ -110,22 +110,22 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_bitwise_and, *opcode->as<IRBitwiseAnd>()};
     case IROpcodeType::BitwiseOr:
         return {&IRInterpreter::handle_bitwise_or, *opcode->as<IRBitwiseOr>()};
+    case IROpcodeType::Add:
+        return {&IRInterpreter::handle_add, *opcode->as<IRAdd>()};
+    case IROpcodeType::Sub:
+        return {&IRInterpreter::handle_sub, *opcode->as<IRSub>()};
     case IROpcodeType::GetNZ:
         return {&IRInterpreter::handle_get_nz, *opcode->as<IRGetNZ>()};
     case IROpcodeType::GetNZCV:
         return {&IRInterpreter::handle_get_nzcv, *opcode->as<IRGetNZCV>()};
     case IROpcodeType::Copy:
         return {&IRInterpreter::handle_copy, *opcode->as<IRCopy>()};
-    case IROpcodeType::Add:
-        return {&IRInterpreter::handle_add, *opcode->as<IRAdd>()};
     case IROpcodeType::LogicalShiftLeft:
         return {&IRInterpreter::handle_logical_shift_left, *opcode->as<IRLogicalShiftLeft>()};
     case IROpcodeType::LogicalShiftRight:
         return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
     case IROpcodeType::MemoryWrite:
         return {&IRInterpreter::handle_memory_write, *opcode->as<IRMemoryWrite>()};
-    case IROpcodeType::Sub:
-        return {&IRInterpreter::handle_sub, *opcode->as<IRSub>()};
     case IROpcodeType::UpdateFlag:
         return {&IRInterpreter::handle_update_flag, *opcode->as<IRUpdateFlag>()};
     case IROpcodeType::StoreFlags:
@@ -249,6 +249,28 @@ void IRInterpreter::handle_bitwise_or(IROpcodeVariant& opcode_variant) {
     assign_variable(opcode.dst, result);
 }
 
+void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRAdd>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs + rhs;
+    
+    assign_variable(opcode.dst, result);
+    update_flag(Flags::C, result < lhs);
+    update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
+}
+
+void IRInterpreter::handle_sub(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRSub>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs - rhs;
+    
+    assign_variable(opcode.dst, result);
+    update_flag(Flags::C, lhs >= rhs);
+    update_flag(Flags::V, calculate_sub_overflow(lhs, rhs, result));
+}
+
 void IRInterpreter::handle_get_nz(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRGetNZ>(opcode_variant);
     auto cpsr = resolve_value(opcode.cpsr);
@@ -276,17 +298,6 @@ void IRInterpreter::handle_copy(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRCopy>(opcode_variant);
     auto value = resolve_value(opcode.src);
     assign_variable(opcode.dst, value);
-}
-
-void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRAdd>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs + rhs;
-    assign_variable(opcode.dst, result);
-
-    update_flag(Flags::C, result < lhs);
-    update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
 }
 
 void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {
@@ -328,22 +339,6 @@ void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {
     case AccessSize::Word:
         jit.write_word(addr, src);
         break;
-    }
-}
-
-void IRInterpreter::handle_sub(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRSub>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs - rhs;
-    
-    assign_variable(opcode.dst, result);
-
-    if (opcode.set_flags) {
-        update_flag(Flags::N, result >> 31);
-        update_flag(Flags::Z, result == 0);
-        update_flag(Flags::C, lhs >= rhs);
-        update_flag(Flags::V, calculate_sub_overflow(lhs, rhs, result));
     }
 }
 
