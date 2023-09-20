@@ -21,18 +21,24 @@ public:
     void store_cpsr(IRVariable src);
     IRVariable load_spsr();
     void store_spsr(IRVariable src);
+    void copy_spsr_to_cpsr();
+
+    // bitwise opcodes
+    IRVariable bitwise_and(IRValue lhs, IRValue rhs);
+
+    // flag opcodes
+    void update_nz(IRValue value);
 
     IRVariable move(IRValue src, bool set_flags);
     IRVariable add(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable logical_shift_left(IRValue src, IRValue amount, bool set_carry);
-    IRVariable and_(IRValue lhs, IRValue rhs, bool set_flags);
+    
     IRVariable logical_shift_right(IRValue src, IRValue amount, bool set_carry);
     void memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type);
     IRVariable sub(IRValue lhs, IRValue rhs, bool set_flags);
     void update_flag(Flags flag, bool value);
     void store_flags(Flags flags);
     void compare(IRValue lhs, IRValue rhs);
-    
     
     IRVariable or_(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry);

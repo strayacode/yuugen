@@ -75,7 +75,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     }
 
     IRValue op2;
-    IRVariable address = ir.load_gpr(opcode.rn);
+    auto address = ir.load_gpr(opcode.rn);
     bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
 
     if (opcode.imm) {
@@ -98,7 +98,6 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
         if (opcode.load) {
             logger.todo("Translator: handle ldrsh");
         } else if (jit.arch == Arch::ARMv5) {
-
             logger.todo("Translator: handle strd");
         }
     } else if (opcode.half) {
@@ -138,7 +137,7 @@ Translator::BlockStatus Translator::arm_status_load() {
 Translator::BlockStatus Translator::arm_status_store_register() {
     auto opcode = ARMStatusStore::decode(instruction);
     auto value = ir.load_gpr(opcode.rhs.rm);
-    auto value_masked = ir.and_(value, IRConstant{opcode.mask}, false);
+    auto value_masked = ir.bitwise_and(value, IRConstant{opcode.mask});
     IRVariable psr;
 
     if (opcode.spsr) {
@@ -147,7 +146,7 @@ Translator::BlockStatus Translator::arm_status_store_register() {
         psr = ir.load_cpsr();
     }
 
-    auto psr_masked = ir.and_(psr, IRConstant{~opcode.mask}, false);
+    auto psr_masked = ir.bitwise_and(psr, IRConstant{~opcode.mask});
     auto psr_new = ir.or_(psr_masked, value_masked, false);
 
     emit_advance_pc();
@@ -383,72 +382,75 @@ Translator::BlockStatus Translator::arm_data_processing() {
 
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND:
-        result = ir.and_(op1, op2, opcode.set_flags);
+        result = ir.bitwise_and(op1, op2);
+        ir.update_nz(result);
         break;
-    case ARMDataProcessing::Opcode::EOR:
-        result = ir.exclusive_or(op1, op2, opcode.set_flags);
-        break;
-    case ARMDataProcessing::Opcode::SUB:
-        result = ir.sub(op1, op2, opcode.set_flags);
-        break;
-    case ARMDataProcessing::Opcode::RSB:
-        logger.todo("Translator: handle rsb");
-        break;
-    case ARMDataProcessing::Opcode::ADD:
-        result = ir.add(op1, op2, opcode.set_flags);
-        break;
-    case ARMDataProcessing::Opcode::ADC:
-        result = ir.add_carry(op1, op2, opcode.set_flags);
-        break;
-    case ARMDataProcessing::Opcode::SBC:
-        logger.todo("Translator: handle sbc");
-        break;
-    case ARMDataProcessing::Opcode::RSC:
-        logger.todo("Translator: handle rsc");
-        break;
-    case ARMDataProcessing::Opcode::TST:
-        ir.test(op1, op2);
-        break;
-    case ARMDataProcessing::Opcode::TEQ:
-        logger.todo("Translator: handle teq");
-        break;
-    case ARMDataProcessing::Opcode::CMP:
-        ir.compare(op1, op2);
-        break;
-    case ARMDataProcessing::Opcode::CMN:
-        ir.compare_negate(op1, op2);
-        break;
-    case ARMDataProcessing::Opcode::ORR:
-        result = ir.or_(op1, op2, opcode.set_flags);
-        break;
-    case ARMDataProcessing::Opcode::MOV:
-        result = ir.move(op2, opcode.set_flags);
-        break;
-    case ARMDataProcessing::Opcode::BIC:
-        result = ir.bic(op1, op2, opcode.set_flags);
-        break;
-    case ARMDataProcessing::Opcode::MVN:
-        result = ir.move_negate(op2, opcode.set_flags);
-        break;
+    // case ARMDataProcessing::Opcode::EOR:
+    //     result = ir.exclusive_or(op1, op2, opcode.set_flags);
+    //     break;
+    // case ARMDataProcessing::Opcode::SUB:
+    //     result = ir.sub(op1, op2, opcode.set_flags);
+    //     break;
+    // case ARMDataProcessing::Opcode::RSB:
+    //     logger.todo("Translator: handle rsb");
+    //     break;
+    // case ARMDataProcessing::Opcode::ADD:
+    //     result = ir.add(op1, op2, opcode.set_flags);
+    //     break;
+    // case ARMDataProcessing::Opcode::ADC:
+    //     result = ir.add_carry(op1, op2, opcode.set_flags);
+    //     break;
+    // case ARMDataProcessing::Opcode::SBC:
+    //     logger.todo("Translator: handle sbc");
+    //     break;
+    // case ARMDataProcessing::Opcode::RSC:
+    //     logger.todo("Translator: handle rsc");
+    //     break;
+    // case ARMDataProcessing::Opcode::TST:
+    //     ir.test(op1, op2);
+    //     break;
+    // case ARMDataProcessing::Opcode::TEQ:
+    //     logger.todo("Translator: handle teq");
+    //     break;
+    // case ARMDataProcessing::Opcode::CMP:
+    //     ir.compare(op1, op2);
+    //     break;
+    // case ARMDataProcessing::Opcode::CMN:
+    //     ir.compare_negate(op1, op2);
+    //     break;
+    // case ARMDataProcessing::Opcode::ORR:
+    //     result = ir.or_(op1, op2, opcode.set_flags);
+    //     break;
+    // case ARMDataProcessing::Opcode::MOV:
+    //     result = ir.move(op2, opcode.set_flags);
+    //     break;
+    // case ARMDataProcessing::Opcode::BIC:
+    //     result = ir.bic(op1, op2, opcode.set_flags);
+    //     break;
+    // case ARMDataProcessing::Opcode::MVN:
+    //     result = ir.move_negate(op2, opcode.set_flags);
+    //     break;
+    default:
+        logger.todo("handle %d", static_cast<u8>(opcode.opcode));
     }
 
     if (result.is_assigned()) {
         ir.store_gpr(opcode.rd, result);
     }
 
-    if (update_flags) {
-        std::array<Flags, 16> flags{
-            Flags::NZ, Flags::NZ, Flags::NZCV, Flags::NZCV,
-            Flags::NZCV, Flags::NZCV, Flags::NZCV, Flags::NZCV,
-            Flags::NZ, Flags::NZ, Flags::NZCV, Flags::NZCV,
-            Flags::NZ, Flags::NZ, Flags::NZ, Flags::NZ
-        };
+    // if (update_flags) {
+    //     std::array<Flags, 16> flags{
+    //         Flags::NZ, Flags::NZ, Flags::NZCV, Flags::NZCV,
+    //         Flags::NZCV, Flags::NZCV, Flags::NZCV, Flags::NZCV,
+    //         Flags::NZ, Flags::NZ, Flags::NZCV, Flags::NZCV,
+    //         Flags::NZ, Flags::NZ, Flags::NZ, Flags::NZ
+    //     };
 
-        ir.store_flags(flags[static_cast<int>(opcode.opcode)]);
-    }
+    //     ir.store_flags(flags[static_cast<int>(opcode.opcode)]);
+    // }
 
     if (opcode.rd == 15 && opcode.set_flags) {
-        emit_copy_spsr_to_cpsr();
+        ir.copy_spsr_to_cpsr();
     }
 
     if (opcode.rd == 15 && !is_comparison) {

@@ -94,18 +94,28 @@ bool IRInterpreter::evaluate_condition(Condition condition) {
 IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
     auto type = opcode->get_type();
     switch (type) {
-    case IROpcodeType::Move:
-        return {&IRInterpreter::handle_move, *opcode->as<IRMove>()};
     case IROpcodeType::LoadGPR:
         return {&IRInterpreter::handle_load_gpr, *opcode->as<IRLoadGPR>()};
     case IROpcodeType::StoreGPR:
         return {&IRInterpreter::handle_store_gpr, *opcode->as<IRStoreGPR>()};
+    case IROpcodeType::LoadCPSR:
+        return {&IRInterpreter::handle_load_cpsr, *opcode->as<IRLoadCPSR>()};
+    case IROpcodeType::StoreCPSR:
+        return {&IRInterpreter::handle_store_cpsr, *opcode->as<IRStoreCPSR>()};
+    case IROpcodeType::LoadSPSR:
+        return {&IRInterpreter::handle_load_spsr, *opcode->as<IRLoadSPSR>()};
+    case IROpcodeType::StoreSPSR:
+        return {&IRInterpreter::handle_store_spsr, *opcode->as<IRStoreSPSR>()};
+    case IROpcodeType::BitwiseAnd:
+        return {&IRInterpreter::handle_bitwise_and, *opcode->as<IRBitwiseAnd>()};
+    case IROpcodeType::GetNZ:
+        return {&IRInterpreter::handle_get_nz, *opcode->as<IRGetNZ>()};
+    case IROpcodeType::Move:
+        return {&IRInterpreter::handle_move, *opcode->as<IRMove>()};
     case IROpcodeType::Add:
         return {&IRInterpreter::handle_add, *opcode->as<IRAdd>()};
     case IROpcodeType::LogicalShiftLeft:
         return {&IRInterpreter::handle_logical_shift_left, *opcode->as<IRLogicalShiftLeft>()};
-    case IROpcodeType::And:
-        return {&IRInterpreter::handle_and, *opcode->as<IRAnd>()};
     case IROpcodeType::LogicalShiftRight:
         return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
     case IROpcodeType::MemoryWrite:
@@ -118,16 +128,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_store_flags, *opcode->as<IRStoreFlags>()};
     case IROpcodeType::Compare:
         return {&IRInterpreter::handle_compare, *opcode->as<IRCompare>()};
-    case IROpcodeType::LoadCPSR:
-        return {&IRInterpreter::handle_load_cpsr, *opcode->as<IRLoadCPSR>()};
-    case IROpcodeType::LoadSPSR:
-        return {&IRInterpreter::handle_load_spsr, *opcode->as<IRLoadSPSR>()};
     case IROpcodeType::Or:
         return {&IRInterpreter::handle_or, *opcode->as<IROr>()};
-    case IROpcodeType::StoreCPSR:
-        return {&IRInterpreter::handle_store_cpsr, *opcode->as<IRStoreCPSR>()};
-    case IROpcodeType::StoreSPSR:
-        return {&IRInterpreter::handle_store_spsr, *opcode->as<IRStoreSPSR>()};
     case IROpcodeType::ArithmeticShiftRight:
         return {&IRInterpreter::handle_arithmetic_shift_right, *opcode->as<IRArithmeticShiftRight>()};
     case IROpcodeType::RotateRight:
@@ -195,17 +197,6 @@ void IRInterpreter::dump_variables() {
     }
 }
 
-void IRInterpreter::handle_move(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRMove>(opcode_variant);
-    auto value = resolve_value(opcode.src);
-    assign_variable(opcode.dst, value);
-
-    if (opcode.set_flags) {
-        update_flag(Flags::N, value >> 31);
-        update_flag(Flags::Z, value == 0);
-    }
-}
-
 void IRInterpreter::handle_load_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadGPR>(opcode_variant);
     auto value = jit.get_gpr(opcode.src.gpr, opcode.src.mode);
@@ -216,6 +207,59 @@ void IRInterpreter::handle_store_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreGPR>(opcode_variant);
     auto value = resolve_value(opcode.src);
     jit.set_gpr(opcode.dst.gpr, opcode.dst.mode, value);
+}
+
+void IRInterpreter::handle_load_cpsr(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRLoadCPSR>(opcode_variant);
+    assign_variable(opcode.dst, jit.state.cpsr.data);
+}
+
+void IRInterpreter::handle_store_cpsr(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRStoreCPSR>(opcode_variant);
+    auto src = resolve_value(opcode.src);
+    StatusRegister psr;
+    psr.data = src;
+    jit.set_cpsr(psr);
+}
+
+void IRInterpreter::handle_load_spsr(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRLoadSPSR>(opcode_variant);
+    logger.todo("IRInterpreter: handle_load_spsr");
+}
+
+void IRInterpreter::handle_store_spsr(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRStoreSPSR>(opcode_variant);
+    logger.todo("IRInterpreter: handle_store_spsr");
+}
+
+void IRInterpreter::handle_bitwise_and(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRBitwiseAnd>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    assign_variable(opcode.dst, lhs & rhs);
+}
+
+void IRInterpreter::handle_get_nz(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRGetNZ>(opcode_variant);
+    auto cpsr = resolve_value(opcode.cpsr);
+    auto value = resolve_value(opcode.value);
+    auto n = value >> 31;
+    auto z = value == 0;
+
+    common::set_bit<31>(cpsr, n);
+    common::set_bit<30>(cpsr, z);
+    assign_variable(opcode.dst, cpsr);
+}
+
+void IRInterpreter::handle_move(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRMove>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    assign_variable(opcode.dst, value);
+
+    if (opcode.set_flags) {
+        update_flag(Flags::N, value >> 31);
+        update_flag(Flags::Z, value == 0);
+    }
 }
 
 void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
@@ -242,19 +286,6 @@ void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {
 
     if (opcode.set_carry && carry) {
         update_flag(Flags::C, *carry);
-    }
-}
-
-void IRInterpreter::handle_and(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRAnd>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs & rhs;
-    assign_variable(opcode.dst, result);
-
-    if (opcode.set_flags) {
-        update_flag(Flags::N, result >> 31);
-        update_flag(Flags::Z, result == 0);
     }
 }
 
@@ -327,16 +358,6 @@ void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
     update_flag(Flags::V, calculate_sub_overflow(lhs, rhs, result));
 }
 
-void IRInterpreter::handle_load_cpsr(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRLoadCPSR>(opcode_variant);
-    assign_variable(opcode.dst, jit.state.cpsr.data);
-}
-
-void IRInterpreter::handle_load_spsr(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRLoadSPSR>(opcode_variant);
-    logger.todo("IRInterpreter: handle_load_spsr");
-}
-
 void IRInterpreter::handle_or(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IROr>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
@@ -348,19 +369,6 @@ void IRInterpreter::handle_or(IROpcodeVariant& opcode_variant) {
         update_flag(Flags::N, result >> 31);
         update_flag(Flags::Z, result == 0);
     }
-}
-
-void IRInterpreter::handle_store_cpsr(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRStoreCPSR>(opcode_variant);
-    auto src = resolve_value(opcode.src);
-    StatusRegister psr;
-    psr.data = src;
-    jit.set_cpsr(psr);
-}
-
-void IRInterpreter::handle_store_spsr(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRStoreSPSR>(opcode_variant);
-    logger.todo("IRInterpreter: handle_store_spsr");
 }
 
 void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant) {

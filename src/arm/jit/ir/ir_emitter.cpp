@@ -44,6 +44,24 @@ void IREmitter::store_spsr(IRVariable src) {
     push<IRStoreSPSR>(src);
 }
 
+void IREmitter::copy_spsr_to_cpsr() {
+    auto spsr = load_spsr();
+    store_cpsr(spsr);
+}
+
+IRVariable IREmitter::bitwise_and(IRValue lhs, IRValue rhs) {
+    auto dst = create_variable();
+    push<IRBitwiseAnd>(dst, lhs, rhs);
+    return dst;
+}
+
+void IREmitter::update_nz(IRValue value) {
+    auto cpsr = load_cpsr();
+    auto dst = create_variable();
+    push<IRGetNZ>(dst, cpsr, value);
+    store_cpsr(dst);
+}
+
 IRVariable IREmitter::move(IRValue src, bool set_flags) {
     auto dst = create_variable();
     push<IRMove>(dst, src, set_flags);
@@ -59,12 +77,6 @@ IRVariable IREmitter::add(IRValue lhs, IRValue rhs, bool set_flags) {
 IRVariable IREmitter::logical_shift_left(IRValue src, IRValue amount, bool set_carry) {
     auto dst = create_variable();
     push<IRLogicalShiftLeft>(dst, src, amount, set_carry);
-    return dst;
-}
-
-IRVariable IREmitter::and_(IRValue lhs, IRValue rhs, bool set_flags) {
-    auto dst = create_variable();
-    push<IRAnd>(dst, lhs, rhs, set_flags);
     return dst;
 }
 

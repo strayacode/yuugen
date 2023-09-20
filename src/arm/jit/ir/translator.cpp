@@ -104,11 +104,6 @@ IRVariable Translator::emit_barrel_shifter(IRValue value, ShiftType shift_type, 
     }
 }
 
-void Translator::emit_copy_spsr_to_cpsr() {
-    auto spsr = ir.load_spsr();
-    ir.store_cpsr(spsr);
-}
-
 u16 Translator::code_read_half(u32 addr) {
     return jit.memory.read<u16, Bus::Code>(addr);
 }
