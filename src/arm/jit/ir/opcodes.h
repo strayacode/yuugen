@@ -22,6 +22,11 @@ enum class IROpcodeType {
     // bitwise opcodes
     BitwiseAnd,
     BitwiseOr,
+    BitwiseNot,
+    LogicalShiftLeft,
+    LogicalShiftRight,
+    ArithmeticShiftRight,
+    RotateRight,
 
     // arithmetic opcodes
     Add,
@@ -30,18 +35,15 @@ enum class IROpcodeType {
     // flag opcodes
     GetNZ,
     GetNZCV,
+    GetC,
 
     // misc opcodes
     Copy,
     
-    LogicalShiftLeft,
-    LogicalShiftRight,
     MemoryWrite,
     UpdateFlag,
     StoreFlags,
     Compare,
-    ArithmeticShiftRight,
-    RotateRight,
     MemoryRead,
     Bic,
     Branch,
@@ -236,6 +238,65 @@ struct IRBitwiseOr : IROpcode {
     IRValue rhs;
 };
 
+struct IRBitwiseNot : IROpcode {
+    IRBitwiseNot(IRVariable dst, IRValue src) : IROpcode(IROpcodeType::BitwiseNot), dst(dst), src(src) {}
+
+    std::string to_string() override {
+        return common::format("%s = not(%s)", dst.to_string().c_str(), src.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+};
+
+struct IRLogicalShiftLeft : IROpcode {
+    IRLogicalShiftLeft(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::LogicalShiftLeft), dst(dst), src(src), amount(amount) {}
+
+    std::string to_string() {
+        return common::format("%s = lsl(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+};
+
+struct IRLogicalShiftRight : IROpcode {
+    IRLogicalShiftRight(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::LogicalShiftRight), dst(dst), src(src), amount(amount) {}
+
+    std::string to_string() {
+        return common::format("%s = lsr(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+};
+
+struct IRArithmeticShiftRight : IROpcode {
+    IRArithmeticShiftRight(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::ArithmeticShiftRight), dst(dst), src(src), amount(amount) {}
+
+    std::string to_string() {
+        return common::format("%s = asr(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+};
+
+struct IRRotateRight : IROpcode {
+    IRRotateRight(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::RotateRight), dst(dst), src(src), amount(amount) {}
+
+    std::string to_string() {
+        return common::format("%s = ror(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+};
+
 struct IRAdd : IROpcode {
     IRAdd(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Add), dst(dst), lhs(lhs), rhs(rhs) {}
 
@@ -264,7 +325,7 @@ struct IRGetNZ : IROpcode {
     IRGetNZ(IRVariable dst, IRValue cpsr, IRValue value) : IROpcode(IROpcodeType::GetNZ), dst(dst), cpsr(cpsr), value(value) {}
 
     std::string to_string() override {
-        return common::format("%s = get_nz(%s %s)", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
+        return common::format("%s = get_nz(%s, %s)", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
     }
 
     IRVariable dst;
@@ -276,12 +337,23 @@ struct IRGetNZCV : IROpcode {
     IRGetNZCV(IRVariable dst, IRValue cpsr, IRValue value) : IROpcode(IROpcodeType::GetNZCV), dst(dst), cpsr(cpsr), value(value) {}
 
     std::string to_string() override {
-        return common::format("%s = get_nzcv(%s %s)", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
+        return common::format("%s = get_nzcv(%s, %s)", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
     }
 
     IRVariable dst;
     IRValue cpsr;
     IRValue value;
+};
+
+struct IRGetC : IROpcode {
+    IRGetC(IRVariable dst, IRValue cpsr) : IROpcode(IROpcodeType::GetC), dst(dst), cpsr(cpsr) {}
+
+    std::string to_string() override {
+        return common::format("%s = get_c(%s)", dst.to_string().c_str(), cpsr.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue cpsr;
 };
 
 struct IRCopy : IROpcode {
@@ -293,32 +365,6 @@ struct IRCopy : IROpcode {
 
     IRVariable dst;
     IRValue src;
-};
-
-struct IRLogicalShiftLeft : IROpcode {
-    IRLogicalShiftLeft(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::LogicalShiftLeft), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
-
-    std::string to_string() {
-        return common::format("lsl%s %s, %s, %s", set_carry ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue src;
-    IRValue amount;
-    bool set_carry;
-};
-
-struct IRLogicalShiftRight : IROpcode {
-    IRLogicalShiftRight(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::LogicalShiftRight), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
-
-    std::string to_string() {
-        return common::format("lsr%s %s, %s, %s", set_carry ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue src;
-    IRValue amount;
-    bool set_carry;
 };
 
 struct IRMemoryWrite : IROpcode {
@@ -364,32 +410,6 @@ struct IRCompare : IROpcode {
 
     IRValue lhs;
     IRValue rhs;
-};
-
-struct IRArithmeticShiftRight : IROpcode {
-    IRArithmeticShiftRight(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::ArithmeticShiftRight), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
-
-    std::string to_string() {
-        return common::format("asr%s %s, %s, %s", set_carry ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue src;
-    IRValue amount;
-    bool set_carry;
-};
-
-struct IRRotateRight : IROpcode {
-    IRRotateRight(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::RotateRight), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
-
-    std::string to_string() {
-        return common::format("ror%s %s, %s, %s", set_carry ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue src;
-    IRValue amount;
-    bool set_carry;
 };
 
 struct IRMemoryRead : IROpcode {

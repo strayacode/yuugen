@@ -36,10 +36,12 @@ private:
         // bitwise opcodes
         IRBitwiseAnd,
         IRBitwiseOr,
+        IRBitwiseNot,
 
         // flag opcodes
         IRGetNZ,
         IRGetNZCV,
+        IRGetC,
 
         // misc opcodes
         IRCopy,
@@ -101,6 +103,7 @@ private:
     // bitwise opcodes
     void handle_bitwise_and(IROpcodeVariant& opcode_variant);
     void handle_bitwise_or(IROpcodeVariant& opcode_variant);
+    void handle_bitwise_not(IROpcodeVariant& opcode_variant);
 
     // arithmetic opcodes
     void handle_add(IROpcodeVariant& opcode_variant);
@@ -109,6 +112,7 @@ private:
     // flag opcodes
     void handle_get_nz(IROpcodeVariant& opcode_variant);
     void handle_get_nzcv(IROpcodeVariant& opcode_variant);
+    void handle_get_c(IROpcodeVariant& opcode_variant);
 
     // misc opcodes
     void handle_copy(IROpcodeVariant& opcode_variant);

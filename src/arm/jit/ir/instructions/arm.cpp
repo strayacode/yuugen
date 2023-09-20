@@ -33,7 +33,7 @@ Translator::BlockStatus Translator::arm_branch_link() {
         emit_link();
     }
 
-    emit_branch(IRConstant{code_address + opcode.offset});
+    emit_branch(ir.constant(code_address + opcode.offset));
     return BlockStatus::Break;
 }
 
@@ -79,7 +79,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
 
     if (opcode.imm) {
-        op2 = IRConstant{opcode.rhs.imm};
+        op2 = ir.constant(opcode.rhs.imm);
     } else {
         op2 = ir.load_gpr(opcode.rhs.rm);
     }
@@ -137,7 +137,7 @@ Translator::BlockStatus Translator::arm_status_load() {
 Translator::BlockStatus Translator::arm_status_store_register() {
     auto opcode = ARMStatusStore::decode(instruction);
     auto value = ir.load_gpr(opcode.rhs.rm);
-    auto value_masked = ir.bitwise_and(value, IRConstant{opcode.mask});
+    auto value_masked = ir.bitwise_and(value, ir.constant(opcode.mask));
     IRVariable psr;
 
     if (opcode.spsr) {
@@ -146,7 +146,7 @@ Translator::BlockStatus Translator::arm_status_store_register() {
         psr = ir.load_cpsr();
     }
 
-    auto psr_masked = ir.bitwise_and(psr, IRConstant{~opcode.mask});
+    auto psr_masked = ir.bitwise_and(psr, ir.constant(~opcode.mask));
     auto psr_new = ir.bitwise_or(psr_masked, value_masked);
 
     emit_advance_pc();
@@ -193,10 +193,10 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
     }
 
     if (opcode.up) {
-        new_base = ir.add(address, IRConstant{bytes});
+        new_base = ir.add(address, ir.constant(bytes));
     } else {
         opcode.pre = !opcode.pre;
-        address = ir.sub(address, IRConstant{bytes});
+        address = ir.sub(address, ir.constant(bytes));
         new_base = ir.copy(address);
     }
 
@@ -222,7 +222,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
         }
 
         if (opcode.pre) {
-            address = ir.add(address, IRConstant{4});
+            address = ir.add(address, ir.constant(4));
         }
 
         if (opcode.load) {
@@ -234,7 +234,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
         }
 
         if (!opcode.pre) {
-            address = ir.add(address, IRConstant{4});
+            address = ir.add(address, ir.constant(4));
         } 
     }
 
@@ -275,13 +275,13 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
 
     if (opcode.imm) {
-        op2 = IRConstant{opcode.rhs.imm};
+        op2 = ir.constant(opcode.rhs.imm);
     } else {
         logger.todo("Translator: arm_single_data_transfer handle barrel shifter");
     }
 
     if (!opcode.up) {
-        op2 = ir.multiply(op2, IRConstant{static_cast<u32>(-1)}, false);
+        op2 = ir.multiply(op2, ir.constant(static_cast<u32>(-1)), false);
     }
 
     if (opcode.pre) {
@@ -349,7 +349,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
     IRValue op2;
 
     if (opcode.imm) {
-        op2 = IRConstant{opcode.rhs.imm.rotated};
+        op2 = ir.constant(opcode.rhs.imm.rotated);
 
         if (set_carry && opcode.rhs.imm.shift != 0) {
             ir.update_flag(Flags::C, common::get_bit<31>(opcode.rhs.imm.rotated));
@@ -360,16 +360,16 @@ Translator::BlockStatus Translator::arm_data_processing() {
         op2 = ir.load_gpr(opcode.rhs.reg.rm);
 
         if (opcode.rhs.reg.imm) {
-            amount = IRConstant{opcode.rhs.reg.amount.imm};
+            amount = ir.constant(opcode.rhs.reg.amount.imm);
         } else {
             amount = ir.load_gpr(opcode.rhs.reg.amount.rs);
             emit_advance_pc();
             early_advance_pc = true;
         }
 
-        op2 = emit_barrel_shifter(op2, opcode.rhs.reg.shift_type, amount, set_carry);
+        op2 = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount);
         if (set_carry) {
-            ir.store_flags(Flags::C);
+            ir.update_c();
         }
     }
 
@@ -383,7 +383,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND:
         result = ir.bitwise_and(op1, op2);
-        if (opcode.set_flags) {
+        if (update_flags) {
             ir.update_nz(result);
         }
         
@@ -393,7 +393,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
     //     break;
     case ARMDataProcessing::Opcode::SUB:
         result = ir.sub(op1, op2);
-        if (opcode.set_flags) {
+        if (update_flags) {
             ir.update_nzcv(result);
         }
 
@@ -403,7 +403,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
     //     break;
     case ARMDataProcessing::Opcode::ADD:
         result = ir.add(op1, op2);
-        if (opcode.set_flags) {
+        if (update_flags) {
             ir.update_nzcv(result);
         }
         
@@ -434,14 +434,18 @@ Translator::BlockStatus Translator::arm_data_processing() {
     //     break;
     case ARMDataProcessing::Opcode::MOV:
         result = ir.copy(op2);
-        if (opcode.set_flags) {
+        if (update_flags) {
             ir.update_nz(result);
         }
         
         break;
-    // case ARMDataProcessing::Opcode::BIC:
-    //     result = ir.bic(op1, op2, opcode.set_flags);
-    //     break;
+    case ARMDataProcessing::Opcode::BIC:
+        result = ir.bitwise_and(op1, ir.bitwise_not(op2));
+        if (update_flags) {
+            ir.update_nz(result);
+        }
+
+        break;
     // case ARMDataProcessing::Opcode::MVN:
     //     result = ir.move_negate(op2, opcode.set_flags);
     //     break;

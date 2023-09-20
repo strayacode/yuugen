@@ -61,6 +61,12 @@ IRVariable IREmitter::bitwise_or(IRValue lhs, IRValue rhs) {
     return dst;
 }
 
+IRVariable IREmitter::bitwise_not(IRValue src) {
+    auto dst = create_variable();
+    push<IRBitwiseNot>(dst, src);
+    return dst;
+}
+
 IRVariable IREmitter::add(IRValue lhs, IRValue rhs) {
     auto dst = create_variable();
     push<IRAdd>(dst, lhs, rhs);
@@ -87,21 +93,45 @@ void IREmitter::update_nzcv(IRValue src) {
     store_cpsr(dst);
 }
 
+void IREmitter::update_c() {
+    auto cpsr = load_cpsr();
+    auto dst = create_variable();
+    push<IRGetC>(dst, cpsr);
+    store_cpsr(dst);
+}
+
 IRVariable IREmitter::copy(IRValue src) {
     auto dst = create_variable();
     push<IRCopy>(dst, src);
     return dst;
 }
 
-IRVariable IREmitter::logical_shift_left(IRValue src, IRValue amount, bool set_carry) {
+IRConstant IREmitter::constant(u32 value) {
+    return IRConstant{value};
+}
+
+IRVariable IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount) {
+    switch (shift_type) {
+    case ShiftType::LSL:
+        return logical_shift_left(value, amount);
+    case ShiftType::LSR:
+        return logical_shift_right(value, amount);
+    case ShiftType::ASR:
+        return arithmetic_shift_right(value, amount);
+    case ShiftType::ROR:
+        return rotate_right(value, amount);
+    }
+}
+
+IRVariable IREmitter::logical_shift_left(IRValue src, IRValue amount) {
     auto dst = create_variable();
-    push<IRLogicalShiftLeft>(dst, src, amount, set_carry);
+    push<IRLogicalShiftLeft>(dst, src, amount);
     return dst;
 }
 
-IRVariable IREmitter::logical_shift_right(IRValue src, IRValue amount, bool set_carry) {
+IRVariable IREmitter::logical_shift_right(IRValue src, IRValue amount) {
     auto dst = create_variable();
-    push<IRLogicalShiftRight>(dst, src, amount, set_carry);
+    push<IRLogicalShiftRight>(dst, src, amount);
     return dst;
 }
 
@@ -121,15 +151,15 @@ void IREmitter::compare(IRValue lhs, IRValue rhs) {
     push<IRCompare>(lhs, rhs);
 }
 
-IRVariable IREmitter::arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry) {
+IRVariable IREmitter::arithmetic_shift_right(IRValue src, IRValue amount) {
     auto dst = create_variable();
-    push<IRArithmeticShiftRight>(dst, src, amount, set_carry);
+    push<IRArithmeticShiftRight>(dst, src, amount);
     return dst;
 }
 
-IRVariable IREmitter::rotate_right(IRValue src, IRValue amount, bool set_carry) {
+IRVariable IREmitter::rotate_right(IRValue src, IRValue amount) {
     auto dst = create_variable();
-    push<IRRotateRight>(dst, src, amount, set_carry);
+    push<IRRotateRight>(dst, src, amount);
     return dst;
 }
 

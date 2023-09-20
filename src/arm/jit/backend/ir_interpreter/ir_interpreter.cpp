@@ -110,6 +110,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_bitwise_and, *opcode->as<IRBitwiseAnd>()};
     case IROpcodeType::BitwiseOr:
         return {&IRInterpreter::handle_bitwise_or, *opcode->as<IRBitwiseOr>()};
+    case IROpcodeType::BitwiseNot:
+        return {&IRInterpreter::handle_bitwise_not, *opcode->as<IRBitwiseNot>()};
     case IROpcodeType::Add:
         return {&IRInterpreter::handle_add, *opcode->as<IRAdd>()};
     case IROpcodeType::Sub:
@@ -118,6 +120,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_get_nz, *opcode->as<IRGetNZ>()};
     case IROpcodeType::GetNZCV:
         return {&IRInterpreter::handle_get_nzcv, *opcode->as<IRGetNZCV>()};
+    case IROpcodeType::GetC:
+        return {&IRInterpreter::handle_get_c, *opcode->as<IRGetC>()};
     case IROpcodeType::Copy:
         return {&IRInterpreter::handle_copy, *opcode->as<IRCopy>()};
     case IROpcodeType::LogicalShiftLeft:
@@ -245,8 +249,13 @@ void IRInterpreter::handle_bitwise_or(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRBitwiseOr>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs | rhs;
-    assign_variable(opcode.dst, result);
+    assign_variable(opcode.dst, lhs | rhs);
+}
+
+void IRInterpreter::handle_bitwise_not(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRBitwiseNot>(opcode_variant);
+    auto src = resolve_value(opcode.src);
+    assign_variable(opcode.dst, ~src);
 }
 
 void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
@@ -294,6 +303,14 @@ void IRInterpreter::handle_get_nzcv(IROpcodeVariant& opcode_variant) {
     assign_variable(opcode.dst, cpsr);
 }
 
+void IRInterpreter::handle_get_c(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRGetC>(opcode_variant);
+    auto cpsr = resolve_value(opcode.cpsr);
+    
+    common::set_bit<29>(cpsr, flags & Flags::C);
+    assign_variable(opcode.dst, cpsr);
+}
+
 void IRInterpreter::handle_copy(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRCopy>(opcode_variant);
     auto value = resolve_value(opcode.src);
@@ -307,7 +324,7 @@ void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {
     auto [result, carry] = lsl(value, amount);
     assign_variable(opcode.dst, result);
 
-    if (opcode.set_carry && carry) {
+    if (carry) {
         update_flag(Flags::C, *carry);
     }
 }
@@ -319,7 +336,7 @@ void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) 
     auto [result, carry] = lsr(value, amount, opcode.amount.is_constant());
     assign_variable(opcode.dst, result);
 
-    if (opcode.set_carry && carry) {
+    if (carry) {
         update_flag(Flags::C, *carry);
     }
 }
@@ -372,7 +389,7 @@ void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_varian
     auto [result, carry] = asr(value, amount, opcode.amount.is_constant());
     assign_variable(opcode.dst, result);
 
-    if (opcode.set_carry && carry) {
+    if (carry) {
         update_flag(Flags::C, *carry);
     }
 }
@@ -384,7 +401,7 @@ void IRInterpreter::handle_rotate_right(IROpcodeVariant& opcode_variant) {
     auto [result, carry] = ror(value, amount);
     assign_variable(opcode.dst, result);
 
-    if (opcode.set_carry && carry) {
+    if (carry) {
         update_flag(Flags::C, *carry);
     }
 }

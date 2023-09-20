@@ -5,6 +5,7 @@
 #include "arm/jit/basic_block.h"
 #include "arm/jit/ir/value.h"
 #include "arm/cpu.h"
+#include "arm/instructions.h"
 
 namespace arm {
 
@@ -26,6 +27,7 @@ public:
     // bitwise opcodes
     IRVariable bitwise_and(IRValue lhs, IRValue rhs);
     IRVariable bitwise_or(IRValue lhs, IRValue rhs);
+    IRVariable bitwise_not(IRValue src);
 
     // arithmetic opcodes
     IRVariable add(IRValue lhs, IRValue rhs);
@@ -34,19 +36,24 @@ public:
     // flag opcodes
     void update_nz(IRValue src);
     void update_nzcv(IRValue src);
+    void update_c();
 
     // misc opcodes
     IRVariable copy(IRValue src);
 
-    IRVariable logical_shift_left(IRValue src, IRValue amount, bool set_carry);
-    IRVariable logical_shift_right(IRValue src, IRValue amount, bool set_carry);
+    // helpers
+    IRConstant constant(u32 value);
+    IRVariable barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
+
+    IRVariable logical_shift_left(IRValue src, IRValue amount);
+    IRVariable logical_shift_right(IRValue src, IRValue amount);
     void memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type);
     void update_flag(Flags flag, bool value);
     void store_flags(Flags flags);
     void compare(IRValue lhs, IRValue rhs);
     
-    IRVariable arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry);
-    IRVariable rotate_right(IRValue src, IRValue amount, bool set_carry);
+    IRVariable arithmetic_shift_right(IRValue src, IRValue amount);
+    IRVariable rotate_right(IRValue src, IRValue amount);
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
     IRVariable bic(IRValue lhs, IRValue rhs, bool set_flags);
     void branch(IRValue address, bool is_arm);

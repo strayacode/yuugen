@@ -62,7 +62,7 @@ Translator::BlockStatus Translator::thumb_branch_link_exchange_offset() {
 Translator::BlockStatus Translator::thumb_branch() {
     auto opcode = ThumbBranch::decode(instruction);
     auto target_address = code_address + opcode.offset + (2 * instruction_size);
-    ir.store_gpr(GPR::PC, IRConstant{target_address});
+    ir.store_gpr(GPR::PC, ir.constant(target_address));
     return BlockStatus::Break;
 }
 
@@ -124,9 +124,9 @@ Translator::BlockStatus Translator::thumb_add_subtract() {
 Translator::BlockStatus Translator::thumb_shift_immediate() {
     auto opcode = ThumbShiftImmediate::decode(instruction);
     auto src = ir.load_gpr(opcode.rs);
-    auto value = emit_barrel_shifter(src, opcode.shift_type, IRConstant{opcode.amount}, true);
-    ir.store_flags(Flags::C);
-
+    auto value = ir.barrel_shifter(src, opcode.shift_type, ir.constant(opcode.amount));
+    ir.update_c();
+    
     // TODO: does this need to be copied
     auto dst = ir.copy(value);
     ir.store_gpr(opcode.rd, dst);
@@ -144,7 +144,7 @@ Translator::BlockStatus Translator::thumb_software_interrupt() {
 Translator::BlockStatus Translator::thumb_branch_conditional() {
     auto opcode = ThumbBranchConditional::decode(instruction);
     auto target_address = code_address + opcode.offset + (2 * instruction_size);
-    ir.store_gpr(GPR::PC, IRConstant{target_address});
+    ir.store_gpr(GPR::PC, ir.constant(target_address));
     return BlockStatus::Break;
 }
 
