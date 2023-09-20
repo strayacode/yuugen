@@ -55,6 +55,18 @@ IRVariable IREmitter::bitwise_and(IRValue lhs, IRValue rhs) {
     return dst;
 }
 
+IRVariable IREmitter::bitwise_or(IRValue lhs, IRValue rhs) {
+    auto dst = create_variable();
+    push<IRBitwiseOr>(dst, lhs, rhs);
+    return dst;
+}
+
+IRVariable IREmitter::add(IRValue lhs, IRValue rhs) {
+    auto dst = create_variable();
+    push<IRAdd>(dst, lhs, rhs);
+    return dst;
+}
+
 void IREmitter::update_nz(IRValue src) {
     auto cpsr = load_cpsr();
     auto dst = create_variable();
@@ -62,15 +74,16 @@ void IREmitter::update_nz(IRValue src) {
     store_cpsr(dst);
 }
 
+void IREmitter::update_nzcv(IRValue src) {
+    auto cpsr = load_cpsr();
+    auto dst = create_variable();
+    push<IRGetNZCV>(dst, cpsr, src);
+    store_cpsr(dst);
+}
+
 IRVariable IREmitter::copy(IRValue src) {
     auto dst = create_variable();
     push<IRCopy>(dst, src);
-    return dst;
-}
-
-IRVariable IREmitter::add(IRValue lhs, IRValue rhs, bool set_flags) {
-    auto dst = create_variable();
-    push<IRAdd>(dst, lhs, rhs, set_flags);
     return dst;
 }
 
@@ -106,12 +119,6 @@ void IREmitter::store_flags(Flags flags) {
 
 void IREmitter::compare(IRValue lhs, IRValue rhs) {
     push<IRCompare>(lhs, rhs);
-}
-
-IRVariable IREmitter::or_(IRValue lhs, IRValue rhs, bool set_flags) {
-    auto dst = create_variable();
-    push<IROr>(dst, lhs, rhs, set_flags);
-    return dst;
 }
 
 IRVariable IREmitter::arithmetic_shift_right(IRValue src, IRValue amount, bool set_carry) {

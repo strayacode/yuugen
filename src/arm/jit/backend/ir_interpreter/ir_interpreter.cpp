@@ -108,8 +108,12 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_store_spsr, *opcode->as<IRStoreSPSR>()};
     case IROpcodeType::BitwiseAnd:
         return {&IRInterpreter::handle_bitwise_and, *opcode->as<IRBitwiseAnd>()};
+    case IROpcodeType::BitwiseOr:
+        return {&IRInterpreter::handle_bitwise_or, *opcode->as<IRBitwiseOr>()};
     case IROpcodeType::GetNZ:
         return {&IRInterpreter::handle_get_nz, *opcode->as<IRGetNZ>()};
+    case IROpcodeType::GetNZCV:
+        return {&IRInterpreter::handle_get_nzcv, *opcode->as<IRGetNZCV>()};
     case IROpcodeType::Copy:
         return {&IRInterpreter::handle_copy, *opcode->as<IRCopy>()};
     case IROpcodeType::Add:
@@ -128,8 +132,6 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_store_flags, *opcode->as<IRStoreFlags>()};
     case IROpcodeType::Compare:
         return {&IRInterpreter::handle_compare, *opcode->as<IRCompare>()};
-    case IROpcodeType::Or:
-        return {&IRInterpreter::handle_or, *opcode->as<IROr>()};
     case IROpcodeType::ArithmeticShiftRight:
         return {&IRInterpreter::handle_arithmetic_shift_right, *opcode->as<IRArithmeticShiftRight>()};
     case IROpcodeType::RotateRight:
@@ -239,13 +241,34 @@ void IRInterpreter::handle_bitwise_and(IROpcodeVariant& opcode_variant) {
     assign_variable(opcode.dst, lhs & rhs);
 }
 
+void IRInterpreter::handle_bitwise_or(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRBitwiseOr>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    auto result = lhs | rhs;
+    assign_variable(opcode.dst, result);
+}
+
 void IRInterpreter::handle_get_nz(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRGetNZ>(opcode_variant);
     auto cpsr = resolve_value(opcode.cpsr);
     auto value = resolve_value(opcode.value);
     
-    common::set_bit<31>(cpsr, value >> 31);
+    
     common::set_bit<30>(cpsr, value == 0);
+    common::set_bit<31>(cpsr, value >> 31);
+    assign_variable(opcode.dst, cpsr);
+}
+
+void IRInterpreter::handle_get_nzcv(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRGetNZCV>(opcode_variant);
+    auto cpsr = resolve_value(opcode.cpsr);
+    auto value = resolve_value(opcode.value);
+    
+    common::set_bit<28>(cpsr, flags & Flags::V);
+    common::set_bit<29>(cpsr, flags & Flags::C);
+    common::set_bit<30>(cpsr, value == 0);
+    common::set_bit<31>(cpsr, value >> 31);
     assign_variable(opcode.dst, cpsr);
 }
 
@@ -262,12 +285,8 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
     auto result = lhs + rhs;
     assign_variable(opcode.dst, result);
 
-    if (opcode.set_flags) {
-        update_flag(Flags::N, result >> 31);
-        update_flag(Flags::Z, result == 0);
-        update_flag(Flags::C, result < lhs);
-        update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
-    }
+    update_flag(Flags::C, result < lhs);
+    update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
 }
 
 void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {
@@ -349,19 +368,6 @@ void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
     update_flag(Flags::Z, result == 0);
     update_flag(Flags::C, lhs >= rhs);
     update_flag(Flags::V, calculate_sub_overflow(lhs, rhs, result));
-}
-
-void IRInterpreter::handle_or(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IROr>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs | rhs;
-    assign_variable(opcode.dst, result);
-
-    if (opcode.set_flags) {
-        update_flag(Flags::N, result >> 31);
-        update_flag(Flags::Z, result == 0);
-    }
 }
 
 void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant) {

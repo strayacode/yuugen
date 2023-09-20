@@ -23,7 +23,7 @@ Translator::BlockStatus Translator::thumb_alu_immediate() {
     }
     case ThumbALUImmediate::Opcode::ADD: {
         auto value = ir.load_gpr(opcode.rd);
-        auto result = ir.add(value, imm, true);
+        auto result = ir.add(value, imm);
         ir.store_gpr(opcode.rd, result);
         break;
     }

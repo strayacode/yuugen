@@ -21,9 +21,11 @@ enum class IROpcodeType {
 
     // bitwise opcodes
     BitwiseAnd,
+    BitwiseOr,
 
     // flag opcodes
     GetNZ,
+    GetNZCV,
 
     // misc opcodes
     Copy,
@@ -36,7 +38,6 @@ enum class IROpcodeType {
     UpdateFlag,
     StoreFlags,
     Compare,
-    Or,
     ArithmeticShiftRight,
     RotateRight,
     MemoryRead,
@@ -70,22 +71,22 @@ enum class ExchangeType {
 static std::string access_size_to_string(AccessSize access_size) {
     switch (access_size) {
     case AccessSize::Byte:
-        return ".b";
+        return "byte";
     case AccessSize::Half:
-        return ".h";
+        return "half";
     case AccessSize::Word:
-        return ".w";
+        return "word";
     }
 }
 
 static std::string access_type_to_string(AccessType access_type) {
     switch (access_type) {
     case AccessType::Aligned:
-        return ".a";
+        return "aligned";
     case AccessType::Unaligned:
-        return ".u";
+        return "unaligned";
     case AccessType::Signed:
-        return ".s";
+        return "signed";
     }
 }
 
@@ -151,7 +152,7 @@ struct IRLoadGPR : IROpcode {
     IRLoadGPR(IRVariable dst, GuestRegister src) : IROpcode(IROpcodeType::LoadGPR), dst(dst), src(src) {}
 
     std::string to_string() override {
-        return common::format("%s = load_gpr %s", dst.to_string().c_str(), src.to_string().c_str());
+        return common::format("%s = load_gpr(%s)", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     IRVariable dst;
@@ -162,7 +163,7 @@ struct IRStoreGPR : IROpcode {
     IRStoreGPR(GuestRegister dst, IRValue src) : IROpcode(IROpcodeType::StoreGPR), dst(dst), src(src) {}
 
     std::string to_string() override {
-        return common::format("store_gpr %s, %s", dst.to_string().c_str(), src.to_string().c_str());
+        return common::format("store_gpr(%s, %s)", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     GuestRegister dst;
@@ -173,7 +174,7 @@ struct IRLoadCPSR : IROpcode {
     IRLoadCPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadCPSR), dst(dst) {}
 
     std::string to_string() override {
-        return common::format("%s = load_cpsr", dst.to_string().c_str());
+        return common::format("%s = load_cpsr()", dst.to_string().c_str());
     }
 
     IRVariable dst;
@@ -183,7 +184,7 @@ struct IRStoreCPSR : IROpcode {
     IRStoreCPSR(IRValue src) : IROpcode(IROpcodeType::StoreCPSR), src(src) {}
 
     std::string to_string() override {
-        return common::format("store_cpsr %s", src.to_string().c_str());
+        return common::format("store_cpsr(%s)", src.to_string().c_str());
     }
 
     IRValue src;
@@ -203,7 +204,7 @@ struct IRStoreSPSR : IROpcode {
     IRStoreSPSR(IRVariable src) : IROpcode(IROpcodeType::StoreSPSR), src(src) {}
 
     std::string to_string() override {
-        return common::format("store_spsr %s", src.to_string().c_str());
+        return common::format("store_spsr(%s)", src.to_string().c_str());
     }
 
     IRVariable src;
@@ -213,7 +214,31 @@ struct IRBitwiseAnd : IROpcode {
     IRBitwiseAnd(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseAnd), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
-        return common::format("%s = and %s, %s", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+        return common::format("%s = and(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+};
+
+struct IRBitwiseOr : IROpcode {
+    IRBitwiseOr(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseOr), dst(dst), lhs(lhs), rhs(rhs) {}
+
+    std::string to_string() override {
+        return common::format("%s = or(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+};
+
+struct IRAdd : IROpcode {
+    IRAdd(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Add), dst(dst), lhs(lhs), rhs(rhs) {}
+
+    std::string to_string() override {
+        return common::format("%s = add(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
     }
 
     IRVariable dst;
@@ -225,7 +250,19 @@ struct IRGetNZ : IROpcode {
     IRGetNZ(IRVariable dst, IRValue cpsr, IRValue value) : IROpcode(IROpcodeType::GetNZ), dst(dst), cpsr(cpsr), value(value) {}
 
     std::string to_string() override {
-        return common::format("%s = get_nz %s %s", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
+        return common::format("%s = get_nz(%s %s)", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue cpsr;
+    IRValue value;
+};
+
+struct IRGetNZCV : IROpcode {
+    IRGetNZCV(IRVariable dst, IRValue cpsr, IRValue value) : IROpcode(IROpcodeType::GetNZCV), dst(dst), cpsr(cpsr), value(value) {}
+
+    std::string to_string() override {
+        return common::format("%s = get_nzcv(%s %s)", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
     }
 
     IRVariable dst;
@@ -237,24 +274,11 @@ struct IRCopy : IROpcode {
     IRCopy(IRVariable dst, IRValue src) : IROpcode(IROpcodeType::Copy), dst(dst), src(src) {}
 
     std::string to_string() override {
-        return common::format("%s = copy %s", dst.to_string().c_str(), src.to_string().c_str());
+        return common::format("%s = copy(%s)", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     IRVariable dst;
     IRValue src;
-};
-
-struct IRAdd : IROpcode {
-    IRAdd(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Add), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
-
-    std::string to_string() override {
-        return common::format("add%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue lhs;
-    IRValue rhs;
-    bool set_flags;
 };
 
 struct IRLogicalShiftLeft : IROpcode {
@@ -287,7 +311,7 @@ struct IRMemoryWrite : IROpcode {
     IRMemoryWrite(IRValue addr, IRValue src, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_size(access_size), access_type(access_type) {}
 
     std::string to_string() {
-        return common::format("st%s%s %s, %s", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), src.to_string().c_str(), addr.to_string().c_str());
+        return common::format("write_%s_%s(%s, %s)", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), src.to_string().c_str(), addr.to_string().c_str());
     }
 
     IRValue addr;
@@ -341,19 +365,6 @@ struct IRCompare : IROpcode {
     IRValue rhs;
 };
 
-struct IROr : IROpcode {
-    IROr(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Or), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
-
-    std::string to_string() override {
-        return common::format("or%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue lhs;
-    IRValue rhs;
-    bool set_flags;
-};
-
 struct IRArithmeticShiftRight : IROpcode {
     IRArithmeticShiftRight(IRVariable dst, IRValue src, IRValue amount, bool set_carry) : IROpcode(IROpcodeType::ArithmeticShiftRight), dst(dst), src(src), amount(amount), set_carry(set_carry) {}
 
@@ -384,7 +395,7 @@ struct IRMemoryRead : IROpcode {
     IRMemoryRead(IRVariable dst, IRValue addr, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryRead), dst(dst), addr(addr), access_size(access_size), access_type(access_type) {}
 
     std::string to_string() {
-        return common::format("ld%s%s %s, %s", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), dst.to_string().c_str(), addr.to_string().c_str());
+        return common::format("%s = read_%s_%s(%s)", dst.to_string().c_str(), access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), addr.to_string().c_str());
     }
 
     IRVariable dst;
@@ -410,7 +421,7 @@ struct IRBranch : IROpcode {
     IRBranch(IRValue address, bool is_arm) : IROpcode(IROpcodeType::Branch), address(address), is_arm(is_arm) {}
 
     std::string to_string() override {
-        return common::format("b %s", address.to_string().c_str());
+        return common::format("branch(%s)", address.to_string().c_str());
     }
 
     IRValue address;

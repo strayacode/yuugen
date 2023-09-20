@@ -35,9 +35,11 @@ private:
 
         // bitwise opcodes
         IRBitwiseAnd,
+        IRBitwiseOr,
 
         // flag opcodes
         IRGetNZ,
+        IRGetNZCV,
 
         // misc opcodes
         IRCopy,
@@ -50,7 +52,6 @@ private:
         IRUpdateFlag,
         IRStoreFlags,
         IRCompare,
-        IROr,
         IRArithmeticShiftRight,
         IRRotateRight,
         IRMemoryRead,
@@ -99,9 +100,11 @@ private:
 
     // bitwise opcodes
     void handle_bitwise_and(IROpcodeVariant& opcode_variant);
+    void handle_bitwise_or(IROpcodeVariant& opcode_variant);
 
     // flag opcodes
     void handle_get_nz(IROpcodeVariant& opcode_variant);
+    void handle_get_nzcv(IROpcodeVariant& opcode_variant);
 
     // misc opcodes
     void handle_copy(IROpcodeVariant& opcode_variant);
@@ -116,7 +119,6 @@ private:
     void handle_update_flag(IROpcodeVariant& opcode_variant);
     void handle_store_flags(IROpcodeVariant& opcode_variant);
     void handle_compare(IROpcodeVariant& opcode_variant);
-    void handle_or(IROpcodeVariant& opcode_variant);
     void handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
     void handle_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_memory_read(IROpcodeVariant& opcode_variant);

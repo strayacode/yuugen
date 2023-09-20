@@ -89,7 +89,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     }
 
     if (opcode.pre) {
-        address = ir.add(address, op2, false);
+        address = ir.add(address, op2);
     }
 
     emit_advance_pc();
@@ -119,7 +119,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     if (do_writeback) {
         if (!opcode.pre) {
             auto base = ir.load_gpr(opcode.rn);
-            auto new_base = ir.add(base, op2, false);
+            auto new_base = ir.add(base, op2);
             ir.store_gpr(opcode.rn, new_base);
         } else if (opcode.writeback) {
             ir.store_gpr(opcode.rn, address);
@@ -147,7 +147,7 @@ Translator::BlockStatus Translator::arm_status_store_register() {
     }
 
     auto psr_masked = ir.bitwise_and(psr, IRConstant{~opcode.mask});
-    auto psr_new = ir.or_(psr_masked, value_masked, false);
+    auto psr_new = ir.bitwise_or(psr_masked, value_masked);
 
     emit_advance_pc();
 
@@ -193,7 +193,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
     }
 
     if (opcode.up) {
-        new_base = ir.add(address, IRConstant{bytes}, false);
+        new_base = ir.add(address, IRConstant{bytes});
     } else {
         opcode.pre = !opcode.pre;
         address = ir.sub(address, IRConstant{bytes}, false);
@@ -222,7 +222,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
         }
 
         if (opcode.pre) {
-            address = ir.add(address, IRConstant{4}, false);
+            address = ir.add(address, IRConstant{4});
         }
 
         if (opcode.load) {
@@ -234,7 +234,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
         }
 
         if (!opcode.pre) {
-            address = ir.add(address, IRConstant{4}, false);
+            address = ir.add(address, IRConstant{4});
         } 
     }
 
@@ -285,7 +285,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     }
 
     if (opcode.pre) {
-        address = ir.add(address, op2, false);
+        address = ir.add(address, op2);
     }
 
     emit_advance_pc();
@@ -311,7 +311,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     if (do_writeback) {
         if (!opcode.pre) {
             auto base = ir.load_gpr(opcode.rn);
-            auto new_base = ir.add(base, op2, false);
+            auto new_base = ir.add(base, op2);
             ir.store_gpr(opcode.rn, new_base);
         } else if (opcode.writeback) {
             ir.store_gpr(opcode.rn, address);
@@ -399,7 +399,10 @@ Translator::BlockStatus Translator::arm_data_processing() {
     //     break;
     case ARMDataProcessing::Opcode::ADD:
         result = ir.add(op1, op2);
-        ir.update_nzcv(result);
+        if (opcode.set_flags) {
+            ir.update_nzcv(result);
+        }
+        
         break;
     // case ARMDataProcessing::Opcode::ADC:
     //     result = ir.add_carry(op1, op2, opcode.set_flags);

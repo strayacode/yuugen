@@ -17,7 +17,7 @@ struct IRVariable {
     IRVariable(u32 id) : id(id) {}
 
     std::string to_string() {
-        return common::format("%%%d", id);
+        return common::format("v%d", id);
     }
 
     bool is_assigned() {
