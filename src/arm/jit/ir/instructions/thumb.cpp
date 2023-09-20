@@ -122,7 +122,8 @@ Translator::BlockStatus Translator::thumb_shift_immediate() {
     auto value = emit_barrel_shifter(src, opcode.shift_type, IRConstant{opcode.amount}, true);
     ir.store_flags(Flags::C);
 
-    auto dst = ir.move(value, true);
+    // TODO: does this need to be copied
+    auto dst = ir.copy(value);
     ir.store_gpr(opcode.rd, dst);
     ir.store_flags(Flags::NZ);
 

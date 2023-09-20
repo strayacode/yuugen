@@ -27,9 +27,11 @@ public:
     IRVariable bitwise_and(IRValue lhs, IRValue rhs);
 
     // flag opcodes
-    void update_nz(IRValue value);
+    void update_nz(IRValue src);
 
-    IRVariable move(IRValue src, bool set_flags);
+    // misc opcodes
+    IRVariable copy(IRValue src);
+
     IRVariable add(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable logical_shift_left(IRValue src, IRValue amount, bool set_carry);
     

@@ -25,7 +25,9 @@ enum class IROpcodeType {
     // flag opcodes
     GetNZ,
 
-    Move,
+    // misc opcodes
+    Copy,
+    
     Add,
     LogicalShiftLeft,
     LogicalShiftRight,
@@ -231,16 +233,15 @@ struct IRGetNZ : IROpcode {
     IRValue value;
 };
 
-struct IRMove : IROpcode {
-    IRMove(IRVariable dst, IRValue src, bool set_flags) : IROpcode(IROpcodeType::Move), dst(dst), src(src), set_flags(set_flags) {}
+struct IRCopy : IROpcode {
+    IRCopy(IRVariable dst, IRValue src) : IROpcode(IROpcodeType::Copy), dst(dst), src(src) {}
 
     std::string to_string() override {
-        return common::format("mov%s %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str());
+        return common::format("%s = copy %s", dst.to_string().c_str(), src.to_string().c_str());
     }
 
     IRVariable dst;
     IRValue src;
-    bool set_flags;
 };
 
 struct IRAdd : IROpcode {

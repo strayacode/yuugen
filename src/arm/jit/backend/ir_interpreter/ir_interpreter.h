@@ -39,7 +39,9 @@ private:
         // flag opcodes
         IRGetNZ,
 
-        IRMove,
+        // misc opcodes
+        IRCopy,
+
         IRAdd,
         IRLogicalShiftLeft,
         IRLogicalShiftRight,
@@ -101,9 +103,11 @@ private:
     // flag opcodes
     void handle_get_nz(IROpcodeVariant& opcode_variant);
 
+    // misc opcodes
+    void handle_copy(IROpcodeVariant& opcode_variant);
+
     void handle_set_carry(IROpcodeVariant& opcode_variant);
     void handle_clear_carry(IROpcodeVariant& opcode_variant);
-    void handle_move(IROpcodeVariant& opcode_variant);
     void handle_add(IROpcodeVariant& opcode_variant);
     void handle_logical_shift_left(IROpcodeVariant& opcode_variant);
     void handle_logical_shift_right(IROpcodeVariant& opcode_variant);

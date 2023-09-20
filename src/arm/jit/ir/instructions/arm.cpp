@@ -197,7 +197,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
     } else {
         opcode.pre = !opcode.pre;
         address = ir.sub(address, IRConstant{bytes}, false);
-        new_base = ir.move(address, false);
+        new_base = ir.copy(address);
     }
 
     emit_advance_pc();
@@ -383,7 +383,10 @@ Translator::BlockStatus Translator::arm_data_processing() {
     switch (opcode.opcode) {
     case ARMDataProcessing::Opcode::AND:
         result = ir.bitwise_and(op1, op2);
-        ir.update_nz(result);
+        if (opcode.set_flags) {
+            ir.update_nz(result);
+        }
+        
         break;
     // case ARMDataProcessing::Opcode::EOR:
     //     result = ir.exclusive_or(op1, op2, opcode.set_flags);
@@ -394,9 +397,10 @@ Translator::BlockStatus Translator::arm_data_processing() {
     // case ARMDataProcessing::Opcode::RSB:
     //     logger.todo("Translator: handle rsb");
     //     break;
-    // case ARMDataProcessing::Opcode::ADD:
-    //     result = ir.add(op1, op2, opcode.set_flags);
-    //     break;
+    case ARMDataProcessing::Opcode::ADD:
+        result = ir.add(op1, op2);
+        ir.update_nzcv(result);
+        break;
     // case ARMDataProcessing::Opcode::ADC:
     //     result = ir.add_carry(op1, op2, opcode.set_flags);
     //     break;
@@ -421,9 +425,13 @@ Translator::BlockStatus Translator::arm_data_processing() {
     // case ARMDataProcessing::Opcode::ORR:
     //     result = ir.or_(op1, op2, opcode.set_flags);
     //     break;
-    // case ARMDataProcessing::Opcode::MOV:
-    //     result = ir.move(op2, opcode.set_flags);
-    //     break;
+    case ARMDataProcessing::Opcode::MOV:
+        result = ir.copy(op2);
+        if (opcode.set_flags) {
+            ir.update_nz(result);
+        }
+        
+        break;
     // case ARMDataProcessing::Opcode::BIC:
     //     result = ir.bic(op1, op2, opcode.set_flags);
     //     break;

@@ -55,16 +55,16 @@ IRVariable IREmitter::bitwise_and(IRValue lhs, IRValue rhs) {
     return dst;
 }
 
-void IREmitter::update_nz(IRValue value) {
+void IREmitter::update_nz(IRValue src) {
     auto cpsr = load_cpsr();
     auto dst = create_variable();
-    push<IRGetNZ>(dst, cpsr, value);
+    push<IRGetNZ>(dst, cpsr, src);
     store_cpsr(dst);
 }
 
-IRVariable IREmitter::move(IRValue src, bool set_flags) {
+IRVariable IREmitter::copy(IRValue src) {
     auto dst = create_variable();
-    push<IRMove>(dst, src, set_flags);
+    push<IRCopy>(dst, src);
     return dst;
 }
 
