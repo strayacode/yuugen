@@ -38,6 +38,10 @@ public:
     void update_nzcv(IRValue src);
     void update_c();
 
+    // branch opcodes
+    void branch(IRValue address, bool is_arm);
+    void branch_exchange(IRValue address, ExchangeType exchange_type);
+
     // misc opcodes
     IRVariable copy(IRValue src);
 
@@ -55,9 +59,6 @@ public:
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount);
     IRVariable rotate_right(IRValue src, IRValue amount);
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
-    IRVariable bic(IRValue lhs, IRValue rhs, bool set_flags);
-    void branch(IRValue address, bool is_arm);
-    void branch_exchange(IRValue address, ExchangeType exchange_type);
     IRVariable multiply(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable exclusive_or(IRValue lhs, IRValue rhs, bool set_flags);
     void test(IRValue lhs, IRValue rhs);

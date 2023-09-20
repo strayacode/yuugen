@@ -100,6 +100,14 @@ void IREmitter::update_c() {
     store_cpsr(dst);
 }
 
+void IREmitter::branch(IRValue address, bool is_arm) {
+    push<IRBranch>(address, is_arm);
+}
+
+void IREmitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
+    push<IRBranchExchange>(address, exchange_type);
+}
+
 IRVariable IREmitter::copy(IRValue src) {
     auto dst = create_variable();
     push<IRCopy>(dst, src);
@@ -167,20 +175,6 @@ IRVariable IREmitter::memory_read(IRValue addr, AccessSize access_size, AccessTy
     auto dst = create_variable();
     push<IRMemoryRead>(dst, addr, access_size, access_type);
     return dst;
-}
-
-IRVariable IREmitter::bic(IRValue lhs, IRValue rhs, bool set_flags) {
-    auto dst = create_variable();
-    push<IRBic>(dst, lhs, rhs, set_flags);
-    return dst;
-}
-
-void IREmitter::branch(IRValue address, bool is_arm) {
-    push<IRBranch>(address, is_arm);
-}
-
-void IREmitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
-    push<IRBranchExchange>(address, exchange_type);
 }
 
 IRVariable IREmitter::multiply(IRValue lhs, IRValue rhs, bool set_flags) {

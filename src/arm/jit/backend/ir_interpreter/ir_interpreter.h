@@ -43,6 +43,10 @@ private:
         IRGetNZCV,
         IRGetC,
 
+        // branch opcodes
+        IRBranch,
+        IRBranchExchange,
+
         // misc opcodes
         IRCopy,
 
@@ -57,9 +61,6 @@ private:
         IRArithmeticShiftRight,
         IRRotateRight,
         IRMemoryRead,
-        IRBic,
-        IRBranch,
-        IRBranchExchange,
         IRMultiply,
         IRExclusiveOr,
         IRTest,
@@ -114,6 +115,10 @@ private:
     void handle_get_nzcv(IROpcodeVariant& opcode_variant);
     void handle_get_c(IROpcodeVariant& opcode_variant);
 
+    // branch opcodes
+    void handle_branch(IROpcodeVariant& opcode_variant);
+    void handle_branch_exchange(IROpcodeVariant& opcode_variant);
+
     // misc opcodes
     void handle_copy(IROpcodeVariant& opcode_variant);
 
@@ -129,9 +134,6 @@ private:
     void handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
     void handle_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_memory_read(IROpcodeVariant& opcode_variant);
-    void handle_bic(IROpcodeVariant& opcode_variant);
-    void handle_branch(IROpcodeVariant& opcode_variant);
-    void handle_branch_exchange(IROpcodeVariant& opcode_variant);
     void handle_multiply(IROpcodeVariant& opcode_variant);
     void handle_exclusive_or(IROpcodeVariant& opcode_variant);
     void handle_test(IROpcodeVariant& opcode_variant);

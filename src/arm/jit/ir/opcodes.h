@@ -37,6 +37,10 @@ enum class IROpcodeType {
     GetNZCV,
     GetC,
 
+    // branch opcodes
+    Branch,
+    BranchExchange,
+
     // misc opcodes
     Copy,
     
@@ -45,9 +49,6 @@ enum class IROpcodeType {
     StoreFlags,
     Compare,
     MemoryRead,
-    Bic,
-    Branch,
-    BranchExchange,
     Multiply,
     ExclusiveOr,
     Test,
@@ -130,7 +131,7 @@ static std::string bool_to_string(bool value) {
 static std::string exchange_type_to_string(ExchangeType exchange_type) {
     switch (exchange_type) {
     case ExchangeType::Bit0:
-        return ".bit0";
+        return "bit0";
     }
 }
 
@@ -356,6 +357,28 @@ struct IRGetC : IROpcode {
     IRValue cpsr;
 };
 
+struct IRBranch : IROpcode {
+    IRBranch(IRValue address, bool is_arm) : IROpcode(IROpcodeType::Branch), address(address), is_arm(is_arm) {}
+
+    std::string to_string() override {
+        return common::format("branch(%s)", address.to_string().c_str());
+    }
+
+    IRValue address;
+    bool is_arm;
+};
+
+struct IRBranchExchange : IROpcode {
+    IRBranchExchange(IRValue address, ExchangeType exchange_type) : IROpcode(IROpcodeType::BranchExchange), address(address), exchange_type(exchange_type) {}
+
+    std::string to_string() override {
+        return common::format("branch_exchange_%s(%s)", exchange_type_to_string(exchange_type).c_str(), address.to_string().c_str());
+    }
+
+    IRValue address;
+    ExchangeType exchange_type;
+};
+
 struct IRCopy : IROpcode {
     IRCopy(IRVariable dst, IRValue src) : IROpcode(IROpcodeType::Copy), dst(dst), src(src) {}
 
@@ -423,41 +446,6 @@ struct IRMemoryRead : IROpcode {
     IRValue addr;
     AccessSize access_size;
     AccessType access_type;
-};
-
-struct IRBic : IROpcode {
-    IRBic(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Bic), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
-
-    std::string to_string() override {
-        return common::format("bic%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue lhs;
-    IRValue rhs;
-    bool set_flags;
-};
-
-struct IRBranch : IROpcode {
-    IRBranch(IRValue address, bool is_arm) : IROpcode(IROpcodeType::Branch), address(address), is_arm(is_arm) {}
-
-    std::string to_string() override {
-        return common::format("branch(%s)", address.to_string().c_str());
-    }
-
-    IRValue address;
-    bool is_arm;
-};
-
-struct IRBranchExchange : IROpcode {
-    IRBranchExchange(IRValue address, ExchangeType exchange_type) : IROpcode(IROpcodeType::BranchExchange), address(address), exchange_type(exchange_type) {}
-
-    std::string to_string() override {
-        return common::format("bx%s %s", exchange_type_to_string(exchange_type).c_str(), address.to_string().c_str());
-    }
-
-    IRValue address;
-    ExchangeType exchange_type;
 };
 
 struct IRMultiply : IROpcode {
