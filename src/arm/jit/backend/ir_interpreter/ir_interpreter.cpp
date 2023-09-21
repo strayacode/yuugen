@@ -33,6 +33,7 @@ void IRInterpreter::compile(BasicBlock& basic_block)  {
 
 int IRInterpreter::run(Location location)  {
     auto& compiled_block = code_cache.get(location);
+    logger.debug("run at %08x", location.get_address());
     if (evaluate_condition(compiled_block.condition)) {
         for (auto& compiled_instruction : compiled_block.instructions) {
             (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);
@@ -216,6 +217,7 @@ void IRInterpreter::handle_store_gpr(IROpcodeVariant& opcode_variant) {
 
 void IRInterpreter::handle_load_cpsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadCPSR>(opcode_variant);
+    logger.debug("cpsr load %08x", jit.state.cpsr.data);
     assign_variable(opcode.dst, jit.state.cpsr.data);
 }
 
@@ -354,7 +356,12 @@ void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {
     auto [result, carry] = lsl(value, amount);
     assign_variable(opcode.dst, result);
 
+    logger.debug("r0 %08x", jit.get_gpr(GPR::R0));
+
+    logger.debug("lsl %08x %08x", value, amount);
+
     if (carry) {
+        logger.debug("update carry to %d", *carry);
         update_flag(Flags::C, *carry);
     }
 }

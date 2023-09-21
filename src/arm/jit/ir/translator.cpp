@@ -4,10 +4,12 @@
 #include "arm/jit/ir/translator.h"
 #include "arm/jit/jit.h"
 #include "arm/decoder.h"
+#include "arm/disassembler/disassembler.h"
 
 namespace arm {
 
 static Decoder<Translator> decoder;
+static Disassembler disassembler;
 
 Translator::Translator(Jit& jit, IREmitter& ir) : jit(jit), ir(ir) {}
 
@@ -28,6 +30,7 @@ void Translator::translate() {
 
         if (location.is_arm()) {
             instruction = code_read_word(code_address);
+            logger.debug("%s", disassembler.disassemble_arm(instruction).c_str());
             auto condition = evaluate_arm_condition();
 
             if (i == 0) {
@@ -48,6 +51,7 @@ void Translator::translate() {
             }
         } else {
             instruction = code_read_half(code_address);
+            logger.debug("%s", disassembler.disassemble_thumb(instruction).c_str());
             auto condition = evaluate_thumb_condition();
 
             if (i == 0) {

@@ -7,40 +7,7 @@
 namespace arm {
 
 Translator::BlockStatus Translator::thumb_alu_immediate() {
-    auto opcode = ThumbALUImmediate::decode(instruction);
-    bool uses_op1 = opcode.opcode != ThumbALUImmediate::Opcode::MOV; 
-    
-    IRVariable op1;
-    IRConstant op2{opcode.imm};
-    IRVariable result;
-
-    if (uses_op1) {
-        op1 = ir.load_gpr(opcode.rd);
-    }
-
-    switch (opcode.opcode) {
-    case ThumbALUImmediate::Opcode::MOV:
-        result = ir.copy(op2);
-        ir.update_nz(result);
-        break;
-    case ThumbALUImmediate::Opcode::CMP:
-        ir.compare(op1, op2);
-        break;
-    case ThumbALUImmediate::Opcode::ADD:
-        result = ir.add(op1, op2);
-        ir.update_nzcv(result);
-        break;
-    case ThumbALUImmediate::Opcode::SUB:
-        result = ir.sub(op1, op2);
-        ir.update_nzcv(result);
-        break;
-    }
-
-    if (result.is_assigned()) {
-        ir.store_gpr(opcode.rd, result);
-    }
-
-    emit_advance_pc();
+    logger.todo("Translator: handle thumb_alu_immediate");
     return BlockStatus::Continue;
 }
 
@@ -60,10 +27,8 @@ Translator::BlockStatus Translator::thumb_branch_link_exchange_offset() {
 }
 
 Translator::BlockStatus Translator::thumb_branch() {
-    auto opcode = ThumbBranch::decode(instruction);
-    auto target_address = code_address + opcode.offset + (2 * instruction_size);
-    ir.store_gpr(GPR::PC, ir.constant(target_address));
-    return BlockStatus::Break;
+    logger.todo("Translator: handle thumb_branch");
+    return BlockStatus::Continue;
 }
 
 Translator::BlockStatus Translator::thumb_push_pop() {
@@ -122,17 +87,7 @@ Translator::BlockStatus Translator::thumb_add_subtract() {
 }
 
 Translator::BlockStatus Translator::thumb_shift_immediate() {
-    auto opcode = ThumbShiftImmediate::decode(instruction);
-    auto src = ir.load_gpr(opcode.rs);
-    auto value = ir.barrel_shifter(src, opcode.shift_type, ir.constant(opcode.amount));
-    ir.update_c();
-    
-    // TODO: does this need to be copied
-    auto dst = ir.copy(value);
-    ir.store_gpr(opcode.rd, dst);
-    ir.store_flags(Flags::NZ);
-
-    emit_advance_pc();
+    logger.todo("Translator: handle thumb_shift_immediate");
     return BlockStatus::Continue;
 }
 
@@ -142,10 +97,8 @@ Translator::BlockStatus Translator::thumb_software_interrupt() {
 }
 
 Translator::BlockStatus Translator::thumb_branch_conditional() {
-    auto opcode = ThumbBranchConditional::decode(instruction);
-    auto target_address = code_address + opcode.offset + (2 * instruction_size);
-    ir.store_gpr(GPR::PC, ir.constant(target_address));
-    return BlockStatus::Break;
+    logger.todo("Translator: handle thumb_branch_conditional");
+    return BlockStatus::Continue;
 }
 
 Translator::BlockStatus Translator::thumb_load_store_multiple() {
