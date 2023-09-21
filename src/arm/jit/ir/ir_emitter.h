@@ -28,6 +28,7 @@ public:
     IRVariable bitwise_and(IRValue lhs, IRValue rhs);
     IRVariable bitwise_or(IRValue lhs, IRValue rhs);
     IRVariable bitwise_not(IRValue src);
+    IRVariable bitwise_exclusive_or(IRValue lhs, IRValue rhs);
 
     // arithmetic opcodes
     IRVariable add(IRValue lhs, IRValue rhs);
@@ -35,6 +36,10 @@ public:
 
     // flag opcodes
     void store_flag(Flag flag, IRValue value);
+    void store_nz(IRValue value);
+    void store_add_cv(IRValue lhs, IRValue rhs, IRValue result);
+    IRVariable add_overflow(IRValue lhs, IRValue rhs, IRValue result);
+    IRVariable compare(IRValue lhs, IRValue rhs, CompareType compare_type);
 
     // branch opcodes
     void branch(IRValue address, bool is_arm);
@@ -55,7 +60,6 @@ public:
     IRVariable rotate_right(IRValue src, IRValue amount);
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
     IRVariable multiply(IRValue lhs, IRValue rhs, bool set_flags);
-    IRVariable exclusive_or(IRValue lhs, IRValue rhs, bool set_flags);
     void test(IRValue lhs, IRValue rhs);
     IRVariable add_carry(IRValue lhs, IRValue rhs, bool set_flags);
     IRVariable move_negate(IRValue src, bool set_flags);

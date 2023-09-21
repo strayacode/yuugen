@@ -89,15 +89,23 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
 
 Translator::BlockStatus Translator::arm_data_processing() {
     auto opcode = ARMDataProcessing::decode(instruction);
-    auto op1 = ir.load_gpr(opcode.rn);
     IRValue op2;
     auto early_advance_pc = false;
+
+    bool is_comparison_opcode = opcode.opcode == ARMDataProcessing::Opcode::TST ||
+        opcode.opcode == ARMDataProcessing::Opcode::TEQ ||
+        opcode.opcode == ARMDataProcessing::Opcode::CMP ||
+        opcode.opcode == ARMDataProcessing::Opcode::CMN;
 
     bool carry_used_in_opcode = opcode.opcode == ARMDataProcessing::Opcode::ADC ||
         opcode.opcode == ARMDataProcessing::Opcode::SBC ||
         opcode.opcode == ARMDataProcessing::Opcode::RSC;
 
+    bool uses_op1 = opcode.opcode != ARMDataProcessing::Opcode::MOV &&
+        opcode.opcode != ARMDataProcessing::Opcode::MVN;
+
     bool set_carry = opcode.set_flags && !carry_used_in_opcode;
+    bool update_flags = opcode.set_flags && (opcode.rd != GPR::PC || is_comparison_opcode);
 
     if (opcode.imm) {
         op2 = ir.constant(opcode.rhs.imm.rotated);
@@ -109,7 +117,91 @@ Translator::BlockStatus Translator::arm_data_processing() {
         logger.todo("handle register");
     }
 
-    logger.todo("Translator: handle arm_data_processing");
+    IRValue op1;
+    IRVariable result;
+
+    if (uses_op1) {
+        op1 = ir.load_gpr(opcode.rn);
+    }
+
+    switch (opcode.opcode) {
+    case ARMDataProcessing::Opcode::AND:
+        logger.todo("handle and");
+        break;
+    case ARMDataProcessing::Opcode::EOR:
+        logger.todo("handle eor");
+        break;
+    case ARMDataProcessing::Opcode::SUB:
+        logger.todo("handle sub");
+        break;
+    case ARMDataProcessing::Opcode::RSB:
+        logger.todo("handle rsb");
+        break;
+    case ARMDataProcessing::Opcode::ADD:
+        result = ir.add(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_add_cv(op1, op2, result);
+        }
+        
+        break;
+    case ARMDataProcessing::Opcode::ADC:
+        logger.todo("handle adc");
+        break;
+    case ARMDataProcessing::Opcode::SBC:
+        logger.todo("handle sbc");
+        break;
+    case ARMDataProcessing::Opcode::RSC:
+        logger.todo("handle rsc");
+        break;
+    case ARMDataProcessing::Opcode::TST:
+        logger.todo("handle tst");
+        break;
+    case ARMDataProcessing::Opcode::TEQ:
+        logger.todo("handle teq");
+        break;
+    case ARMDataProcessing::Opcode::CMP:
+        logger.todo("handle cmp");
+        break;
+    case ARMDataProcessing::Opcode::CMN:
+        logger.todo("handle cmn");
+        break;
+    case ARMDataProcessing::Opcode::ORR:
+        logger.todo("handle orr");
+        break;
+    case ARMDataProcessing::Opcode::MOV:
+        result = ir.copy(op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
+
+        break;
+    case ARMDataProcessing::Opcode::BIC:
+        logger.todo("handle bic");
+        break;
+    case ARMDataProcessing::Opcode::MVN:
+        logger.todo("handle mvn");
+        break;
+    }
+
+    if (result.is_assigned()) {
+        ir.store_gpr(opcode.rd, result);
+    }
+
+    if (opcode.rd == 15 && opcode.set_flags) {
+        ir.copy_spsr_to_cpsr();
+    }
+
+    if (opcode.rd == 15 && !is_comparison_opcode) {
+        if (opcode.set_flags) {
+            logger.todo("Translator: handle pc write in data processing with set flags (t bit might change)");
+        }
+
+        return BlockStatus::Break;
+    } else if (!early_advance_pc) {
+        emit_advance_pc();
+    }
+
     return BlockStatus::Continue;
 }
 

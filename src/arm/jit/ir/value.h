@@ -90,10 +90,10 @@ struct GuestRegister {
 };
 
 enum Flag : u32 {
-    N = (static_cast<u32>(1) << 31),
-    Z = (static_cast<u32>(1) << 30),
-    C = (static_cast<u32>(1) << 29),
-    V = (static_cast<u32>(1) << 28),
+    N = 31,
+    Z = 30,
+    C = 29,
+    V = 28,
 };
 
 } // namespace arm

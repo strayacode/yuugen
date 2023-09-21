@@ -23,6 +23,7 @@ enum class IROpcodeType {
     BitwiseAnd,
     BitwiseOr,
     BitwiseNot,
+    BitwiseExclusiveOr,
     LogicalShiftLeft,
     LogicalShiftRight,
     ArithmeticShiftRight,
@@ -33,6 +34,7 @@ enum class IROpcodeType {
     Sub,
 
     // flag opcodes
+    Compare,
 
     // branch opcodes
     Branch,
@@ -44,7 +46,6 @@ enum class IROpcodeType {
     MemoryWrite,
     MemoryRead,
     Multiply,
-    ExclusiveOr,
     AddCarry,
 };
 
@@ -62,6 +63,12 @@ enum class AccessType {
 
 enum class ExchangeType {
     Bit0,
+};
+
+enum class CompareType {
+    Equal,
+    LessThan,
+    IntegerLessThan,
 };
 
 static std::string access_size_to_string(AccessSize access_size) {
@@ -90,6 +97,17 @@ static std::string exchange_type_to_string(ExchangeType exchange_type) {
     switch (exchange_type) {
     case ExchangeType::Bit0:
         return "bit0";
+    }
+}
+
+static std::string compare_type_to_string(CompareType access_type) {
+    switch (access_type) {
+    case CompareType::Equal:
+        return "eq";
+    case CompareType::LessThan:
+        return "lt";
+    case CompareType::IntegerLessThan:
+        return "ilt";
     }
 }
 
@@ -208,6 +226,18 @@ struct IRBitwiseNot : IROpcode {
     IRValue src;
 };
 
+struct IRBitwiseExclusiveOr : IROpcode {
+    IRBitwiseExclusiveOr(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseExclusiveOr), dst(dst), lhs(lhs), rhs(rhs) {}
+
+    std::string to_string() override {
+        return common::format("%s = xor(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+};
+
 struct IRLogicalShiftLeft : IROpcode {
     IRLogicalShiftLeft(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::LogicalShiftLeft), dst(dst), src(src), amount(amount) {}
 
@@ -280,6 +310,19 @@ struct IRSub : IROpcode {
     IRValue rhs;
 };
 
+struct IRCompare : IROpcode {
+    IRCompare(IRVariable dst, IRValue lhs, IRValue rhs, CompareType compare_type) : IROpcode(IROpcodeType::Compare), dst(dst), lhs(lhs), rhs(rhs), compare_type(compare_type) {}
+
+    std::string to_string() override {
+        return common::format("%s = compare_%s(%s, %s)", dst.to_string().c_str(), compare_type_to_string(compare_type).c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+    CompareType compare_type;
+};
+
 struct IRBranch : IROpcode {
     IRBranch(IRValue address, bool is_arm) : IROpcode(IROpcodeType::Branch), address(address), is_arm(is_arm) {}
 
@@ -344,19 +387,6 @@ struct IRMultiply : IROpcode {
 
     std::string to_string() override {
         return common::format("mul%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue lhs;
-    IRValue rhs;
-    bool set_flags;
-};
-
-struct IRExclusiveOr : IROpcode {
-    IRExclusiveOr(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::ExclusiveOr), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
-
-    std::string to_string() override {
-        return common::format("xor%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
     }
 
     IRVariable dst;

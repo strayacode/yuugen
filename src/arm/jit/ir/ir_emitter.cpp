@@ -67,6 +67,12 @@ IRVariable IREmitter::bitwise_not(IRValue src) {
     return dst;
 }
 
+IRVariable IREmitter::bitwise_exclusive_or(IRValue lhs, IRValue rhs) {
+    auto dst = create_variable();
+    push<IRBitwiseExclusiveOr>(dst, lhs, rhs);
+    return dst;
+}
+
 IRVariable IREmitter::add(IRValue lhs, IRValue rhs) {
     auto dst = create_variable();
     push<IRAdd>(dst, lhs, rhs);
@@ -84,6 +90,28 @@ void IREmitter::store_flag(Flag flag, IRValue value) {
     auto cpsr_with_cleared_flag = bitwise_and(cpsr, bitwise_not(constant(flag)));
     auto cpsr_with_set_flag = bitwise_or(cpsr_with_cleared_flag, constant(flag));
     store_cpsr(cpsr_with_set_flag);
+}
+
+void IREmitter::store_nz(IRValue value) {
+    store_flag(Flag::N, compare(value, constant(0), CompareType::IntegerLessThan));
+    store_flag(Flag::Z, compare(value, constant(0), CompareType::Equal));
+}
+
+void IREmitter::store_add_cv(IRValue lhs, IRValue rhs, IRValue result) {
+    store_flag(Flag::C, compare(result, lhs, CompareType::LessThan));
+    store_flag(Flag::V, add_overflow(lhs, rhs, result));
+}
+
+IRVariable IREmitter::add_overflow(IRValue lhs, IRValue rhs, IRValue result) {
+    auto a = bitwise_not(bitwise_exclusive_or(lhs, rhs));
+    auto b = bitwise_exclusive_or(rhs, result);
+    return compare(a, b, CompareType::IntegerLessThan);
+}
+
+IRVariable IREmitter::compare(IRValue lhs, IRValue rhs, CompareType compare_type) {
+    auto dst = create_variable();
+    push<IRCompare>(dst, lhs, rhs, compare_type);
+    return dst;
 }
 
 void IREmitter::branch(IRValue address, bool is_arm) {
@@ -154,12 +182,6 @@ IRVariable IREmitter::memory_read(IRValue addr, AccessSize access_size, AccessTy
 IRVariable IREmitter::multiply(IRValue lhs, IRValue rhs, bool set_flags) {
     auto dst = create_variable();
     push<IRMultiply>(dst, lhs, rhs, set_flags);
-    return dst;
-}
-
-IRVariable IREmitter::exclusive_or(IRValue lhs, IRValue rhs, bool set_flags) {
-    auto dst = create_variable();
-    push<IRExclusiveOr>(dst, lhs, rhs, set_flags);
     return dst;
 }
 

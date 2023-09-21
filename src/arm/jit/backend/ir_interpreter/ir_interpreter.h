@@ -37,8 +37,10 @@ private:
         IRBitwiseAnd,
         IRBitwiseOr,
         IRBitwiseNot,
+        IRBitwiseExclusiveOr,
 
         // flag opcodes
+        IRCompare,
 
         // branch opcodes
         IRBranch,
@@ -56,7 +58,6 @@ private:
         IRRotateRight,
         IRMemoryRead,
         IRMultiply,
-        IRExclusiveOr,
         IRAddCarry
     >;
 
@@ -95,12 +96,14 @@ private:
     void handle_bitwise_and(IROpcodeVariant& opcode_variant);
     void handle_bitwise_or(IROpcodeVariant& opcode_variant);
     void handle_bitwise_not(IROpcodeVariant& opcode_variant);
+    void handle_bitwise_exclusive_or(IROpcodeVariant& opcode_variant);
 
     // arithmetic opcodes
     void handle_add(IROpcodeVariant& opcode_variant);
     void handle_sub(IROpcodeVariant& opcode_variant);
 
     // flag opcodes
+    void handle_compare(IROpcodeVariant& opcode_variant);
 
     // branch opcodes
     void handle_branch(IROpcodeVariant& opcode_variant);
@@ -119,7 +122,6 @@ private:
     void handle_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_memory_read(IROpcodeVariant& opcode_variant);
     void handle_multiply(IROpcodeVariant& opcode_variant);
-    void handle_exclusive_or(IROpcodeVariant& opcode_variant);
     void handle_add_carry(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
