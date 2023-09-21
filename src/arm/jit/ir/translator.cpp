@@ -16,10 +16,8 @@ Translator::Translator(Jit& jit, IREmitter& ir) : jit(jit), ir(ir) {}
 void Translator::translate() {
     auto& basic_block = ir.basic_block;
     auto location = basic_block.location;
-    instruction_size = location.get_instruction_size();
-    code_address = location.get_address() - 2 * instruction_size;
     
-    logger.debug("Translator: translate basic block instruction size %d pc %08x", instruction_size, code_address);
+    logger.debug("Translator: translate basic block instruction size %d pc %08x", location.get_instruction_size(), location.get_address());
 
     for (int i = 0; i < jit.config.block_size; i++) {
         // TODO: for now each instruction takes only 1 cycle,
@@ -29,7 +27,7 @@ void Translator::translate() {
         basic_block.num_instructions++;
 
         if (location.is_arm()) {
-            instruction = code_read_word(code_address);
+            instruction = code_read_word(basic_block.current_address);
             logger.debug("%s", disassembler.disassemble_arm(instruction).c_str());
             auto condition = evaluate_arm_condition();
 
@@ -50,7 +48,7 @@ void Translator::translate() {
                 break;
             }
         } else {
-            instruction = code_read_half(code_address);
+            instruction = code_read_half(basic_block.current_address);
             logger.debug("%s", disassembler.disassemble_thumb(instruction).c_str());
             auto condition = evaluate_thumb_condition();
 
@@ -72,7 +70,7 @@ void Translator::translate() {
             }
         }
 
-        code_address += instruction_size;
+        basic_block.current_address += instruction_size;
     }
 
     basic_block.dump();
@@ -81,18 +79,6 @@ void Translator::translate() {
 Translator::BlockStatus Translator::illegal_instruction() {
     logger.error("Translator: illegal instruction %08x at pc = %08x", instruction, jit.get_state().gpr[15]);
     return BlockStatus::Break;
-}
-
-void Translator::emit_advance_pc() {
-    ir.store_gpr(GPR::PC, IRConstant{code_address + instruction_size});
-}
-
-void Translator::emit_link() {
-    ir.store_gpr(GPR::LR, IRConstant{code_address + instruction_size});
-}
-
-void Translator::emit_branch(IRValue address) {
-    ir.branch(address, ir.basic_block.location.is_arm());
 }
 
 u16 Translator::code_read_half(u32 addr) {

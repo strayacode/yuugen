@@ -8,8 +8,11 @@
 namespace arm {
 
 Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
-    logger.todo("Translator: handle arm_branch_link_maybe_exchange");
-    return BlockStatus::Continue;
+    if (ir.basic_block.condition != Condition::NV) {
+        return arm_branch_link();
+    } else {
+        return arm_branch_link_exchange();
+    }
 }
 
 Translator::BlockStatus Translator::arm_branch_exchange() {
@@ -23,8 +26,13 @@ Translator::BlockStatus Translator::arm_count_leading_zeroes() {
 }
 
 Translator::BlockStatus Translator::arm_branch_link() {
-    logger.todo("Translator: handle arm_branch_link");
-    return BlockStatus::Continue;
+    auto opcode = ARMBranchLink::decode(instruction);
+    if (opcode.link) {
+        ir.link();
+    }
+
+    ir.branch(ir.constant(ir.basic_block.current_address + opcode.offset));
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_branch_link_exchange() {
@@ -199,7 +207,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
 
         return BlockStatus::Break;
     } else if (!early_advance_pc) {
-        emit_advance_pc();
+        ir.advance_pc();
     }
 
     return BlockStatus::Continue;

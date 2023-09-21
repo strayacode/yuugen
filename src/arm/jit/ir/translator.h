@@ -73,9 +73,6 @@ public:
     BlockStatus illegal_instruction();
 
 private:
-    void emit_advance_pc();
-    void emit_link();
-    void emit_branch(IRValue address);
     
     u16 code_read_half(u32 addr);
     u32 code_read_word(u32 addr);

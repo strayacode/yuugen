@@ -42,7 +42,7 @@ public:
     IRVariable compare(IRValue lhs, IRValue rhs, CompareType compare_type);
 
     // branch opcodes
-    void branch(IRValue address, bool is_arm);
+    void branch(IRValue address);
     void branch_exchange(IRValue address, ExchangeType exchange_type);
 
     // misc opcodes
@@ -51,6 +51,8 @@ public:
     // helpers
     IRConstant constant(u32 value);
     IRVariable barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
+    void link();
+    void advance_pc();
 
     IRVariable logical_shift_left(IRValue src, IRValue amount);
     IRVariable logical_shift_right(IRValue src, IRValue amount);

@@ -87,9 +87,9 @@ IRVariable IREmitter::sub(IRValue lhs, IRValue rhs) {
 
 void IREmitter::store_flag(Flag flag, IRValue value) {
     auto cpsr = load_cpsr();
-    auto cpsr_with_cleared_flag = bitwise_and(cpsr, bitwise_not(constant(flag)));
-    auto cpsr_with_set_flag = bitwise_or(cpsr_with_cleared_flag, constant(flag));
-    store_cpsr(cpsr_with_set_flag);
+    auto cpsr_masked = bitwise_and(cpsr, bitwise_not(constant(1 << flag)));
+    auto value_shifted = logical_shift_left(value, constant(flag));
+    store_cpsr(bitwise_or(cpsr_masked, value_shifted));
 }
 
 void IREmitter::store_nz(IRValue value) {
@@ -114,8 +114,11 @@ IRVariable IREmitter::compare(IRValue lhs, IRValue rhs, CompareType compare_type
     return dst;
 }
 
-void IREmitter::branch(IRValue address, bool is_arm) {
-    push<IRBranch>(address, is_arm);
+void IREmitter::branch(IRValue address) {
+    auto instruction_size = basic_block.location.get_instruction_size();
+    auto address_mask = ~(instruction_size - 1);
+    auto adjusted_address = add(bitwise_and(address, constant(address_mask)), constant(2 * instruction_size));
+    store_gpr(GPR::PC, adjusted_address);
 }
 
 void IREmitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
@@ -143,6 +146,18 @@ IRVariable IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValu
     case ShiftType::ROR:
         return rotate_right(value, amount);
     }
+}
+
+void IREmitter::link() {
+    auto address = basic_block.current_address;
+    auto instruction_size = basic_block.location.get_instruction_size();
+    store_gpr(GPR::LR, constant(address + instruction_size));
+}
+
+void IREmitter::advance_pc() {
+    auto address = basic_block.current_address;
+    auto instruction_size = basic_block.location.get_instruction_size();
+    store_gpr(GPR::PC, constant(address + instruction_size));
 }
 
 IRVariable IREmitter::logical_shift_left(IRValue src, IRValue amount) {

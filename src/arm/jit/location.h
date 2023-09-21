@@ -13,7 +13,8 @@ struct Location {
     }
 
     u32 get_address() {
-        return common::get_field<0, 31>(value) << 1;
+        u32 address = common::get_field<0, 31>(value) << 1;
+        return address - 2 * get_instruction_size();
     }
 
     Mode get_mode() {
