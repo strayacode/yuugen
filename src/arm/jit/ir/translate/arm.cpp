@@ -88,6 +88,27 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
 }
 
 Translator::BlockStatus Translator::arm_data_processing() {
+    auto opcode = ARMDataProcessing::decode(instruction);
+    auto op1 = ir.load_gpr(opcode.rn);
+    IRValue op2;
+    auto early_advance_pc = false;
+
+    bool carry_used_in_opcode = opcode.opcode == ARMDataProcessing::Opcode::ADC ||
+        opcode.opcode == ARMDataProcessing::Opcode::SBC ||
+        opcode.opcode == ARMDataProcessing::Opcode::RSC;
+
+    bool set_carry = opcode.set_flags && !carry_used_in_opcode;
+
+    if (opcode.imm) {
+        op2 = ir.constant(opcode.rhs.imm.rotated);
+
+        if (set_carry && opcode.rhs.imm.shift != 0) {
+            ir.store_flag(Flag::C, ir.constant(opcode.rhs.imm.rotated >> 31));
+        }
+    } else {
+        logger.todo("handle register");
+    }
+
     logger.todo("Translator: handle arm_data_processing");
     return BlockStatus::Continue;
 }

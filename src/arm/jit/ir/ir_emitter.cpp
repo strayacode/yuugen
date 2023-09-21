@@ -79,25 +79,11 @@ IRVariable IREmitter::sub(IRValue lhs, IRValue rhs) {
     return dst;
 }
 
-void IREmitter::update_nz(IRValue src) {
+void IREmitter::store_flag(Flag flag, IRValue value) {
     auto cpsr = load_cpsr();
-    auto dst = create_variable();
-    push<IRGetNZ>(dst, cpsr, src);
-    store_cpsr(dst);
-}
-
-void IREmitter::update_nzcv(IRValue src) {
-    auto cpsr = load_cpsr();
-    auto dst = create_variable();
-    push<IRGetNZCV>(dst, cpsr, src);
-    store_cpsr(dst);
-}
-
-void IREmitter::update_c() {
-    auto cpsr = load_cpsr();
-    auto dst = create_variable();
-    push<IRGetC>(dst, cpsr);
-    store_cpsr(dst);
+    auto cpsr_with_cleared_flag = bitwise_and(cpsr, bitwise_not(constant(flag)));
+    auto cpsr_with_set_flag = bitwise_or(cpsr_with_cleared_flag, constant(flag));
+    store_cpsr(cpsr_with_set_flag);
 }
 
 void IREmitter::branch(IRValue address, bool is_arm) {
@@ -147,18 +133,6 @@ void IREmitter::memory_write(IRValue addr, IRVariable src, AccessSize access_siz
     push<IRMemoryWrite>(addr, src, access_size, access_type);
 }
 
-void IREmitter::update_flag(Flags flag, bool value) {
-    push<IRUpdateFlag>(flag, value);
-}
-
-void IREmitter::store_flags(Flags flags) {
-    push<IRStoreFlags>(flags);
-}
-
-void IREmitter::compare(IRValue lhs, IRValue rhs) {
-    push<IRCompare>(lhs, rhs);
-}
-
 IRVariable IREmitter::arithmetic_shift_right(IRValue src, IRValue amount) {
     auto dst = create_variable();
     push<IRArithmeticShiftRight>(dst, src, amount);
@@ -189,24 +163,10 @@ IRVariable IREmitter::exclusive_or(IRValue lhs, IRValue rhs, bool set_flags) {
     return dst;
 }
 
-void IREmitter::test(IRValue lhs, IRValue rhs) {
-    push<IRTest>(lhs, rhs);
-}
-
 IRVariable IREmitter::add_carry(IRValue lhs, IRValue rhs, bool set_flags) {
     auto dst = create_variable();
     push<IRAddCarry>(dst, lhs, rhs, set_flags);
     return dst;
-}
-
-IRVariable IREmitter::move_negate(IRValue src, bool set_flags) {
-    auto dst = create_variable();
-    push<IRMoveNegate>(dst, src, set_flags);
-    return dst;
-}
-
-void IREmitter::compare_negate(IRValue lhs, IRValue rhs) {
-    push<IRCompareNegate>(lhs, rhs);
 }
 
 } // namespace arm

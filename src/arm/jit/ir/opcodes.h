@@ -33,9 +33,6 @@ enum class IROpcodeType {
     Sub,
 
     // flag opcodes
-    GetNZ,
-    GetNZCV,
-    GetC,
 
     // branch opcodes
     Branch,
@@ -45,16 +42,10 @@ enum class IROpcodeType {
     Copy,
     
     MemoryWrite,
-    UpdateFlag,
-    StoreFlags,
-    Compare,
     MemoryRead,
     Multiply,
     ExclusiveOr,
-    Test,
     AddCarry,
-    MoveNegate,
-    CompareNegate,
 };
 
 enum class AccessSize {
@@ -92,39 +83,6 @@ static std::string access_type_to_string(AccessType access_type) {
         return "unaligned";
     case AccessType::Signed:
         return "signed";
-    }
-}
-
-static std::string flags_to_string(Flags flags) {
-    if (flags == 0) {
-        return ".none";
-    }
-
-    std::string result = ".";
-    if (flags & Flags::N) {
-        result += "n";
-    }
-
-    if (flags & Flags::Z) {
-        result += "z";
-    }
-
-    if (flags & Flags::C) {
-        result += "c";
-    }
-
-    if (flags & Flags::V) {
-        result += "v";
-    }
-
-    return result;
-}
-
-static std::string bool_to_string(bool value) {
-    if (value) {
-        return "true";
-    } else {
-        return "false";
     }
 }
 
@@ -322,41 +280,6 @@ struct IRSub : IROpcode {
     IRValue rhs;
 };
 
-struct IRGetNZ : IROpcode {
-    IRGetNZ(IRVariable dst, IRValue cpsr, IRValue value) : IROpcode(IROpcodeType::GetNZ), dst(dst), cpsr(cpsr), value(value) {}
-
-    std::string to_string() override {
-        return common::format("%s = get_nz(%s, %s)", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue cpsr;
-    IRValue value;
-};
-
-struct IRGetNZCV : IROpcode {
-    IRGetNZCV(IRVariable dst, IRValue cpsr, IRValue value) : IROpcode(IROpcodeType::GetNZCV), dst(dst), cpsr(cpsr), value(value) {}
-
-    std::string to_string() override {
-        return common::format("%s = get_nzcv(%s, %s)", dst.to_string().c_str(), cpsr.to_string().c_str(), value.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue cpsr;
-    IRValue value;
-};
-
-struct IRGetC : IROpcode {
-    IRGetC(IRVariable dst, IRValue cpsr) : IROpcode(IROpcodeType::GetC), dst(dst), cpsr(cpsr) {}
-
-    std::string to_string() override {
-        return common::format("%s = get_c(%s)", dst.to_string().c_str(), cpsr.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue cpsr;
-};
-
 struct IRBranch : IROpcode {
     IRBranch(IRValue address, bool is_arm) : IROpcode(IROpcodeType::Branch), address(address), is_arm(is_arm) {}
 
@@ -403,38 +326,6 @@ struct IRMemoryWrite : IROpcode {
     AccessType access_type;
 };
 
-struct IRUpdateFlag : IROpcode {
-    IRUpdateFlag(Flags flag, bool value) : IROpcode(IROpcodeType::UpdateFlag), flag(flag), value(value) {}
-
-    std::string to_string() override {
-        return common::format("upflg%s, %s", flags_to_string(flag).c_str(), bool_to_string(value).c_str());
-    }
-
-    Flags flag;
-    bool value;
-};
-
-struct IRStoreFlags : IROpcode {
-    IRStoreFlags(Flags flags) : IROpcode(IROpcodeType::StoreFlags), flags(flags) {}
-
-    std::string to_string() override {
-        return common::format("stflg%s", flags_to_string(flags).c_str());
-    }
-
-    Flags flags;
-};
-
-struct IRCompare : IROpcode {
-    IRCompare(IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Compare), lhs(lhs), rhs(rhs) {}
-
-    std::string to_string() override {
-        return common::format("cmp.s %s, %s", lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRValue lhs;
-    IRValue rhs;
-};
-
 struct IRMemoryRead : IROpcode {
     IRMemoryRead(IRVariable dst, IRValue addr, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryRead), dst(dst), addr(addr), access_size(access_size), access_type(access_type) {}
 
@@ -474,17 +365,6 @@ struct IRExclusiveOr : IROpcode {
     bool set_flags;
 };
 
-struct IRTest : IROpcode {
-    IRTest(IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Test), lhs(lhs), rhs(rhs) {}
-
-    std::string to_string() override {
-        return common::format("tst.s %s, %s", lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRValue lhs;
-    IRValue rhs;
-};
-
 struct IRAddCarry : IROpcode {
     IRAddCarry(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::AddCarry), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
 
@@ -496,29 +376,6 @@ struct IRAddCarry : IROpcode {
     IRValue lhs;
     IRValue rhs;
     bool set_flags;
-};
-
-struct IRMoveNegate : IROpcode {
-    IRMoveNegate(IRVariable dst, IRValue src, bool set_flags) : IROpcode(IROpcodeType::MoveNegate), dst(dst), src(src), set_flags(set_flags) {}
-
-    std::string to_string() override {
-        return common::format("mvn%s %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), src.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue src;
-    bool set_flags;
-};
-
-struct IRCompareNegate : IROpcode {
-    IRCompareNegate(IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::CompareNegate), lhs(lhs), rhs(rhs) {}
-
-    std::string to_string() override {
-        return common::format("cmn.s %s, %s", lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRValue lhs;
-    IRValue rhs;
 };
 
 } // namespace arm

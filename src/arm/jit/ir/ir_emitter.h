@@ -34,9 +34,7 @@ public:
     IRVariable sub(IRValue lhs, IRValue rhs);
 
     // flag opcodes
-    void update_nz(IRValue src);
-    void update_nzcv(IRValue src);
-    void update_c();
+    void store_flag(Flag flag, IRValue value);
 
     // branch opcodes
     void branch(IRValue address, bool is_arm);
@@ -52,9 +50,6 @@ public:
     IRVariable logical_shift_left(IRValue src, IRValue amount);
     IRVariable logical_shift_right(IRValue src, IRValue amount);
     void memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type);
-    void update_flag(Flags flag, bool value);
-    void store_flags(Flags flags);
-    void compare(IRValue lhs, IRValue rhs);
     
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount);
     IRVariable rotate_right(IRValue src, IRValue amount);

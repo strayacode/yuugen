@@ -39,9 +39,6 @@ private:
         IRBitwiseNot,
 
         // flag opcodes
-        IRGetNZ,
-        IRGetNZCV,
-        IRGetC,
 
         // branch opcodes
         IRBranch,
@@ -55,18 +52,12 @@ private:
         IRLogicalShiftRight,
         IRMemoryWrite,
         IRSub,
-        IRUpdateFlag,
-        IRStoreFlags,
-        IRCompare,
         IRArithmeticShiftRight,
         IRRotateRight,
         IRMemoryRead,
         IRMultiply,
         IRExclusiveOr,
-        IRTest,
-        IRAddCarry,
-        IRMoveNegate,
-        IRCompareNegate
+        IRAddCarry
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -90,7 +81,6 @@ private:
     u32& get_or_allocate(IRVariable& variable);
     void assign_variable(IRVariable& variable, u32 value);
     u32 resolve_value(IRValue& value);
-    void update_flag(Flags to_update, bool value);
     void dump_variables();
 
     // state opcodes
@@ -111,9 +101,6 @@ private:
     void handle_sub(IROpcodeVariant& opcode_variant);
 
     // flag opcodes
-    void handle_get_nz(IROpcodeVariant& opcode_variant);
-    void handle_get_nzcv(IROpcodeVariant& opcode_variant);
-    void handle_get_c(IROpcodeVariant& opcode_variant);
 
     // branch opcodes
     void handle_branch(IROpcodeVariant& opcode_variant);
@@ -128,22 +115,15 @@ private:
     void handle_logical_shift_left(IROpcodeVariant& opcode_variant);
     void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_memory_write(IROpcodeVariant& opcode_variant);
-    void handle_update_flag(IROpcodeVariant& opcode_variant);
-    void handle_store_flags(IROpcodeVariant& opcode_variant);
-    void handle_compare(IROpcodeVariant& opcode_variant);
     void handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
     void handle_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_memory_read(IROpcodeVariant& opcode_variant);
     void handle_multiply(IROpcodeVariant& opcode_variant);
     void handle_exclusive_or(IROpcodeVariant& opcode_variant);
-    void handle_test(IROpcodeVariant& opcode_variant);
     void handle_add_carry(IROpcodeVariant& opcode_variant);
-    void handle_move_negate(IROpcodeVariant& opcode_variant);
-    void handle_compare_negate(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;
-    Flags flags{0};
     Jit& jit;
 };
 

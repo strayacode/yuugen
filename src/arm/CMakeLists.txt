@@ -15,7 +15,7 @@ add_library(arm
     jit/ir/ir_emitter.h jit/ir/ir_emitter.cpp
     jit/ir/translator.h jit/ir/translator.cpp
     jit/ir/opcodes.h jit/ir/value.h
-    jit/ir/instructions/arm.cpp jit/ir/instructions/thumb.cpp
+    jit/ir/translate/arm.cpp jit/ir/translate/thumb.cpp
     jit/backend/backend.h jit/backend/code_cache.h
     jit/backend/ir_interpreter/ir_interpreter.h jit/backend/ir_interpreter/ir_interpreter.cpp
 

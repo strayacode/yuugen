@@ -1,5 +1,6 @@
 #include <cassert>
 #include "common/logger.h"
+#include "common/bits.h"
 #include "arm/arithmetic.h"
 #include "arm/jit/jit.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
@@ -118,12 +119,6 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_add, *opcode->as<IRAdd>()};
     case IROpcodeType::Sub:
         return {&IRInterpreter::handle_sub, *opcode->as<IRSub>()};
-    case IROpcodeType::GetNZ:
-        return {&IRInterpreter::handle_get_nz, *opcode->as<IRGetNZ>()};
-    case IROpcodeType::GetNZCV:
-        return {&IRInterpreter::handle_get_nzcv, *opcode->as<IRGetNZCV>()};
-    case IROpcodeType::GetC:
-        return {&IRInterpreter::handle_get_c, *opcode->as<IRGetC>()};
     case IROpcodeType::Branch:
         return {&IRInterpreter::handle_branch, *opcode->as<IRBranch>()};
     case IROpcodeType::BranchExchange:
@@ -136,12 +131,6 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
     case IROpcodeType::MemoryWrite:
         return {&IRInterpreter::handle_memory_write, *opcode->as<IRMemoryWrite>()};
-    case IROpcodeType::UpdateFlag:
-        return {&IRInterpreter::handle_update_flag, *opcode->as<IRUpdateFlag>()};
-    case IROpcodeType::StoreFlags:
-        return {&IRInterpreter::handle_store_flags, *opcode->as<IRStoreFlags>()};
-    case IROpcodeType::Compare:
-        return {&IRInterpreter::handle_compare, *opcode->as<IRCompare>()};
     case IROpcodeType::ArithmeticShiftRight:
         return {&IRInterpreter::handle_arithmetic_shift_right, *opcode->as<IRArithmeticShiftRight>()};
     case IROpcodeType::RotateRight:
@@ -152,14 +141,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_multiply, *opcode->as<IRMultiply>()};
     case IROpcodeType::ExclusiveOr:
         return {&IRInterpreter::handle_exclusive_or, *opcode->as<IRExclusiveOr>()};
-    case IROpcodeType::Test:
-        return {&IRInterpreter::handle_test, *opcode->as<IRTest>()};
     case IROpcodeType::AddCarry:
         return {&IRInterpreter::handle_add_carry, *opcode->as<IRAddCarry>()};
-    case IROpcodeType::MoveNegate:
-        return {&IRInterpreter::handle_move_negate, *opcode->as<IRMoveNegate>()};
-    case IROpcodeType::CompareNegate:
-        return {&IRInterpreter::handle_compare_negate, *opcode->as<IRCompareNegate>()};
     }
 }
 
@@ -186,14 +169,6 @@ u32 IRInterpreter::resolve_value(IRValue& value) {
         return get(value.as_variable());
     } else {
         return value.as_constant().value;
-    }
-}
-
-void IRInterpreter::update_flag(Flags to_update, bool value) {
-    if (value) {
-        flags = static_cast<Flags>(flags | to_update);
-    } else {
-        flags = static_cast<Flags>(flags & ~to_update);
     }
 }
 
@@ -263,53 +238,14 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRAdd>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs + rhs;
-    
-    assign_variable(opcode.dst, result);
-    update_flag(Flags::C, result < lhs);
-    update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
+    assign_variable(opcode.dst, lhs + rhs);
 }
 
 void IRInterpreter::handle_sub(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRSub>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs - rhs;
-    
-    assign_variable(opcode.dst, result);
-    update_flag(Flags::C, lhs >= rhs);
-    update_flag(Flags::V, calculate_sub_overflow(lhs, rhs, result));
-}
-
-void IRInterpreter::handle_get_nz(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRGetNZ>(opcode_variant);
-    auto cpsr = resolve_value(opcode.cpsr);
-    auto value = resolve_value(opcode.value);
-    
-    
-    common::set_bit<30>(cpsr, value == 0);
-    common::set_bit<31>(cpsr, value >> 31);
-    assign_variable(opcode.dst, cpsr);
-}
-
-void IRInterpreter::handle_get_nzcv(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRGetNZCV>(opcode_variant);
-    auto cpsr = resolve_value(opcode.cpsr);
-    auto value = resolve_value(opcode.value);
-    
-    common::set_bit<28>(cpsr, flags & Flags::V);
-    common::set_bit<29>(cpsr, flags & Flags::C);
-    common::set_bit<30>(cpsr, value == 0);
-    common::set_bit<31>(cpsr, value >> 31);
-    assign_variable(opcode.dst, cpsr);
-}
-
-void IRInterpreter::handle_get_c(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRGetC>(opcode_variant);
-    auto cpsr = resolve_value(opcode.cpsr);
-    
-    common::set_bit<29>(cpsr, flags & Flags::C);
-    assign_variable(opcode.dst, cpsr);
+    assign_variable(opcode.dst, lhs - rhs);
 }
 
 void IRInterpreter::handle_branch(IROpcodeVariant& opcode_variant) {
@@ -353,29 +289,14 @@ void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLogicalShiftLeft>(opcode_variant);
     auto value = resolve_value(opcode.src);
     auto amount = resolve_value(opcode.amount);
-    auto [result, carry] = lsl(value, amount);
-    assign_variable(opcode.dst, result);
-
-    logger.debug("r0 %08x", jit.get_gpr(GPR::R0));
-
-    logger.debug("lsl %08x %08x", value, amount);
-
-    if (carry) {
-        logger.debug("update carry to %d", *carry);
-        update_flag(Flags::C, *carry);
-    }
+    assign_variable(opcode.dst, value << amount);
 }
 
 void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLogicalShiftRight>(opcode_variant);
     auto value = resolve_value(opcode.src);
     auto amount = resolve_value(opcode.amount);
-    auto [result, carry] = lsr(value, amount, opcode.amount.is_constant());
-    assign_variable(opcode.dst, result);
-
-    if (carry) {
-        update_flag(Flags::C, *carry);
-    }
+    assign_variable(opcode.dst, value >> amount);
 }
 
 void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {
@@ -396,51 +317,18 @@ void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {
     }
 }
 
-void IRInterpreter::handle_update_flag(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRUpdateFlag>(opcode_variant);
-    update_flag(opcode.flag, opcode.value);
-}
-
-void IRInterpreter::handle_store_flags(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRStoreFlags>(opcode_variant);
-    u32 flags_mask = opcode.flags << 28;
-    jit.state.cpsr.data = (jit.state.cpsr.data & ~flags_mask) | ((flags << 28) & flags_mask);
-}
-
-void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRCompare>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs - rhs;
-
-    update_flag(Flags::N, result >> 31);
-    update_flag(Flags::Z, result == 0);
-    update_flag(Flags::C, lhs >= rhs);
-    update_flag(Flags::V, calculate_sub_overflow(lhs, rhs, result));
-}
-
 void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRArithmeticShiftRight>(opcode_variant);
     auto value = resolve_value(opcode.src);
     auto amount = resolve_value(opcode.amount);
-    auto [result, carry] = asr(value, amount, opcode.amount.is_constant());
-    assign_variable(opcode.dst, result);
-
-    if (carry) {
-        update_flag(Flags::C, *carry);
-    }
+    assign_variable(opcode.dst, static_cast<s32>(value) >> amount);
 }
 
 void IRInterpreter::handle_rotate_right(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRRotateRight>(opcode_variant);
     auto value = resolve_value(opcode.src);
     auto amount = resolve_value(opcode.amount);
-    auto [result, carry] = ror(value, amount);
-    assign_variable(opcode.dst, result);
-
-    if (carry) {
-        update_flag(Flags::C, *carry);
-    }
+    assign_variable(opcode.dst, common::rotate_right(value, amount));
 }
 
 void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
@@ -485,77 +373,19 @@ void IRInterpreter::handle_multiply(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRMultiply>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs * rhs;
-    assign_variable(opcode.dst, result);
-
-    if (opcode.set_flags) {
-        update_flag(Flags::N, result >> 31);
-        update_flag(Flags::Z, result == 0);
-    }
+    assign_variable(opcode.dst, lhs * rhs);
 }
 
 void IRInterpreter::handle_exclusive_or(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRExclusiveOr>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs ^ rhs;
-    assign_variable(opcode.dst, result);
-
-    if (opcode.set_flags) {
-        update_flag(Flags::N, result >> 31);
-        update_flag(Flags::Z, result == 0);
-    }
-}
-
-void IRInterpreter::handle_test(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRTest>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs & rhs;
-
-    update_flag(Flags::N, result >> 31);
-    update_flag(Flags::Z, result == 0);
+    assign_variable(opcode.dst, lhs ^ rhs);
 }
 
 void IRInterpreter::handle_add_carry(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRAddCarry>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    auto carry = flags & Flags::C;
-    u64 result64 = static_cast<u64>(lhs) + static_cast<u64>(rhs) + static_cast<u64>(carry);
-    u32 result = static_cast<u32>(result64);
-    assign_variable(opcode.dst, result);
-
-    if (opcode.set_flags) {
-        update_flag(Flags::N, result >> 31);
-        update_flag(Flags::Z, result == 0);
-        update_flag(Flags::C, result64 >> 32);
-        update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
-    }
-}
-
-void IRInterpreter::handle_move_negate(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRMoveNegate>(opcode_variant);
-    auto value = resolve_value(opcode.src);
-    auto result = ~value;
-    assign_variable(opcode.dst, result);
-
-    if (opcode.set_flags) {
-        update_flag(Flags::N, result >> 31);
-        update_flag(Flags::Z, result == 0);
-    }
-}
-
-void IRInterpreter::handle_compare_negate(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRCompareNegate>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    auto result = lhs + rhs;
-
-    update_flag(Flags::N, result >> 31);
-    update_flag(Flags::Z, result == 0);
-    update_flag(Flags::C, result < lhs);
-    update_flag(Flags::V, calculate_add_overflow(lhs, rhs, result));
+    logger.todo("handle_add_carry");
 }
 
 } // namespace arm
