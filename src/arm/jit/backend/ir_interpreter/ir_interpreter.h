@@ -39,6 +39,11 @@ private:
         IRBitwiseNot,
         IRBitwiseExclusiveOr,
 
+        // arithmetic opcodes
+        IRAdd,
+        IRSubtract,
+        IRMultiply,
+
         // flag opcodes
         IRCompare,
 
@@ -49,15 +54,12 @@ private:
         // misc opcodes
         IRCopy,
 
-        IRAdd,
         IRLogicalShiftLeft,
         IRLogicalShiftRight,
         IRMemoryWrite,
-        IRSub,
         IRArithmeticShiftRight,
         IRRotateRight,
         IRMemoryRead,
-        IRMultiply,
         IRAddCarry
     >;
 
@@ -100,7 +102,8 @@ private:
 
     // arithmetic opcodes
     void handle_add(IROpcodeVariant& opcode_variant);
-    void handle_sub(IROpcodeVariant& opcode_variant);
+    void handle_subtract(IROpcodeVariant& opcode_variant);
+    void handle_multiply(IROpcodeVariant& opcode_variant);
 
     // flag opcodes
     void handle_compare(IROpcodeVariant& opcode_variant);
@@ -121,7 +124,6 @@ private:
     void handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
     void handle_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_memory_read(IROpcodeVariant& opcode_variant);
-    void handle_multiply(IROpcodeVariant& opcode_variant);
     void handle_add_carry(IROpcodeVariant& opcode_variant);
 
     CodeCache<CompiledBlock> code_cache;

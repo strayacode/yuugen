@@ -32,7 +32,8 @@ public:
 
     // arithmetic opcodes
     IRVariable add(IRValue lhs, IRValue rhs);
-    IRVariable sub(IRValue lhs, IRValue rhs);
+    IRVariable subtract(IRValue lhs, IRValue rhs);
+    IRVariable multiply(IRValue lhs, IRValue rhs);
 
     // flag opcodes
     void store_flag(Flag flag, IRValue value);
@@ -50,7 +51,7 @@ public:
 
     // helpers
     IRConstant constant(u32 value);
-    IRVariable barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
+    IRVariable barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount, bool set_carry);
     void link();
     void advance_pc();
 
@@ -61,11 +62,7 @@ public:
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount);
     IRVariable rotate_right(IRValue src, IRValue amount);
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
-    IRVariable multiply(IRValue lhs, IRValue rhs, bool set_flags);
-    void test(IRValue lhs, IRValue rhs);
     IRVariable add_carry(IRValue lhs, IRValue rhs, bool set_flags);
-    IRVariable move_negate(IRValue src, bool set_flags);
-    void compare_negate(IRValue lhs, IRValue rhs);
 
     BasicBlock& basic_block;
 

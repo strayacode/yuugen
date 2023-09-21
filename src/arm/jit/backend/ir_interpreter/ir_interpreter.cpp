@@ -118,8 +118,10 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_bitwise_exclusive_or, *opcode->as<IRBitwiseExclusiveOr>()};
     case IROpcodeType::Add:
         return {&IRInterpreter::handle_add, *opcode->as<IRAdd>()};
-    case IROpcodeType::Sub:
-        return {&IRInterpreter::handle_sub, *opcode->as<IRSub>()};
+    case IROpcodeType::Subtract:
+        return {&IRInterpreter::handle_subtract, *opcode->as<IRSubtract>()};
+    case IROpcodeType::Multiply:
+        return {&IRInterpreter::handle_multiply, *opcode->as<IRMultiply>()};
     case IROpcodeType::Compare:
         return {&IRInterpreter::handle_compare, *opcode->as<IRCompare>()};
     case IROpcodeType::Branch:
@@ -140,8 +142,6 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_rotate_right, *opcode->as<IRRotateRight>()};
     case IROpcodeType::MemoryRead:
         return {&IRInterpreter::handle_memory_read, *opcode->as<IRMemoryRead>()};
-    case IROpcodeType::Multiply:
-        return {&IRInterpreter::handle_multiply, *opcode->as<IRMultiply>()};
     case IROpcodeType::AddCarry:
         return {&IRInterpreter::handle_add_carry, *opcode->as<IRAddCarry>()};
     }
@@ -249,11 +249,18 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
     assign_variable(opcode.dst, lhs + rhs);
 }
 
-void IRInterpreter::handle_sub(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRSub>(opcode_variant);
+void IRInterpreter::handle_subtract(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRSubtract>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
     assign_variable(opcode.dst, lhs - rhs);
+}
+
+void IRInterpreter::handle_multiply(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRMultiply>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    assign_variable(opcode.dst, lhs * rhs);
 }
 
 void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
@@ -379,13 +386,6 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
 
         break;
     }
-}
-
-void IRInterpreter::handle_multiply(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRMultiply>(opcode_variant);
-    auto lhs = resolve_value(opcode.lhs);
-    auto rhs = resolve_value(opcode.rhs);
-    assign_variable(opcode.dst, lhs * rhs);
 }
 
 void IRInterpreter::handle_add_carry(IROpcodeVariant& opcode_variant) {

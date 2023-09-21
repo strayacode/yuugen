@@ -31,7 +31,7 @@ enum class IROpcodeType {
 
     // arithmetic opcodes
     Add,
-    Sub,
+    Subtract,
 
     // flag opcodes
     Compare,
@@ -298,11 +298,23 @@ struct IRAdd : IROpcode {
     IRValue rhs;
 };
 
-struct IRSub : IROpcode {
-    IRSub(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Sub), dst(dst), lhs(lhs), rhs(rhs) {}
+struct IRSubtract : IROpcode {
+    IRSubtract(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Subtract), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
-        return common::format("%s = sub(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+        return common::format("%s = subtract(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue lhs;
+    IRValue rhs;
+};
+
+struct IRMultiply : IROpcode {
+    IRMultiply(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Multiply), dst(dst), lhs(lhs), rhs(rhs) {}
+
+    std::string to_string() override {
+        return common::format("%s = multiply(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
     }
 
     IRVariable dst;
@@ -380,19 +392,6 @@ struct IRMemoryRead : IROpcode {
     IRValue addr;
     AccessSize access_size;
     AccessType access_type;
-};
-
-struct IRMultiply : IROpcode {
-    IRMultiply(IRVariable dst, IRValue lhs, IRValue rhs, bool set_flags) : IROpcode(IROpcodeType::Multiply), dst(dst), lhs(lhs), rhs(rhs), set_flags(set_flags) {}
-
-    std::string to_string() override {
-        return common::format("mul%s %s, %s, %s", set_flags ? ".s" : "", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
-    }
-
-    IRVariable dst;
-    IRValue lhs;
-    IRValue rhs;
-    bool set_flags;
 };
 
 struct IRAddCarry : IROpcode {

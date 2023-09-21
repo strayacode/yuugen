@@ -66,7 +66,64 @@ Translator::BlockStatus Translator::arm_multiply_long() {
 }
 
 Translator::BlockStatus Translator::arm_halfword_data_transfer() {
-    logger.todo("Translator: handle arm_halfword_data_transfer");
+    auto opcode = ARMHalfwordDataTransfer::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("Translator: handle rd == 15 in arm_halfword_data_transfer");
+    }
+
+    IRValue op2;
+    auto address = ir.load_gpr(opcode.rn);
+    bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
+
+    if (opcode.imm) {
+        op2 = ir.constant(opcode.rhs.imm);
+    } else {
+        op2 = ir.load_gpr(opcode.rhs.rm);
+    }
+
+    if (!opcode.up) {
+        op2 = ir.multiply(op2, ir.constant(static_cast<u32>(-1)));
+    }
+
+    if (opcode.pre) {
+        address = ir.add(address, op2);
+    }
+
+    ir.advance_pc();
+
+    if (opcode.half && opcode.sign) {
+        if (opcode.load) {
+            logger.todo("Translator: handle ldrsh");
+        } else if (jit.arch == Arch::ARMv5) {
+            logger.todo("Translator: handle strd");
+        }
+    } else if (opcode.half) {
+        if (opcode.load) {
+            auto dst = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
+            ir.store_gpr(opcode.rd, dst);
+        } else {
+            auto src = ir.load_gpr(opcode.rd);
+            ir.memory_write(address, src, AccessSize::Half, AccessType::Aligned);
+        }
+    } else if (opcode.sign) {
+        if (opcode.load) {
+            logger.todo("Translator: handle ldrsb");
+        } else if (jit.arch == Arch::ARMv5) {
+            logger.todo("Translator: handle ldrd");
+        }
+    }
+
+    if (do_writeback) {
+        if (!opcode.pre) {
+            auto base = ir.load_gpr(opcode.rn);
+            auto new_base = ir.add(base, op2);
+            ir.store_gpr(opcode.rn, new_base);
+        } else if (opcode.writeback) {
+            ir.store_gpr(opcode.rn, address);
+        }
+    }
+
     return BlockStatus::Continue;
 }
 
@@ -76,7 +133,32 @@ Translator::BlockStatus Translator::arm_status_load() {
 }
 
 Translator::BlockStatus Translator::arm_status_store_register() {
-    logger.todo("Translator: handle arm_status_store_register");
+    auto opcode = ARMStatusStore::decode(instruction);
+    auto value = ir.load_gpr(opcode.rhs.rm);
+    auto value_masked = ir.bitwise_and(value, ir.constant(opcode.mask));
+    IRVariable psr;
+
+    if (opcode.spsr) {
+        psr = ir.load_spsr();
+    } else {
+        psr = ir.load_cpsr();
+    }
+
+    auto psr_masked = ir.bitwise_and(psr, ir.constant(~opcode.mask));
+    auto psr_new = ir.bitwise_or(psr_masked, value_masked);
+
+    ir.advance_pc();
+
+    if (opcode.spsr) {
+        logger.todo("Translator: modify spsr");
+    } else {
+        ir.store_cpsr(psr_new);
+        
+        if (opcode.mask & 0xff) {
+            return BlockStatus::Break;
+        }
+    }
+
     return BlockStatus::Continue;
 }
 
@@ -91,7 +173,59 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
 }
 
 Translator::BlockStatus Translator::arm_single_data_transfer() {
-    logger.todo("Translator: handle arm_single_data_transfer");
+    auto opcode = ARMSingleDataTransfer::decode(instruction);
+    IRValue op2;
+    auto address = ir.load_gpr(opcode.rn);
+    bool do_writeback = !opcode.load || opcode.rd != opcode.rn;
+
+    if (opcode.imm) {
+        op2 = ir.constant(opcode.rhs.imm);
+    } else {
+        logger.todo("Translator: arm_single_data_transfer handle barrel shifter");
+    }
+
+    if (!opcode.up) {
+        op2 = ir.multiply(op2, ir.constant(static_cast<u32>(-1)));
+    }
+
+    if (opcode.pre) {
+        address = ir.add(address, op2);
+    }
+
+    ir.advance_pc();
+
+    if (opcode.load) {
+        IRVariable dst;
+        if (opcode.byte) {
+            dst = ir.memory_read(address, AccessSize::Byte, AccessType::Aligned);
+        } else {
+            dst = ir.memory_read(address, AccessSize::Word, AccessType::Unaligned);
+        }
+
+        ir.store_gpr(opcode.rd, dst);
+    } else {
+        IRVariable src = ir.load_gpr(opcode.rd);
+        if (opcode.byte) {
+            ir.memory_write(address, src, AccessSize::Byte, AccessType::Aligned);
+        } else {
+            ir.memory_write(address, src, AccessSize::Word, AccessType::Aligned);
+        }
+    }
+
+    if (do_writeback) {
+        if (!opcode.pre) {
+            auto base = ir.load_gpr(opcode.rn);
+            auto new_base = ir.add(base, op2);
+            ir.store_gpr(opcode.rn, new_base);
+        } else if (opcode.writeback) {
+            ir.store_gpr(opcode.rn, address);
+        }
+    }
+
+    if (opcode.load && opcode.rd == 15) {
+        logger.todo("Translator: handle arm_single_data_transfer pc write");
+    }
+
     return BlockStatus::Continue;
 }
 
@@ -122,7 +256,18 @@ Translator::BlockStatus Translator::arm_data_processing() {
             ir.store_flag(Flag::C, ir.constant(opcode.rhs.imm.rotated >> 31));
         }
     } else {
-        logger.todo("handle register");
+        IRValue amount;
+        op2 = ir.load_gpr(opcode.rhs.reg.rm);
+
+        if (opcode.rhs.reg.imm) {
+            amount = ir.constant(opcode.rhs.reg.amount.imm);
+        } else {
+            amount = ir.load_gpr(opcode.rhs.reg.amount.rs);
+            ir.advance_pc();
+            early_advance_pc = true;
+        }
+
+        op2 = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount, set_carry);
     }
 
     IRValue op1;

@@ -79,9 +79,15 @@ IRVariable IREmitter::add(IRValue lhs, IRValue rhs) {
     return dst;
 }
 
-IRVariable IREmitter::sub(IRValue lhs, IRValue rhs) {
+IRVariable IREmitter::subtract(IRValue lhs, IRValue rhs) {
     auto dst = create_variable();
-    push<IRSub>(dst, lhs, rhs);
+    push<IRSubtract>(dst, lhs, rhs);
+    return dst;
+}
+
+IRVariable IREmitter::multiply(IRValue lhs, IRValue rhs) {
+    auto dst = create_variable();
+    push<IRMultiply>(dst, lhs, rhs);
     return dst;
 }
 
@@ -135,15 +141,19 @@ IRConstant IREmitter::constant(u32 value) {
     return IRConstant{value};
 }
 
-IRVariable IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount) {
+IRVariable IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount, bool set_carry) {
     switch (shift_type) {
     case ShiftType::LSL:
+        logger.todo("handle lsl");
         return logical_shift_left(value, amount);
     case ShiftType::LSR:
+        logger.todo("handle lsr");
         return logical_shift_right(value, amount);
     case ShiftType::ASR:
+        logger.todo("handle asr");
         return arithmetic_shift_right(value, amount);
     case ShiftType::ROR:
+        logger.todo("handle ror");
         return rotate_right(value, amount);
     }
 }
@@ -191,12 +201,6 @@ IRVariable IREmitter::rotate_right(IRValue src, IRValue amount) {
 IRVariable IREmitter::memory_read(IRValue addr, AccessSize access_size, AccessType access_type) {
     auto dst = create_variable();
     push<IRMemoryRead>(dst, addr, access_size, access_type);
-    return dst;
-}
-
-IRVariable IREmitter::multiply(IRValue lhs, IRValue rhs, bool set_flags) {
-    auto dst = create_variable();
-    push<IRMultiply>(dst, lhs, rhs, set_flags);
     return dst;
 }
 
