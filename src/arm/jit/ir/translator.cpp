@@ -27,6 +27,7 @@ void Translator::translate() {
         basic_block.num_instructions++;
 
         if (location.is_arm()) {
+
             instruction = code_read_word(basic_block.current_address);
             logger.debug("%s", disassembler.disassemble_arm(instruction).c_str());
             auto condition = evaluate_arm_condition();
@@ -70,7 +71,7 @@ void Translator::translate() {
             }
         }
 
-        basic_block.current_address += instruction_size;
+        basic_block.advance();
     }
 
     basic_block.dump();

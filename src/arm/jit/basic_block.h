@@ -23,6 +23,10 @@ struct BasicBlock {
         }
     }
 
+    void advance() {
+        current_address += location.get_instruction_size();
+    }
+
     Location location;
     u32 current_address{0};
     Condition condition;

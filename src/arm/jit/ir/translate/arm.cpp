@@ -386,7 +386,11 @@ Translator::BlockStatus Translator::arm_data_processing() {
         
         break;
     case ARMDataProcessing::Opcode::EOR:
-        logger.todo("handle eor");
+        result = ir.bitwise_exclusive_or(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
+        
         break;
     case ARMDataProcessing::Opcode::SUB:
         result = ir.subtract(op1, op2);
@@ -416,9 +420,11 @@ Translator::BlockStatus Translator::arm_data_processing() {
     case ARMDataProcessing::Opcode::RSC:
         logger.todo("handle rsc");
         break;
-    case ARMDataProcessing::Opcode::TST:
-        logger.todo("handle tst");
+    case ARMDataProcessing::Opcode::TST: {
+        auto result = ir.bitwise_and(op1, op2);
+        ir.store_nz(result);
         break;
+    }
     case ARMDataProcessing::Opcode::TEQ:
         logger.todo("handle teq");
         break;
