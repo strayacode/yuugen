@@ -277,6 +277,9 @@ void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
     case CompareType::GreaterEqual:
         assign_variable(opcode.dst, lhs >= rhs);
         break;
+    case CompareType::GreaterThan:
+        assign_variable(opcode.dst, lhs > rhs);
+        break;
     }
 }
 
@@ -317,11 +320,35 @@ void IRInterpreter::handle_barrel_shifter_logical_shift_left(IROpcodeVariant& op
 }
 
 void IRInterpreter::handle_barrel_shifter_logical_shift_right(IROpcodeVariant& opcode_variant) {
-    logger.todo("handle_barrel_shifter_logical_shift_right");
+    auto& opcode = std::get<IRBarrelShifterLogicalShiftRight>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    auto carry_in = resolve_value(opcode.carry);
+    auto [result, carry] = lsr(value, amount, opcode.amount.is_constant());
+    
+    assign_variable(opcode.result_and_carry.result, result);
+
+    if (carry) {
+        assign_variable(opcode.result_and_carry.carry, *carry);
+    } else {
+        assign_variable(opcode.result_and_carry.carry, carry_in);
+    }
 }
 
 void IRInterpreter::handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant& opcode_variant) {
-    logger.todo("handle_barrel_shifter_arithmetic_shift_right");
+    auto& opcode = std::get<IRBarrelShifterArithmeticShiftRight>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    auto carry_in = resolve_value(opcode.carry);
+    auto [result, carry] = asr(value, amount, opcode.amount.is_constant());
+    
+    assign_variable(opcode.result_and_carry.result, result);
+
+    if (carry) {
+        assign_variable(opcode.result_and_carry.carry, *carry);
+    } else {
+        assign_variable(opcode.result_and_carry.carry, carry_in);
+    }
 }
 
 void IRInterpreter::handle_barrel_shifter_rotate_right(IROpcodeVariant& opcode_variant) {
@@ -329,7 +356,19 @@ void IRInterpreter::handle_barrel_shifter_rotate_right(IROpcodeVariant& opcode_v
 }
 
 void IRInterpreter::handle_barrel_shifter_rotate_right_extended(IROpcodeVariant& opcode_variant) {
-    logger.todo("handle_barrel_shifter_rotate_right_extended");
+    auto& opcode = std::get<IRBarrelShifterRotateRightExtended>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    auto carry_in = resolve_value(opcode.carry);
+    auto [result, carry] = rrx(value, carry_in);
+    
+    assign_variable(opcode.result_and_carry.result, result);
+
+    if (carry) {
+        assign_variable(opcode.result_and_carry.carry, *carry);
+    } else {
+        assign_variable(opcode.result_and_carry.carry, carry_in);
+    }
 }
 
 void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {

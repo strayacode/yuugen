@@ -164,6 +164,24 @@ void IREmitter::store_sub_cv(IRValue lhs, IRValue rhs, IRValue result) {
     store_flag(Flag::V, sub_overflow(lhs, rhs, result));
 }
 
+void IREmitter::store_adc_cv(IRValue lhs, IRValue rhs, IRValue result) {
+    auto carry = load_flag(Flag::C);
+    auto a = bitwise_and(compare(lhs, result, CompareType::Equal), carry);
+    auto b = compare(lhs, result, CompareType::GreaterThan);
+
+    store_flag(Flag::C, bitwise_or(a, b));
+    store_flag(Flag::V, add_overflow(lhs, rhs, result));
+}
+
+void IREmitter::store_sbc_cv(IRValue lhs, IRValue rhs, IRValue result) {
+    auto carry = load_flag(Flag::C);
+    auto a = bitwise_and(compare(lhs, rhs, CompareType::Equal), carry);
+    auto b = compare(lhs, rhs, CompareType::GreaterThan);
+
+    store_flag(Flag::C, bitwise_or(a, b));
+    store_flag(Flag::V, sub_overflow(lhs, rhs, result));
+}
+
 IRVariable IREmitter::add_overflow(IRValue lhs, IRValue rhs, IRValue result) {
     auto a = bitwise_not(bitwise_exclusive_or(lhs, rhs));
     auto b = bitwise_exclusive_or(rhs, result);

@@ -69,6 +69,7 @@ enum class CompareType {
     Equal,
     LessThan,
     GreaterEqual,
+    GreaterThan,
 };
 
 static std::string access_size_to_string(AccessSize access_size) {
@@ -101,6 +102,8 @@ static std::string compare_type_to_string(CompareType access_type) {
         return "lt";
     case CompareType::GreaterEqual:
         return "ge";
+    case CompareType::GreaterThan:
+        return "gt";
     }
 }
 
@@ -308,7 +311,7 @@ struct IRBarrelShifterRotateRight : IROpcode {
 };
 
 struct IRBarrelShifterRotateRightExtended : IROpcode {
-    IRBarrelShifterRotateRightExtended(IRResultAndCarry result_and_carry, IRValue src, IRConstant amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterRotateRightExtended), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
+    IRBarrelShifterRotateRightExtended(IRResultAndCarry result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterRotateRightExtended), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
 
     std::string to_string() {
         return common::format("%s = barrel_shifter_rrx(%s, %s, %s)", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str(), carry.to_string().c_str());
@@ -316,7 +319,7 @@ struct IRBarrelShifterRotateRightExtended : IROpcode {
 
     IRResultAndCarry result_and_carry;
     IRValue src;
-    IRConstant amount;
+    IRValue amount;
     IRValue carry;
 };
 

@@ -401,7 +401,12 @@ Translator::BlockStatus Translator::arm_data_processing() {
         
         break;
     case ARMDataProcessing::Opcode::RSB:
-        logger.todo("handle rsb");
+        result = ir.subtract(op2, op1);
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_sub_cv(op2, op1, result);
+        }
+        
         break;
     case ARMDataProcessing::Opcode::ADD:
         result = ir.add(op1, op2);
@@ -412,33 +417,57 @@ Translator::BlockStatus Translator::arm_data_processing() {
         
         break;
     case ARMDataProcessing::Opcode::ADC:
-        logger.todo("handle adc");
+        result = ir.add(ir.add(op1, op2), ir.load_flag(Flag::C));
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_adc_cv(op1, op2, result);
+        }
+
         break;
     case ARMDataProcessing::Opcode::SBC:
-        logger.todo("handle sbc");
+        result = ir.subtract(ir.subtract(op1, op2), ir.bitwise_exclusive_or(ir.load_flag(Flag::C), ir.constant(1)));
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_sbc_cv(op1, op2, result);
+        }
+
         break;
     case ARMDataProcessing::Opcode::RSC:
-        logger.todo("handle rsc");
+        result = ir.subtract(ir.subtract(op2, op1), ir.bitwise_exclusive_or(ir.load_flag(Flag::C), ir.constant(1)));
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_sbc_cv(op2, op1, result);
+        }
+
         break;
     case ARMDataProcessing::Opcode::TST: {
         auto result = ir.bitwise_and(op1, op2);
         ir.store_nz(result);
         break;
     }
-    case ARMDataProcessing::Opcode::TEQ:
-        logger.todo("handle teq");
+    case ARMDataProcessing::Opcode::TEQ: {
+        auto result = ir.bitwise_exclusive_or(op1, op2);
+        ir.store_nz(result);
         break;
+    }
     case ARMDataProcessing::Opcode::CMP: {
         auto result = ir.subtract(op1, op2);
         ir.store_nz(result);
         ir.store_sub_cv(op1, op2, result);
         break;
     }
-    case ARMDataProcessing::Opcode::CMN:
-        logger.todo("handle cmn");
+    case ARMDataProcessing::Opcode::CMN: {
+        auto result = ir.add(op1, op2);
+        ir.store_nz(result);
+        ir.store_add_cv(op1, op2, result);
         break;
+    }
     case ARMDataProcessing::Opcode::ORR:
-        logger.todo("handle orr");
+        result = ir.bitwise_or(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
+        
         break;
     case ARMDataProcessing::Opcode::MOV:
         result = ir.copy(op2);
@@ -455,7 +484,11 @@ Translator::BlockStatus Translator::arm_data_processing() {
         
         break;
     case ARMDataProcessing::Opcode::MVN:
-        logger.todo("handle mvn");
+        result = ir.bitwise_not(op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
+
         break;
     }
 
