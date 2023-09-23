@@ -40,10 +40,6 @@ enum class IROpcodeType {
     // flag opcodes
     Compare,
 
-    // branch opcodes
-    Branch,
-    BranchExchange,
-
     // misc opcodes
     Copy,
     
@@ -95,13 +91,6 @@ static std::string access_type_to_string(AccessType access_type) {
         return "unaligned";
     case AccessType::Signed:
         return "signed";
-    }
-}
-
-static std::string exchange_type_to_string(ExchangeType exchange_type) {
-    switch (exchange_type) {
-    case ExchangeType::Bit0:
-        return "bit0";
     }
 }
 
@@ -381,28 +370,6 @@ struct IRCompare : IROpcode {
     IRValue lhs;
     IRValue rhs;
     CompareType compare_type;
-};
-
-struct IRBranch : IROpcode {
-    IRBranch(IRValue address, bool is_arm) : IROpcode(IROpcodeType::Branch), address(address), is_arm(is_arm) {}
-
-    std::string to_string() override {
-        return common::format("branch(%s)", address.to_string().c_str());
-    }
-
-    IRValue address;
-    bool is_arm;
-};
-
-struct IRBranchExchange : IROpcode {
-    IRBranchExchange(IRValue address, ExchangeType exchange_type) : IROpcode(IROpcodeType::BranchExchange), address(address), exchange_type(exchange_type) {}
-
-    std::string to_string() override {
-        return common::format("branch_exchange_%s(%s)", exchange_type_to_string(exchange_type).c_str(), address.to_string().c_str());
-    }
-
-    IRValue address;
-    ExchangeType exchange_type;
 };
 
 struct IRCopy : IROpcode {

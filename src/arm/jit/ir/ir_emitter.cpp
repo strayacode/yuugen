@@ -133,7 +133,7 @@ IRResultAndCarry IREmitter::barrel_shifter_rotate_right(IRValue src, IRValue amo
 
 IRResultAndCarry IREmitter::barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount) {
     auto result_and_carry = create_result_and_carry();
-    push<IRBarrelShifterRotateRightExtended>(result_and_carry, src, constant(1), load_flag(Flag::C));
+    push<IRBarrelShifterRotateRightExtended>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
@@ -160,7 +160,7 @@ void IREmitter::store_add_cv(IRValue lhs, IRValue rhs, IRValue result) {
 }
 
 void IREmitter::store_sub_cv(IRValue lhs, IRValue rhs, IRValue result) {
-    store_flag(Flag::C, compare(result, lhs, CompareType::GreaterEqual));
+    store_flag(Flag::C, compare(lhs, rhs, CompareType::GreaterEqual));
     store_flag(Flag::V, sub_overflow(lhs, rhs, result));
 }
 
@@ -222,7 +222,7 @@ IRResultAndCarry IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, 
         return barrel_shifter_arithmetic_shift_right(value, amount);
     case ShiftType::ROR:
         if (amount.is_constant() && amount.as_constant().value == 0) {
-            return barrel_shifter_rotate_right_extended(value, amount.as_constant());
+            return barrel_shifter_rotate_right_extended(value, constant(1));
         } else {
             return barrel_shifter_rotate_right(value, amount);
         }

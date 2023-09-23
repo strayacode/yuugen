@@ -138,10 +138,6 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_barrel_shifter_rotate_right_extended, *opcode->as<IRBarrelShifterRotateRightExtended>()};
     case IROpcodeType::Compare:
         return {&IRInterpreter::handle_compare, *opcode->as<IRCompare>()};
-    case IROpcodeType::Branch:
-        return {&IRInterpreter::handle_branch, *opcode->as<IRBranch>()};
-    case IROpcodeType::BranchExchange:
-        return {&IRInterpreter::handle_branch_exchange, *opcode->as<IRBranchExchange>()};
     case IROpcodeType::Copy:
         return {&IRInterpreter::handle_copy, *opcode->as<IRCopy>()};
     case IROpcodeType::MemoryWrite:
@@ -188,6 +184,7 @@ void IRInterpreter::dump_variables() {
 void IRInterpreter::handle_load_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadGPR>(opcode_variant);
     auto value = jit.get_gpr(opcode.src.gpr, opcode.src.mode);
+    logger.debug("load gpr r%d = %08x", opcode.src.gpr, value);
     assign_variable(opcode.dst, value);
 }
 
@@ -205,9 +202,8 @@ void IRInterpreter::handle_load_cpsr(IROpcodeVariant& opcode_variant) {
 void IRInterpreter::handle_store_cpsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreCPSR>(opcode_variant);
     auto src = resolve_value(opcode.src);
-    StatusRegister psr;
-    psr.data = src;
-    jit.set_cpsr(psr);
+    logger.debug("set cpsr to %08x", src);
+    jit.state.cpsr.data = src;
 }
 
 void IRInterpreter::handle_load_spsr(IROpcodeVariant& opcode_variant) {
@@ -291,37 +287,6 @@ void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
     }
 }
 
-void IRInterpreter::handle_branch(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRBranch>(opcode_variant);
-    auto address = resolve_value(opcode.address);
-    auto instruction_size = opcode.is_arm ? sizeof(u32) : sizeof(u16);
-    auto address_mask = ~(instruction_size - 1);
-
-    address += 2 * instruction_size;
-    address &= address_mask;
-    jit.set_gpr(GPR::PC, address);
-}
-
-void IRInterpreter::handle_branch_exchange(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRBranchExchange>(opcode_variant);
-    auto address = resolve_value(opcode.address);
-    bool is_arm;
-
-    switch (opcode.exchange_type) {
-    case ExchangeType::Bit0:
-        is_arm = !(address & 0x1);
-        break;
-    }
-
-    jit.state.cpsr.t = !is_arm;
-
-    auto instruction_size = is_arm ? sizeof(u32) : sizeof(u16);
-    auto address_mask = ~(instruction_size - 1);
-
-    address &= address_mask;
-    jit.set_gpr(GPR::PC, address);
-}
-
 void IRInterpreter::handle_copy(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRCopy>(opcode_variant);
     auto value = resolve_value(opcode.src);
@@ -352,10 +317,8 @@ void IRInterpreter::handle_barrel_shifter_logical_shift_left(IROpcodeVariant& op
     assign_variable(opcode.result_and_carry.result, result);
 
     if (carry) {
-        logger.debug("set carry to non null result carry %d", *carry);
         assign_variable(opcode.result_and_carry.carry, *carry);
     } else {
-        logger.debug("set carry to previous result %d cpsr %08x", carry_in, jit.state.cpsr.data);
         assign_variable(opcode.result_and_carry.carry, carry_in);
     }
 }

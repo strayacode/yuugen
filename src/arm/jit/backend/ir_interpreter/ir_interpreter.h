@@ -53,10 +53,6 @@ private:
         // flag opcodes
         IRCompare,
 
-        // branch opcodes
-        IRBranch,
-        IRBranchExchange,
-
         // misc opcodes
         IRCopy,
 
@@ -117,10 +113,6 @@ private:
 
     // flag opcodes
     void handle_compare(IROpcodeVariant& opcode_variant);
-
-    // branch opcodes
-    void handle_branch(IROpcodeVariant& opcode_variant);
-    void handle_branch_exchange(IROpcodeVariant& opcode_variant);
 
     // misc opcodes
     void handle_copy(IROpcodeVariant& opcode_variant);
