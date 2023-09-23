@@ -5,6 +5,7 @@
 #include "common/logger.h"
 #include "arm/cpu.h"
 #include "arm/state.h"
+#include "arm/instructions.h"
 #include "arm/disassembler/disassembler.h"
 #include "arm/jit/ir/value.h"
 
@@ -269,7 +270,7 @@ struct IRLogicalShiftRight : IROpcode {
 };
 
 struct IRBarrelShifterLogicalShiftLeft : IROpcode {
-    IRBarrelShifterLogicalShiftLeft(IRResultAndCarry result_and_carry, IRValue src, IRValue amount) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftLeft), result_and_carry(result_and_carry), src(src), amount(amount) {}
+    IRBarrelShifterLogicalShiftLeft(IRResultAndCarry result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftLeft), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
 
     std::string to_string() {
         return common::format("%s = barrel_shifter_lsl(%s, %s)", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
@@ -278,10 +279,11 @@ struct IRBarrelShifterLogicalShiftLeft : IROpcode {
     IRResultAndCarry result_and_carry;
     IRValue src;
     IRValue amount;
+    IRValue carry;
 };
 
 struct IRBarrelShifterLogicalShiftRight : IROpcode {
-    IRBarrelShifterLogicalShiftRight(IRResultAndCarry result_and_carry, IRValue src, IRValue amount) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftRight), result_and_carry(result_and_carry), src(src), amount(amount) {}
+    IRBarrelShifterLogicalShiftRight(IRResultAndCarry result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
 
     std::string to_string() {
         return common::format("%s = barrel_shifter_lsr(%s, %s)", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
@@ -290,10 +292,11 @@ struct IRBarrelShifterLogicalShiftRight : IROpcode {
     IRResultAndCarry result_and_carry;
     IRValue src;
     IRValue amount;
+    IRValue carry;
 };
 
 struct IRBarrelShifterArithmeticShiftRight : IROpcode {
-    IRBarrelShifterArithmeticShiftRight(IRResultAndCarry result_and_carry, IRValue src, IRValue amount) : IROpcode(IROpcodeType::BarrelShifterArithmeticShiftRight), result_and_carry(result_and_carry), src(src), amount(amount) {}
+    IRBarrelShifterArithmeticShiftRight(IRResultAndCarry result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterArithmeticShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
 
     std::string to_string() {
         return common::format("%s = barrel_shifter_asr(%s, %s)", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
@@ -302,10 +305,11 @@ struct IRBarrelShifterArithmeticShiftRight : IROpcode {
     IRResultAndCarry result_and_carry;
     IRValue src;
     IRValue amount;
+    IRValue carry;
 };
 
 struct IRBarrelShifterRotateRight : IROpcode {
-    IRBarrelShifterRotateRight(IRResultAndCarry result_and_carry, IRValue src, IRValue amount) : IROpcode(IROpcodeType::BarrelShifterRotateRight), result_and_carry(result_and_carry), src(src), amount(amount) {}
+    IRBarrelShifterRotateRight(IRResultAndCarry result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterRotateRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
 
     std::string to_string() {
         return common::format("%s = barrel_shifter_ror(%s, %s)", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
@@ -314,6 +318,7 @@ struct IRBarrelShifterRotateRight : IROpcode {
     IRResultAndCarry result_and_carry;
     IRValue src;
     IRValue amount;
+    IRValue carry;
 };
 
 struct IRBarrelShifterRotateRightExtended : IROpcode {

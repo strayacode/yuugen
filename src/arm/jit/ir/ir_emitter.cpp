@@ -109,25 +109,25 @@ IRVariable IREmitter::logical_shift_right(IRValue src, IRValue amount) {
 
 IRResultAndCarry IREmitter::barrel_shifter_logical_shift_left(IRValue src, IRValue amount) {
     auto result_and_carry = create_result_and_carry();
-    push<IRBarrelShifterLogicalShiftLeft>(result_and_carry, src, amount);
+    push<IRBarrelShifterLogicalShiftLeft>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
 IRResultAndCarry IREmitter::barrel_shifter_logical_shift_right(IRValue src, IRValue amount) {
     auto result_and_carry = create_result_and_carry();
-    push<IRBarrelShifterLogicalShiftRight>(result_and_carry, src, amount);
+    push<IRBarrelShifterLogicalShiftRight>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
 IRResultAndCarry IREmitter::barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount) {
     auto result_and_carry = create_result_and_carry();
-    push<IRBarrelShifterArithmeticShiftRight>(result_and_carry, src, amount);
+    push<IRBarrelShifterArithmeticShiftRight>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
 IRResultAndCarry IREmitter::barrel_shifter_rotate_right(IRValue src, IRValue amount) {
     auto result_and_carry = create_result_and_carry();
-    push<IRBarrelShifterRotateRight>(result_and_carry, src, amount);
+    push<IRBarrelShifterRotateRight>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
@@ -139,7 +139,7 @@ IRResultAndCarry IREmitter::barrel_shifter_rotate_right_extended(IRValue src, IR
 
 IRVariable IREmitter::load_flag(Flag flag) {
     auto cpsr = load_cpsr();
-    return bitwise_and(logical_shift_right(cpsr, constant(1 << flag)), constant(1));
+    return bitwise_and(logical_shift_right(cpsr, constant(flag)), constant(1));
 }
 
 void IREmitter::store_flag(Flag flag, IRValue value) {

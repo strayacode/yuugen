@@ -272,6 +272,8 @@ void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRCompare>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
+
+    logger.debug("compare %08x %08x", lhs, rhs);
     
     switch (opcode.compare_type) {
     case CompareType::Equal:
@@ -344,11 +346,17 @@ void IRInterpreter::handle_barrel_shifter_logical_shift_left(IROpcodeVariant& op
     auto& opcode = std::get<IRBarrelShifterLogicalShiftLeft>(opcode_variant);
     auto value = resolve_value(opcode.src);
     auto amount = resolve_value(opcode.amount);
+    auto carry_in = resolve_value(opcode.carry);
     auto [result, carry] = lsl(value, amount);
+    
     assign_variable(opcode.result_and_carry.result, result);
 
     if (carry) {
+        logger.debug("set carry to non null result carry %d", *carry);
         assign_variable(opcode.result_and_carry.carry, *carry);
+    } else {
+        logger.debug("set carry to previous result %d cpsr %08x", carry_in, jit.state.cpsr.data);
+        assign_variable(opcode.result_and_carry.carry, carry_in);
     }
 }
 
