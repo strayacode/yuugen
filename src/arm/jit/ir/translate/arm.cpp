@@ -338,7 +338,11 @@ Translator::BlockStatus Translator::arm_data_processing() {
 
         break;
     case ARMDataProcessing::Opcode::BIC:
-        logger.todo("handle bic");
+        result = ir.bitwise_and(op1, ir.bitwise_not(op2));
+        if (update_flags) {
+            ir.store_nz(result);
+        }
+        
         break;
     case ARMDataProcessing::Opcode::MVN:
         logger.todo("handle mvn");

@@ -199,7 +199,6 @@ void IRInterpreter::handle_store_gpr(IROpcodeVariant& opcode_variant) {
 
 void IRInterpreter::handle_load_cpsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadCPSR>(opcode_variant);
-    logger.debug("cpsr load %08x", jit.state.cpsr.data);
     assign_variable(opcode.dst, jit.state.cpsr.data);
 }
 
