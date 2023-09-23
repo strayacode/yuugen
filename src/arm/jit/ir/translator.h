@@ -80,8 +80,6 @@ private:
     Condition evaluate_arm_condition();
     Condition evaluate_thumb_condition();
 
-    u32 instruction_size{0};
-    u32 code_address{0};
     u32 instruction{0};
     Jit& jit;
     IREmitter& ir;
