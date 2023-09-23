@@ -16,7 +16,9 @@ Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
 }
 
 Translator::BlockStatus Translator::arm_branch_exchange() {
-    logger.todo("Translator: handle arm_branch_exchange");
+    auto opcode = ARMBranchExchange::decode(instruction);
+    auto address = ir.load_gpr(opcode.rm);
+    ir.branch_exchange(address, ExchangeType::Bit0);
     return BlockStatus::Continue;
 }
 

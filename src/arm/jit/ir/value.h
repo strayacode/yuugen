@@ -105,6 +105,7 @@ enum Flag : u32 {
     Z = 30,
     C = 29,
     V = 28,
+    T = 5,
 };
 
 } // namespace arm

@@ -190,7 +190,16 @@ void IREmitter::branch(IRValue address) {
 }
 
 void IREmitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
-    push<IRBranchExchange>(address, exchange_type);
+    if (exchange_type != ExchangeType::Bit0) {
+        logger.todo("handle different exchange type");
+    }
+
+    auto bit0 = bitwise_and(address, constant(1));
+    store_flag(Flag::T, bit0);
+
+    auto address_mask = bitwise_not(subtract(constant(3), multiply(constant(2), bit0)));
+    auto adjusted_address = bitwise_and(address, address_mask);
+    store_gpr(GPR::PC, adjusted_address);
 }
 
 IRVariable IREmitter::copy(IRValue src) {

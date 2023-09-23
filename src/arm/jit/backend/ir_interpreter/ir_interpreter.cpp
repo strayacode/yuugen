@@ -269,7 +269,24 @@ void IRInterpreter::handle_multiply(IROpcodeVariant& opcode_variant) {
 }
 
 void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
-    logger.todo("handle compare");
+    auto& opcode = std::get<IRCompare>(opcode_variant);
+    auto lhs = resolve_value(opcode.lhs);
+    auto rhs = resolve_value(opcode.rhs);
+    
+    switch (opcode.compare_type) {
+    case CompareType::Equal:
+        assign_variable(opcode.dst, lhs == rhs);
+        break;
+    case CompareType::LessThan:
+        assign_variable(opcode.dst, lhs < rhs);
+        break;
+    case CompareType::IntegerLessThan:
+        assign_variable(opcode.dst, static_cast<s32>(lhs) < static_cast<s32>(rhs));
+        break;
+    case CompareType::GreaterEqual:
+        assign_variable(opcode.dst, lhs >= rhs);
+        break;
+    }
 }
 
 void IRInterpreter::handle_branch(IROpcodeVariant& opcode_variant) {
