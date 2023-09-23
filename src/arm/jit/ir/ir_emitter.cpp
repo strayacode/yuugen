@@ -12,6 +12,10 @@ IRVariable IREmitter::create_variable() {
     return variable;
 }
 
+IRResultAndCarry IREmitter::create_result_and_carry() {
+    return IRResultAndCarry{create_variable(), create_variable()};
+}
+
 IRVariable IREmitter::load_gpr(GPR gpr) {
     auto dst = create_variable();
     GuestRegister src{gpr, basic_block.location.get_mode()};
@@ -91,6 +95,53 @@ IRVariable IREmitter::multiply(IRValue lhs, IRValue rhs) {
     return dst;
 }
 
+IRVariable IREmitter::logical_shift_left(IRValue src, IRValue amount) {
+    auto dst = create_variable();
+    push<IRLogicalShiftLeft>(dst, src, amount);
+    return dst;
+}
+
+IRVariable IREmitter::logical_shift_right(IRValue src, IRValue amount) {
+    auto dst = create_variable();
+    push<IRLogicalShiftRight>(dst, src, amount);
+    return dst;
+}
+
+IRResultAndCarry IREmitter::barrel_shifter_logical_shift_left(IRValue src, IRValue amount) {
+    auto result_and_carry = create_result_and_carry();
+    push<IRBarrelShifterLogicalShiftLeft>(result_and_carry, src, amount);
+    return result_and_carry;
+}
+
+IRResultAndCarry IREmitter::barrel_shifter_logical_shift_right(IRValue src, IRValue amount) {
+    auto result_and_carry = create_result_and_carry();
+    push<IRBarrelShifterLogicalShiftRight>(result_and_carry, src, amount);
+    return result_and_carry;
+}
+
+IRResultAndCarry IREmitter::barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount) {
+    auto result_and_carry = create_result_and_carry();
+    push<IRBarrelShifterArithmeticShiftRight>(result_and_carry, src, amount);
+    return result_and_carry;
+}
+
+IRResultAndCarry IREmitter::barrel_shifter_rotate_right(IRValue src, IRValue amount) {
+    auto result_and_carry = create_result_and_carry();
+    push<IRBarrelShifterRotateRight>(result_and_carry, src, amount);
+    return result_and_carry;
+}
+
+IRResultAndCarry IREmitter::barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount) {
+    auto result_and_carry = create_result_and_carry();
+    push<IRBarrelShifterRotateRightExtended>(result_and_carry, src, constant(1), load_flag(Flag::C));
+    return result_and_carry;
+}
+
+IRVariable IREmitter::load_flag(Flag flag) {
+    auto cpsr = load_cpsr();
+    return bitwise_and(logical_shift_right(cpsr, constant(1 << flag)), constant(1));
+}
+
 void IREmitter::store_flag(Flag flag, IRValue value) {
     auto cpsr = load_cpsr();
     auto cpsr_masked = bitwise_and(cpsr, bitwise_not(constant(1 << flag)));
@@ -141,20 +192,20 @@ IRConstant IREmitter::constant(u32 value) {
     return IRConstant{value};
 }
 
-IRVariable IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount, bool set_carry) {
+IRResultAndCarry IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount) {
     switch (shift_type) {
     case ShiftType::LSL:
-        logger.todo("handle lsl");
-        return logical_shift_left(value, amount);
+        return barrel_shifter_logical_shift_left(value, amount);
     case ShiftType::LSR:
-        logger.todo("handle lsr");
-        return logical_shift_right(value, amount);
+        return barrel_shifter_logical_shift_right(value, amount);
     case ShiftType::ASR:
-        logger.todo("handle asr");
-        return arithmetic_shift_right(value, amount);
+        return barrel_shifter_arithmetic_shift_right(value, amount);
     case ShiftType::ROR:
-        logger.todo("handle ror");
-        return rotate_right(value, amount);
+        if (amount.is_constant() && amount.as_constant().value == 0) {
+            return barrel_shifter_rotate_right_extended(value, amount.as_constant());
+        } else {
+            return barrel_shifter_rotate_right(value, amount);
+        }
     }
 }
 
@@ -170,32 +221,8 @@ void IREmitter::advance_pc() {
     store_gpr(GPR::PC, constant(address + instruction_size));
 }
 
-IRVariable IREmitter::logical_shift_left(IRValue src, IRValue amount) {
-    auto dst = create_variable();
-    push<IRLogicalShiftLeft>(dst, src, amount);
-    return dst;
-}
-
-IRVariable IREmitter::logical_shift_right(IRValue src, IRValue amount) {
-    auto dst = create_variable();
-    push<IRLogicalShiftRight>(dst, src, amount);
-    return dst;
-}
-
 void IREmitter::memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type) {
     push<IRMemoryWrite>(addr, src, access_size, access_type);
-}
-
-IRVariable IREmitter::arithmetic_shift_right(IRValue src, IRValue amount) {
-    auto dst = create_variable();
-    push<IRArithmeticShiftRight>(dst, src, amount);
-    return dst;
-}
-
-IRVariable IREmitter::rotate_right(IRValue src, IRValue amount) {
-    auto dst = create_variable();
-    push<IRRotateRight>(dst, src, amount);
-    return dst;
 }
 
 IRVariable IREmitter::memory_read(IRValue addr, AccessSize access_size, AccessType access_type) {

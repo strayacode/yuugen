@@ -122,6 +122,20 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_subtract, *opcode->as<IRSubtract>()};
     case IROpcodeType::Multiply:
         return {&IRInterpreter::handle_multiply, *opcode->as<IRMultiply>()};
+    case IROpcodeType::LogicalShiftLeft:
+        return {&IRInterpreter::handle_logical_shift_left, *opcode->as<IRLogicalShiftLeft>()};
+    case IROpcodeType::LogicalShiftRight:
+        return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
+    case IROpcodeType::BarrelShifterLogicalShiftLeft:
+        return {&IRInterpreter::handle_barrel_shifter_logical_shift_left, *opcode->as<IRBarrelShifterLogicalShiftLeft>()};
+    case IROpcodeType::BarrelShifterLogicalShiftRight:
+        return {&IRInterpreter::handle_barrel_shifter_logical_shift_right, *opcode->as<IRBarrelShifterLogicalShiftRight>()};
+    case IROpcodeType::BarrelShifterArithmeticShiftRight:
+        return {&IRInterpreter::handle_barrel_shifter_arithmetic_shift_right, *opcode->as<IRBarrelShifterArithmeticShiftRight>()};
+    case IROpcodeType::BarrelShifterRotateRight:
+        return {&IRInterpreter::handle_barrel_shifter_rotate_right, *opcode->as<IRBarrelShifterRotateRight>()};
+    case IROpcodeType::BarrelShifterRotateRightExtended:
+        return {&IRInterpreter::handle_barrel_shifter_rotate_right_extended, *opcode->as<IRBarrelShifterRotateRightExtended>()};
     case IROpcodeType::Compare:
         return {&IRInterpreter::handle_compare, *opcode->as<IRCompare>()};
     case IROpcodeType::Branch:
@@ -130,16 +144,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_branch_exchange, *opcode->as<IRBranchExchange>()};
     case IROpcodeType::Copy:
         return {&IRInterpreter::handle_copy, *opcode->as<IRCopy>()};
-    case IROpcodeType::LogicalShiftLeft:
-        return {&IRInterpreter::handle_logical_shift_left, *opcode->as<IRLogicalShiftLeft>()};
-    case IROpcodeType::LogicalShiftRight:
-        return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
     case IROpcodeType::MemoryWrite:
         return {&IRInterpreter::handle_memory_write, *opcode->as<IRMemoryWrite>()};
-    case IROpcodeType::ArithmeticShiftRight:
-        return {&IRInterpreter::handle_arithmetic_shift_right, *opcode->as<IRArithmeticShiftRight>()};
-    case IROpcodeType::RotateRight:
-        return {&IRInterpreter::handle_rotate_right, *opcode->as<IRRotateRight>()};
     case IROpcodeType::MemoryRead:
         return {&IRInterpreter::handle_memory_read, *opcode->as<IRMemoryRead>()};
     case IROpcodeType::AddCarry:
@@ -318,6 +324,26 @@ void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) 
     assign_variable(opcode.dst, value >> amount);
 }
 
+void IRInterpreter::handle_barrel_shifter_logical_shift_left(IROpcodeVariant& opcode_variant) {
+    logger.todo("handle_barrel_shifter_logical_shift_left");
+}
+
+void IRInterpreter::handle_barrel_shifter_logical_shift_right(IROpcodeVariant& opcode_variant) {
+    logger.todo("handle_barrel_shifter_logical_shift_right");
+}
+
+void IRInterpreter::handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant& opcode_variant) {
+    logger.todo("handle_barrel_shifter_arithmetic_shift_right");
+}
+
+void IRInterpreter::handle_barrel_shifter_rotate_right(IROpcodeVariant& opcode_variant) {
+    logger.todo("handle_barrel_shifter_rotate_right");
+}
+
+void IRInterpreter::handle_barrel_shifter_rotate_right_extended(IROpcodeVariant& opcode_variant) {
+    logger.todo("handle_barrel_shifter_rotate_right_extended");
+}
+
 void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRMemoryWrite>(opcode_variant);
     auto addr = resolve_value(opcode.addr);
@@ -334,20 +360,6 @@ void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {
         jit.write_word(addr, src);
         break;
     }
-}
-
-void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRArithmeticShiftRight>(opcode_variant);
-    auto value = resolve_value(opcode.src);
-    auto amount = resolve_value(opcode.amount);
-    assign_variable(opcode.dst, static_cast<s32>(value) >> amount);
-}
-
-void IRInterpreter::handle_rotate_right(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRRotateRight>(opcode_variant);
-    auto value = resolve_value(opcode.src);
-    auto amount = resolve_value(opcode.amount);
-    assign_variable(opcode.dst, common::rotate_right(value, amount));
 }
 
 void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {

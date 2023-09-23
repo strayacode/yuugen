@@ -267,7 +267,10 @@ Translator::BlockStatus Translator::arm_data_processing() {
             early_advance_pc = true;
         }
 
-        op2 = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount, set_carry);
+        auto value = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount);
+        if (set_carry) {
+            ir.store_flag(Flag::C, value.carry);
+        }
     }
 
     IRValue op1;

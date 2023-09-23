@@ -14,6 +14,7 @@ public:
     IREmitter(BasicBlock& basic_block);
 
     IRVariable create_variable();
+    IRResultAndCarry create_result_and_carry();
 
     // state opcodes
     IRVariable load_gpr(GPR gpr);
@@ -34,8 +35,16 @@ public:
     IRVariable add(IRValue lhs, IRValue rhs);
     IRVariable subtract(IRValue lhs, IRValue rhs);
     IRVariable multiply(IRValue lhs, IRValue rhs);
+    IRVariable logical_shift_left(IRValue src, IRValue amount);
+    IRVariable logical_shift_right(IRValue src, IRValue amount);
+    IRResultAndCarry barrel_shifter_logical_shift_left(IRValue src, IRValue amount);
+    IRResultAndCarry barrel_shifter_logical_shift_right(IRValue src, IRValue amount);
+    IRResultAndCarry barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount);
+    IRResultAndCarry barrel_shifter_rotate_right(IRValue src, IRValue amount);
+    IRResultAndCarry barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount);
 
     // flag opcodes
+    IRVariable load_flag(Flag flag);
     void store_flag(Flag flag, IRValue value);
     void store_nz(IRValue value);
     void store_add_cv(IRValue lhs, IRValue rhs, IRValue result);
@@ -51,16 +60,12 @@ public:
 
     // helpers
     IRConstant constant(u32 value);
-    IRVariable barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount, bool set_carry);
+    IRResultAndCarry barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
     void link();
     void advance_pc();
 
-    IRVariable logical_shift_left(IRValue src, IRValue amount);
-    IRVariable logical_shift_right(IRValue src, IRValue amount);
     void memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type);
     
-    IRVariable arithmetic_shift_right(IRValue src, IRValue amount);
-    IRVariable rotate_right(IRValue src, IRValue amount);
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
     IRVariable add_carry(IRValue lhs, IRValue rhs, bool set_flags);
 

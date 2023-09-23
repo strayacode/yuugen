@@ -29,8 +29,8 @@ private:
         IRLoadGPR,
         IRStoreGPR,
         IRLoadCPSR,
-        IRStoreCPSR,
         IRLoadSPSR,
+        IRStoreCPSR,
         IRStoreSPSR,
 
         // bitwise opcodes
@@ -42,7 +42,13 @@ private:
         // arithmetic opcodes
         IRAdd,
         IRSubtract,
-        IRMultiply,
+        IRLogicalShiftLeft,
+        IRLogicalShiftRight,
+        IRBarrelShifterLogicalShiftLeft,
+        IRBarrelShifterLogicalShiftRight,
+        IRBarrelShifterArithmeticShiftRight,
+        IRBarrelShifterRotateRight,
+        IRBarrelShifterRotateRightExtended,
 
         // flag opcodes
         IRCompare,
@@ -54,12 +60,9 @@ private:
         // misc opcodes
         IRCopy,
 
-        IRLogicalShiftLeft,
-        IRLogicalShiftRight,
         IRMemoryWrite,
-        IRArithmeticShiftRight,
-        IRRotateRight,
         IRMemoryRead,
+        IRMultiply,
         IRAddCarry
     >;
 
@@ -104,6 +107,13 @@ private:
     void handle_add(IROpcodeVariant& opcode_variant);
     void handle_subtract(IROpcodeVariant& opcode_variant);
     void handle_multiply(IROpcodeVariant& opcode_variant);
+    void handle_logical_shift_left(IROpcodeVariant& opcode_variant);
+    void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
+    void handle_barrel_shifter_logical_shift_left(IROpcodeVariant& opcode_variant);
+    void handle_barrel_shifter_logical_shift_right(IROpcodeVariant& opcode_variant);
+    void handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
+    void handle_barrel_shifter_rotate_right(IROpcodeVariant& opcode_variant);
+    void handle_barrel_shifter_rotate_right_extended(IROpcodeVariant& opcode_variant);
 
     // flag opcodes
     void handle_compare(IROpcodeVariant& opcode_variant);
@@ -118,11 +128,7 @@ private:
     void handle_set_carry(IROpcodeVariant& opcode_variant);
     void handle_clear_carry(IROpcodeVariant& opcode_variant);
     
-    void handle_logical_shift_left(IROpcodeVariant& opcode_variant);
-    void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_memory_write(IROpcodeVariant& opcode_variant);
-    void handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
-    void handle_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_memory_read(IROpcodeVariant& opcode_variant);
     void handle_add_carry(IROpcodeVariant& opcode_variant);
 

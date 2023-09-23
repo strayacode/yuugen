@@ -89,6 +89,17 @@ struct GuestRegister {
     }
 };
 
+struct IRResultAndCarry {
+    IRVariable result;
+    IRVariable carry;
+
+    IRResultAndCarry(IRVariable result, IRVariable carry) : result(result), carry(carry) {}
+
+    std::string to_string() {
+        return common::format("%s, %s", result.to_string().c_str(), carry.to_string().c_str());
+    }
+};
+
 enum Flag : u32 {
     N = 31,
     Z = 30,
