@@ -170,7 +170,101 @@ Translator::BlockStatus Translator::arm_status_store_immediate() {
 }
 
 Translator::BlockStatus Translator::arm_block_data_transfer() {
-    logger.todo("Translator: handle arm_block_data_transfer");
+    auto opcode = ARMBlockDataTransfer::decode(instruction);
+    auto address = ir.load_gpr(opcode.rn);
+    auto first = 0;
+    u32 bytes = 0;
+    auto old_mode = ir.basic_block.location.get_mode();
+    IRValue new_base;
+
+    if (opcode.rlist != 0) {
+        for (int i = 15; i >= 0; i--) {
+            if (opcode.rlist & (1 << i)) {
+                first = i;
+                bytes += 4;
+            }
+        }
+    } else {
+        bytes = 0x40;
+        if (jit.arch == Arch::ARMv4) {
+            opcode.rlist = 1 << 15;
+            opcode.r15_in_rlist = true;
+        }
+    }
+
+    if (opcode.up) {
+        new_base = ir.add(address, ir.constant(bytes));
+    } else {
+        opcode.pre = !opcode.pre;
+        address = ir.subtract(address, ir.constant(bytes));
+        new_base = ir.copy(address);
+    }
+
+    ir.advance_pc();
+
+    // TODO: make sure this is correct
+    // stm armv4: store old base if rb is first in rlist, otherwise store new base
+    // stm armv5: always store old base
+    if (opcode.writeback && !opcode.load) {
+        if ((jit.arch == Arch::ARMv4) && (first != opcode.rn)) {
+            ir.store_gpr(opcode.rn, new_base);
+        }
+    }
+
+    bool user_switch_mode = opcode.psr && (!opcode.load || !opcode.r15_in_rlist);
+    if (user_switch_mode) {
+        logger.todo("Translator: handle user switch mode");
+    }
+
+    for (int i = first; i < 16; i++) {
+        if (!(opcode.rlist & (1 << i))) {
+            continue;
+        }
+
+        if (opcode.pre) {
+            address = ir.add(address, ir.constant(4));
+        }
+
+        if (opcode.load) {
+            auto data = ir.memory_read(address, AccessSize::Word, AccessType::Aligned);
+            ir.store_gpr(static_cast<GPR>(i), data);
+        } else {
+            auto data = ir.load_gpr(static_cast<GPR>(i));
+            ir.memory_write(address, data, AccessSize::Word, AccessType::Aligned);
+        }
+
+        if (!opcode.pre) {
+            address = ir.add(address, ir.constant(4));
+        } 
+    }
+
+    if (opcode.writeback) {
+        // TODO: make sure this is correct
+        // ldm armv4: writeback if rn is not in rlist
+        // ldm armv5: writeback if rn is only register or not the last register in rlist
+        if (opcode.load) {
+            if (jit.arch == Arch::ARMv5) {
+                if ((opcode.rlist == (1 << opcode.rn)) || !((opcode.rlist >> opcode.rn) == 1)) {
+                    ir.store_gpr(opcode.rn, new_base);
+                }
+            } else {
+                if (!(opcode.rlist & (1 << opcode.rn))) {
+                    ir.store_gpr(opcode.rn, new_base);
+                }
+            }
+        } else {
+            ir.store_gpr(opcode.rn, new_base);
+        }
+    } 
+
+    if (user_switch_mode) {
+        logger.todo("Translator: handle user switch mode");
+    }
+
+    if (opcode.load && opcode.r15_in_rlist) {
+        logger.todo("Translator: handle ldm r15");
+    }
+
     return BlockStatus::Continue;
 }
 
