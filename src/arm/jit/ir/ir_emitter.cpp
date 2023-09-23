@@ -150,7 +150,7 @@ void IREmitter::store_flag(Flag flag, IRValue value) {
 }
 
 void IREmitter::store_nz(IRValue value) {
-    store_flag(Flag::N, compare(value, constant(0), CompareType::IntegerLessThan));
+    store_flag(Flag::N, logical_shift_right(value, constant(31)));
     store_flag(Flag::Z, compare(value, constant(0), CompareType::Equal));
 }
 
@@ -167,13 +167,13 @@ void IREmitter::store_sub_cv(IRValue lhs, IRValue rhs, IRValue result) {
 IRVariable IREmitter::add_overflow(IRValue lhs, IRValue rhs, IRValue result) {
     auto a = bitwise_not(bitwise_exclusive_or(lhs, rhs));
     auto b = bitwise_exclusive_or(rhs, result);
-    return compare(a, b, CompareType::IntegerLessThan);
+    return logical_shift_right(bitwise_and(a, b), constant(31));
 }
 
 IRVariable IREmitter::sub_overflow(IRValue lhs, IRValue rhs, IRValue result) {
     auto a = bitwise_exclusive_or(lhs, rhs);
     auto b = bitwise_exclusive_or(lhs, result);
-    return compare(a, b, CompareType::IntegerLessThan);
+    return logical_shift_right(bitwise_and(a, b), constant(31));
 }
 
 IRVariable IREmitter::compare(IRValue lhs, IRValue rhs, CompareType compare_type) {

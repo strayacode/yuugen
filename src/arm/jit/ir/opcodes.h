@@ -68,7 +68,6 @@ enum class ExchangeType {
 enum class CompareType {
     Equal,
     LessThan,
-    IntegerLessThan,
     GreaterEqual,
 };
 
@@ -100,8 +99,6 @@ static std::string compare_type_to_string(CompareType access_type) {
         return "eq";
     case CompareType::LessThan:
         return "lt";
-    case CompareType::IntegerLessThan:
-        return "ilt";
     case CompareType::GreaterEqual:
         return "ge";
     }

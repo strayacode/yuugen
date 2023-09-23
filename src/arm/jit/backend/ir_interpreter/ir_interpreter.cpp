@@ -184,7 +184,6 @@ void IRInterpreter::dump_variables() {
 void IRInterpreter::handle_load_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadGPR>(opcode_variant);
     auto value = jit.get_gpr(opcode.src.gpr, opcode.src.mode);
-    logger.debug("load gpr r%d = %08x", opcode.src.gpr, value);
     assign_variable(opcode.dst, value);
 }
 
@@ -202,7 +201,6 @@ void IRInterpreter::handle_load_cpsr(IROpcodeVariant& opcode_variant) {
 void IRInterpreter::handle_store_cpsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreCPSR>(opcode_variant);
     auto src = resolve_value(opcode.src);
-    logger.debug("set cpsr to %08x", src);
     jit.state.cpsr.data = src;
 }
 
@@ -269,17 +267,12 @@ void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
 
-    logger.debug("compare %08x %08x", lhs, rhs);
-    
     switch (opcode.compare_type) {
     case CompareType::Equal:
         assign_variable(opcode.dst, lhs == rhs);
         break;
     case CompareType::LessThan:
         assign_variable(opcode.dst, lhs < rhs);
-        break;
-    case CompareType::IntegerLessThan:
-        assign_variable(opcode.dst, static_cast<s32>(lhs) < static_cast<s32>(rhs));
         break;
     case CompareType::GreaterEqual:
         assign_variable(opcode.dst, lhs >= rhs);
