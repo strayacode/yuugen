@@ -268,7 +268,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
         }
 
         auto value = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount);
-        if (set_carry) {
+        if (set_carry && value.carry.is_assigned()) {
             ir.store_flag(Flag::C, value.carry);
         }
     }
@@ -288,7 +288,12 @@ Translator::BlockStatus Translator::arm_data_processing() {
         logger.todo("handle eor");
         break;
     case ARMDataProcessing::Opcode::SUB:
-        logger.todo("handle sub");
+        result = ir.subtract(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_sub_cv(op1, op2, result);
+        }
+        
         break;
     case ARMDataProcessing::Opcode::RSB:
         logger.todo("handle rsb");

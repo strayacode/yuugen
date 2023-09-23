@@ -72,6 +72,7 @@ enum class CompareType {
     Equal,
     LessThan,
     IntegerLessThan,
+    GreaterEqual,
 };
 
 static std::string access_size_to_string(AccessSize access_size) {
@@ -111,6 +112,8 @@ static std::string compare_type_to_string(CompareType access_type) {
         return "lt";
     case CompareType::IntegerLessThan:
         return "ilt";
+    case CompareType::GreaterEqual:
+        return "ge";
     }
 }
 

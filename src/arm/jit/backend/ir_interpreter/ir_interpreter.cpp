@@ -325,7 +325,15 @@ void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) 
 }
 
 void IRInterpreter::handle_barrel_shifter_logical_shift_left(IROpcodeVariant& opcode_variant) {
-    logger.todo("handle_barrel_shifter_logical_shift_left");
+    auto& opcode = std::get<IRBarrelShifterLogicalShiftLeft>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    auto [result, carry] = lsl(value, amount);
+    assign_variable(opcode.result_and_carry.result, result);
+
+    if (carry) {
+        assign_variable(opcode.result_and_carry.carry, *carry);
+    }
 }
 
 void IRInterpreter::handle_barrel_shifter_logical_shift_right(IROpcodeVariant& opcode_variant) {

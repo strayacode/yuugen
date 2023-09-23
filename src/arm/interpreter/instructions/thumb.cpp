@@ -1,5 +1,6 @@
 #include "common/logger.h"
 #include "common/bits.h"
+#include "arm/arithmetic.h"
 #include "arm/interpreter/interpreter.h"
 
 namespace arm {

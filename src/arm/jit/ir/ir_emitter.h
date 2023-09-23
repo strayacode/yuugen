@@ -48,7 +48,9 @@ public:
     void store_flag(Flag flag, IRValue value);
     void store_nz(IRValue value);
     void store_add_cv(IRValue lhs, IRValue rhs, IRValue result);
+    void store_sub_cv(IRValue lhs, IRValue rhs, IRValue result);
     IRVariable add_overflow(IRValue lhs, IRValue rhs, IRValue result);
+    IRVariable sub_overflow(IRValue lhs, IRValue rhs, IRValue result);
     IRVariable compare(IRValue lhs, IRValue rhs, CompareType compare_type);
 
     // branch opcodes

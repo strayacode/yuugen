@@ -159,9 +159,20 @@ void IREmitter::store_add_cv(IRValue lhs, IRValue rhs, IRValue result) {
     store_flag(Flag::V, add_overflow(lhs, rhs, result));
 }
 
+void IREmitter::store_sub_cv(IRValue lhs, IRValue rhs, IRValue result) {
+    store_flag(Flag::C, compare(result, lhs, CompareType::GreaterEqual));
+    store_flag(Flag::V, sub_overflow(lhs, rhs, result));
+}
+
 IRVariable IREmitter::add_overflow(IRValue lhs, IRValue rhs, IRValue result) {
     auto a = bitwise_not(bitwise_exclusive_or(lhs, rhs));
     auto b = bitwise_exclusive_or(rhs, result);
+    return compare(a, b, CompareType::IntegerLessThan);
+}
+
+IRVariable IREmitter::sub_overflow(IRValue lhs, IRValue rhs, IRValue result) {
+    auto a = bitwise_exclusive_or(lhs, rhs);
+    auto b = bitwise_exclusive_or(lhs, result);
     return compare(a, b, CompareType::IntegerLessThan);
 }
 
