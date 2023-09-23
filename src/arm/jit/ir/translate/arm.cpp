@@ -364,6 +364,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
         }
 
         auto value = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount);
+        op2 = value.result;
         if (set_carry) {
             ir.store_flag(Flag::C, value.carry);
         }
