@@ -19,6 +19,7 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
     default:
         logger.todo("Jit: unsupported jit backend");
     }
+    
 }
 
 void Jit::reset() {
@@ -54,6 +55,7 @@ void Jit::run(int cycles) {
             IREmitter ir{basic_block};
             Translator translator{*this, ir};
             translator.translate();
+            optimiser.optimise(basic_block);
             backend->compile(basic_block);
         }
 

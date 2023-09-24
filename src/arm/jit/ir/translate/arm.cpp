@@ -53,7 +53,27 @@ Translator::BlockStatus Translator::arm_single_data_swap() {
 }
 
 Translator::BlockStatus Translator::arm_multiply() {
-    logger.todo("Translator: handle arm_multiply");
+    auto opcode = ARMMultiply::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("handle rd == 15 in arm_multiply");
+    }
+
+    auto op1 = ir.load_gpr(opcode.rm);
+    auto op2 = ir.load_gpr(opcode.rs);
+    auto result = ir.multiply(op1, op2);
+    
+    if (opcode.accumulate) {
+        auto op3 = ir.load_gpr(opcode.rn);
+        result = ir.add(result, op3);
+    }
+
+    if (opcode.set_flags) {
+        ir.store_nz(result);
+    }
+
+    ir.store_gpr(opcode.rd, result);
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
@@ -63,7 +83,29 @@ Translator::BlockStatus Translator::arm_saturating_add_subtract() {
 }
 
 Translator::BlockStatus Translator::arm_multiply_long() {
-    logger.todo("Translator: handle arm_multiply_long");
+    // auto opcode = ARMMultiplyLong::decode(instruction);
+    // s64 result = 0;
+
+    // if (opcode.sign) {
+    //     result = common::sign_extend<s64, 32>(state.gpr[opcode.rm]) * common::sign_extend<s64, 32>(state.gpr[opcode.rs]);
+    // } else {
+    //     result = static_cast<s64>(static_cast<u64>(state.gpr[opcode.rm]) * static_cast<u64>(state.gpr[opcode.rs]));
+    // }
+
+    // if (opcode.accumulate) {
+    //     result += static_cast<s64>((static_cast<u64>(state.gpr[opcode.rdhi]) << 32) | static_cast<u64>(state.gpr[opcode.rdlo]));
+    // }
+
+    // if (opcode.set_flags) {
+    //     state.cpsr.n = result >> 63;
+    //     state.cpsr.z = result == 0;
+    // }
+
+    // state.gpr[opcode.rdhi] = result >> 32;
+    // state.gpr[opcode.rdlo] = result & 0xffffffff;
+    // ir.advance_pc();
+    logger.todo("arm_multiply_long");
+    
     return BlockStatus::Continue;
 }
 

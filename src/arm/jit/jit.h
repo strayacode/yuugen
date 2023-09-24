@@ -8,6 +8,7 @@
 #include "arm/coprocessor.h"
 #include "arm/decoder.h"
 #include "arm/instructions.h"
+#include "arm/jit/ir/optimiser.h"
 #include "arm/jit/config.h"
 #include "arm/jit/backend/backend.h"
 
@@ -63,6 +64,7 @@ private:
 
     int cycles_available;
     std::unique_ptr<Backend> backend;
+    Optimiser optimiser;
 };
 
 } // namespace arm
