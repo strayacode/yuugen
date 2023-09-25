@@ -168,7 +168,7 @@ void IREmitter::store_nz(IRValue value) {
 
 void IREmitter::store_nz_long(IRPair value) {
     store_flag(Flag::N, logical_shift_right(value.first, constant(31)));
-    store_flag(Flag::Z, compare(value.second, constant(0), CompareType::Equal));
+    store_flag(Flag::Z, bitwise_and(compare(value.first, constant(0), CompareType::Equal), compare(value.second, constant(0), CompareType::Equal)));
 }
 
 void IREmitter::store_add_cv(IRValue lhs, IRValue rhs, IRValue result) {
