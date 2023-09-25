@@ -130,6 +130,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_logical_shift_left, *opcode->as<IRLogicalShiftLeft>()};
     case IROpcodeType::LogicalShiftRight:
         return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
+    case IROpcodeType::ArithmeticShiftRight:
+        return {&IRInterpreter::handle_arithmetic_shift_right, *opcode->as<IRArithmeticShiftRight>()};
     case IROpcodeType::BarrelShifterLogicalShiftLeft:
         return {&IRInterpreter::handle_barrel_shifter_logical_shift_left, *opcode->as<IRBarrelShifterLogicalShiftLeft>()};
     case IROpcodeType::BarrelShifterLogicalShiftRight:
@@ -338,6 +340,13 @@ void IRInterpreter::handle_logical_shift_right(IROpcodeVariant& opcode_variant) 
     assign_variable(opcode.dst, value >> amount);
 }
 
+void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRArithmeticShiftRight>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    assign_variable(opcode.dst, static_cast<s32>(value) >> amount);
+}
+
 void IRInterpreter::handle_barrel_shifter_logical_shift_left(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRBarrelShifterLogicalShiftLeft>(opcode_variant);
     auto value = resolve_value(opcode.src);
@@ -429,12 +438,7 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
     
     switch (opcode.access_size) {
     case AccessSize::Byte:
-        if (opcode.access_type == AccessType::Signed) {
-            logger.todo("handle signed byte read");
-        } else {
-            assign_variable(opcode.dst, jit.read_byte(addr));
-        }
-        
+        assign_variable(opcode.dst, jit.read_byte(addr));
         break;
     case AccessSize::Half:
         switch (opcode.access_type) {
@@ -443,9 +447,6 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
             break;
         case AccessType::Unaligned:
             logger.todo("handle unaligned half read");
-            break;
-        case AccessType::Signed:
-            logger.todo("handle signed half read");
             break;
         }
         

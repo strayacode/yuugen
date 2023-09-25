@@ -39,11 +39,13 @@ public:
     IRPair multiply_long(IRValue lhs, IRValue rhs, bool is_signed);
     IRVariable logical_shift_left(IRValue src, IRValue amount);
     IRVariable logical_shift_right(IRValue src, IRValue amount);
+    IRVariable arithmetic_shift_right(IRValue src, IRValue amount);
     IRPair barrel_shifter_logical_shift_left(IRValue src, IRValue amount);
     IRPair barrel_shifter_logical_shift_right(IRValue src, IRValue amount);
     IRPair barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount);
     IRPair barrel_shifter_rotate_right(IRValue src, IRValue amount);
     IRPair barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount);
+    IRVariable sign_extend_byte(IRValue src);
 
     // flag opcodes
     IRVariable load_flag(Flag flag);

@@ -27,6 +27,7 @@ enum class IROpcodeType {
     BitwiseExclusiveOr,
     LogicalShiftLeft,
     LogicalShiftRight,
+    ArithmeticShiftRight,
     BarrelShifterLogicalShiftLeft,
     BarrelShifterLogicalShiftRight,
     BarrelShifterArithmeticShiftRight,
@@ -60,7 +61,6 @@ enum class AccessSize {
 enum class AccessType {
     Aligned,
     Unaligned,
-    Signed,
 };
 
 enum class ExchangeType {
@@ -91,8 +91,6 @@ static std::string access_type_to_string(AccessType access_type) {
         return "aligned";
     case AccessType::Unaligned:
         return "unaligned";
-    case AccessType::Signed:
-        return "signed";
     }
 }
 
@@ -253,6 +251,18 @@ struct IRLogicalShiftRight : IROpcode {
 
     std::string to_string() {
         return common::format("%s = lsr(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+};
+
+struct IRArithmeticShiftRight : IROpcode {
+    IRArithmeticShiftRight(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::ArithmeticShiftRight), dst(dst), src(src), amount(amount) {}
+
+    std::string to_string() {
+        return common::format("%s = asr(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
     }
 
     IRVariable dst;

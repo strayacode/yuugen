@@ -119,6 +119,12 @@ IRVariable IREmitter::logical_shift_right(IRValue src, IRValue amount) {
     return dst;
 }
 
+IRVariable IREmitter::arithmetic_shift_right(IRValue src, IRValue amount) {
+    auto dst = create_variable();
+    push<IRArithmeticShiftRight>(dst, src, amount);
+    return dst;
+}
+
 IRPair IREmitter::barrel_shifter_logical_shift_left(IRValue src, IRValue amount) {
     auto result_and_carry = create_pair();
     push<IRBarrelShifterLogicalShiftLeft>(result_and_carry, src, amount, load_flag(Flag::C));
@@ -147,6 +153,11 @@ IRPair IREmitter::barrel_shifter_rotate_right_extended(IRValue src, IRConstant a
     auto result_and_carry = create_pair();
     push<IRBarrelShifterRotateRightExtended>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
+}
+
+IRVariable IREmitter::sign_extend_byte(IRValue src) {
+    auto shifted_left = logical_shift_left(src, constant(24));
+    return arithmetic_shift_right(shifted_left, constant(24));
 }
 
 IRVariable IREmitter::load_flag(Flag flag) {

@@ -174,7 +174,8 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
         }
     } else if (opcode.sign) {
         if (opcode.load) {
-            logger.todo("Translator: handle ldrsb");
+            auto dst = ir.sign_extend_byte(ir.memory_read(address, AccessSize::Byte, AccessType::Aligned));
+            ir.store_gpr(opcode.rd, dst);
         } else if (jit.arch == Arch::ARMv5) {
             logger.todo("Translator: handle ldrd");
         }
