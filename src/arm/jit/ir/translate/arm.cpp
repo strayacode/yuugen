@@ -43,8 +43,16 @@ Translator::BlockStatus Translator::arm_branch_link_exchange() {
 }
 
 Translator::BlockStatus Translator::arm_branch_link_exchange_register() {
-    logger.todo("Translator: handle arm_branch_link_exchange_register");
-    return BlockStatus::Continue;
+    if (jit.arch == Arch::ARMv4) {
+        logger.todo("Translator: arm_branch_link_exchange_register executed by arm7");
+    }
+
+    auto opcode = ARMBranchExchange::decode(instruction);
+    auto address = ir.load_gpr(opcode.rm);
+    
+    ir.link();
+    ir.branch_exchange(address, ExchangeType::Bit0);
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_single_data_swap() {
@@ -344,7 +352,9 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     if (opcode.imm) {
         op2 = ir.constant(opcode.rhs.imm);
     } else {
-        logger.todo("Translator: arm_single_data_transfer handle barrel shifter");
+        auto src = ir.load_gpr(opcode.rhs.reg.rm);
+        auto value = ir.barrel_shifter(src, opcode.rhs.reg.shift_type, ir.constant(opcode.rhs.reg.amount));
+        op2 = value.result;
     }
 
     if (!opcode.up) {
