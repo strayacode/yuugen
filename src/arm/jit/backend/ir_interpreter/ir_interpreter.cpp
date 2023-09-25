@@ -179,6 +179,10 @@ u32 IRInterpreter::resolve_value(IRValue& value) {
     }
 }
 
+u64 IRInterpreter::resolve_pair(IRPair& pair) {
+    return (static_cast<u64>(get(pair.first)) << 32) | static_cast<u64>(get(pair.second));
+}
+
 void IRInterpreter::dump_variables() {
     for (u64 i = 0; i < variables.size(); i++) {
         logger.debug("%%%d: %08x", i, variables[i]);
@@ -253,7 +257,12 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
 }
 
 void IRInterpreter::handle_add_long(IROpcodeVariant& opcode_variant) {
-    logger.todo("handle_add_long");
+    auto& opcode = std::get<IRAddLong>(opcode_variant);
+    auto lhs = resolve_pair(opcode.lhs);
+    auto rhs = resolve_pair(opcode.rhs);
+    auto result = lhs + rhs;
+    assign_variable(opcode.dst.first, result >> 32);
+    assign_variable(opcode.dst.second, result);
 }
 
 void IRInterpreter::handle_subtract(IROpcodeVariant& opcode_variant) {

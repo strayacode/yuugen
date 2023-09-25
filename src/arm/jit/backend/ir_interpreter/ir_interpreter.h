@@ -85,6 +85,7 @@ private:
     u32& get_or_allocate(IRVariable& variable);
     void assign_variable(IRVariable& variable, u32 value);
     u32 resolve_value(IRValue& value);
+    u64 resolve_pair(IRPair& pair);
     void dump_variables();
 
     // state opcodes
