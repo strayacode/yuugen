@@ -118,10 +118,14 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_bitwise_exclusive_or, *opcode->as<IRBitwiseExclusiveOr>()};
     case IROpcodeType::Add:
         return {&IRInterpreter::handle_add, *opcode->as<IRAdd>()};
+    case IROpcodeType::AddLong:
+        return {&IRInterpreter::handle_add_long, *opcode->as<IRAddLong>()};
     case IROpcodeType::Subtract:
         return {&IRInterpreter::handle_subtract, *opcode->as<IRSubtract>()};
     case IROpcodeType::Multiply:
         return {&IRInterpreter::handle_multiply, *opcode->as<IRMultiply>()};
+    case IROpcodeType::MultiplyLong:
+        return {&IRInterpreter::handle_multiply_long, *opcode->as<IRMultiplyLong>()};
     case IROpcodeType::LogicalShiftLeft:
         return {&IRInterpreter::handle_logical_shift_left, *opcode->as<IRLogicalShiftLeft>()};
     case IROpcodeType::LogicalShiftRight:
@@ -248,6 +252,10 @@ void IRInterpreter::handle_add(IROpcodeVariant& opcode_variant) {
     assign_variable(opcode.dst, lhs + rhs);
 }
 
+void IRInterpreter::handle_add_long(IROpcodeVariant& opcode_variant) {
+    logger.todo("handle_add_long");
+}
+
 void IRInterpreter::handle_subtract(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRSubtract>(opcode_variant);
     auto lhs = resolve_value(opcode.lhs);
@@ -260,6 +268,24 @@ void IRInterpreter::handle_multiply(IROpcodeVariant& opcode_variant) {
     auto lhs = resolve_value(opcode.lhs);
     auto rhs = resolve_value(opcode.rhs);
     assign_variable(opcode.dst, lhs * rhs);
+}
+
+void IRInterpreter::handle_multiply_long(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRMultiplyLong>(opcode_variant);
+
+    if (opcode.is_signed) {
+        s64 lhs = static_cast<s32>(resolve_value(opcode.lhs));
+        s64 rhs = static_cast<s32>(resolve_value(opcode.rhs));
+        s64 result = lhs * rhs;
+        assign_variable(opcode.dst.first, result >> 32);
+        assign_variable(opcode.dst.second, result);
+    } else {
+        u64 lhs = static_cast<u64>(resolve_value(opcode.lhs));
+        u64 rhs = static_cast<u64>(resolve_value(opcode.rhs));
+        u64 result = lhs * rhs;
+        assign_variable(opcode.dst.first, result >> 32);
+        assign_variable(opcode.dst.second, result);
+    }
 }
 
 void IRInterpreter::handle_compare(IROpcodeVariant& opcode_variant) {
@@ -358,7 +384,6 @@ void IRInterpreter::handle_barrel_shifter_rotate_right(IROpcodeVariant& opcode_v
 void IRInterpreter::handle_barrel_shifter_rotate_right_extended(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRBarrelShifterRotateRightExtended>(opcode_variant);
     auto value = resolve_value(opcode.src);
-    auto amount = resolve_value(opcode.amount);
     auto carry_in = resolve_value(opcode.carry);
     auto [result, carry] = rrx(value, carry_in);
     

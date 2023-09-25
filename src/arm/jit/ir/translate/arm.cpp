@@ -91,29 +91,24 @@ Translator::BlockStatus Translator::arm_saturating_add_subtract() {
 }
 
 Translator::BlockStatus Translator::arm_multiply_long() {
-    // auto opcode = ARMMultiplyLong::decode(instruction);
-    // s64 result = 0;
+    auto opcode = ARMMultiplyLong::decode(instruction);
+    auto op1 = ir.load_gpr(opcode.rm);
+    auto op2 = ir.load_gpr(opcode.rs);
+    IRPair result = ir.multiply_long(op1, op2, opcode.sign);
 
-    // if (opcode.sign) {
-    //     result = common::sign_extend<s64, 32>(state.gpr[opcode.rm]) * common::sign_extend<s64, 32>(state.gpr[opcode.rs]);
-    // } else {
-    //     result = static_cast<s64>(static_cast<u64>(state.gpr[opcode.rm]) * static_cast<u64>(state.gpr[opcode.rs]));
-    // }
+    if (opcode.accumulate) {
+        auto op3 = ir.load_gpr(opcode.rdhi);
+        auto op4 = ir.load_gpr(opcode.rdlo);
+        result = ir.add_long(result, ir.pair(op3, op4));
+    }
 
-    // if (opcode.accumulate) {
-    //     result += static_cast<s64>((static_cast<u64>(state.gpr[opcode.rdhi]) << 32) | static_cast<u64>(state.gpr[opcode.rdlo]));
-    // }
+    if (opcode.set_flags) {
+        ir.store_nz_long(result);
+    }
 
-    // if (opcode.set_flags) {
-    //     state.cpsr.n = result >> 63;
-    //     state.cpsr.z = result == 0;
-    // }
-
-    // state.gpr[opcode.rdhi] = result >> 32;
-    // state.gpr[opcode.rdlo] = result & 0xffffffff;
-    // ir.advance_pc();
-    logger.todo("arm_multiply_long");
-    
+    ir.store_gpr(opcode.rdhi, result.first);
+    ir.store_gpr(opcode.rdlo, result.second);
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 

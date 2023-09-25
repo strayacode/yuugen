@@ -12,7 +12,7 @@ IRVariable IREmitter::create_variable() {
     return variable;
 }
 
-IRPair IREmitter::create_result_and_carry() {
+IRPair IREmitter::create_pair() {
     return IRPair{create_variable(), create_variable()};
 }
 
@@ -83,6 +83,12 @@ IRVariable IREmitter::add(IRValue lhs, IRValue rhs) {
     return dst;
 }
 
+IRPair IREmitter::add_long(IRPair lhs, IRPair rhs) {
+    auto dst = create_pair();
+    push<IRAddLong>(dst, lhs, rhs);
+    return dst;
+}
+
 IRVariable IREmitter::subtract(IRValue lhs, IRValue rhs) {
     auto dst = create_variable();
     push<IRSubtract>(dst, lhs, rhs);
@@ -92,6 +98,12 @@ IRVariable IREmitter::subtract(IRValue lhs, IRValue rhs) {
 IRVariable IREmitter::multiply(IRValue lhs, IRValue rhs) {
     auto dst = create_variable();
     push<IRMultiply>(dst, lhs, rhs);
+    return dst;
+}
+
+IRPair IREmitter::multiply_long(IRValue lhs, IRValue rhs, bool is_signed) {
+    auto dst = create_pair();
+    push<IRMultiplyLong>(dst, lhs, rhs, is_signed);
     return dst;
 }
 
@@ -108,31 +120,31 @@ IRVariable IREmitter::logical_shift_right(IRValue src, IRValue amount) {
 }
 
 IRPair IREmitter::barrel_shifter_logical_shift_left(IRValue src, IRValue amount) {
-    auto result_and_carry = create_result_and_carry();
+    auto result_and_carry = create_pair();
     push<IRBarrelShifterLogicalShiftLeft>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
 IRPair IREmitter::barrel_shifter_logical_shift_right(IRValue src, IRValue amount) {
-    auto result_and_carry = create_result_and_carry();
+    auto result_and_carry = create_pair();
     push<IRBarrelShifterLogicalShiftRight>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
 IRPair IREmitter::barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount) {
-    auto result_and_carry = create_result_and_carry();
+    auto result_and_carry = create_pair();
     push<IRBarrelShifterArithmeticShiftRight>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
 IRPair IREmitter::barrel_shifter_rotate_right(IRValue src, IRValue amount) {
-    auto result_and_carry = create_result_and_carry();
+    auto result_and_carry = create_pair();
     push<IRBarrelShifterRotateRight>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
 IRPair IREmitter::barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount) {
-    auto result_and_carry = create_result_and_carry();
+    auto result_and_carry = create_pair();
     push<IRBarrelShifterRotateRightExtended>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
@@ -152,6 +164,11 @@ void IREmitter::store_flag(Flag flag, IRValue value) {
 void IREmitter::store_nz(IRValue value) {
     store_flag(Flag::N, logical_shift_right(value, constant(31)));
     store_flag(Flag::Z, compare(value, constant(0), CompareType::Equal));
+}
+
+void IREmitter::store_nz_long(IRPair value) {
+    store_flag(Flag::N, logical_shift_right(value.first, constant(31)));
+    store_flag(Flag::Z, compare(value.second, constant(0), CompareType::Equal));
 }
 
 void IREmitter::store_add_cv(IRValue lhs, IRValue rhs, IRValue result) {
@@ -228,6 +245,10 @@ IRVariable IREmitter::copy(IRValue src) {
 
 IRConstant IREmitter::constant(u32 value) {
     return IRConstant{value};
+}
+
+IRPair IREmitter::pair(IRVariable first, IRVariable second) {
+    return IRPair{first, second};
 }
 
 IRPair IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount) {

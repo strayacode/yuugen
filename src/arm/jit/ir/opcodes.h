@@ -35,7 +35,10 @@ enum class IROpcodeType {
 
     // arithmetic opcodes
     Add,
+    AddLong,
     Subtract,
+    Multiply,
+    MultiplyLong,
 
     // flag opcodes
     Compare,
@@ -45,7 +48,6 @@ enum class IROpcodeType {
     
     MemoryWrite,
     MemoryRead,
-    Multiply,
     AddCarry,
 };
 
@@ -335,6 +337,18 @@ struct IRAdd : IROpcode {
     IRValue rhs;
 };
 
+struct IRAddLong : IROpcode {
+    IRAddLong(IRPair dst, IRPair lhs, IRPair rhs) : IROpcode(IROpcodeType::AddLong), dst(dst), lhs(lhs), rhs(rhs) {}
+
+    std::string to_string() override {
+        return common::format("%s = add_long(%s, %s)", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRPair dst;
+    IRPair lhs;
+    IRPair rhs;
+};
+
 struct IRSubtract : IROpcode {
     IRSubtract(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Subtract), dst(dst), lhs(lhs), rhs(rhs) {}
 
@@ -357,6 +371,19 @@ struct IRMultiply : IROpcode {
     IRVariable dst;
     IRValue lhs;
     IRValue rhs;
+};
+
+struct IRMultiplyLong : IROpcode {
+    IRMultiplyLong(IRPair dst, IRValue lhs, IRValue rhs, bool is_signed) : IROpcode(IROpcodeType::MultiplyLong), dst(dst), lhs(lhs), rhs(rhs), is_signed(is_signed) {}
+
+    std::string to_string() override {
+        return common::format("%s = multiply_long%s(%s, %s)", dst.to_string().c_str(), is_signed ? "_signed" : "", lhs.to_string().c_str(), rhs.to_string().c_str());
+    }
+
+    IRPair dst;
+    IRValue lhs;
+    IRValue rhs;
+    bool is_signed;
 };
 
 struct IRCompare : IROpcode {

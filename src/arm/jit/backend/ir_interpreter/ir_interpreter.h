@@ -41,7 +41,10 @@ private:
 
         // arithmetic opcodes
         IRAdd,
+        IRAddLong,
         IRSubtract,
+        IRMultiply,
+        IRMultiplyLong,
         IRLogicalShiftLeft,
         IRLogicalShiftRight,
         IRBarrelShifterLogicalShiftLeft,
@@ -58,7 +61,6 @@ private:
 
         IRMemoryWrite,
         IRMemoryRead,
-        IRMultiply,
         IRAddCarry
     >;
 
@@ -101,8 +103,10 @@ private:
 
     // arithmetic opcodes
     void handle_add(IROpcodeVariant& opcode_variant);
+    void handle_add_long(IROpcodeVariant& opcode_variant);
     void handle_subtract(IROpcodeVariant& opcode_variant);
     void handle_multiply(IROpcodeVariant& opcode_variant);
+    void handle_multiply_long(IROpcodeVariant& opcode_variant);
     void handle_logical_shift_left(IROpcodeVariant& opcode_variant);
     void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_barrel_shifter_logical_shift_left(IROpcodeVariant& opcode_variant);

@@ -14,7 +14,7 @@ public:
     IREmitter(BasicBlock& basic_block);
 
     IRVariable create_variable();
-    IRPair create_result_and_carry();
+    IRPair create_pair();
 
     // state opcodes
     IRVariable load_gpr(GPR gpr);
@@ -33,8 +33,10 @@ public:
 
     // arithmetic opcodes
     IRVariable add(IRValue lhs, IRValue rhs);
+    IRPair add_long(IRPair lhs, IRPair rhs);
     IRVariable subtract(IRValue lhs, IRValue rhs);
     IRVariable multiply(IRValue lhs, IRValue rhs);
+    IRPair multiply_long(IRValue lhs, IRValue rhs, bool is_signed);
     IRVariable logical_shift_left(IRValue src, IRValue amount);
     IRVariable logical_shift_right(IRValue src, IRValue amount);
     IRPair barrel_shifter_logical_shift_left(IRValue src, IRValue amount);
@@ -47,6 +49,7 @@ public:
     IRVariable load_flag(Flag flag);
     void store_flag(Flag flag, IRValue value);
     void store_nz(IRValue value);
+    void store_nz_long(IRPair value);
     void store_add_cv(IRValue lhs, IRValue rhs, IRValue result);
     void store_sub_cv(IRValue lhs, IRValue rhs, IRValue result);
     void store_adc_cv(IRValue lhs, IRValue rhs, IRValue result);
@@ -64,6 +67,7 @@ public:
 
     // helpers
     IRConstant constant(u32 value);
+    IRPair pair(IRVariable first, IRVariable second);
     IRPair barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
     void link();
     void advance_pc();
