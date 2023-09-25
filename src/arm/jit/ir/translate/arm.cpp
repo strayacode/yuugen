@@ -56,7 +56,26 @@ Translator::BlockStatus Translator::arm_branch_link_exchange_register() {
 }
 
 Translator::BlockStatus Translator::arm_single_data_swap() {
-    logger.todo("Translator: handle arm_single_data_swap");
+    auto opcode = ARMSingleDataSwap::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("pc write in arm_single_data_swap");
+    }
+
+    auto address = ir.load_gpr(opcode.rn);
+    auto data = ir.load_gpr(opcode.rm);
+    IRValue result;
+
+    if (opcode.byte) {
+        result = ir.memory_read(address, AccessSize::Byte, AccessType::Aligned);
+        ir.memory_write(address, data, AccessSize::Byte);
+    } else {
+        result = ir.memory_read(address, AccessSize::Word, AccessType::Unaligned);
+        ir.memory_write(address, data, AccessSize::Word);
+    }
+
+    ir.store_gpr(opcode.rd, result);
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
@@ -151,7 +170,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
             ir.store_gpr(opcode.rd, dst);
         } else {
             auto src = ir.load_gpr(opcode.rd);
-            ir.memory_write(address, src, AccessSize::Half, AccessType::Aligned);
+            ir.memory_write(address, src, AccessSize::Half);
         }
     } else if (opcode.sign) {
         if (opcode.load) {
@@ -300,7 +319,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
             ir.store_gpr(static_cast<GPR>(i), data);
         } else {
             auto data = ir.load_gpr(static_cast<GPR>(i));
-            ir.memory_write(address, data, AccessSize::Word, AccessType::Aligned);
+            ir.memory_write(address, data, AccessSize::Word);
         }
 
         if (!opcode.pre) {
@@ -374,9 +393,9 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     } else {
         IRVariable src = ir.load_gpr(opcode.rd);
         if (opcode.byte) {
-            ir.memory_write(address, src, AccessSize::Byte, AccessType::Aligned);
+            ir.memory_write(address, src, AccessSize::Byte);
         } else {
-            ir.memory_write(address, src, AccessSize::Word, AccessType::Aligned);
+            ir.memory_write(address, src, AccessSize::Word);
         }
     }
 

@@ -72,7 +72,7 @@ public:
     void link();
     void advance_pc();
 
-    void memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type);
+    void memory_write(IRValue addr, IRVariable src, AccessSize access_size);
     
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
     IRVariable add_carry(IRValue lhs, IRValue rhs, bool set_flags);

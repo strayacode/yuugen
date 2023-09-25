@@ -411,23 +411,22 @@ struct IRCopy : IROpcode {
 };
 
 struct IRMemoryWrite : IROpcode {
-    IRMemoryWrite(IRValue addr, IRValue src, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_size(access_size), access_type(access_type) {}
+    IRMemoryWrite(IRValue addr, IRValue src, AccessSize access_size) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_size(access_size) {}
 
     std::string to_string() {
-        return common::format("write_%s_%s(%s, %s)", access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), src.to_string().c_str(), addr.to_string().c_str());
+        return common::format("write(%s, %s)", src.to_string().c_str(), addr.to_string().c_str());
     }
 
     IRValue addr;
     IRValue src;
     AccessSize access_size;
-    AccessType access_type;
 };
 
 struct IRMemoryRead : IROpcode {
     IRMemoryRead(IRVariable dst, IRValue addr, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryRead), dst(dst), addr(addr), access_size(access_size), access_type(access_type) {}
 
     std::string to_string() {
-        return common::format("%s = read_%s_%s(%s)", dst.to_string().c_str(), access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), addr.to_string().c_str());
+        return common::format("%s = read_%s_%s(%s)", access_type_to_string(access_type).c_str(), dst.to_string().c_str(), access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), addr.to_string().c_str());
     }
 
     IRVariable dst;

@@ -280,8 +280,8 @@ void IREmitter::advance_pc() {
     store_gpr(GPR::PC, constant(address + instruction_size));
 }
 
-void IREmitter::memory_write(IRValue addr, IRVariable src, AccessSize access_size, AccessType access_type) {
-    push<IRMemoryWrite>(addr, src, access_size, access_type);
+void IREmitter::memory_write(IRValue addr, IRVariable src, AccessSize access_size) {
+    push<IRMemoryWrite>(addr, src, access_size);
 }
 
 IRVariable IREmitter::memory_read(IRValue addr, AccessSize access_size, AccessType access_type) {
