@@ -194,7 +194,18 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
 }
 
 Translator::BlockStatus Translator::arm_status_load() {
-    logger.todo("Translator: handle arm_status_load");
+    auto opcode = ARMStatusLoad::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("pc write in arm_status_load");
+    }
+
+    if (opcode.spsr) {
+        ir.store_gpr(opcode.rd, ir.load_spsr());
+    } else {
+        ir.store_gpr(opcode.rd, ir.load_cpsr());
+    }
+
     return BlockStatus::Continue;
 }
 
