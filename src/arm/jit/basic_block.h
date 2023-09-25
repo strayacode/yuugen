@@ -18,9 +18,9 @@ struct BasicBlock {
     void dump() {
         logger.debug("basic block location: %016lx address: %08x arm: %d mode: %02x condition: %02x", location, location.get_address(), location.is_arm(), static_cast<u8>(location.get_mode()), condition);
         logger.debug("cycles: %d", cycles);
-        logger.log("number of instructions: %d\n", num_instructions);
+        logger.debug("number of instructions: %d", num_instructions);
         for (auto& opcode : opcodes) {
-            logger.log("%s\n", opcode->to_string().c_str());
+            logger.debug("%s", opcode->to_string().c_str());
         }
     }
 

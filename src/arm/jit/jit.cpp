@@ -10,7 +10,7 @@ namespace arm {
 Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
-    config.block_size = 1;
+    config.block_size = 32;
 
     switch (backend_type) {
     case BackendType::IRInterpreter:
@@ -19,7 +19,6 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
     default:
         logger.todo("Jit: unsupported jit backend");
     }
-    
 }
 
 void Jit::reset() {

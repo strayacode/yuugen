@@ -17,19 +17,11 @@ void Translator::translate() {
     auto& basic_block = ir.basic_block;
     auto location = basic_block.location;
     
-    logger.log("Translator: translate basic block instruction size %d pc %08x\n", location.get_instruction_size(), location.get_address());
+    logger.debug("Translator: translate basic block instruction size %d pc %08x", location.get_instruction_size(), location.get_address());
     
     for (int i = 0; i < jit.config.block_size; i++) {
-        // TODO: for now each instruction takes only 1 cycle,
-        // but in the future we should at compile time figure out instruction timings
-        // with I, N and S cycles
-        basic_block.cycles++;
-        basic_block.num_instructions++;
-
         if (location.is_arm()) {
-
             instruction = code_read_word(basic_block.current_address);
-            logger.log("%s %08x %08x\n", disassembler.disassemble_arm(instruction).c_str(), instruction, basic_block.current_address);
             auto condition = evaluate_arm_condition();
 
             if (i == 0) {
@@ -45,12 +37,17 @@ void Translator::translate() {
             auto handler = decoder.get_arm_handler(instruction);
             auto status = (this->*handler)();
 
+            // TODO: for now each instruction takes only 1 cycle,
+            // but in the future we should at compile time figure out instruction timings
+            // with I, N and S cycles
+            basic_block.cycles++;
+            basic_block.num_instructions++;
+
             if (status == BlockStatus::Break) {
                 break;
             }
         } else {
             instruction = code_read_half(basic_block.current_address);
-            logger.log("%s %08x %08x\n", disassembler.disassemble_thumb(instruction).c_str(), instruction, basic_block.current_address);
             auto condition = evaluate_thumb_condition();
 
             if (i == 0) {
@@ -65,6 +62,12 @@ void Translator::translate() {
 
             auto handler = decoder.get_thumb_handler(instruction);
             auto status = (this->*handler)();
+
+            // TODO: for now each instruction takes only 1 cycle,
+            // but in the future we should at compile time figure out instruction timings
+            // with I, N and S cycles
+            basic_block.cycles++;
+            basic_block.num_instructions++;
 
             if (status == BlockStatus::Break) {
                 break;
