@@ -425,8 +425,6 @@ Translator::BlockStatus Translator::arm_data_processing() {
         }
     } else {
         IRValue amount;
-        op2 = ir.load_gpr(opcode.rhs.reg.rm);
-
         if (opcode.rhs.reg.imm) {
             amount = ir.constant(opcode.rhs.reg.amount.imm);
         } else {
@@ -435,7 +433,8 @@ Translator::BlockStatus Translator::arm_data_processing() {
             early_advance_pc = true;
         }
 
-        auto pair = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount);
+        auto src = ir.load_gpr(opcode.rhs.reg.rm);
+        auto pair = ir.barrel_shifter(src, opcode.rhs.reg.shift_type, amount);
         op2 = pair.first;
         if (set_carry) {
             ir.store_flag(Flag::C, pair.second);

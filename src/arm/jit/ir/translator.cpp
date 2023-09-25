@@ -34,7 +34,7 @@ void Translator::translate() {
                 break;
             }
 
-            // logger.debug("%s %08x %08x", disassembler.disassemble_arm(instruction).c_str(), instruction, basic_block.current_address);
+            logger.debug("%s %08x %08x", disassembler.disassemble_arm(instruction).c_str(), instruction, basic_block.current_address);
 
             auto handler = decoder.get_arm_handler(instruction);
             auto status = (this->*handler)();
@@ -62,7 +62,7 @@ void Translator::translate() {
                 break;
             }
 
-            // logger.debug("%s %08x %08x", disassembler.disassemble_thumb(instruction).c_str(), instruction, basic_block.current_address);
+            logger.debug("%s %08x %08x", disassembler.disassemble_thumb(instruction).c_str(), instruction, basic_block.current_address);
 
             auto handler = decoder.get_thumb_handler(instruction);
             auto status = (this->*handler)();
