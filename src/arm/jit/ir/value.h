@@ -89,14 +89,14 @@ struct GuestRegister {
     }
 };
 
-struct IRResultAndCarry {
-    IRVariable result;
-    IRVariable carry;
+struct IRPair {
+    IRVariable first;
+    IRVariable second;
 
-    IRResultAndCarry(IRVariable result, IRVariable carry) : result(result), carry(carry) {}
+    IRPair(IRVariable first, IRVariable second) : first(first), second(second) {}
 
     std::string to_string() {
-        return common::format("%s, %s", result.to_string().c_str(), carry.to_string().c_str());
+        return common::format("%s, %s", first.to_string().c_str(), second.to_string().c_str());
     }
 };
 

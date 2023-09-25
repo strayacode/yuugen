@@ -353,8 +353,8 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
         op2 = ir.constant(opcode.rhs.imm);
     } else {
         auto src = ir.load_gpr(opcode.rhs.reg.rm);
-        auto value = ir.barrel_shifter(src, opcode.rhs.reg.shift_type, ir.constant(opcode.rhs.reg.amount));
-        op2 = value.result;
+        auto pair = ir.barrel_shifter(src, opcode.rhs.reg.shift_type, ir.constant(opcode.rhs.reg.amount));
+        op2 = pair.first;
     }
 
     if (!opcode.up) {
@@ -440,10 +440,10 @@ Translator::BlockStatus Translator::arm_data_processing() {
             early_advance_pc = true;
         }
 
-        auto value = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount);
-        op2 = value.result;
+        auto pair = ir.barrel_shifter(op2, opcode.rhs.reg.shift_type, amount);
+        op2 = pair.first;
         if (set_carry) {
-            ir.store_flag(Flag::C, value.carry);
+            ir.store_flag(Flag::C, pair.second);
         }
     }
 

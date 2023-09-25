@@ -14,7 +14,7 @@ public:
     IREmitter(BasicBlock& basic_block);
 
     IRVariable create_variable();
-    IRResultAndCarry create_result_and_carry();
+    IRPair create_result_and_carry();
 
     // state opcodes
     IRVariable load_gpr(GPR gpr);
@@ -37,11 +37,11 @@ public:
     IRVariable multiply(IRValue lhs, IRValue rhs);
     IRVariable logical_shift_left(IRValue src, IRValue amount);
     IRVariable logical_shift_right(IRValue src, IRValue amount);
-    IRResultAndCarry barrel_shifter_logical_shift_left(IRValue src, IRValue amount);
-    IRResultAndCarry barrel_shifter_logical_shift_right(IRValue src, IRValue amount);
-    IRResultAndCarry barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount);
-    IRResultAndCarry barrel_shifter_rotate_right(IRValue src, IRValue amount);
-    IRResultAndCarry barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount);
+    IRPair barrel_shifter_logical_shift_left(IRValue src, IRValue amount);
+    IRPair barrel_shifter_logical_shift_right(IRValue src, IRValue amount);
+    IRPair barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount);
+    IRPair barrel_shifter_rotate_right(IRValue src, IRValue amount);
+    IRPair barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount);
 
     // flag opcodes
     IRVariable load_flag(Flag flag);
@@ -64,7 +64,7 @@ public:
 
     // helpers
     IRConstant constant(u32 value);
-    IRResultAndCarry barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
+    IRPair barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
     void link();
     void advance_pc();
 

@@ -310,12 +310,12 @@ void IRInterpreter::handle_barrel_shifter_logical_shift_left(IROpcodeVariant& op
     auto carry_in = resolve_value(opcode.carry);
     auto [result, carry] = lsl(value, amount);
     
-    assign_variable(opcode.result_and_carry.result, result);
+    assign_variable(opcode.result_and_carry.first, result);
 
     if (carry) {
-        assign_variable(opcode.result_and_carry.carry, *carry);
+        assign_variable(opcode.result_and_carry.second, *carry);
     } else {
-        assign_variable(opcode.result_and_carry.carry, carry_in);
+        assign_variable(opcode.result_and_carry.second, carry_in);
     }
 }
 
@@ -326,12 +326,12 @@ void IRInterpreter::handle_barrel_shifter_logical_shift_right(IROpcodeVariant& o
     auto carry_in = resolve_value(opcode.carry);
     auto [result, carry] = lsr(value, amount, opcode.amount.is_constant());
     
-    assign_variable(opcode.result_and_carry.result, result);
+    assign_variable(opcode.result_and_carry.first, result);
 
     if (carry) {
-        assign_variable(opcode.result_and_carry.carry, *carry);
+        assign_variable(opcode.result_and_carry.second, *carry);
     } else {
-        assign_variable(opcode.result_and_carry.carry, carry_in);
+        assign_variable(opcode.result_and_carry.second, carry_in);
     }
 }
 
@@ -342,12 +342,12 @@ void IRInterpreter::handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant
     auto carry_in = resolve_value(opcode.carry);
     auto [result, carry] = asr(value, amount, opcode.amount.is_constant());
     
-    assign_variable(opcode.result_and_carry.result, result);
+    assign_variable(opcode.result_and_carry.first, result);
 
     if (carry) {
-        assign_variable(opcode.result_and_carry.carry, *carry);
+        assign_variable(opcode.result_and_carry.second, *carry);
     } else {
-        assign_variable(opcode.result_and_carry.carry, carry_in);
+        assign_variable(opcode.result_and_carry.second, carry_in);
     }
 }
 
@@ -362,12 +362,12 @@ void IRInterpreter::handle_barrel_shifter_rotate_right_extended(IROpcodeVariant&
     auto carry_in = resolve_value(opcode.carry);
     auto [result, carry] = rrx(value, carry_in);
     
-    assign_variable(opcode.result_and_carry.result, result);
+    assign_variable(opcode.result_and_carry.first, result);
 
     if (carry) {
-        assign_variable(opcode.result_and_carry.carry, *carry);
+        assign_variable(opcode.result_and_carry.second, *carry);
     } else {
-        assign_variable(opcode.result_and_carry.carry, carry_in);
+        assign_variable(opcode.result_and_carry.second, carry_in);
     }
 }
 
