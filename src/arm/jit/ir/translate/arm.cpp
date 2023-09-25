@@ -207,7 +207,32 @@ Translator::BlockStatus Translator::arm_status_store_register() {
 }
 
 Translator::BlockStatus Translator::arm_status_store_immediate() {
-    logger.todo("Translator: handle arm_status_store_immediate");
+    auto opcode = ARMStatusStore::decode(instruction);
+    auto value = ir.constant(opcode.rhs.rotated);;
+    auto value_masked = ir.bitwise_and(value, ir.constant(opcode.mask));
+    IRVariable psr;
+
+    if (opcode.spsr) {
+        psr = ir.load_spsr();
+    } else {
+        psr = ir.load_cpsr();
+    }
+
+    auto psr_masked = ir.bitwise_and(psr, ir.constant(~opcode.mask));
+    auto psr_new = ir.bitwise_or(psr_masked, value_masked);
+
+    ir.advance_pc();
+
+    if (opcode.spsr) {
+        logger.todo("Translator: modify spsr");
+    } else {
+        ir.store_cpsr(psr_new);
+        
+        if (opcode.mask & 0xff) {
+            return BlockStatus::Break;
+        }
+    }
+
     return BlockStatus::Continue;
 }
 
