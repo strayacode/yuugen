@@ -1,4 +1,7 @@
 #include "arm/jit/ir/optimiser.h"
+// #include "arm/jit/ir/passes/dead_load_store_elimination_pass.h"
+
+namespace arm {
 
 void Optimiser::optimise(BasicBlock& basic_block) {
     for (auto& pass : passes) {
@@ -7,5 +10,7 @@ void Optimiser::optimise(BasicBlock& basic_block) {
 }
 
 void Optimiser::add_pass(std::unique_ptr<Pass> pass) {
-    passes.push_back(pass);
+    logger.todo("add pass");
 }
+
+} // namespace arm

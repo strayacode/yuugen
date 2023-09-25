@@ -8,7 +8,7 @@
 namespace arm {
 
 Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
-    if (ir.basic_block.condition != Condition::NV) {
+    if (static_cast<Condition>(common::get_field<28, 4>(instruction)) != Condition::NV) {
         return arm_branch_link();
     } else {
         return arm_branch_link_exchange();

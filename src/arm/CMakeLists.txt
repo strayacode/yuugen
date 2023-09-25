@@ -15,9 +15,9 @@ add_library(arm
     jit/ir/ir_emitter.h jit/ir/ir_emitter.cpp
     jit/ir/translator.h jit/ir/translator.cpp
     jit/ir/optimiser.h jit/ir/optimiser.cpp
-    
+
     jit/ir/pass.h
-    jit/ir/passes/dead_load_store_gpr_elimination_pass.h
+    jit/ir/passes/dead_load_store_elimination_pass.h
 
     jit/ir/opcodes.h jit/ir/value.h
     jit/ir/translate/arm.cpp jit/ir/translate/thumb.cpp

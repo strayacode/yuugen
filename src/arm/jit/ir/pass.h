@@ -1,6 +1,6 @@
 #pragma once
 
-#include "arm/basic_block.h"
+#include "arm/jit/basic_block.h"
 
 namespace arm {
 

@@ -7,7 +7,7 @@
 
 namespace arm {
 
-class DeadLoadStoreGPREliminationPass : public Pass {
+class DeadLoadStoreEliminationPass : public Pass {
 public:
     void optimise(BasicBlock& basic_block) override {
         // if its the first load for a gpr, or the last store for a gpr
