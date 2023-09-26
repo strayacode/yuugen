@@ -18,7 +18,7 @@ Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
 Translator::BlockStatus Translator::arm_branch_exchange() {
     auto opcode = ARMBranchExchange::decode(instruction);
     auto address = ir.load_gpr(opcode.rm);
-    ir.branch_exchange(address, ExchangeType::Bit0);
+    ir.branch_exchange(address);
     return BlockStatus::Break;
 }
 
@@ -52,7 +52,7 @@ Translator::BlockStatus Translator::arm_branch_link_exchange_register() {
     auto address = ir.load_gpr(opcode.rm);
     
     ir.link();
-    ir.branch_exchange(address, ExchangeType::Bit0);
+    ir.branch_exchange(address);
     return BlockStatus::Break;
 }
 

@@ -97,7 +97,7 @@ Translator::BlockStatus Translator::thumb_push_pop() {
             ir.store_gpr(GPR::SP, ir.add(address, ir.constant(4)));
             
             if (jit.arch == Arch::ARMv5) {
-                ir.branch_exchange(data, ExchangeType::Bit0);
+                ir.branch_exchange(data);
             } else {
                 ir.branch(data);
             }
@@ -269,8 +269,10 @@ Translator::BlockStatus Translator::thumb_branch_link_exchange() {
 }
 
 Translator::BlockStatus Translator::thumb_branch_exchange() {
-    logger.todo("Translator: handle thumb_branch_exchange");
-    return BlockStatus::Continue;
+    auto opcode = ThumbBranchExchange::decode(instruction);
+    auto address = ir.load_gpr(opcode.rm);
+    ir.branch_exchange(address);
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::thumb_load_store_register_offset() {

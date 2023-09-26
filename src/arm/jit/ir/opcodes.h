@@ -63,10 +63,6 @@ enum class AccessType {
     Unaligned,
 };
 
-enum class ExchangeType {
-    Bit0,
-};
-
 enum class CompareType {
     Equal,
     LessThan,

@@ -64,7 +64,7 @@ public:
 
     // branch opcodes
     void branch(IRValue address);
-    void branch_exchange(IRValue address, ExchangeType exchange_type);
+    void branch_exchange(IRValue address);
 
     // misc opcodes
     IRVariable copy(IRValue src);

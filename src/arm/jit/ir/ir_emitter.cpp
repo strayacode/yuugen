@@ -247,11 +247,7 @@ void IREmitter::branch(IRValue address) {
     store_gpr(GPR::PC, adjusted_address);
 }
 
-void IREmitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
-    if (exchange_type != ExchangeType::Bit0) {
-        logger.todo("handle different exchange type");
-    }
-
+void IREmitter::branch_exchange(IRValue address) {
     auto bit0 = bitwise_and(address, constant(1));
     store_flag(Flag::T, bit0);
 
