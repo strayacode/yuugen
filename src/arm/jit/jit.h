@@ -35,6 +35,10 @@ public:
     StatusRegister get_spsr(Mode mode) override;
     void set_spsr(Mode mode, StatusRegister value) override;
 
+    u32* get_pointer_to_gpr(GPR gpr, Mode mode);
+    StatusRegister* get_pointer_to_cpsr();
+    StatusRegister* get_pointer_to_spsr(Mode mode);
+
     u8 read_byte(u32 addr);
     u16 read_half(u32 addr);
     u32 read_word(u32 addr);
@@ -53,9 +57,6 @@ public:
     
 private:
     bool has_spsr(Mode mode);
-    u32* get_pointer_to_gpr(GPR gpr, Mode mode);
-    StatusRegister* get_pointer_to_cpsr();
-    StatusRegister* get_pointer_to_spsr(Mode mode);
     Bank get_bank_from_mode(Mode mode);
 
     void handle_interrupt();

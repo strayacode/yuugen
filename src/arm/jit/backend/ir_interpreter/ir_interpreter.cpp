@@ -193,25 +193,26 @@ void IRInterpreter::dump_variables() {
 
 void IRInterpreter::handle_load_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadGPR>(opcode_variant);
-    auto value = jit.get_gpr(opcode.src.gpr, opcode.src.mode);
+    auto value = *jit.get_pointer_to_gpr(opcode.src.gpr, opcode.src.mode);
     assign_variable(opcode.dst, value);
 }
 
 void IRInterpreter::handle_store_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreGPR>(opcode_variant);
     auto value = resolve_value(opcode.src);
-    jit.set_gpr(opcode.dst.gpr, opcode.dst.mode, value);
+    *jit.get_pointer_to_gpr(opcode.dst.gpr, opcode.dst.mode) = value;
 }
 
 void IRInterpreter::handle_load_cpsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadCPSR>(opcode_variant);
-    assign_variable(opcode.dst, jit.state.cpsr.data);
+    auto value = *jit.get_pointer_to_cpsr();
+    assign_variable(opcode.dst, value.data);
 }
 
 void IRInterpreter::handle_store_cpsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreCPSR>(opcode_variant);
-    auto src = resolve_value(opcode.src);
-    jit.state.cpsr.data = src;
+    auto value = resolve_value(opcode.src);
+    jit.get_pointer_to_cpsr()->data = value;
 }
 
 void IRInterpreter::handle_load_spsr(IROpcodeVariant& opcode_variant) {

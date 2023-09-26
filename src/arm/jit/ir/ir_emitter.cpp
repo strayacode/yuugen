@@ -32,7 +32,13 @@ IRVariable IREmitter::load_gpr(GPR gpr, Mode mode) {
 
 void IREmitter::store_gpr(GPR gpr, IRValue src) {
     GuestRegister dst{gpr, basic_block.location.get_mode()};
-    push<IRStoreGPR>(dst, src);
+
+    if (gpr == GPR::PC) {
+        auto instruction_size = basic_block.location.get_instruction_size();
+        push<IRStoreGPR>(dst, add(src, constant(2 * instruction_size)));
+    } else {
+        push<IRStoreGPR>(dst, src);
+    }
 }
 
 void IREmitter::store_gpr(GPR gpr, Mode mode, IRValue src) {
@@ -243,7 +249,7 @@ IRVariable IREmitter::compare(IRValue lhs, IRValue rhs, CompareType compare_type
 void IREmitter::branch(IRValue address) {
     auto instruction_size = basic_block.location.get_instruction_size();
     auto address_mask = ~(instruction_size - 1);
-    auto adjusted_address = add(bitwise_and(address, constant(address_mask)), constant(2 * instruction_size));
+    auto adjusted_address = bitwise_and(address, constant(address_mask));
     store_gpr(GPR::PC, adjusted_address);
 }
 

@@ -29,11 +29,12 @@ Translator::BlockStatus Translator::arm_count_leading_zeroes() {
 
 Translator::BlockStatus Translator::arm_branch_link() {
     auto opcode = ARMBranchLink::decode(instruction);
+    auto instruction_size = ir.basic_block.location.get_instruction_size();
     if (opcode.link) {
         ir.link();
     }
 
-    ir.branch(ir.constant(ir.basic_block.current_address + opcode.offset));
+    ir.branch(ir.constant(ir.basic_block.current_address + (2 * instruction_size) + opcode.offset));
     return BlockStatus::Break;
 }
 

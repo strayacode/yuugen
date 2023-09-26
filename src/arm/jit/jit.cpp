@@ -120,6 +120,28 @@ void Jit::set_spsr(Mode mode, StatusRegister value) {
     *get_pointer_to_spsr(mode) = value;
 }
 
+u32* Jit::get_pointer_to_gpr(GPR gpr, Mode mode) {
+    // TODO: profile this to see if it should be optimised
+    auto start = mode == Mode::FIQ ? GPR::R8 : GPR::R13;
+    if (has_spsr(mode) && gpr >= start && gpr <= GPR::R14) {
+        return &state.gpr_banked[get_bank_from_mode(mode)][gpr - 8];
+    } else {
+        return &state.gpr[gpr];
+    }
+}
+
+StatusRegister* Jit::get_pointer_to_cpsr() {
+    return &state.cpsr;
+}
+
+StatusRegister* Jit::get_pointer_to_spsr(Mode mode) {
+    if (!has_spsr(mode)) {
+        logger.error("Jit: mode %02x doesn't have a spsr", static_cast<u8>(mode));
+    }
+
+    return &state.spsr_banked[get_bank_from_mode(mode)];
+}
+
 u8 Jit::read_byte(u32 addr) {
     return memory.read<u8, Bus::Data>(addr);
 }
@@ -163,28 +185,6 @@ void Jit::log_state() {
 
 bool Jit::has_spsr(Mode mode) {
     return mode != Mode::USR && mode != Mode::SYS;
-}
-
-u32* Jit::get_pointer_to_gpr(GPR gpr, Mode mode) {
-    // TODO: profile this to see if it should be optimised
-    auto start = mode == Mode::FIQ ? GPR::R8 : GPR::R13;
-    if (has_spsr(mode) && gpr >= start && gpr <= GPR::R14) {
-        return &state.gpr_banked[get_bank_from_mode(mode)][gpr - 8];
-    } else {
-        return &state.gpr[gpr];
-    }
-}
-
-StatusRegister* Jit::get_pointer_to_cpsr() {
-    return &state.cpsr;
-}
-
-StatusRegister* Jit::get_pointer_to_spsr(Mode mode) {
-    if (!has_spsr(mode)) {
-        logger.error("Jit: mode %02x doesn't have a spsr", static_cast<u8>(mode));
-    }
-
-    return &state.spsr_banked[get_bank_from_mode(mode)];
 }
 
 Bank Jit::get_bank_from_mode(Mode mode) {
