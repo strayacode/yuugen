@@ -13,7 +13,8 @@ std::string Disassembler::arm_branch_link_maybe_exchange(u32 instruction) {
 }
 
 std::string Disassembler::arm_branch_exchange(u32 instruction) {
-    return "handle arm_branch_exchange";
+    auto opcode = ARMBranchExchange::decode(instruction);
+    return common::format("bx%s %s", condition_names[opcode.condition], register_names[opcode.rm]);
 }
 
 std::string Disassembler::arm_count_leading_zeroes(u32 instruction) {
@@ -34,7 +35,8 @@ std::string Disassembler::arm_branch_link_exchange(u32 instruction) {
 }
 
 std::string Disassembler::arm_branch_link_exchange_register(u32 instruction) {
-    return "handle arm_branch_link_exchange_register";
+    auto opcode = ARMBranchExchange::decode(instruction);
+    return common::format("blx%s %s", condition_names[opcode.condition], register_names[opcode.rm]);
 }
 
 std::string Disassembler::arm_single_data_swap(u32 instruction) {

@@ -436,7 +436,7 @@ struct IRMemoryRead : IROpcode {
     IRMemoryRead(IRVariable dst, IRValue addr, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryRead), dst(dst), addr(addr), access_size(access_size), access_type(access_type) {}
 
     std::string to_string() {
-        return common::format("%s = read_%s_%s(%s)", access_type_to_string(access_type).c_str(), dst.to_string().c_str(), access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), addr.to_string().c_str());
+        return common::format("%s = read_%s_%s(%s)", dst.to_string().c_str(), access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), addr.to_string().c_str());
     }
 
     IRVariable dst;

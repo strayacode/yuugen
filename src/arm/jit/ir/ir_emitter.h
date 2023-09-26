@@ -75,6 +75,7 @@ public:
     IRPair barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
     void link();
     void advance_pc();
+    void flush_pipeline();
 
     void memory_write(IRValue addr, IRVariable src, AccessSize access_size);
     

@@ -101,7 +101,17 @@ std::string Disassembler::thumb_load_store_multiple(u32 instruction) {
 }
 
 std::string Disassembler::thumb_load_store_immediate(u32 instruction) {
-    return "handle thumb_load_store_immediate";
+    auto opcode = ThumbLoadStoreImmediate::decode(instruction);
+    switch (opcode.opcode) {
+    case ThumbLoadStoreImmediate::Opcode::STR:
+        return common::format("str %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
+    case ThumbLoadStoreImmediate::Opcode::LDR:
+        return common::format("ldr %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
+    case ThumbLoadStoreImmediate::Opcode::STRB:
+        return common::format("strb %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
+    case ThumbLoadStoreImmediate::Opcode::LDRB:
+        return common::format("ldrb %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
+    }
 }
 
 std::string Disassembler::thumb_add_sp_pc(u32 instruction) {

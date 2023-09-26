@@ -177,10 +177,10 @@ void Jit::write_word(u32 addr, u32 data) {
 
 void Jit::log_state() {
     for (int i = 0; i < 16; i++) {
-        logger.log("r%d: %08x ", i, get_gpr(static_cast<GPR>(i)));
+        printf("r%d: %08x ", i, get_gpr(static_cast<GPR>(i)));
     }
 
-    logger.log("cpsr: %08x\n", get_cpsr().data);
+    printf("cpsr: %08x\n", get_cpsr().data);
 }
 
 bool Jit::has_spsr(Mode mode) {

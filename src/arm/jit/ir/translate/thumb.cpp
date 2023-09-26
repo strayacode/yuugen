@@ -54,7 +54,8 @@ Translator::BlockStatus Translator::thumb_alu_immediate() {
 
 Translator::BlockStatus Translator::thumb_branch_link_offset() {
     auto opcode = ThumbBranchLinkOffset::decode(instruction);
-    auto address = ir.add(ir.load_gpr(GPR::LR), ir.constant(opcode.offset));
+    auto instruction_size = ir.basic_block.location.get_instruction_size();
+    auto address = ir.add(ir.load_gpr(GPR::LR), ir.constant(opcode.offset + (2 * instruction_size)));
     ir.link();
     ir.branch(address);
     return BlockStatus::Break;
@@ -171,7 +172,8 @@ Translator::BlockStatus Translator::thumb_software_interrupt() {
 
 Translator::BlockStatus Translator::thumb_branch_conditional() {
     auto opcode = ThumbBranchConditional::decode(instruction);
-    ir.branch(ir.constant(ir.basic_block.current_address + opcode.offset));
+    auto instruction_size = ir.basic_block.location.get_instruction_size();
+    ir.branch(ir.constant(ir.basic_block.current_address + (2 * instruction_size) + opcode.offset));
     return BlockStatus::Break;
 }
 

@@ -34,7 +34,7 @@ Translator::BlockStatus Translator::arm_branch_link() {
         ir.link();
     }
 
-    ir.branch(ir.constant(ir.basic_block.current_address + (2 * instruction_size) + opcode.offset));
+    ir.branch(ir.constant(ir.basic_block.current_address + (4 * instruction_size) + opcode.offset));
     return BlockStatus::Break;
 }
 
@@ -604,6 +604,8 @@ Translator::BlockStatus Translator::arm_data_processing() {
     if (opcode.rd == 15 && !is_comparison_opcode) {
         if (opcode.set_flags) {
             logger.todo("Translator: handle pc write in data processing with set flags (t bit might change)");
+        } else {
+            ir.flush_pipeline();
         }
 
         return BlockStatus::Break;

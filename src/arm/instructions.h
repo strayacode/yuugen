@@ -240,10 +240,12 @@ struct ARMBranchExchange {
     static ARMBranchExchange decode(u32 instruction) {
         ARMBranchExchange opcode;
         opcode.rm = static_cast<GPR>(common::get_field<0, 4>(instruction));
+        opcode.condition = static_cast<Condition>(common::get_field<28, 4>(instruction));
         return opcode;
     }
 
     GPR rm;
+    Condition condition;
 };
 
 struct ARMBranchLink {

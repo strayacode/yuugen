@@ -32,13 +32,7 @@ IRVariable IREmitter::load_gpr(GPR gpr, Mode mode) {
 
 void IREmitter::store_gpr(GPR gpr, IRValue src) {
     GuestRegister dst{gpr, basic_block.location.get_mode()};
-
-    if (gpr == GPR::PC) {
-        auto instruction_size = basic_block.location.get_instruction_size();
-        push<IRStoreGPR>(dst, add(src, constant(2 * instruction_size)));
-    } else {
-        push<IRStoreGPR>(dst, src);
-    }
+    push<IRStoreGPR>(dst, src);
 }
 
 void IREmitter::store_gpr(GPR gpr, Mode mode, IRValue src) {
@@ -262,7 +256,8 @@ void IREmitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
     store_flag(Flag::T, bit0);
 
     auto address_mask = bitwise_not(subtract(constant(3), multiply(constant(2), bit0)));
-    auto adjusted_address = bitwise_and(address, address_mask);
+    auto address_offset = subtract(constant(8), multiply(constant(4), bit0));
+    auto adjusted_address = bitwise_and(add(address, address_offset), address_mask);
     store_gpr(GPR::PC, adjusted_address);
 }
 
@@ -311,7 +306,13 @@ void IREmitter::link() {
 void IREmitter::advance_pc() {
     auto address = basic_block.current_address;
     auto instruction_size = basic_block.location.get_instruction_size();
-    store_gpr(GPR::PC, constant(address + instruction_size));
+    store_gpr(GPR::PC, constant(address + (3 * instruction_size)));
+}
+
+void IREmitter::flush_pipeline() {
+    auto pc = load_gpr(GPR::PC);
+    auto instruction_size = basic_block.location.get_instruction_size();
+    store_gpr(GPR::PC, add(pc, constant(2 * instruction_size)));
 }
 
 void IREmitter::memory_write(IRValue addr, IRVariable src, AccessSize access_size) {
