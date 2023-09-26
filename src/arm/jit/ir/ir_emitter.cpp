@@ -294,7 +294,12 @@ IRPair IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValue am
 void IREmitter::link() {
     auto address = basic_block.current_address;
     auto instruction_size = basic_block.location.get_instruction_size();
-    store_gpr(GPR::LR, constant(address + instruction_size));
+
+    if (basic_block.location.is_arm()) {
+        store_gpr(GPR::LR, constant(address + instruction_size));
+    } else {
+        store_gpr(GPR::LR, constant((address + instruction_size) | 0x1));
+    }
 }
 
 void IREmitter::advance_pc() {
