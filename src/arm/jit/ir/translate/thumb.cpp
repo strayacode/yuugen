@@ -143,7 +143,41 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
 }
 
 Translator::BlockStatus Translator::thumb_special_data_processing() {
-    logger.todo("Translator: handle thumb_special_data_processing");
+    auto opcode = ThumbSpecialDataProcessing::decode(instruction);
+    if (opcode.rd == 15) {
+        logger.todo("handle pc in thumb_alu_immediate");
+    }
+
+    IRVariable result;
+    IRValue op1;
+    auto op2 = ir.load_gpr(opcode.rs);
+    bool uses_op1 = opcode.opcode != ThumbSpecialDataProcessing::Opcode::MOV;
+
+    if (uses_op1) {
+        op1 = ir.load_gpr(opcode.rd);
+    }
+
+    switch (opcode.opcode) {
+    case ThumbSpecialDataProcessing::Opcode::ADD:
+        result = ir.add(op1, op2);
+        break;
+    case ThumbSpecialDataProcessing::Opcode::CMP: {
+        auto result = ir.subtract(op1, op2);
+        ir.store_nz(result);
+        ir.store_sub_cv(op1, op2, result);
+        break;
+    }
+    case ThumbSpecialDataProcessing::Opcode::MOV:
+        result = ir.copy(op2);
+        break;
+    }
+
+    if (result.is_assigned()) {
+        ir.store_gpr(opcode.rd, result);
+    }
+
+    ir.advance_pc();
+
     return BlockStatus::Continue;
 }
 
@@ -168,7 +202,15 @@ Translator::BlockStatus Translator::thumb_load_store_signed() {
 }
 
 Translator::BlockStatus Translator::thumb_load_pc() {
-    logger.todo("Translator: handle thumb_load_pc");
+    auto opcode = ThumbLoadPC::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("pc write in thumb_load_pc");
+    }
+
+    auto address = ir.add(ir.bitwise_and(ir.load_gpr(GPR::PC), ir.constant(~0x2)), ir.constant(opcode.imm));
+    ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Word, AccessType::Aligned));
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
@@ -226,6 +268,7 @@ Translator::BlockStatus Translator::thumb_software_interrupt() {
 Translator::BlockStatus Translator::thumb_branch_conditional() {
     auto opcode = ThumbBranchConditional::decode(instruction);
     auto instruction_size = ir.basic_block.location.get_instruction_size();
+    logger.debug("current address %08x offset %08x", ir.basic_block.current_address, opcode.offset);
     ir.branch(ir.constant(ir.basic_block.current_address + (2 * instruction_size) + opcode.offset));
     return BlockStatus::Break;
 }

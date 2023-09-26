@@ -18,7 +18,6 @@ void Translator::translate() {
     auto location = basic_block.location;
 
     logger.debug("Translator: translate basic block instruction size %d pc %08x", location.get_instruction_size(), location.get_address());
-    jit.log_state();
     
     for (int i = 0; i < jit.config.block_size; i++) {
         if (location.is_arm()) {

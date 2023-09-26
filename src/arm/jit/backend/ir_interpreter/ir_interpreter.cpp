@@ -34,6 +34,9 @@ void IRInterpreter::compile(BasicBlock& basic_block)  {
 
 int IRInterpreter::run(Location location)  {
     auto& compiled_block = code_cache.get(location);
+    // if (location.get_address() == 0x02007f30) {
+    //     logger.debug("condition: %d result %d", static_cast<u8>(compiled_block.condition), evaluate_condition(compiled_block.condition));
+    // }
     if (evaluate_condition(compiled_block.condition)) {
         for (auto& compiled_instruction : compiled_block.instructions) {
             (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);

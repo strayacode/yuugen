@@ -36,7 +36,12 @@ std::string Disassembler::thumb_branch(u32 instruction) {
 }
 
 std::string Disassembler::thumb_push_pop(u32 instruction) {
-    return "handle thumb_push_pop";
+    auto opcode = ThumbPushPop::decode(instruction);
+    if (opcode.pop) {
+        return "handle pop";
+    } else {
+        return "handle push";
+    }
 }
 
 std::string Disassembler::thumb_data_processing_register(u32 instruction) {
