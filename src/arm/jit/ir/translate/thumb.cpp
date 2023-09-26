@@ -138,7 +138,89 @@ Translator::BlockStatus Translator::thumb_push_pop() {
 }
 
 Translator::BlockStatus Translator::thumb_data_processing_register() {
-    logger.todo("Translator: handle thumb_data_processing_register");
+    auto opcode = ThumbDataProcessingRegister::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("pc in thumb_data_processing_register");
+    }
+
+    IRVariable result;
+    IRValue op1;
+    auto op2 = ir.load_gpr(opcode.rs);
+
+    bool uses_op1 = opcode.opcode != ThumbDataProcessingRegister::Opcode::NEG && opcode.opcode != ThumbDataProcessingRegister::Opcode::MVN;
+    if (uses_op1) {
+        op1 = ir.load_gpr(opcode.rd);
+    }
+
+    switch (opcode.opcode) {
+    // case ThumbDataProcessingRegister::Opcode::AND:
+    //     state.gpr[opcode.rd] = alu_and(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::EOR:
+    //     state.gpr[opcode.rd] = alu_eor(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::LSL:
+    //     state.gpr[opcode.rd] = alu_lsl(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry);
+    //     state.cpsr.c = carry;
+    //     set_nz(state.gpr[opcode.rd]);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::LSR:
+    //     state.gpr[opcode.rd] = alu_lsr(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
+    //     state.cpsr.c = carry;
+    //     set_nz(state.gpr[opcode.rd]);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::ASR:
+    //     state.gpr[opcode.rd] = alu_asr(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
+    //     state.cpsr.c = carry;
+    //     set_nz(state.gpr[opcode.rd]);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::ADC:
+    //     state.gpr[opcode.rd] = alu_adc(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::SBC:
+    //     state.gpr[opcode.rd] = alu_sbc(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::ROR:
+    //     state.gpr[opcode.rd] = alu_ror(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
+    //     state.cpsr.c = carry;
+    //     set_nz(state.gpr[opcode.rd]);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::TST:
+    //     alu_tst(state.gpr[opcode.rd], state.gpr[opcode.rs]);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::NEG:
+    //     state.gpr[opcode.rd] = alu_sub(0, state.gpr[opcode.rs], true);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::CMP:
+    //     alu_cmp(state.gpr[opcode.rd], state.gpr[opcode.rs]);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::CMN:
+    //     alu_cmn(state.gpr[opcode.rd], state.gpr[opcode.rs]);
+    //     break;
+    case ThumbDataProcessingRegister::Opcode::ORR:
+        result = ir.bitwise_or(op1, op2);
+        ir.store_nz(result);
+        break;
+    // case ThumbDataProcessingRegister::Opcode::MUL:
+    //     state.gpr[opcode.rd] *= state.gpr[opcode.rs];
+    //     set_nz(state.gpr[opcode.rd]);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::BIC:
+    //     state.gpr[opcode.rd] = alu_bic(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
+    //     break;
+    // case ThumbDataProcessingRegister::Opcode::MVN:
+    //     state.gpr[opcode.rd] = alu_mvn(state.gpr[opcode.rs], true);
+    //     break;
+    default:
+        logger.todo("thumb_data_processing_register %d", static_cast<int>(opcode.opcode));
+    }
+
+    if (result.is_assigned()) {
+        ir.store_gpr(opcode.rd, result);
+    }
+
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
@@ -238,7 +320,34 @@ Translator::BlockStatus Translator::thumb_load_store_halfword() {
 }
 
 Translator::BlockStatus Translator::thumb_add_subtract() {
-    logger.todo("Translator: handle thumb_add_subtract");
+    auto opcode = ThumbAddSubtract::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("pc in thumb_add_subtract");
+    }
+
+    auto op1 = ir.load_gpr(opcode.rs);
+    IRValue op2;
+
+    if (opcode.imm) {
+        op2 = ir.constant(opcode.rn);
+    } else {
+        op2 = ir.load_gpr(opcode.rn);
+    }
+
+    if (opcode.sub) {
+        auto result = ir.subtract(op1, op2);
+        ir.store_nz(result);
+        ir.store_sub_cv(op1, op2, result);
+        ir.store_gpr(opcode.rd, result);
+    } else {
+        auto result = ir.add(op1, op2);
+        ir.store_nz(result);
+        ir.store_add_cv(op1, op2, result);
+        ir.store_gpr(opcode.rd, result);
+    }
+
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
@@ -279,7 +388,37 @@ Translator::BlockStatus Translator::thumb_load_store_multiple() {
 }
 
 Translator::BlockStatus Translator::thumb_load_store_immediate() {
-    logger.todo("Translator: handle thumb_load_store_immediate");
+    auto opcode = ThumbLoadStoreImmediate::decode(instruction);
+    auto address = ir.load_gpr(opcode.rn);
+
+    switch (opcode.opcode) {
+    case ThumbLoadStoreImmediate::Opcode::STR:
+        address = ir.add(address, ir.constant(opcode.imm << 2));
+        ir.memory_write(address, ir.load_gpr(opcode.rd), AccessSize::Word);
+        break;
+    case ThumbLoadStoreImmediate::Opcode::LDR:
+        if (opcode.rd == 15) {
+            logger.todo("handle pc in thumb_load_store_immediate");
+        }
+
+        address = ir.add(address, ir.constant(opcode.imm << 2));
+        ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Word, AccessType::Unaligned));
+        break;
+    case ThumbLoadStoreImmediate::Opcode::STRB:
+        address = ir.add(address, ir.constant(opcode.imm));
+        ir.memory_write(address, ir.load_gpr(opcode.rd), AccessSize::Byte);
+        break;
+    case ThumbLoadStoreImmediate::Opcode::LDRB:
+        if (opcode.rd == 15) {
+            logger.todo("handle pc in thumb_load_store_immediate");
+        }
+
+        address = ir.add(address, ir.constant(opcode.imm));
+        ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Byte, AccessType::Aligned));
+        break;
+    }
+    
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
