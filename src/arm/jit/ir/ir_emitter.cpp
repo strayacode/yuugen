@@ -23,8 +23,20 @@ IRVariable IREmitter::load_gpr(GPR gpr) {
     return dst;
 }
 
+IRVariable IREmitter::load_gpr(GPR gpr, Mode mode) {
+    auto dst = create_variable();
+    GuestRegister src{gpr, mode};
+    push<IRLoadGPR>(dst, src);
+    return dst;
+}
+
 void IREmitter::store_gpr(GPR gpr, IRValue src) {
     GuestRegister dst{gpr, basic_block.location.get_mode()};
+    push<IRStoreGPR>(dst, src);
+}
+
+void IREmitter::store_gpr(GPR gpr, Mode mode, IRValue src) {
+    GuestRegister dst{gpr, mode};
     push<IRStoreGPR>(dst, src);
 }
 

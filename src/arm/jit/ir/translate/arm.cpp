@@ -275,7 +275,6 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
     auto address = ir.load_gpr(opcode.rn);
     auto first = 0;
     u32 bytes = 0;
-    auto old_mode = ir.basic_block.location.get_mode();
     IRValue new_base;
 
     if (opcode.rlist != 0) {
@@ -313,9 +312,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
     }
 
     bool user_switch_mode = opcode.psr && (!opcode.load || !opcode.r15_in_rlist);
-    if (user_switch_mode) {
-        logger.todo("Translator: handle user switch mode");
-    }
+    auto mode = user_switch_mode ? Mode::USR : ir.basic_block.location.get_mode();
 
     for (int i = first; i < 16; i++) {
         if (!(opcode.rlist & (1 << i))) {
@@ -328,9 +325,9 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
 
         if (opcode.load) {
             auto data = ir.memory_read(address, AccessSize::Word, AccessType::Aligned);
-            ir.store_gpr(static_cast<GPR>(i), data);
+            ir.store_gpr(static_cast<GPR>(i), mode, data);
         } else {
-            auto data = ir.load_gpr(static_cast<GPR>(i));
+            auto data = ir.load_gpr(static_cast<GPR>(i), mode);
             ir.memory_write(address, data, AccessSize::Word);
         }
 
@@ -358,8 +355,8 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
         }
     } 
 
-    if (user_switch_mode) {
-        logger.todo("Translator: handle user switch mode");
+    if (user_switch_mode && opcode.r15_in_rlist) {
+        logger.todo("Translator: handle user switch mode r15");
     }
 
     if (opcode.load && opcode.r15_in_rlist) {

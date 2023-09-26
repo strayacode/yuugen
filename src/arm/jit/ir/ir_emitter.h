@@ -18,7 +18,9 @@ public:
 
     // state opcodes
     IRVariable load_gpr(GPR gpr);
+    IRVariable load_gpr(GPR gpr, Mode mode);
     void store_gpr(GPR gpr, IRValue src);
+    void store_gpr(GPR gpr, Mode mode, IRValue src);
     IRVariable load_cpsr();
     void store_cpsr(IRVariable src);
     IRVariable load_spsr();
