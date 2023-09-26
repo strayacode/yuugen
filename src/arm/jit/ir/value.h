@@ -10,6 +10,7 @@ namespace arm {
 enum class IRValueType {
     Variable,
     Constant,
+    None,
 };
 
 struct IRVariable {
@@ -38,7 +39,7 @@ struct IRConstant {
 };
 
 struct IRValue {
-    IRValue() {}
+    IRValue() : type(IRValueType::None) {}
     IRValue(IRVariable variable) : type(IRValueType::Variable), variable(variable) {}
     IRValue(IRConstant constant) : type(IRValueType::Constant), constant(constant) {}
 
@@ -66,6 +67,10 @@ struct IRValue {
         }
     }
 
+    bool is_assigned() {
+        return type != IRValueType::None;
+    }
+
     IRValueType type;
 
     union {
@@ -86,6 +91,10 @@ struct GuestRegister {
         } else {
             return common::format("r%d", gpr);
         }
+    }
+
+    int get_id() {
+        return (static_cast<int>(mode) << 4) | static_cast<int>(gpr);
     }
 };
 

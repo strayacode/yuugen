@@ -76,8 +76,11 @@ Translator::BlockStatus Translator::thumb_branch_link_exchange_offset() {
 }
 
 Translator::BlockStatus Translator::thumb_branch() {
-    logger.todo("Translator: handle thumb_branch");
-    return BlockStatus::Continue;
+    auto opcode = ThumbBranch::decode(instruction);
+    auto instruction_size = ir.basic_block.location.get_instruction_size();
+    auto address = ir.add(ir.load_gpr(GPR::LR), ir.constant(opcode.offset + (2 * instruction_size)));
+    ir.branch(address);
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::thumb_push_pop() {
@@ -154,9 +157,10 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
     }
 
     switch (opcode.opcode) {
-    // case ThumbDataProcessingRegister::Opcode::AND:
-    //     state.gpr[opcode.rd] = alu_and(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
-    //     break;
+    case ThumbDataProcessingRegister::Opcode::AND:
+        result = ir.bitwise_and(op1, op2);
+        ir.store_nz(result);
+        break;
     // case ThumbDataProcessingRegister::Opcode::EOR:
     //     state.gpr[opcode.rd] = alu_eor(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
     //     break;

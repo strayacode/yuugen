@@ -6,8 +6,7 @@ namespace arm {
 
 struct Pass {
     virtual ~Pass() = default;
-
-    virtual void optimise(BasicBlock& basic_block);
+    virtual void optimise(BasicBlock& basic_block) = 0;
 };
 
 } // namespace arm

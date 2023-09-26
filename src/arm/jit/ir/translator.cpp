@@ -80,8 +80,6 @@ void Translator::translate() {
 
         basic_block.advance();
     }
-
-    basic_block.dump();
 }
 
 Translator::BlockStatus Translator::illegal_instruction() {

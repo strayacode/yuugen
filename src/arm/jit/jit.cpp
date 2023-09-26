@@ -2,6 +2,7 @@
 #include "arm/jit/jit.h"
 #include "arm/jit/location.h"
 #include "arm/jit/ir/translator.h"
+#include "arm/jit/ir/passes/dead_load_store_elimination_pass.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 #include "arm/disassembler/disassembler.h"
 
@@ -10,7 +11,7 @@ namespace arm {
 Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
-    config.block_size = 1;
+    config.block_size = 32;
 
     switch (backend_type) {
     case BackendType::IRInterpreter:
@@ -19,6 +20,8 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
     default:
         logger.todo("Jit: unsupported jit backend");
     }
+
+    optimiser.add_pass(std::make_unique<DeadLoadStoreEliminationPass>());
 }
 
 void Jit::reset() {
@@ -55,6 +58,7 @@ void Jit::run(int cycles) {
             Translator translator{*this, ir};
             translator.translate();
             optimiser.optimise(basic_block);
+            basic_block.dump();
             backend->compile(basic_block);
         }
 

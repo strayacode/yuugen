@@ -17,7 +17,7 @@ add_library(arm
     jit/ir/optimiser.h jit/ir/optimiser.cpp
 
     jit/ir/pass.h
-    jit/ir/passes/dead_load_store_elimination_pass.h
+    jit/ir/passes/dead_load_store_elimination_pass.h jit/ir/passes/dead_load_store_elimination_pass.cpp
 
     jit/ir/opcodes.h jit/ir/value.h
     jit/ir/translate/arm.cpp jit/ir/translate/thumb.cpp
