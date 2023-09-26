@@ -207,6 +207,7 @@ Translator::BlockStatus Translator::arm_status_load() {
         ir.store_gpr(opcode.rd, ir.load_cpsr());
     }
 
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 

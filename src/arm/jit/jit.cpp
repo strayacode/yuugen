@@ -153,6 +153,14 @@ void Jit::write_word(u32 addr, u32 data) {
     memory.write<u32, Bus::Data>(addr, data);
 }
 
+void Jit::log_state() {
+    for (int i = 0; i < 16; i++) {
+        logger.log("r%d: %08x ", i, get_gpr(static_cast<GPR>(i)));
+    }
+
+    logger.log("cpsr: %08x\n", get_cpsr().data);
+}
+
 bool Jit::has_spsr(Mode mode) {
     return mode != Mode::USR && mode != Mode::SYS;
 }
@@ -199,14 +207,6 @@ Bank Jit::get_bank_from_mode(Mode mode) {
 
 void Jit::handle_interrupt() {
     logger.todo("Jit: handle interrupts");
-}
-
-void Jit::log_state() {
-    for (int i = 0; i < 16; i++) {
-        logger.log("r%d: %08x ", i, get_gpr(static_cast<GPR>(i)));
-    }
-
-    logger.log("cpsr: %08x\n", get_cpsr().data);
 }
 
 } // namespace arm

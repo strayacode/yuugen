@@ -44,6 +44,8 @@ public:
     void write_half(u32 addr, u16 data);
     void write_word(u32 addr, u32 data);
 
+    void log_state();
+
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;
@@ -57,7 +59,6 @@ private:
     Bank get_bank_from_mode(Mode mode);
 
     void handle_interrupt();
-    void log_state();
 
     bool irq;
     bool halted;
