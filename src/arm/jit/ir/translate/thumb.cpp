@@ -281,7 +281,29 @@ Translator::BlockStatus Translator::thumb_load_store_register_offset() {
 }
 
 Translator::BlockStatus Translator::thumb_load_store_signed() {
-    logger.todo("Translator: handle thumb_load_store_signed");
+    auto opcode = ThumbLoadStoreSigned::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.debug("pc in thumb_load_store_signed");
+    }
+
+    auto address = ir.add(ir.load_gpr(opcode.rn), ir.load_gpr(opcode.rm));
+    switch (opcode.opcode) {
+    case ThumbLoadStoreSigned::Opcode::STRH:
+        ir.memory_write(address, ir.load_gpr(opcode.rd), AccessSize::Half);
+        break;
+    case ThumbLoadStoreSigned::Opcode::LDRSB:
+        ir.store_gpr(opcode.rd, ir.sign_extend_byte(ir.memory_read(address, AccessSize::Byte, AccessType::Aligned)));
+        break;
+    case ThumbLoadStoreSigned::Opcode::LDRH:
+        ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Half, AccessType::Aligned));
+        break;
+    case ThumbLoadStoreSigned::Opcode::LDRSH:
+        ir.store_gpr(opcode.rd, ir.sign_extend_half(ir.memory_read(address, AccessSize::Half, AccessType::Aligned)));
+        break;
+    }
+
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 

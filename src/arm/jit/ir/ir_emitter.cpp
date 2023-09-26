@@ -172,6 +172,11 @@ IRVariable IREmitter::sign_extend_byte(IRValue src) {
     return arithmetic_shift_right(shifted_left, constant(24));
 }
 
+IRVariable IREmitter::sign_extend_half(IRValue src) {
+    auto shifted_left = logical_shift_left(src, constant(16));
+    return arithmetic_shift_right(shifted_left, constant(16));
+}
+
 IRVariable IREmitter::load_flag(Flag flag) {
     auto cpsr = load_cpsr();
     return bitwise_and(logical_shift_right(cpsr, constant(flag)), constant(1));
