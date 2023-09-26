@@ -3,6 +3,7 @@
 #include "arm/instructions.h"
 #include "arm/jit/ir/translator.h"
 #include "arm/jit/ir/value.h"
+#include "arm/jit/jit.h"
 
 namespace arm {
 
@@ -80,8 +81,60 @@ Translator::BlockStatus Translator::thumb_branch() {
 }
 
 Translator::BlockStatus Translator::thumb_push_pop() {
-    logger.todo("Translator: handle thumb_push_pop");
-    return BlockStatus::Continue;
+    auto opcode = ThumbPushPop::decode(instruction);
+    auto address = ir.load_gpr(GPR::SP);
+    
+    if (opcode.pop) {
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                ir.store_gpr(static_cast<GPR>(i), ir.memory_read(address, AccessSize::Word, AccessType::Aligned));
+                address = ir.add(address, ir.constant(4));
+            }
+        }
+
+        if (opcode.pclr) {
+            auto data = ir.memory_read(address, AccessSize::Word, AccessType::Aligned);
+            ir.store_gpr(GPR::SP, ir.add(address, ir.constant(4)));
+            
+            if (jit.arch == Arch::ARMv5) {
+                ir.branch_exchange(data, ExchangeType::Bit0);
+            } else {
+                ir.branch(data);
+            }
+            
+            return BlockStatus::Break;
+        } else {
+            ir.advance_pc();
+            ir.store_gpr(GPR::SP, address);
+            return BlockStatus::Continue;
+        }
+    } else {
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                address = ir.subtract(address, ir.constant(4));
+            }
+        }
+
+        if (opcode.pclr) {
+            address = ir.subtract(address, ir.constant(4));
+        }
+
+        ir.store_gpr(GPR::SP, address);
+
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                ir.memory_write(address, ir.load_gpr(static_cast<GPR>(i)), AccessSize::Word);
+                address = ir.add(address, ir.constant(4));
+            }
+        }
+
+        if (opcode.pclr) {
+            ir.memory_write(address, ir.load_gpr(GPR::LR), AccessSize::Word);
+        }
+
+        ir.advance_pc();
+        return BlockStatus::Continue;
+    }
 }
 
 Translator::BlockStatus Translator::thumb_data_processing_register() {
