@@ -111,11 +111,11 @@ std::string Disassembler::thumb_load_store_immediate(u32 instruction) {
     case ThumbLoadStoreImmediate::Opcode::STR:
         return common::format("str %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
     case ThumbLoadStoreImmediate::Opcode::LDR:
-        return common::format("ldr %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
+        return common::format("ldr %s, [%s]", register_names[opcode.rd], register_names[opcode.rn]);
     case ThumbLoadStoreImmediate::Opcode::STRB:
         return common::format("strb %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
     case ThumbLoadStoreImmediate::Opcode::LDRB:
-        return common::format("ldrb %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
+        return common::format("ldrb %s, [%s]", register_names[opcode.rd], register_names[opcode.rn]);
     }
 }
 

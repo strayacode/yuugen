@@ -78,7 +78,7 @@ Translator::BlockStatus Translator::thumb_branch_link_exchange_offset() {
 Translator::BlockStatus Translator::thumb_branch() {
     auto opcode = ThumbBranch::decode(instruction);
     auto instruction_size = ir.basic_block.location.get_instruction_size();
-    auto address = ir.add(ir.load_gpr(GPR::LR), ir.constant(opcode.offset + (2 * instruction_size)));
+    auto address = ir.add(ir.load_gpr(GPR::PC), ir.constant(opcode.offset + (2 * instruction_size)));
     ir.branch(address);
     return BlockStatus::Break;
 }
