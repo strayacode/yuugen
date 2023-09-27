@@ -308,7 +308,32 @@ Translator::BlockStatus Translator::thumb_branch_exchange() {
 }
 
 Translator::BlockStatus Translator::thumb_load_store_register_offset() {
-    logger.todo("Translator: handle thumb_load_store_register_offset");
+    auto opcode = ThumbLoadStoreRegisterOffset::decode(instruction);
+    auto address = ir.add(ir.load_gpr(opcode.rn), ir.load_gpr(opcode.rm));
+    switch (opcode.opcode) {
+    case ThumbLoadStoreRegisterOffset::Opcode::STR:
+        ir.memory_write(address, ir.load_gpr(opcode.rd), AccessSize::Word);
+        break;
+    case ThumbLoadStoreRegisterOffset::Opcode::STRB:
+        ir.memory_write(address, ir.load_gpr(opcode.rd), AccessSize::Byte);
+        break;
+    case ThumbLoadStoreRegisterOffset::Opcode::LDR:
+        if (opcode.rd == 15) {
+            logger.todo("handle pc in thumb_load_store_register_offset");
+        }
+
+        ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Word, AccessType::Unaligned));
+        break;
+    case ThumbLoadStoreRegisterOffset::Opcode::LDRB:
+        if (opcode.rd == 15) {
+            logger.todo("handle pc in thumb_load_store_register_offset");
+        }
+
+        ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Byte, AccessType::Aligned));
+        break;
+    }
+    
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
