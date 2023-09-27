@@ -98,11 +98,12 @@ struct GuestRegister {
     }
 };
 
+template <typename T>
 struct IRPair {
-    IRVariable first;
-    IRVariable second;
+    T first;
+    T second;
 
-    IRPair(IRVariable first, IRVariable second) : first(first), second(second) {}
+    IRPair(T first, T second) : first(first), second(second) {}
 
     std::string to_string() {
         return common::format("%s, %s", first.to_string().c_str(), second.to_string().c_str());

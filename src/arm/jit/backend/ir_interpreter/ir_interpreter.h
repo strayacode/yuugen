@@ -61,8 +61,7 @@ private:
         IRCopy,
 
         IRMemoryWrite,
-        IRMemoryRead,
-        IRAddCarry
+        IRMemoryRead
     >;
 
     using Function = void (IRInterpreter::*)(IROpcodeVariant& opcode);
@@ -86,7 +85,7 @@ private:
     u32& get_or_allocate(IRVariable& variable);
     void assign_variable(IRVariable& variable, u32 value);
     u32 resolve_value(IRValue& value);
-    u64 resolve_pair(IRPair& pair);
+    u64 resolve_pair(IRPair<IRValue>& pair);
     void dump_variables();
 
     // state opcodes
@@ -129,8 +128,7 @@ private:
     
     void handle_memory_write(IROpcodeVariant& opcode_variant);
     void handle_memory_read(IROpcodeVariant& opcode_variant);
-    void handle_add_carry(IROpcodeVariant& opcode_variant);
-
+    
     CodeCache<CompiledBlock> code_cache;
     std::vector<u32> variables;
     Jit& jit;

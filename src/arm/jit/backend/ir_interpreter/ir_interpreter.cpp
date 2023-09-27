@@ -153,8 +153,6 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_memory_write, *opcode->as<IRMemoryWrite>()};
     case IROpcodeType::MemoryRead:
         return {&IRInterpreter::handle_memory_read, *opcode->as<IRMemoryRead>()};
-    case IROpcodeType::AddCarry:
-        return {&IRInterpreter::handle_add_carry, *opcode->as<IRAddCarry>()};
     }
 }
 
@@ -184,8 +182,8 @@ u32 IRInterpreter::resolve_value(IRValue& value) {
     }
 }
 
-u64 IRInterpreter::resolve_pair(IRPair& pair) {
-    return (static_cast<u64>(get(pair.first)) << 32) | static_cast<u64>(get(pair.second));
+u64 IRInterpreter::resolve_pair(IRPair<IRValue>& pair) {
+    return (static_cast<u64>(resolve_value(pair.first)) << 32) | static_cast<u64>(resolve_value(pair.second));
 }
 
 void IRInterpreter::dump_variables() {
@@ -464,11 +462,6 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
 
         break;
     }
-}
-
-void IRInterpreter::handle_add_carry(IROpcodeVariant& opcode_variant) {
-    auto& opcode = std::get<IRAddCarry>(opcode_variant);
-    logger.todo("handle_add_carry");
 }
 
 } // namespace arm

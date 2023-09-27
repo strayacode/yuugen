@@ -14,7 +14,7 @@ public:
     IREmitter(BasicBlock& basic_block);
 
     IRVariable create_variable();
-    IRPair create_pair();
+    IRPair<IRVariable> create_pair();
 
     // state opcodes
     IRVariable load_gpr(GPR gpr);
@@ -35,18 +35,18 @@ public:
 
     // arithmetic opcodes
     IRVariable add(IRValue lhs, IRValue rhs);
-    IRPair add_long(IRPair lhs, IRPair rhs);
+    IRPair<IRVariable> add_long(IRPair<IRValue> lhs, IRPair<IRValue> rhs);
     IRVariable subtract(IRValue lhs, IRValue rhs);
     IRVariable multiply(IRValue lhs, IRValue rhs);
-    IRPair multiply_long(IRValue lhs, IRValue rhs, bool is_signed);
+    IRPair<IRVariable> multiply_long(IRValue lhs, IRValue rhs, bool is_signed);
     IRVariable logical_shift_left(IRValue src, IRValue amount);
     IRVariable logical_shift_right(IRValue src, IRValue amount);
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount);
-    IRPair barrel_shifter_logical_shift_left(IRValue src, IRValue amount);
-    IRPair barrel_shifter_logical_shift_right(IRValue src, IRValue amount);
-    IRPair barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount);
-    IRPair barrel_shifter_rotate_right(IRValue src, IRValue amount);
-    IRPair barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount);
+    IRPair<IRVariable> barrel_shifter_logical_shift_left(IRValue src, IRValue amount);
+    IRPair<IRVariable> barrel_shifter_logical_shift_right(IRValue src, IRValue amount);
+    IRPair<IRVariable> barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount);
+    IRPair<IRVariable> barrel_shifter_rotate_right(IRValue src, IRValue amount);
+    IRPair<IRVariable> barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount);
     IRVariable sign_extend_byte(IRValue src);
     IRVariable sign_extend_half(IRValue src);
 
@@ -54,7 +54,7 @@ public:
     IRVariable load_flag(Flag flag);
     void store_flag(Flag flag, IRValue value);
     void store_nz(IRValue value);
-    void store_nz_long(IRPair value);
+    void store_nz_long(IRPair<IRVariable> value);
     void store_add_cv(IRValue lhs, IRValue rhs, IRValue result);
     void store_sub_cv(IRValue lhs, IRValue rhs, IRValue result);
     void store_adc_cv(IRValue lhs, IRValue rhs, IRValue result);
@@ -72,8 +72,8 @@ public:
 
     // helpers
     IRConstant constant(u32 value);
-    IRPair pair(IRVariable first, IRVariable second);
-    IRPair barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
+    IRPair<IRValue> pair(IRValue first, IRValue second);
+    IRPair<IRVariable> barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount);
     void link();
     void advance_pc();
     void flush_pipeline();
@@ -81,8 +81,7 @@ public:
     void memory_write(IRValue addr, IRVariable src, AccessSize access_size);
     
     IRVariable memory_read(IRValue addr, AccessSize access_size, AccessType access_type);
-    IRVariable add_carry(IRValue lhs, IRValue rhs, bool set_flags);
-
+    
     BasicBlock& basic_block;
 
 private:

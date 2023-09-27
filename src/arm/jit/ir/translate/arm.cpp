@@ -114,12 +114,12 @@ Translator::BlockStatus Translator::arm_multiply_long() {
     auto opcode = ARMMultiplyLong::decode(instruction);
     auto op1 = ir.load_gpr(opcode.rm);
     auto op2 = ir.load_gpr(opcode.rs);
-    IRPair result = ir.multiply_long(op1, op2, opcode.sign);
+    auto result = ir.multiply_long(op1, op2, opcode.sign);
 
     if (opcode.accumulate) {
         auto op3 = ir.load_gpr(opcode.rdhi);
         auto op4 = ir.load_gpr(opcode.rdlo);
-        result = ir.add_long(result, ir.pair(op3, op4));
+        result = ir.add_long(ir.pair(result.first, result.second), ir.pair(op3, op4));
     }
 
     if (opcode.set_flags) {

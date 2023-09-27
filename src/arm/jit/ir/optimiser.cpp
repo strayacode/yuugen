@@ -3,12 +3,15 @@
 namespace arm {
 
 void Optimiser::optimise(BasicBlock& basic_block) {
+    logger.debug("before optimisations...");
+    basic_block.dump();
+
     for (auto& pass : passes) {
         pass->optimise(basic_block);
     }
 
-    // logger.debug("after optimisations...");
-    // basic_block.dump();
+    logger.debug("after optimisations...");
+    basic_block.dump();
 }
 
 void Optimiser::add_pass(std::unique_ptr<Pass> pass) {
