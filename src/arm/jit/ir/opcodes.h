@@ -180,7 +180,7 @@ struct IRStoreCPSR : IROpcode {
 };
 
 struct IRLoadSPSR : IROpcode {
-    IRLoadSPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadSPSR), dst(dst) {}
+    IRLoadSPSR(IRVariable dst, Mode mode) : IROpcode(IROpcodeType::LoadSPSR), dst(dst), mode(mode) {}
 
     std::string to_string() override {
         return common::format("%s = load_spsr()", dst.to_string().c_str());
@@ -191,10 +191,11 @@ struct IRLoadSPSR : IROpcode {
     }
 
     IRVariable dst;
+    Mode mode;
 };
 
 struct IRStoreSPSR : IROpcode {
-    IRStoreSPSR(IRValue src) : IROpcode(IROpcodeType::StoreSPSR), src(src) {}
+    IRStoreSPSR(IRValue src, Mode mode) : IROpcode(IROpcodeType::StoreSPSR), src(src), mode(mode) {}
 
     std::string to_string() override {
         return common::format("store_spsr(%s)", src.to_string().c_str());
@@ -205,6 +206,7 @@ struct IRStoreSPSR : IROpcode {
     }
 
     IRValue src;
+    Mode mode;
 };
 
 struct IRBitwiseAnd : IROpcode {

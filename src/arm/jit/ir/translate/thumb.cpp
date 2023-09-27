@@ -161,61 +161,91 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
         result = ir.bitwise_and(op1, op2);
         ir.store_nz(result);
         break;
-    // case ThumbDataProcessingRegister::Opcode::EOR:
-    //     state.gpr[opcode.rd] = alu_eor(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::LSL:
-    //     state.gpr[opcode.rd] = alu_lsl(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry);
-    //     state.cpsr.c = carry;
-    //     set_nz(state.gpr[opcode.rd]);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::LSR:
-    //     state.gpr[opcode.rd] = alu_lsr(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
-    //     state.cpsr.c = carry;
-    //     set_nz(state.gpr[opcode.rd]);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::ASR:
-    //     state.gpr[opcode.rd] = alu_asr(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
-    //     state.cpsr.c = carry;
-    //     set_nz(state.gpr[opcode.rd]);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::ADC:
-    //     state.gpr[opcode.rd] = alu_adc(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::SBC:
-    //     state.gpr[opcode.rd] = alu_sbc(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::ROR:
-    //     state.gpr[opcode.rd] = alu_ror(state.gpr[opcode.rd], state.gpr[opcode.rs] & 0xff, carry, false);
-    //     state.cpsr.c = carry;
-    //     set_nz(state.gpr[opcode.rd]);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::TST:
-    //     alu_tst(state.gpr[opcode.rd], state.gpr[opcode.rs]);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::NEG:
-    //     state.gpr[opcode.rd] = alu_sub(0, state.gpr[opcode.rs], true);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::CMP:
-    //     alu_cmp(state.gpr[opcode.rd], state.gpr[opcode.rs]);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::CMN:
-    //     alu_cmn(state.gpr[opcode.rd], state.gpr[opcode.rs]);
-    //     break;
+    case ThumbDataProcessingRegister::Opcode::EOR:
+        result = ir.bitwise_exclusive_or(op1, op2);
+        ir.store_nz(result);
+        break;
+    case ThumbDataProcessingRegister::Opcode::LSL: {
+        auto pair = ir.barrel_shifter_logical_shift_left(op1, ir.bitwise_and(op2, ir.constant(0xff)));
+        auto result = pair.first;
+        ir.store_nz(result);
+        ir.store_gpr(opcode.rd, result);
+        ir.store_flag(Flag::C, pair.second);
+        break;
+    }
+    case ThumbDataProcessingRegister::Opcode::LSR: {
+        auto pair = ir.barrel_shifter_logical_shift_right(op1, ir.bitwise_and(op2, ir.constant(0xff)));
+        auto result = pair.first;
+        ir.store_nz(result);
+        ir.store_gpr(opcode.rd, result);
+        ir.store_flag(Flag::C, pair.second);
+        break;
+    }
+    case ThumbDataProcessingRegister::Opcode::ASR: {
+        auto pair = ir.barrel_shifter_arithmetic_shift_right(op1, ir.bitwise_and(op2, ir.constant(0xff)));
+        auto result = pair.first;
+        ir.store_nz(result);
+        ir.store_gpr(opcode.rd, result);
+        ir.store_flag(Flag::C, pair.second);
+        break;
+    }
+    case ThumbDataProcessingRegister::Opcode::ADC:
+        result = ir.add(ir.add(op1, op2), ir.load_flag(Flag::C));
+        ir.store_nz(result);
+        ir.store_adc_cv(op1, op2, result);
+        break;
+    case ThumbDataProcessingRegister::Opcode::SBC:
+        result = ir.subtract(ir.subtract(op1, op2), ir.bitwise_exclusive_or(ir.load_flag(Flag::C), ir.constant(1)));
+        ir.store_nz(result);
+        ir.store_sbc_cv(op1, op2, result);
+        break;
+    case ThumbDataProcessingRegister::Opcode::ROR: {
+        auto pair = ir.barrel_shifter_rotate_right(op1, ir.bitwise_and(op2, ir.constant(0xff)));
+        auto result = pair.first;
+        ir.store_nz(result);
+        ir.store_gpr(opcode.rd, result);
+        ir.store_flag(Flag::C, pair.second);
+        break;
+    }
+    case ThumbDataProcessingRegister::Opcode::TST: {
+        auto result = ir.bitwise_and(op1, op2);
+        ir.store_nz(result);
+        break;
+    }
+    case ThumbDataProcessingRegister::Opcode::NEG:
+        result = ir.subtract(ir.constant(0), op2);
+        ir.store_nz(result);
+        ir.store_sub_cv(op1, op2, result);
+        break;
+        break;
+    case ThumbDataProcessingRegister::Opcode::CMP: {
+        auto result = ir.subtract(op1, op2);
+        ir.store_nz(result);
+        ir.store_sub_cv(op1, op2, result);
+        break;
+    }
+    case ThumbDataProcessingRegister::Opcode::CMN: {
+        auto result = ir.add(op1, op2);
+        ir.store_nz(result);
+        ir.store_add_cv(op1, op2, result);
+        break;
+    }
     case ThumbDataProcessingRegister::Opcode::ORR:
         result = ir.bitwise_or(op1, op2);
         ir.store_nz(result);
         break;
-    // case ThumbDataProcessingRegister::Opcode::MUL:
-    //     state.gpr[opcode.rd] *= state.gpr[opcode.rs];
-    //     set_nz(state.gpr[opcode.rd]);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::BIC:
-    //     state.gpr[opcode.rd] = alu_bic(state.gpr[opcode.rd], state.gpr[opcode.rs], true);
-    //     break;
-    // case ThumbDataProcessingRegister::Opcode::MVN:
-    //     state.gpr[opcode.rd] = alu_mvn(state.gpr[opcode.rs], true);
-    //     break;
+    case ThumbDataProcessingRegister::Opcode::MUL:
+        result = ir.multiply(op1, op2);
+        ir.store_nz(result);
+        break;
+    case ThumbDataProcessingRegister::Opcode::BIC:
+        result = ir.bitwise_and(op1, ir.bitwise_not(op2));
+        ir.store_nz(result);
+        break;
+    case ThumbDataProcessingRegister::Opcode::MVN:
+        result = ir.bitwise_not(op2);
+        ir.store_nz(result);
+        break;
     default:
         logger.todo("thumb_data_processing_register %d", static_cast<int>(opcode.opcode));
     }
@@ -450,7 +480,19 @@ Translator::BlockStatus Translator::thumb_load_store_immediate() {
 }
 
 Translator::BlockStatus Translator::thumb_add_sp_pc() {
-    logger.todo("Translator: handle thumb_add_sp_pc");
+    auto opcode = ThumbAddSPPC::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("handle pc in thumb_add_sp_pc");
+    }
+
+    if (opcode.sp) {
+        ir.store_gpr(opcode.rd, ir.add(ir.load_gpr(GPR::SP), ir.constant(opcode.imm)));
+    } else {
+        ir.store_gpr(opcode.rd, ir.add(ir.bitwise_and(ir.load_gpr(GPR::PC), ir.constant(~0x2)), ir.constant(opcode.imm)));
+    }
+
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 

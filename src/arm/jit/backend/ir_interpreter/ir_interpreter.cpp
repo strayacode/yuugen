@@ -218,12 +218,14 @@ void IRInterpreter::handle_store_cpsr(IROpcodeVariant& opcode_variant) {
 
 void IRInterpreter::handle_load_spsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRLoadSPSR>(opcode_variant);
-    logger.todo("IRInterpreter: handle_load_spsr");
+    auto value = *jit.get_pointer_to_spsr(opcode.mode);
+    assign_variable(opcode.dst, value.data);
 }
 
 void IRInterpreter::handle_store_spsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreSPSR>(opcode_variant);
-    logger.todo("IRInterpreter: handle_store_spsr");
+    auto value = resolve_value(opcode.src);
+    jit.get_pointer_to_spsr(opcode.mode)->data = value;
 }
 
 void IRInterpreter::handle_bitwise_and(IROpcodeVariant& opcode_variant) {
@@ -398,7 +400,18 @@ void IRInterpreter::handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant
 }
 
 void IRInterpreter::handle_barrel_shifter_rotate_right(IROpcodeVariant& opcode_variant) {
-    logger.todo("handle_barrel_shifter_rotate_right");
+    auto& opcode = std::get<IRBarrelShifterRotateRight>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto carry_in = resolve_value(opcode.carry);
+    auto [result, carry] = ror(value, carry_in);
+    
+    assign_variable(opcode.result_and_carry.first, result);
+
+    if (carry) {
+        assign_variable(opcode.result_and_carry.second, *carry);
+    } else {
+        assign_variable(opcode.result_and_carry.second, carry_in);
+    }
 }
 
 void IRInterpreter::handle_barrel_shifter_rotate_right_extended(IROpcodeVariant& opcode_variant) {

@@ -52,12 +52,12 @@ void IREmitter::store_cpsr(IRVariable src) {
 
 IRVariable IREmitter::load_spsr() {
     auto dst = create_variable();
-    push<IRLoadSPSR>(dst);
+    push<IRLoadSPSR>(dst, basic_block.location.get_mode());
     return dst;
 }
 
 void IREmitter::store_spsr(IRVariable src) {
-    push<IRStoreSPSR>(src);
+    push<IRStoreSPSR>(src, basic_block.location.get_mode());
 }
 
 void IREmitter::copy_spsr_to_cpsr() {
