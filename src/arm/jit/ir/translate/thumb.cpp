@@ -246,8 +246,6 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
         result = ir.bitwise_not(op2);
         ir.store_nz(result);
         break;
-    default:
-        logger.todo("thumb_data_processing_register %d", static_cast<int>(opcode.opcode));
     }
 
     if (result.is_assigned()) {

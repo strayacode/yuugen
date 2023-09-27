@@ -402,8 +402,9 @@ void IRInterpreter::handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant
 void IRInterpreter::handle_barrel_shifter_rotate_right(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRBarrelShifterRotateRight>(opcode_variant);
     auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
     auto carry_in = resolve_value(opcode.carry);
-    auto [result, carry] = ror(value, carry_in);
+    auto [result, carry] = ror(value, amount);
     
     assign_variable(opcode.result_and_carry.first, result);
 
