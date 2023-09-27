@@ -16,7 +16,7 @@ namespace arm {
 
 class Jit : public CPU {
 public:
-    Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type);
+    Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type, bool optimise);
 
     void reset() override;
     void run(int cycles) override;

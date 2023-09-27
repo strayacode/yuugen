@@ -93,9 +93,9 @@ void System::set_boot_mode(BootMode boot_mode) {
     config.boot_mode = boot_mode;
 }
 
-void System::select_cpu_backend(arm::BackendType backend_type) {
-    arm7.select_backend(backend_type);
-    arm9.select_backend(backend_type);
+void System::select_cpu_backend(arm::BackendType backend_type, bool optimise) {
+    arm7.select_backend(backend_type, optimise);
+    arm9.select_backend(backend_type, optimise);
 }
 
 void System::write_wramcnt(u8 value) {

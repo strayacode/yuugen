@@ -9,7 +9,7 @@
 
 namespace arm {
 
-Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type) : arch(arch), memory(memory), coprocessor(coprocessor) {
+Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type, bool optimise) : arch(arch), memory(memory), coprocessor(coprocessor) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
     config.block_size = 32;
@@ -22,8 +22,10 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
         logger.todo("Jit: unsupported jit backend");
     }
 
-    optimiser.add_pass(std::make_unique<DeadLoadStoreEliminationPass>());
-    optimiser.add_pass(std::make_unique<DeadCopyEliminationPass>());
+    if (optimise) {
+        optimiser.add_pass(std::make_unique<DeadLoadStoreEliminationPass>());
+        optimiser.add_pass(std::make_unique<DeadCopyEliminationPass>());
+    }
 }
 
 void Jit::reset() {

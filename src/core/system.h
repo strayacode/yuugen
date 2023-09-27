@@ -35,7 +35,7 @@ public:
     void stop();
     void set_game_path(const std::string& game_path);
     void set_boot_mode(BootMode boot_mode);
-    void select_cpu_backend(arm::BackendType backend_type);
+    void select_cpu_backend(arm::BackendType backend_type, bool optimise);
     
     u8 read_wramcnt() { return wramcnt; }
     void write_wramcnt(u8 value);

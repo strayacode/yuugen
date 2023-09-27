@@ -12,12 +12,29 @@ void DeadCopyEliminationPass::optimise(BasicBlock& basic_block) {
         auto& opcode = *it;
         if (opcode->get_type() == IROpcodeType::Copy) {
             auto copy_opcode = *opcode->as<IRCopy>();
-            logger.debug("potential dead copy %s detected", copy_opcode.to_string().c_str());
-        } else {
-            logger.todo("handle this");
-        }
+            if (copy_opcode.src.is_variable()) {
+                auto& src_variable = copy_opcode.src.as_variable();
+                for (auto& use : uses) {
+                    if (use->id == copy_opcode.dst.id) {
+                        use->id = src_variable.id;
+                    }
+                }
 
-        it++;
+                it = std::reverse_iterator(basic_block.opcodes.erase(std::next(it).base()));
+            } else {
+                it++;
+            }
+        } else {
+            auto parameters = opcode->get_parameters();
+            
+            for (auto& parameter : parameters) {
+                if (parameter->is_variable()) {
+                    uses.push_back(&parameter->as_variable());
+                }
+            }
+
+            it++;
+        }
     }
 }
 
@@ -25,6 +42,18 @@ void DeadCopyEliminationPass::optimise(BasicBlock& basic_block) {
 // v2 = copy(v0)
 // v3 = copy(v2)
 // v4 = add(v3, 0)
+
+
+
+// v0 = copy(v4)
+// v1 = copy(v0)
+// v2 = add(v0, 1)
+// v3 = add(v1, 2)
+
+// v2 = add(v4, 1)
+// v3 = add(v4, 2)
+
+// variable->index = copy_src
 
 // record all arguments used (variables only)
 // go in reverse
