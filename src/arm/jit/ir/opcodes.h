@@ -19,6 +19,8 @@ enum class IROpcodeType {
     LoadSPSR,
     StoreCPSR,
     StoreSPSR,
+    LoadCoprocessor,
+    StoreCoprocessor,
 
     // bitwise opcodes
     BitwiseAnd,
@@ -207,6 +209,40 @@ struct IRStoreSPSR : IROpcode {
 
     IRValue src;
     Mode mode;
+};
+
+struct IRLoadCoprocessor : IROpcode {
+    IRLoadCoprocessor(IRVariable dst, u32 cn, u32 cm, u32 cp) : IROpcode(IROpcodeType::LoadCoprocessor), dst(dst), cn(cn), cm(cm), cp(cp) {}
+
+    std::string to_string() override {
+        return common::format("%s = load_coprocessor(c%d, c%d, c%d)", dst.to_string().c_str(), cn, cm, cp);
+    }
+
+    std::vector<IRValue*> get_parameters() override {
+        return {};
+    }
+
+    IRVariable dst;
+    u32 cn;
+    u32 cm;
+    u32 cp;
+};
+
+struct IRStoreCoprocessor : IROpcode {
+    IRStoreCoprocessor(u32 cn, u32 cm, u32 cp, IRValue src) : IROpcode(IROpcodeType::StoreCoprocessor), cn(cn), cm(cm), cp(cp), src(src) {}
+
+    std::string to_string() override {
+        return common::format("store_coprocessor(c%d, c%d, c%d, %s)", cn, cm, cp, src.to_string().c_str());
+    }
+
+    std::vector<IRValue*> get_parameters() override {
+        return {&src};
+    }
+
+    u32 cn;
+    u32 cm;
+    u32 cp;
+    IRValue src;
 };
 
 struct IRBitwiseAnd : IROpcode {

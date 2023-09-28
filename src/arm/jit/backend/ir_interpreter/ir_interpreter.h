@@ -32,6 +32,8 @@ private:
         IRLoadSPSR,
         IRStoreCPSR,
         IRStoreSPSR,
+        IRLoadCoprocessor,
+        IRStoreCoprocessor,
 
         // bitwise opcodes
         IRBitwiseAnd,
@@ -95,6 +97,8 @@ private:
     void handle_store_cpsr(IROpcodeVariant& opcode_variant);
     void handle_load_spsr(IROpcodeVariant& opcode_variant);
     void handle_store_spsr(IROpcodeVariant& opcode_variant);
+    void handle_load_coprocessor(IROpcodeVariant& opcode_variant);
+    void handle_store_coprocessor(IROpcodeVariant& opcode_variant);
 
     // bitwise opcodes
     void handle_bitwise_and(IROpcodeVariant& opcode_variant);

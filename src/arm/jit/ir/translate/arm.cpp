@@ -617,7 +617,26 @@ Translator::BlockStatus Translator::arm_data_processing() {
 }
 
 Translator::BlockStatus Translator::arm_coprocessor_register_transfer() {
-    logger.todo("Translator: handle arm_coprocessor_register_transfer");
+    auto opcode = ARMCoprocessorRegisterTransfer::decode(instruction);
+
+    // TODO: handle this in a nicer way
+    if (jit.arch == Arch::ARMv4 && opcode.cp == 14) {
+        logger.todo("Translator: mrc cp14 on arm7");
+    } else if ((jit.arch == Arch::ARMv4 && opcode.cp == 15) || (jit.arch == Arch::ARMv5 && opcode.cp == 14)) {
+        logger.todo("Translator: undefined exception arm_coprocessor_register_transfer");
+    }
+
+    if (opcode.rd == 15) {
+        logger.error("Interpreter: handle rd == 15 in arm_coprocessor_register_transfer");
+    }
+
+    if (opcode.load) {
+        ir.store_gpr(opcode.rd, ir.load_coprocessor(opcode.crn, opcode.crm, opcode.cp));
+    } else {
+        ir.store_coprocessor(opcode.crn, opcode.crm, opcode.cp, ir.load_gpr(opcode.rd));
+    }
+
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 

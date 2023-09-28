@@ -26,6 +26,8 @@ public:
     IRVariable load_spsr();
     void store_spsr(IRVariable src);
     void copy_spsr_to_cpsr();
+    IRVariable load_coprocessor(u32 cn, u32 cm, u32 cp);
+    void store_coprocessor(u32 cn, u32 cm, u32 cp, IRValue src);
 
     // bitwise opcodes
     IRVariable bitwise_and(IRValue lhs, IRValue rhs);

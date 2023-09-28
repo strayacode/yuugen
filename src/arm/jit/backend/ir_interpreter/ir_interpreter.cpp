@@ -111,6 +111,10 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_load_spsr, *opcode->as<IRLoadSPSR>()};
     case IROpcodeType::StoreSPSR:
         return {&IRInterpreter::handle_store_spsr, *opcode->as<IRStoreSPSR>()};
+    case IROpcodeType::LoadCoprocessor:
+        return {&IRInterpreter::handle_load_coprocessor, *opcode->as<IRLoadCoprocessor>()};
+    case IROpcodeType::StoreCoprocessor:
+        return {&IRInterpreter::handle_store_coprocessor, *opcode->as<IRStoreCoprocessor>()};
     case IROpcodeType::BitwiseAnd:
         return {&IRInterpreter::handle_bitwise_and, *opcode->as<IRBitwiseAnd>()};
     case IROpcodeType::BitwiseOr:
@@ -226,6 +230,18 @@ void IRInterpreter::handle_store_spsr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreSPSR>(opcode_variant);
     auto value = resolve_value(opcode.src);
     jit.get_pointer_to_spsr(opcode.mode)->data = value;
+}
+
+void IRInterpreter::handle_load_coprocessor(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRLoadCoprocessor>(opcode_variant);
+    auto value = jit.coprocessor.read(opcode.cn, opcode.cm, opcode.cp);
+    assign_variable(opcode.dst, value);
+}
+
+void IRInterpreter::handle_store_coprocessor(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRStoreCoprocessor>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    jit.coprocessor.write(opcode.cn, opcode.cm, opcode.cp, value);
 }
 
 void IRInterpreter::handle_bitwise_and(IROpcodeVariant& opcode_variant) {
