@@ -421,7 +421,12 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     }
 
     if (opcode.load && opcode.rd == 15) {
-        logger.todo("Translator: handle arm_single_data_transfer pc write");
+        if (jit.arch == Arch::ARMv5) {
+            auto address = ir.load_gpr(opcode.rd);
+            ir.branch_exchange(address);
+        } else {
+            ir.flush_pipeline();
+        }
     }
 
     return BlockStatus::Continue;
