@@ -262,12 +262,21 @@ void IREmitter::branch(IRValue address) {
     store_gpr(GPR::PC, adjusted_address);
 }
 
-void IREmitter::branch_exchange(IRValue address) {
-    auto bit0 = bitwise_and(address, constant(1));
-    store_flag(Flag::T, bit0);
+void IREmitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
+    IRValue thumb;
 
-    auto address_mask = bitwise_not(subtract(constant(3), multiply(constant(2), bit0)));
-    auto address_offset = subtract(constant(8), multiply(constant(4), bit0));
+    switch (exchange_type) {
+    case ExchangeType::Bit0:
+        thumb = bitwise_and(address, constant(1));
+        store_flag(Flag::T, thumb);
+        break;
+    case ExchangeType::ThumbBit:
+        thumb = load_flag(Flag::T);
+        break;
+    }
+
+    auto address_mask = bitwise_not(subtract(constant(3), multiply(constant(2), thumb)));
+    auto address_offset = subtract(constant(8), multiply(constant(4), thumb));
     auto adjusted_address = bitwise_and(add(address, address_offset), address_mask);
     store_gpr(GPR::PC, adjusted_address);
 }

@@ -71,6 +71,11 @@ enum class CompareType {
     GreaterThan,
 };
 
+enum class ExchangeType {
+    Bit0,
+    ThumbBit,  
+};
+
 static std::string access_size_to_string(AccessSize access_size) {
     switch (access_size) {
     case AccessSize::Byte:

@@ -142,10 +142,6 @@ StatusRegister* Jit::get_pointer_to_cpsr() {
 }
 
 StatusRegister* Jit::get_pointer_to_spsr(Mode mode) {
-    if (!has_spsr(mode)) {
-        logger.error("Jit: mode %02x doesn't have a spsr", static_cast<u8>(mode));
-    }
-
     return &state.spsr_banked[get_bank_from_mode(mode)];
 }
 
@@ -207,13 +203,24 @@ Bank Jit::get_bank_from_mode(Mode mode) {
     case Mode::UND:
         return Bank::UND;
     default:
-        logger.warn("Jit: mode %02x doesn't have a bank", static_cast<u8>(mode));
         return Bank::USR;
     }
 }
 
 void Jit::handle_interrupt() {
-    logger.todo("Jit: handle interrupts");
+    halted = false;
+    state.spsr_banked[Bank::IRQ].data = state.cpsr.data;
+    state.cpsr.mode = Mode::IRQ;
+    state.cpsr.i = true;
+    
+    if (state.cpsr.t) {
+        state.cpsr.t = false;
+        state.gpr[14] = state.gpr[15];
+    } else {
+        state.gpr[14] = state.gpr[15] - 4;
+    }
+
+    state.gpr[15] = coprocessor.get_exception_base() + 0x18 + 8;
 }
 
 } // namespace arm

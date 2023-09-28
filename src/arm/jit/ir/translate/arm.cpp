@@ -18,7 +18,7 @@ Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
 Translator::BlockStatus Translator::arm_branch_exchange() {
     auto opcode = ARMBranchExchange::decode(instruction);
     auto address = ir.load_gpr(opcode.rm);
-    ir.branch_exchange(address);
+    ir.branch_exchange(address, ExchangeType::Bit0);
     return BlockStatus::Break;
 }
 
@@ -52,7 +52,7 @@ Translator::BlockStatus Translator::arm_branch_link_exchange_register() {
     auto address = ir.load_gpr(opcode.rm);
     
     ir.link();
-    ir.branch_exchange(address);
+    ir.branch_exchange(address, ExchangeType::Bit0);
     return BlockStatus::Break;
 }
 
@@ -230,7 +230,7 @@ Translator::BlockStatus Translator::arm_status_store_register() {
     ir.advance_pc();
 
     if (opcode.spsr) {
-        logger.todo("Translator: modify spsr");
+        ir.store_spsr(psr_new);
     } else {
         ir.store_cpsr(psr_new);
         
@@ -260,7 +260,7 @@ Translator::BlockStatus Translator::arm_status_store_immediate() {
     ir.advance_pc();
 
     if (opcode.spsr) {
-        logger.todo("Translator: modify spsr");
+        ir.store_spsr(psr_new);
     } else {
         ir.store_cpsr(psr_new);
         
@@ -357,12 +357,19 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
         }
     } 
 
-    if (user_switch_mode && opcode.r15_in_rlist) {
+    if (user_switch_mode && opcode.load && opcode.r15_in_rlist) {
         logger.todo("Translator: handle user switch mode r15");
     }
 
     if (opcode.load && opcode.r15_in_rlist) {
-        logger.todo("Translator: handle ldm r15");
+        if (jit.arch == Arch::ARMv5) {
+            auto address = ir.load_gpr(GPR::PC);
+            ir.branch_exchange(address, ExchangeType::Bit0);
+        } else {
+            ir.flush_pipeline();
+        }
+        
+        return BlockStatus::Break;
     }
 
     return BlockStatus::Continue;
@@ -423,10 +430,12 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
     if (opcode.load && opcode.rd == 15) {
         if (jit.arch == Arch::ARMv5) {
             auto address = ir.load_gpr(opcode.rd);
-            ir.branch_exchange(address);
+            ir.branch_exchange(address, ExchangeType::Bit0);
         } else {
             ir.flush_pipeline();
         }
+
+        return BlockStatus::Break;
     }
 
     return BlockStatus::Continue;
@@ -608,7 +617,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
 
     if (opcode.rd == 15 && !is_comparison_opcode) {
         if (opcode.set_flags) {
-            logger.todo("Translator: handle pc write in data processing with set flags (t bit might change)");
+            ir.branch_exchange(result, ExchangeType::ThumbBit);
         } else {
             ir.flush_pipeline();
         }
