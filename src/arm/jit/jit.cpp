@@ -12,7 +12,7 @@ namespace arm {
 Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type, bool optimise) : arch(arch), memory(memory), coprocessor(coprocessor) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
-    config.block_size = 1;
+    config.block_size = 32;
 
     switch (backend_type) {
     case BackendType::IRInterpreter:
@@ -48,6 +48,7 @@ void Jit::run(int cycles) {
 
     while (cycles_available > 0) {
         if (halted) {
+            cycles_available = 0;
             return;
         }
 
@@ -216,12 +217,12 @@ void Jit::handle_interrupt() {
     
     if (state.cpsr.t) {
         state.cpsr.t = false;
-        state.gpr[14] = state.gpr[15];
+        set_gpr(GPR::LR, get_gpr(GPR::PC));
     } else {
-        state.gpr[14] = state.gpr[15] - 4;
+        set_gpr(GPR::LR, get_gpr(GPR::PC) - 4);
     }
 
-    state.gpr[15] = coprocessor.get_exception_base() + 0x18 + 8;
+    set_gpr(GPR::PC, coprocessor.get_exception_base() + 0x18);
 }
 
 } // namespace arm

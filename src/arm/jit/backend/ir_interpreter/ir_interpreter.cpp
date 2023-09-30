@@ -208,9 +208,6 @@ void IRInterpreter::handle_load_gpr(IROpcodeVariant& opcode_variant) {
 void IRInterpreter::handle_store_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreGPR>(opcode_variant);
     auto value = resolve_value(opcode.src);
-    if (opcode.dst.gpr == GPR::R0) {
-        logger.debug("r0 write %08x", value);
-    }
     *jit.get_pointer_to_gpr(opcode.dst.gpr, opcode.dst.mode) = value;
 }
 

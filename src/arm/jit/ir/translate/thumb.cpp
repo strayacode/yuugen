@@ -378,7 +378,19 @@ Translator::BlockStatus Translator::thumb_load_pc() {
 }
 
 Translator::BlockStatus Translator::thumb_load_store_sp_relative() {
-    logger.todo("Translator: handle thumb_load_store_sp_relative");
+    auto opcode = ThumbLoadStoreSPRelative::decode(instruction);
+    auto address = ir.add(ir.load_gpr(GPR::SP), ir.constant(opcode.imm << 2));
+    if (opcode.load) {
+        if (opcode.rd == 15) {
+            logger.todo("pc in thumb_load_store_sp_relative");
+        }
+
+        ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Word, AccessType::Unaligned));
+    } else {
+        ir.memory_write(address, ir.load_gpr(opcode.rd), AccessSize::Word);
+    }
+    
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
@@ -520,7 +532,14 @@ Translator::BlockStatus Translator::thumb_add_sp_pc() {
 }
 
 Translator::BlockStatus Translator::thumb_adjust_stack_pointer() {
-    logger.todo("Translator: handle thumb_adjust_stack_pointer");
+    auto opcode = ThumbAdjustStackPointer::decode(instruction);
+    if (opcode.sub) {
+        ir.store_gpr(GPR::SP, ir.subtract(ir.load_gpr(GPR::SP), ir.constant(opcode.imm)));
+    } else {
+        ir.store_gpr(GPR::SP, ir.add(ir.load_gpr(GPR::SP), ir.constant(opcode.imm)));
+    }
+    
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 
