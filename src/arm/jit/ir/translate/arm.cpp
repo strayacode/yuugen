@@ -35,7 +35,7 @@ Translator::BlockStatus Translator::arm_count_leading_zeroes() {
 
     auto src = ir.load_gpr(opcode.rm);
     auto result = ir.count_leading_zeroes(src);
-    
+
     ir.store_gpr(opcode.rd, result);
     ir.advance_pc();
     return BlockStatus::Continue;
@@ -669,8 +669,21 @@ Translator::BlockStatus Translator::arm_coprocessor_register_transfer() {
 }
 
 Translator::BlockStatus Translator::arm_software_interrupt() {
-    logger.todo("Translator: handle arm_software_interrupt");
-    return BlockStatus::Continue;
+    // TODO: make sure the exception base when compiling doesn't change later
+    auto exception_address = jit.coprocessor.get_exception_base() + 0x08;
+    auto instruction_size = ir.basic_block.location.get_instruction_size();
+    auto cpsr = ir.load_cpsr();
+    ir.store_spsr(cpsr, Mode::SVC);
+
+    auto cpsr_cleared = ir.bitwise_and(cpsr, ir.constant(~0x1f));
+    auto cpsr_new = ir.bitwise_or(cpsr_cleared, ir.constant(static_cast<u32>(Mode::SVC)));
+    ir.store_cpsr(cpsr_new);
+    ir.store_flag(Flag::I, ir.constant(true));
+
+    // we can't use branch or link helpers here since we need to specifically write to svc registers
+    ir.store_gpr(GPR::LR, Mode::SVC, ir.constant(ir.basic_block.current_address + instruction_size));
+    ir.store_gpr(GPR::PC, Mode::SVC, ir.constant(exception_address + (2 * instruction_size)));
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_signed_multiply_accumulate_long() {

@@ -60,6 +60,10 @@ void IREmitter::store_spsr(IRVariable src) {
     push<IRStoreSPSR>(src, basic_block.location.get_mode());
 }
 
+void IREmitter::store_spsr(IRVariable src, Mode mode) {
+    push<IRStoreSPSR>(src, mode);
+}
+
 IRVariable IREmitter::load_coprocessor(u32 cn, u32 cm, u32 cp) {
     auto dst = create_variable();
     push<IRLoadCoprocessor>(dst, cn, cm, cp);

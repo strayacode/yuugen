@@ -25,6 +25,7 @@ public:
     void store_cpsr(IRVariable src);
     IRVariable load_spsr();
     void store_spsr(IRVariable src);
+    void store_spsr(IRVariable src, Mode mode);
     void copy_spsr_to_cpsr();
     IRVariable load_coprocessor(u32 cn, u32 cm, u32 cp);
     void store_coprocessor(u32 cn, u32 cm, u32 cp, IRValue src);
