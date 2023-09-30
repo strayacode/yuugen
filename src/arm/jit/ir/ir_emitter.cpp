@@ -187,6 +187,12 @@ IRVariable IREmitter::sign_extend_half(IRValue src) {
     return arithmetic_shift_right(shifted_left, constant(16));
 }
 
+IRVariable IREmitter::count_leading_zeroes(IRValue src) {
+    auto dst = create_variable();
+    push<IRCountLeadingZeroes>(dst, src);
+    return dst;
+}
+
 IRVariable IREmitter::load_flag(Flag flag) {
     auto cpsr = load_cpsr();
     return bitwise_and(logical_shift_right(cpsr, constant(flag)), constant(1));

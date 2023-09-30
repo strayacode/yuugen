@@ -23,7 +23,21 @@ Translator::BlockStatus Translator::arm_branch_exchange() {
 }
 
 Translator::BlockStatus Translator::arm_count_leading_zeroes() {
-    logger.todo("Translator: handle arm_count_leading_zeroes");
+    if (jit.arch == Arch::ARMv4) {
+        logger.todo("Translator: handle arm_count_leading_zeroes on armv4");
+    }
+
+    auto opcode = ARMCountLeadingZeroes::decode(instruction);
+
+    if (opcode.rd == 15) {
+        logger.todo("handle pc in arm_count_leading_zeroes");
+    }
+
+    auto src = ir.load_gpr(opcode.rm);
+    auto result = ir.count_leading_zeroes(src);
+    
+    ir.store_gpr(opcode.rd, result);
+    ir.advance_pc();
     return BlockStatus::Continue;
 }
 

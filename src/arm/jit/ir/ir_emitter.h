@@ -51,6 +51,7 @@ public:
     IRPair<IRVariable> barrel_shifter_rotate_right_extended(IRValue src, IRConstant amount);
     IRVariable sign_extend_byte(IRValue src);
     IRVariable sign_extend_half(IRValue src);
+    IRVariable count_leading_zeroes(IRValue src);
 
     // flag opcodes
     IRVariable load_flag(Flag flag);

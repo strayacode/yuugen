@@ -149,6 +149,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_barrel_shifter_rotate_right, *opcode->as<IRBarrelShifterRotateRight>()};
     case IROpcodeType::BarrelShifterRotateRightExtended:
         return {&IRInterpreter::handle_barrel_shifter_rotate_right_extended, *opcode->as<IRBarrelShifterRotateRightExtended>()};
+    case IROpcodeType::CountLeadingZeroes:
+        return {&IRInterpreter::handle_count_leading_zeroes, *opcode->as<IRCountLeadingZeroes>()};
     case IROpcodeType::Compare:
         return {&IRInterpreter::handle_compare, *opcode->as<IRCompare>()};
     case IROpcodeType::Copy:
@@ -444,6 +446,13 @@ void IRInterpreter::handle_barrel_shifter_rotate_right_extended(IROpcodeVariant&
     } else {
         assign_variable(opcode.result_and_carry.second, carry_in);
     }
+}
+
+void IRInterpreter::handle_count_leading_zeroes(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRCountLeadingZeroes>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto result = common::countl_zeroes(value);
+    assign_variable(opcode.dst, result);
 }
 
 void IRInterpreter::handle_memory_write(IROpcodeVariant& opcode_variant) {

@@ -35,6 +35,7 @@ enum class IROpcodeType {
     BarrelShifterArithmeticShiftRight,
     BarrelShifterRotateRight,
     BarrelShifterRotateRightExtended,
+    CountLeadingZeroes,
 
     // arithmetic opcodes
     Add,
@@ -444,6 +445,21 @@ struct IRBarrelShifterRotateRightExtended : IROpcode {
     IRValue src;
     IRValue amount;
     IRValue carry;
+};
+
+struct IRCountLeadingZeroes : IROpcode {
+    IRCountLeadingZeroes(IRVariable dst, IRValue src) : IROpcode(IROpcodeType::CountLeadingZeroes), dst(dst), src(src) {}
+
+    std::string to_string() override {
+        return common::format("%s = clz(%s)", dst.to_string().c_str(), src.to_string().c_str());
+    }
+
+    std::vector<IRValue*> get_parameters() override {
+        return {&src};
+    }
+
+    IRVariable dst;
+    IRValue src;
 };
 
 struct IRAdd : IROpcode {

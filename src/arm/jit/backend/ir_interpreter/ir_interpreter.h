@@ -55,6 +55,7 @@ private:
         IRBarrelShifterArithmeticShiftRight,
         IRBarrelShifterRotateRight,
         IRBarrelShifterRotateRightExtended,
+        IRCountLeadingZeroes,
 
         // flag opcodes
         IRCompare,
@@ -120,6 +121,7 @@ private:
     void handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
     void handle_barrel_shifter_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_barrel_shifter_rotate_right_extended(IROpcodeVariant& opcode_variant);
+    void handle_count_leading_zeroes(IROpcodeVariant& opcode_variant);
 
     // flag opcodes
     void handle_compare(IROpcodeVariant& opcode_variant);
