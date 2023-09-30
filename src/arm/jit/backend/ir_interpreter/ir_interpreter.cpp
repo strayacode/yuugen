@@ -34,9 +34,10 @@ void IRInterpreter::compile(BasicBlock& basic_block)  {
 
 int IRInterpreter::run(Location location)  {
     auto& compiled_block = code_cache.get(location);
-    // if (location.get_address() == 0x02007f30) {
-    //     logger.debug("condition: %d result %d", static_cast<u8>(compiled_block.condition), evaluate_condition(compiled_block.condition));
+    // if (jit.arch == Arch::ARMv5) {
+    //     logger.debug("run compiled block %08x %08x", location.get_address(), jit.get_gpr(GPR::PC));
     // }
+    
     if (evaluate_condition(compiled_block.condition)) {
         for (auto& compiled_instruction : compiled_block.instructions) {
             (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);
@@ -207,6 +208,9 @@ void IRInterpreter::handle_load_gpr(IROpcodeVariant& opcode_variant) {
 void IRInterpreter::handle_store_gpr(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRStoreGPR>(opcode_variant);
     auto value = resolve_value(opcode.src);
+    if (opcode.dst.gpr == GPR::R0) {
+        logger.debug("r0 write %08x", value);
+    }
     *jit.get_pointer_to_gpr(opcode.dst.gpr, opcode.dst.mode) = value;
 }
 
