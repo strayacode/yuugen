@@ -3,7 +3,7 @@
 
 namespace nds {
 
-Timers::Timers(Scheduler& scheduler, IRQ& irq) : scheduler(scheduler), irq(irq) {}
+Timers::Timers(common::Scheduler& scheduler, IRQ& irq) : scheduler(scheduler), irq(irq) {}
 
 void Timers::reset() {
     channels.fill(Channel{});

@@ -13,6 +13,7 @@ add_library(common
     page_table.h
     config.h
     system.h system.cpp
+    scheduler.h scheduler.cpp
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

@@ -3,8 +3,8 @@
 #include <array>
 #include "common/types.h"
 #include "common/memory.h"
+#include "common/scheduler.h"
 #include "arm/arch.h"
-#include "nds/scheduler.h"
 #include "nds/video/vram.h"
 #include "nds/video/ppu/ppu.h"
 #include "nds/video/gpu/gpu.h"
@@ -124,8 +124,8 @@ private:
     std::array<u8, 0x800> palette_ram;
     std::array<u8, 0x800> oam;
 
-    EventType scanline_start_event;
-    EventType scanline_end_event;
+    common::EventType scanline_start_event;
+    common::EventType scanline_end_event;
 
     POWCNT1 powcnt1;
     u16 vcount;

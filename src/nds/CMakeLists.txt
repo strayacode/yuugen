@@ -1,7 +1,6 @@
 add_library(nds
     system.h system.cpp
-    scheduler.h scheduler.cpp
-
+    
     arm7/arm7.h arm7/arm7.cpp
     arm7/memory.h arm7/memory.cpp
     arm7/mmio.cpp

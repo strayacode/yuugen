@@ -1,7 +1,7 @@
 #include "common/logger.h"
-#include "nds/scheduler.h"
+#include "common/scheduler.h"
 
-namespace nds {
+namespace common {
 
 void Scheduler::reset() {
     events.clear();
@@ -77,4 +77,4 @@ int Scheduler::calculate_event_index(Event& event) {
     return lower_bound;
 }
 
-} // namespace nds
+} // namespace common

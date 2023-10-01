@@ -6,14 +6,14 @@
 #include <mutex>
 #include "common/audio_device.h"
 #include "common/types.h"
-#include "nds/scheduler.h"
+#include "common/scheduler.h"
 #include "arm/memory.h"
 
 namespace nds {
 
 class SPU {
 public:
-    SPU(Scheduler& scheduler, arm::Memory& memory);
+    SPU(common::Scheduler& scheduler, arm::Memory& memory);
     ~SPU();
 
     void reset();
@@ -137,7 +137,7 @@ private:
     u16 soundbias;
     SOUNDCNT soundcnt;
     std::array<SoundCaptureChannel, 2> sound_capture_channels;
-    EventType play_sample_event;
+    common::EventType play_sample_event;
     std::shared_ptr<common::AudioDevice> audio_device;
 
     static constexpr int BUFFER_CAPACITY = 8192;
@@ -148,7 +148,7 @@ private:
     int buffer_head;
     int buffer_tail;
 
-    Scheduler& scheduler;
+    common::Scheduler& scheduler;
     arm::Memory& memory;
 
     static constexpr int index_table[8] = {-1, -1, -1, -1, 2, 4, 6, 8};

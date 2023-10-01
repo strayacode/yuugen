@@ -11,7 +11,7 @@ void audio_callback(SPU* spu, s16* stream, int len) {
     spu->fetch_samples(stream, no_samples);
 }
 
-SPU::SPU(Scheduler& scheduler, arm::Memory& memory) : scheduler(scheduler), memory(memory) {}
+SPU::SPU(common::Scheduler& scheduler, arm::Memory& memory) : scheduler(scheduler), memory(memory) {}
 
 SPU::~SPU() {
     if (audio_device != nullptr) {

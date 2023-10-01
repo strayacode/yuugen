@@ -5,7 +5,7 @@
 #include "common/types.h"
 #include "common/callback.h"
 
-namespace nds {
+namespace common {
 
 using SchedulerCallback = common::Callback<void()>;
 
@@ -43,4 +43,4 @@ private:
     int current_event_id;
 };
 
-} // namespace nds
+} // namespace common

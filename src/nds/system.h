@@ -4,6 +4,7 @@
 #include <memory>
 #include "common/types.h"
 #include "common/system.h"
+#include "common/scheduler.h"
 #include "nds/arm7/arm7.h"
 #include "nds/arm9/arm9.h"
 #include "nds/hardware/cartridge/cartridge.h"
@@ -17,7 +18,6 @@
 #include "nds/hardware/spi.h"
 #include "nds/hardware/timers.h"
 #include "nds/hardware/wifi.h"
-#include "nds/scheduler.h"
 
 namespace nds {
 
@@ -59,7 +59,7 @@ public:
     Timers timers7;
     Timers timers9;
     Wifi wifi;
-    Scheduler scheduler;
+    common::Scheduler scheduler;
     std::unique_ptr<std::array<u8, 0x400000>> main_memory;
     std::array<u8, 0x8000> shared_wram;
     u8 wramcnt;

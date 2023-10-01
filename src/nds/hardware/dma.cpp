@@ -3,7 +3,7 @@
 
 namespace nds {
 
-DMA::DMA(Scheduler& scheduler, arm::Memory& memory, IRQ& irq, arm::Arch arch) : scheduler(scheduler), memory(memory), irq(irq), arch(arch) {}
+DMA::DMA(common::Scheduler& scheduler, arm::Memory& memory, IRQ& irq, arm::Arch arch) : scheduler(scheduler), memory(memory), irq(irq), arch(arch) {}
 
 void DMA::reset() {
     channels.fill(Channel{});

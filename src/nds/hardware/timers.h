@@ -1,14 +1,14 @@
 #pragma once
 
 #include <array>
-#include "nds/scheduler.h"
+#include "common/scheduler.h"
 #include "nds/hardware/irq.h"
 
 namespace nds {
 
 class Timers {
 public:
-    Timers(Scheduler& scheduler, IRQ& irq);
+    Timers(common::Scheduler& scheduler, IRQ& irq);
 
     void reset();
 
@@ -49,8 +49,8 @@ private:
     };
 
     std::array<Channel, 4> channels;
-    std::array<EventType, 4> overflow_events;
-    Scheduler& scheduler;
+    std::array<common::EventType, 4> overflow_events;
+    common::Scheduler& scheduler;
     IRQ& irq;
 
     static constexpr int shifts[4] = {0, 6, 8, 10};

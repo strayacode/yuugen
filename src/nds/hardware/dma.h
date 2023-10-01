@@ -2,16 +2,16 @@
 
 #include <array>
 #include "common/types.h"
+#include "common/scheduler.h"
 #include "arm/arch.h"
 #include "arm/memory.h"
 #include "nds/hardware/irq.h"
-#include "nds/scheduler.h"
 
 namespace nds {
 
 class DMA {
 public:
-    DMA(Scheduler& scheduler, arm::Memory& memory, IRQ& irq, arm::Arch arch);
+    DMA(common::Scheduler& scheduler, arm::Memory& memory, IRQ& irq, arm::Arch arch);
 
     void reset();
 
@@ -77,8 +77,8 @@ private:
 
     std::array<Channel, 4> channels;
     std::array<u32, 4> dmafill;
-    std::array<EventType, 4> transfer_events;
-    Scheduler& scheduler;
+    std::array<common::EventType, 4> transfer_events;
+    common::Scheduler& scheduler;
     arm::Memory& memory;
     IRQ& irq;
     arm::Arch arch;
