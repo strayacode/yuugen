@@ -294,7 +294,7 @@ void Interpreter::thumb_load_store_signed() {
         state.gpr[opcode.rd] = common::sign_extend<s32, 8>(read_byte(addr));
         break;
     case ThumbLoadStoreSigned::Opcode::LDRH:
-        state.gpr[opcode.rd] = read_half(addr);
+        state.gpr[opcode.rd] = read_half_rotate(addr);
         break;
     case ThumbLoadStoreSigned::Opcode::LDRSH:
         state.gpr[opcode.rd] = common::sign_extend<s32, 16>(read_half(addr));
@@ -396,7 +396,7 @@ void Interpreter::thumb_load_store_halfword() {
     auto opcode = ThumbLoadStoreHalfword::decode(instruction);
     u32 addr = state.gpr[opcode.rn] + (opcode.imm << 1);
     if (opcode.load) {
-        state.gpr[opcode.rd] = read_half(addr);
+        state.gpr[opcode.rd] = read_half_rotate(addr);
     } else {
         write_half(addr, state.gpr[opcode.rd]);
     }

@@ -443,11 +443,7 @@ void Interpreter::arm_halfword_data_transfer() {
         }
     } else if (opcode.half) {
         if (opcode.load) {
-            state.gpr[opcode.rd] = read_half(addr);
-
-            if (arch == Arch::ARMv4 && (addr & 0x1)) {
-                state.gpr[opcode.rd] = common::rotate_right(state.gpr[opcode.rd], 8);
-            }
+            state.gpr[opcode.rd] = read_half_rotate(addr);
         } else {
             write_half(addr, state.gpr[opcode.rd]);
         }
