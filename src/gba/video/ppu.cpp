@@ -10,6 +10,7 @@ void PPU::reset() {
     dispcnt.data = 0;
     dispstat.data = 0;
     vcount = 0;
+    framebuffer.fill(0);
     
     scanline_start_event = scheduler.register_event("Scanline Start", [this]() {
         render_scanline_start();
@@ -76,7 +77,35 @@ void PPU::render_scanline_end() {
 }
 
 void PPU::render_scanline(int line) {
+    switch (dispcnt.bg_mode) {
+    case 4:
+        render_mode4(line);
+        break;
+    default:
+        logger.todo("PPU: handle bg mode %d", dispcnt.bg_mode);
+    }
+}
 
+void PPU::render_mode4(int line) {
+    for (int x = 0; x < 240; x++) {
+        int offset = (240 * line) + x;
+        int palette_index = vram[offset];
+        u16 colour = common::read<u16>(palette_ram.data(), palette_index * 2);
+        plot(x, line, 0xff000000 | rgb555_to_rgb888(colour));
+    }
+    
+    // 240x160 8bpp page flip yes
+}
+
+u32 PPU::rgb555_to_rgb888(u32 colour) {
+    u8 r = ((colour & 0x1f) * 255) / 31;
+    u8 g = (((colour >> 5) & 0x1f) * 255) / 31;
+    u8 b = (((colour >> 10) & 0x1f) * 255) / 31;
+    return (b << 16) | (g << 8) | r;
+}
+
+void PPU::plot(int x, int y, u32 colour) {
+    framebuffer[(240 * y) + x] = colour;
 }
 
 } // namespace gba

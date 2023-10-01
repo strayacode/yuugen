@@ -40,7 +40,6 @@ public:
 
     ImVec2 scaled_dimensions;
     static constexpr float menubar_height = 21;
-    double center_pos = 0;
     int window_width = 0;
     int window_height = 0;
 

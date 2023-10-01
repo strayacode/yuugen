@@ -50,8 +50,7 @@ void System::set_audio_device(std::shared_ptr<common::AudioDevice> audio_device)
 }
 
 std::vector<u32*> System::fetch_framebuffers() {
-    logger.todo("handle fetch_framebuffers");
-    return {nullptr};
+    return {ppu.fetch_framebuffer()};
 }
 
 void System::skip_bios() {

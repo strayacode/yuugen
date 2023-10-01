@@ -19,6 +19,8 @@ public:
     u16 read_dispcnt() { return dispcnt.data; }
     u16 read_dispstat() { return dispstat.data; }
 
+    u32* fetch_framebuffer() { return framebuffer.data(); }
+
     void write_dispcnt(u16 value, u32 mask);
 
     template <typename T>
@@ -37,6 +39,9 @@ private:
     void render_scanline_start();
     void render_scanline_end();
     void render_scanline(int line);
+    void render_mode4(int line);
+    u32 rgb555_to_rgb888(u32 colour);
+    void plot(int x, int y, u32 colour);
 
     union DISPCNT {
         struct {
@@ -83,6 +88,7 @@ private:
     IRQ& irq;
     common::EventType scanline_start_event;
     common::EventType scanline_end_event;
+    std::array<u32, 240 * 160> framebuffer;
 };
 
 } // namespace gba

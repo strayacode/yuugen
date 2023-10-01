@@ -88,7 +88,29 @@ void Application::handle_input() {
 }
 
 void Application::render_gba() {
+    static ImGuiVideoDevice main_screen;
+    main_screen.configure(240, 160, ImGuiVideoDevice::Filter::Nearest);
+    
+    auto framebuffers = system->fetch_framebuffers();
+    assert(framebuffers.size() == 1);
 
+    main_screen.update_texture(framebuffers[0]);
+    
+    const f64 scale_x = static_cast<f64>(window_width) / 240;
+    const f64 scale_y = static_cast<f64>(window_height) / 160;
+    const f64 scale = scale_x < scale_y ? scale_x : scale_y;
+
+    scaled_dimensions = ImVec2(240 * scale, 160 * scale);
+    ImVec2 center_pos = ImVec2((static_cast<f64>(window_width) - scaled_dimensions.x) / 2, (static_cast<f64>(window_height) - scaled_dimensions.y) / 2);
+
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)main_screen.get_texture(),
+        ImVec2(center_pos.x, menubar_height + center_pos.y),
+        ImVec2(center_pos.x + scaled_dimensions.x, center_pos.y + scaled_dimensions.y),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
 }
 
 void Application::render_nds() {
@@ -108,12 +130,12 @@ void Application::render_nds() {
     const f64 scale = scale_x < scale_y ? scale_x : scale_y;
 
     scaled_dimensions = ImVec2(256 * scale, 192 * scale);
-    center_pos = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
+    double center_y = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
 
     ImGui::GetBackgroundDrawList()->AddImage(
         (void*)(intptr_t)top_screen.get_texture(),
-        ImVec2(center_pos, menubar_height),
-        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
+        ImVec2(center_y, menubar_height),
+        ImVec2(center_y + scaled_dimensions.x, scaled_dimensions.y),
         ImVec2(0, 0),
         ImVec2(1, 1),
         IM_COL32_WHITE
@@ -121,8 +143,8 @@ void Application::render_nds() {
 
     ImGui::GetBackgroundDrawList()->AddImage(
         (void*)(intptr_t)bottom_screen.get_texture(),
-        ImVec2(center_pos, scaled_dimensions.y),
-        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
+        ImVec2(center_y, scaled_dimensions.y),
+        ImVec2(center_y + scaled_dimensions.x, scaled_dimensions.y * 2),
         ImVec2(0, 0),
         ImVec2(1, 1),
         IM_COL32_WHITE
