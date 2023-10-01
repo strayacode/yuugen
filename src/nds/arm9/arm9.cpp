@@ -11,6 +11,7 @@ ARM9::ARM9(System& system) : system(system), memory(system), coprocessor(cpu, me
 
 void ARM9::reset() {
     memory.reset();
+    coprocessor.reset();
     irq.reset();
     cpu->reset();
 }

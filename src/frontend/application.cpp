@@ -1,6 +1,7 @@
 #include <cassert>
 #include "common/logger.h"
 #include "common/string.h"
+#include "gba/system.h"
 #include "nds/system.h"
 #include "frontend/application.h"
 #include "frontend/sdl_audio_device.h"
@@ -275,7 +276,8 @@ void Application::end_fullscreen_window() {
 void Application::boot_game(const std::string& path) {
     auto extension = path.substr(path.find(".") + 1, path.size());
     if (extension == "gba") {
-        logger.todo("handle gba");
+        system = std::make_unique<gba::System>();
+        system_type = SystemType::GBA;
     } else if (extension == "nds") {
         system = std::make_unique<nds::System>();
         system_type = SystemType::NDS;

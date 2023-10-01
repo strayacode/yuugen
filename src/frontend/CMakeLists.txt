@@ -41,7 +41,7 @@ endif(NOT OPENGL_FOUND)
 target_link_libraries(yuugen ${OPENGL_LIBRARIES})
 
 include_directories(imgui ${SDL2_INCLUDE_DIRS})
-target_link_libraries(yuugen arm nds common ${SDL2_LIBRARIES})
+target_link_libraries(yuugen arm gba nds common ${SDL2_LIBRARIES})
 
 find_package(Threads REQUIRED)
 
