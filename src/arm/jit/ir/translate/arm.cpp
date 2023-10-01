@@ -176,6 +176,8 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     if (opcode.half && opcode.sign) {
         if (opcode.load) {
             logger.todo("Translator: handle ldrsh");
+
+            // TODO: handle unaligned read on armv4
         } else if (jit.arch == Arch::ARMv5) {
             logger.todo("Translator: handle strd");
         }
@@ -183,6 +185,8 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
         if (opcode.load) {
             auto dst = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
             ir.store_gpr(opcode.rd, dst);
+
+            // TODO: handle unaligned read on armv4
         } else {
             auto src = ir.load_gpr(opcode.rd);
             ir.memory_write(address, src, AccessSize::Half);

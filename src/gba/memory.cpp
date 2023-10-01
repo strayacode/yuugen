@@ -29,7 +29,7 @@ u8 Memory::read_byte(u32 addr) {
     case 0x04:
         return mmio_read_byte(addr);
     default:
-        logger.todo("Memory: handle 8-bit read %08x", addr);
+        logger.warn("Memory: handle 8-bit read %08x", addr);
     }
 
     return 0;
@@ -40,7 +40,7 @@ u16 Memory::read_half(u32 addr) {
     case 0x04:
         return mmio_read_half(addr);
     default:
-        logger.todo("Memory: handle 16-bit read %08x", addr);
+        logger.warn("Memory: handle 16-bit read %08x", addr);
     }
 
     return 0;
@@ -51,7 +51,7 @@ u32 Memory::read_word(u32 addr) {
     case 0x04:
         return mmio_read_word(addr);
     default:
-        logger.todo("Memory: handle 32-bit read %08x", addr);
+        logger.warn("Memory: handle 32-bit read %08x", addr);
     }
 
     return 0;
@@ -63,7 +63,7 @@ void Memory::write_byte(u32 addr, u8 value) {
         mmio_write_byte(addr, value);
         break;
     default:
-        logger.todo("Memory: handle 8-bit write %08x = %02x", addr, value);
+        logger.warn("Memory: handle 8-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -76,7 +76,7 @@ void Memory::write_half(u32 addr, u16 value) {
         system.ppu.write_palette_ram<u16>(addr, value);
         break;
     default:
-        logger.todo("Memory: handle 16-bit write %08x = %02x", addr, value);
+        logger.warn("Memory: handle 16-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -86,7 +86,7 @@ void Memory::write_word(u32 addr, u32 value) {
         mmio_write_word(addr, value);
         break;
     default:
-        logger.todo("Memory: handle 32-bit write %08x = %02x", addr, value);
+        logger.warn("Memory: handle 32-bit write %08x = %02x", addr, value);
     }
 }
 

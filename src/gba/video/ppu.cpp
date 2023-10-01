@@ -78,6 +78,9 @@ void PPU::render_scanline_end() {
 
 void PPU::render_scanline(int line) {
     switch (dispcnt.bg_mode) {
+    case 0:
+        logger.warn("mode 0");
+        break;
     case 4:
         render_mode4(line);
         break;
