@@ -3,7 +3,7 @@
 #include <array>
 #include "common/types.h"
 
-namespace arm {
+namespace common {
 
 // this class will be in the form of a 2 level page table, to save on space
 // since a large chunk of the 32-bit address space gets unused, it will be more memory efficient to do 2 levels
@@ -78,4 +78,4 @@ private:
     std::array<L1Entry, L1_SIZE> page_table;
 };
 
-} // arm
+} // common

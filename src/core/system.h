@@ -35,7 +35,8 @@ public:
     void stop();
     void set_game_path(const std::string& game_path);
     void set_boot_mode(BootMode boot_mode);
-
+    void select_cpu_backend(arm::BackendType backend_type, bool optimise);
+    
     u8 read_wramcnt() { return wramcnt; }
     void write_wramcnt(u8 value);
     void write_haltcnt(u8 value);
@@ -78,7 +79,7 @@ public:
     Timers timers9;
     Wifi wifi;
     Scheduler scheduler;
-    std::array<u8, 0x400000> main_memory;
+    std::unique_ptr<std::array<u8, 0x400000>> main_memory;
     std::array<u8, 0x8000> shared_wram;
     u8 wramcnt;
     u8 haltcnt;
@@ -106,7 +107,7 @@ private:
     using Frame = std::chrono::duration<int, std::ratio<1, 60>>;
 
     int frames;
-    bool framelimiter = true;
+    bool framelimiter = false;
     UpdateCallback update_callback;
     std::shared_ptr<common::AudioDevice> audio_device;
 

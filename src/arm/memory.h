@@ -3,8 +3,8 @@
 #include "common/types.h"
 #include "common/logger.h"
 #include "common/memory.h"
+#include "common/page_table.h"
 #include "arm/coprocessor.h"
-#include "arm/page_table.h"
 
 namespace arm {
 
@@ -130,8 +130,8 @@ public:
     Coprocessor::TCM itcm;
     
 private:
-    PageTable<14> read_table;
-    PageTable<14> write_table;
+    common::PageTable<14> read_table;
+    common::PageTable<14> write_table;
 };
 
 } // namespace arm

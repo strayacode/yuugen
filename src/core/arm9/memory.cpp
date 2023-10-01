@@ -21,7 +21,7 @@ void ARM9Memory::reset() {
     itcm.mask = itcm_data.size() - 1;
 
     map(0xffff0000, 0xffff8000, bios.data(), 0x7fff, arm::RegionAttributes::Read);
-    map(0x02000000, 0x03000000, system.main_memory.data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
+    map(0x02000000, 0x03000000, system.main_memory->data(), 0x3fffff, arm::RegionAttributes::ReadWrite);
     update_wram_mapping();
 }
 

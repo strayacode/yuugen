@@ -60,7 +60,7 @@ private:
     void boot_game(const std::string& path);
     void boot_firmware();
 
-    bool demo_window = true;
+    bool demo_window = false;
     core::System system;
 
     // TODO: combine top and bottom screen into single VideoDevice interface

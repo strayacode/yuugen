@@ -71,6 +71,15 @@ inline U get_bit(T value) {
   return static_cast<U>((value >> bit) & 0x1);
 }
 
+template <int bit, typename T>
+inline void set_bit(T& src, bool value) {
+    if (value) {
+        src |= 1 << bit;
+    } else {
+        src &= ~(1 << bit);
+    }
+}
+
 template <int start, int size, typename T, typename U = T>
 inline U get_field(T value) {
   return static_cast<U>((value >> start)) & ~(static_cast<T>(-1) << size);

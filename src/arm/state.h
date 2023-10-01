@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <string>
 #include "common/types.h"
 
 namespace arm {
@@ -14,6 +15,27 @@ enum class Mode : u8 {
     UND = 0x1b,
     SYS = 0x1f,
 };
+
+inline std::string mode_to_string(Mode mode) {
+    switch (mode) {
+    case Mode::USR:
+        return "usr";
+    case Mode::FIQ:
+        return "fiq";
+    case Mode::IRQ:
+        return "irq";
+    case Mode::SVC:
+        return "svc";
+    case Mode::ABT:
+        return "abt";
+    case Mode::UND:
+        return "und";
+    case Mode::SYS:
+        return "sys";
+    default:
+        return "...";
+    }
+}
 
 union StatusRegister {
     struct {

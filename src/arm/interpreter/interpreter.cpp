@@ -20,7 +20,7 @@ void Interpreter::reset() {
     }
 
     state.cpsr.data = 0xd3;
-    set_mode(Mode::SVC);
+    switch_mode(Mode::SVC);
     pipeline.fill(0);
     irq = false;
     halted = false;
@@ -59,49 +59,6 @@ void Interpreter::run(int cycles) {
     }
 }
 
-void Interpreter::flush_pipeline() {
-    if (state.cpsr.t) {
-        thumb_flush_pipeline();
-    } else {
-        arm_flush_pipeline();
-    }
-}
-
-void Interpreter::set_mode(Mode mode) {
-    mode = static_cast<Mode>(static_cast<u8>(mode) & 0x1f);
-    auto old_bank = get_bank(state.cpsr.mode);
-    auto new_bank = get_bank(mode);
-
-    if (new_bank != Bank::USR) {
-        state.spsr = &state.spsr_banked[new_bank];
-    } else {
-        state.spsr = &state.cpsr;
-    }
-
-    state.cpsr.mode = mode;
-
-    // no need to bank switch if no change in banks used
-    if (old_bank == new_bank) {
-        return;
-    }
-
-    if (old_bank == Bank::FIQ || new_bank == Bank::FIQ) {
-        for (int i = 0; i < 7; i++) {
-            state.gpr_banked[old_bank][i] = state.gpr[i + 8];
-        }
-
-        for (int i = 0; i < 7; i++) {
-            state.gpr[i + 8] = state.gpr_banked[new_bank][i];
-        }
-    } else {
-        state.gpr_banked[old_bank][5] = state.gpr[13];
-        state.gpr_banked[old_bank][6] = state.gpr[14];
-
-        state.gpr[13] = state.gpr_banked[new_bank][5];
-        state.gpr[14] = state.gpr_banked[new_bank][6];
-    }
-}
-
 void Interpreter::update_irq(bool irq) {
     this->irq = irq;
 }
@@ -116,6 +73,59 @@ void Interpreter::update_halted(bool halted) {
 
 Arch Interpreter::get_arch() {
     return arch;
+}
+
+u32 Interpreter::get_gpr(GPR gpr) {
+    return state.gpr[gpr];
+}
+
+u32 Interpreter::get_gpr(GPR gpr, Mode mode) {
+    auto start = mode == Mode::FIQ ? GPR::R8 : GPR::R13;
+    if (state.cpsr.mode != mode && gpr >= start && gpr <= GPR::R14) {
+        return state.gpr_banked[get_bank_from_mode(mode)][gpr - 8];
+    } else {
+        return get_gpr(gpr);
+    }
+}
+
+void Interpreter::set_gpr(GPR gpr, u32 value) {
+    if (gpr == GPR::PC) {
+        state.gpr[GPR::PC] = value;
+
+        // for pc writes, we need to consider the effects of the pipeline
+        if (state.cpsr.t) {
+            thumb_flush_pipeline();
+        } else {
+            arm_flush_pipeline();
+        }
+    } else {
+        state.gpr[gpr] = value;
+    }
+}
+
+void Interpreter::set_gpr(GPR gpr, Mode mode, u32 value) {
+    auto start = mode == Mode::FIQ ? GPR::R8 : GPR::R13;
+    if (state.cpsr.mode != mode && gpr >= start && gpr <= GPR::R14) {
+        state.gpr_banked[get_bank_from_mode(mode)][gpr - 8] = value;
+    } else {
+        set_gpr(gpr, value);
+    }
+}
+
+StatusRegister Interpreter::get_cpsr() {
+    return state.cpsr;
+}
+
+void Interpreter::set_cpsr(StatusRegister value) {
+    state.cpsr = value;
+}
+
+StatusRegister Interpreter::get_spsr(Mode mode) {
+    return state.spsr_banked[get_bank_from_mode(mode)];
+}
+
+void Interpreter::set_spsr(Mode mode, StatusRegister value) {
+    state.spsr_banked[get_bank_from_mode(mode)] = value;
 }
 
 void Interpreter::illegal_instruction() {
@@ -172,7 +182,42 @@ bool Interpreter::evaluate_condition(Condition condition) {
     return condition_table[condition][state.cpsr.data >> 28];
 }
 
-Bank Interpreter::get_bank(Mode mode) {
+void Interpreter::switch_mode(Mode mode) {
+    mode = static_cast<Mode>(static_cast<u8>(mode) & 0x1f);
+    auto old_bank = get_bank_from_mode(state.cpsr.mode);
+    auto new_bank = get_bank_from_mode(mode);
+
+    if (new_bank != Bank::USR) {
+        state.spsr = &state.spsr_banked[new_bank];
+    } else {
+        state.spsr = &state.cpsr;
+    }
+
+    state.cpsr.mode = mode;
+
+    // no need to bank switch if no change in banks used
+    if (old_bank == new_bank) {
+        return;
+    }
+
+    if (old_bank == Bank::FIQ || new_bank == Bank::FIQ) {
+        for (int i = 0; i < 7; i++) {
+            state.gpr_banked[old_bank][i] = state.gpr[i + 8];
+        }
+
+        for (int i = 0; i < 7; i++) {
+            state.gpr[i + 8] = state.gpr_banked[new_bank][i];
+        }
+    } else {
+        state.gpr_banked[old_bank][5] = state.gpr[13];
+        state.gpr_banked[old_bank][6] = state.gpr[14];
+
+        state.gpr[13] = state.gpr_banked[new_bank][5];
+        state.gpr[14] = state.gpr_banked[new_bank][6];
+    }
+}
+
+Bank Interpreter::get_bank_from_mode(Mode mode) {
     switch (mode) {
     case Mode::USR: case Mode::SYS:
         return Bank::USR;
@@ -235,18 +280,10 @@ void Interpreter::write_word(u32 addr, u32 data) {
     memory.write<u32, Bus::Data>(addr, data);
 }
 
-bool Interpreter::calculate_add_overflow(u32 op1, u32 op2, u32 result) {
-    return (~(op1 ^ op2) & (op2 ^ result)) >> 31;
-}
-
-bool Interpreter::calculate_sub_overflow(u32 op1, u32 op2, u32 result) {
-    return ((op1 ^ op2) & (op1 ^ result)) >> 31;
-}
-
 void Interpreter::handle_interrupt() {
     halted = false;
     state.spsr_banked[Bank::IRQ].data = state.cpsr.data;
-    set_mode(Mode::IRQ);
+    switch_mode(Mode::IRQ);
     state.cpsr.i = true;
     
     if (state.cpsr.t) {
@@ -264,7 +301,7 @@ void Interpreter::undefined_exception() {
     logger.warn("Interpreter: undefined exception fired for instruction %08x at %08x", instruction, state.gpr[15]);
 
     state.spsr_banked[Bank::UND].data = state.cpsr.data;
-    set_mode(Mode::UND);
+    switch_mode(Mode::UND);
 
     state.cpsr.i = true;
     state.gpr[14] = state.gpr[15] - 4;
@@ -274,11 +311,10 @@ void Interpreter::undefined_exception() {
 
 void Interpreter::log_state() {
     for (int i = 0; i < 16; i++) {
-        logger.log("r%d: %08x ", i, state.gpr[i]);
+        logger.log("r%d: %08x ", i, get_gpr(static_cast<GPR>(i)));
     }
 
-    logger.log("cpsr: %08x ", state.cpsr.data);
-    logger.log("%08x\n", instruction);
+    logger.log("cpsr: %08x\n", get_cpsr().data);
 }
 
 } // namespace arm
