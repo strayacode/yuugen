@@ -3,6 +3,8 @@ add_library(gba
     cp14.h cp14.cpp
     memory.h memory.cpp
     mmio.cpp
+
+    hardware/cartridge.h hardware/cartridge.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

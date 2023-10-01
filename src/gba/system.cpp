@@ -13,9 +13,12 @@ System::~System() {
 }
 
 void System::System::reset() {
-    memory.reset();
+    scheduler.reset();
     cp14.reset();
     cpu->reset();
+    cartridge.reset();
+    cartridge.load(config.game_path);
+    memory.reset();
 
     frames = 0;
 
@@ -29,7 +32,7 @@ void System::run_frame() {
 }
 
 void System::set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) {
-    logger.warn("gba::System: set_audio_device");
+    this->audio_device = audio_device;
 }
 
 std::vector<u32*> System::fetch_framebuffers() {

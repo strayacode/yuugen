@@ -12,6 +12,9 @@ Memory::Memory(System& system) : system(system) {
 
 void Memory::reset() {
     map(0x00000000, 0x01000000, bios.data(), 0x3fff, arm::RegionAttributes::Read);
+
+    // TODO: how does the rom get mirrored if it's < 32mb?
+    map(0x08000000, 0x0a000000, system.cartridge.get_rom_pointer(), 0x2000000, arm::RegionAttributes::Read);
 }
 
 u8 Memory::read_byte(u32 addr) {
