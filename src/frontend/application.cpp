@@ -48,7 +48,7 @@ bool Application::initialise() {
     audio_device = std::make_shared<SDLAudioDevice>();
     system.set_audio_device(audio_device);
 
-    system.select_cpu_backend(arm::BackendType::IRInterpreter, true);
+    system.select_cpu_backend(arm::BackendType::Interpreter, true);
     return true;
 }
 
@@ -90,34 +90,34 @@ void Application::handle_input() {
             bool pressed = event.type == SDL_KEYDOWN;
             switch (event.key.keysym.sym) {
             case SDLK_d:
-                system.input.handle_input(core::InputEvent::A, pressed);
+                system.input.handle_input(nds::InputEvent::A, pressed);
                 break;
             case SDLK_s:
-                system.input.handle_input(core::InputEvent::B, pressed);
+                system.input.handle_input(nds::InputEvent::B, pressed);
                 break;
             case SDLK_RSHIFT:
-                system.input.handle_input(core::InputEvent::Select, pressed);
+                system.input.handle_input(nds::InputEvent::Select, pressed);
                 break;
             case SDLK_RETURN:
-                system.input.handle_input(core::InputEvent::Start, pressed);
+                system.input.handle_input(nds::InputEvent::Start, pressed);
                 break;
             case SDLK_RIGHT:
-                system.input.handle_input(core::InputEvent::Right, pressed);
+                system.input.handle_input(nds::InputEvent::Right, pressed);
                 break;
             case SDLK_LEFT:
-                system.input.handle_input(core::InputEvent::Left, pressed);
+                system.input.handle_input(nds::InputEvent::Left, pressed);
                 break;
             case SDLK_UP:
-                system.input.handle_input(core::InputEvent::Up, pressed);
+                system.input.handle_input(nds::InputEvent::Up, pressed);
                 break;
             case SDLK_DOWN:
-                system.input.handle_input(core::InputEvent::Down, pressed);
+                system.input.handle_input(nds::InputEvent::Down, pressed);
                 break;
             case SDLK_e:
-                system.input.handle_input(core::InputEvent::R, pressed);
+                system.input.handle_input(nds::InputEvent::R, pressed);
                 break;
             case SDLK_w:
-                system.input.handle_input(core::InputEvent::L, pressed);
+                system.input.handle_input(nds::InputEvent::L, pressed);
                 break;
             }
         } else if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
@@ -134,8 +134,8 @@ void Application::handle_input() {
 }
 
 void Application::render_screens() {
-    top_screen.update_texture(system.video_unit.fetch_framebuffer(core::Screen::Top));
-    bottom_screen.update_texture(system.video_unit.fetch_framebuffer(core::Screen::Bottom));
+    top_screen.update_texture(system.video_unit.fetch_framebuffer(nds::Screen::Top));
+    bottom_screen.update_texture(system.video_unit.fetch_framebuffer(nds::Screen::Bottom));
 
     const f64 scale_x = static_cast<f64>(window_width) / 256;
     const f64 scale_y = static_cast<f64>(window_height) / 384;
@@ -210,11 +210,11 @@ void Application::render_menubar() {
 
 void Application::render_performance_overlay() {
     font_database.push_style(FontDatabase::Style::Large);
-    if (system.get_state() == core::System::State::Running && static_cast<int>(fps) != 0) {
+    if (system.get_state() == nds::System::State::Running && static_cast<int>(fps) != 0) {
         auto fps_string = common::format("%.0f FPS | %.2f ms", fps, 1000.0f / fps);
         auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
         ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string.c_str());
-    } else if (system.get_state() == core::System::State::Paused) {
+    } else if (system.get_state() == nds::System::State::Paused) {
         auto fps_string = "Paused";
         auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
         ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string);
@@ -308,7 +308,7 @@ void Application::end_fullscreen_window() {
 
 void Application::boot_game(const std::string& path) {
     system.set_game_path(path);
-    system.set_boot_mode(core::BootMode::Direct);
+    system.set_boot_mode(common::BootMode::Fast);
     system.start();
 }
 

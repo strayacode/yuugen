@@ -8,7 +8,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imfilebrowser.h"
 #include "common/types.h"
-#include "core/system.h"
+#include "nds/system.h"
 #include "frontend/sdl_audio_device.h"
 #include "frontend/imgui_video_device.h"
 #include "frontend/widgets/cpu_debugger.h"
@@ -61,7 +61,7 @@ private:
     void boot_firmware();
 
     bool demo_window = false;
-    core::System system;
+    nds::System system;
 
     // TODO: combine top and bottom screen into single VideoDevice interface
     ImGuiVideoDevice top_screen;

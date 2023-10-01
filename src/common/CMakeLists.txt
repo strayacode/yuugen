@@ -11,6 +11,8 @@ add_library(common
     video_device.h
     audio_device.h
     page_table.h
+    config.h
+    system.h system.cpp
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

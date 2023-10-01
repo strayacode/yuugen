@@ -3,7 +3,7 @@
 #include "frontend/widgets/cpu_debugger.h"
 #include "frontend/application.h"
 
-void CPUDebugger::render(Application& application, arm::CPU& cpu, core::IRQ& irq) {
+void CPUDebugger::render(Application& application, arm::CPU& cpu, nds::IRQ& irq) {
     if (!visible) return;
 
     ImGui::Begin(common::format("ARM%s Debugger", cpu.get_arch() == arm::Arch::ARMv5 ? "9" : "7").c_str());
