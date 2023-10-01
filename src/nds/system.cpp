@@ -104,6 +104,10 @@ void System::set_audio_device(std::shared_ptr<common::AudioDevice> audio_device)
     spu.set_audio_device(audio_device);
 }
 
+std::vector<u32*> System::fetch_framebuffers() {
+    return {video_unit.fetch_framebuffer(Screen::Top), video_unit.fetch_framebuffer(Screen::Bottom)};
+}
+
 void System::select_cpu_backend(arm::BackendType backend_type, bool optimise) {
     arm7.select_backend(backend_type, optimise);
     arm9.select_backend(backend_type, optimise);

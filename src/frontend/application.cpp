@@ -1,7 +1,10 @@
+#include <cassert>
 #include "common/logger.h"
 #include "common/string.h"
 #include "nds/system.h"
 #include "frontend/application.h"
+#include "frontend/sdl_audio_device.h"
+#include "frontend/imgui_video_device.h"
 
 Application::Application() {}
 
@@ -38,9 +41,6 @@ bool Application::initialise() {
 
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
-
-    top_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
-    bottom_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
 
     audio_device = std::make_shared<SDLAudioDevice>();
     return true;
@@ -91,38 +91,42 @@ void Application::render_gba() {
 }
 
 void Application::render_nds() {
-    logger.debug("render nds");
+    static ImGuiVideoDevice top_screen;
+    static ImGuiVideoDevice bottom_screen;
+    top_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
+    bottom_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
+
+    auto framebuffers = system->fetch_framebuffers();
+    assert(framebuffers.size() == 2);
+
+    top_screen.update_texture(framebuffers[0]);
+    bottom_screen.update_texture(framebuffers[1]);
+
+    const f64 scale_x = static_cast<f64>(window_width) / 256;
+    const f64 scale_y = static_cast<f64>(window_height) / 384;
+    const f64 scale = scale_x < scale_y ? scale_x : scale_y;
+
+    scaled_dimensions = ImVec2(256 * scale, 192 * scale);
+    center_pos = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
+
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)top_screen.get_texture(),
+        ImVec2(center_pos, menubar_height),
+        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
+
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)bottom_screen.get_texture(),
+        ImVec2(center_pos, scaled_dimensions.y),
+        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
 }
-
-// void Application::render_screens() {
-//     top_screen.update_texture(system.video_unit.fetch_framebuffer(nds::Screen::Top));
-//     bottom_screen.update_texture(system.video_unit.fetch_framebuffer(nds::Screen::Bottom));
-
-//     const f64 scale_x = static_cast<f64>(window_width) / 256;
-//     const f64 scale_y = static_cast<f64>(window_height) / 384;
-//     const f64 scale = scale_x < scale_y ? scale_x : scale_y;
-
-//     scaled_dimensions = ImVec2(256 * scale, 192 * scale);
-//     center_pos = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
-
-//     ImGui::GetBackgroundDrawList()->AddImage(
-//         (void*)(intptr_t)top_screen.get_texture(),
-//         ImVec2(center_pos, menubar_height),
-//         ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
-//         ImVec2(0, 0),
-//         ImVec2(1, 1),
-//         IM_COL32_WHITE
-//     );
-
-//     ImGui::GetBackgroundDrawList()->AddImage(
-//         (void*)(intptr_t)bottom_screen.get_texture(),
-//         ImVec2(center_pos, scaled_dimensions.y),
-//         ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
-//         ImVec2(0, 0),
-//         ImVec2(1, 1),
-//         IM_COL32_WHITE
-//     );
-// }
 
 void Application::render_menubar() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -284,14 +288,9 @@ void Application::boot_game(const std::string& path) {
     });
 
     system->set_audio_device(audio_device);
-    
-    logger.debug("a");
     system->set_game_path(path);
-    logger.debug("b");
     system->set_boot_mode(common::BootMode::Fast);
-    logger.debug("c");
     system->start();
-    logger.debug("cool");
 }
 
 void Application::boot_firmware() {

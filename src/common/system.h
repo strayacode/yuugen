@@ -5,6 +5,8 @@
 #include <chrono>
 #include <ratio>
 #include <memory>
+#include <vector>
+#include "common/types.h"
 #include "common/config.h"
 #include "common/audio_device.h"
 #include "common/callback.h"
@@ -17,6 +19,7 @@ public:
     virtual void reset() = 0;
     virtual void run_frame() = 0;
     virtual void set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) = 0;
+    virtual std::vector<u32*> fetch_framebuffers() = 0;
 
     void start();
     void stop();

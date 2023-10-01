@@ -29,6 +29,7 @@ public:
     void reset() override;
     void run_frame() override;
     void set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) override;
+    std::vector<u32*> fetch_framebuffers() override;
     void select_cpu_backend(arm::BackendType backend_type, bool optimise);
     
     u8 read_wramcnt() { return wramcnt; }
