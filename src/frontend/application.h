@@ -8,10 +8,9 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imfilebrowser.h"
 #include "common/types.h"
-#include "nds/system.h"
+#include "common/system.h"
 #include "frontend/sdl_audio_device.h"
 #include "frontend/imgui_video_device.h"
-#include "frontend/widgets/cpu_debugger.h"
 #include "frontend/font_database.h"
 
 class Application {
@@ -53,7 +52,8 @@ private:
     void begin_fullscreen_window(const char *name, float padding = 0.0f);
     void end_fullscreen_window();
     
-    void render_screens();
+    void render_gba();
+    void render_nds();
     void render_menubar();
     void render_performance_overlay();
     
@@ -61,7 +61,15 @@ private:
     void boot_firmware();
 
     bool demo_window = false;
-    nds::System system;
+    std::unique_ptr<common::System> system;
+
+    enum class SystemType {
+        None,
+        GBA,
+        NDS,
+    };
+
+    SystemType system_type = SystemType::None;
 
     // TODO: combine top and bottom screen into single VideoDevice interface
     ImGuiVideoDevice top_screen;
@@ -75,9 +83,5 @@ private:
     ImVec4 window_bg = ImVec4(0.100f, 0.100f, 0.100f, 0.980f);
 
     f32 fps;
-    
-    CPUDebugger arm7_debugger;
-    CPUDebugger arm9_debugger;
-
     std::shared_ptr<common::AudioDevice> audio_device;
 };

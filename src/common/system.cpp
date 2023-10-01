@@ -1,3 +1,4 @@
+#include "common/logger.h"
 #include "common/system.h"
 
 namespace common {
