@@ -75,6 +75,14 @@ template <u32 mask>
 u32 Memory::mmio_read_word(u32 addr) {
     u32 value = 0;
     switch (MMIO(addr)) {
+    case MMIO(0x04000000):
+        return system.ppu.read_dispcnt();
+    case MMIO(0x04000004):
+        return system.ppu.read_dispstat();
+    case MMIO(0x04000130):
+        if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
+        if constexpr (mask & 0xffff0000) logger.error("gba::Memory: handle keycnt read");
+        return value;
     default:
         logger.todo("Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
@@ -86,6 +94,9 @@ u32 Memory::mmio_read_word(u32 addr) {
 template <u32 mask>
 void Memory::mmio_write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
+    case MMIO(0x04000000):
+        system.ppu.write_dispcnt(value, mask);
+        break;
     case MMIO(0x04000208):
         system.irq.write_ime(value, mask);
         break;

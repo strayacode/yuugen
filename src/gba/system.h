@@ -10,6 +10,7 @@
 #include "gba/cp14.h"
 #include "gba/hardware/cartridge.h"
 #include "gba/hardware/irq.h"
+#include "gba/hardware/input.h"
 #include "gba/video/ppu.h"
 
 namespace gba {
@@ -31,6 +32,7 @@ public:
     Cartridge cartridge;
     PPU ppu;
     IRQ irq;
+    Input input;
     
 private:
     void skip_bios();

@@ -6,6 +6,7 @@ add_library(gba
 
     hardware/cartridge.h hardware/cartridge.cpp
     hardware/irq.h hardware/irq.cpp
+    hardware/input.h hardware/input.cpp
 
     video/ppu.h video/ppu.cpp
 )

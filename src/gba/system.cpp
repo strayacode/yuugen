@@ -4,7 +4,7 @@
 
 namespace gba {
 
-System::System() : memory(*this), ppu(scheduler), irq(cpu) {
+System::System() : memory(*this), ppu(*this), irq(cpu) {
     cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv4, memory, cp14);
 }
 
@@ -21,6 +21,7 @@ void System::System::reset() {
     memory.reset();
     ppu.reset();
     irq.reset();
+    input.reset();
 
     frames = 0;
 
