@@ -9,6 +9,8 @@
 #include "gba/memory.h"
 #include "gba/cp14.h"
 #include "gba/hardware/cartridge.h"
+#include "gba/hardware/irq.h"
+#include "gba/video/ppu.h"
 
 namespace gba {
 
@@ -27,6 +29,8 @@ public:
     std::unique_ptr<arm::CPU> cpu;
     common::Scheduler scheduler;
     Cartridge cartridge;
+    PPU ppu;
+    IRQ irq;
     
 private:
     void skip_bios();

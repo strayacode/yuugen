@@ -43,7 +43,8 @@ private:
     void load_bios(const std::string& path);
 
     System& system;
-    std::array<u8, 0x10000> arm7_wram;
+    std::array<u8, 0x40000> ewram;
+    std::array<u8, 0x8000> iwram;
     std::array<u8, 0x4000> bios;
 };
 

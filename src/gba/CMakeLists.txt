@@ -5,6 +5,9 @@ add_library(gba
     mmio.cpp
 
     hardware/cartridge.h hardware/cartridge.cpp
+    hardware/irq.h hardware/irq.cpp
+
+    video/ppu.h video/ppu.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

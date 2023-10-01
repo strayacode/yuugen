@@ -4,7 +4,7 @@
 
 namespace gba {
 
-System::System() : memory(*this) {
+System::System() : memory(*this), ppu(scheduler), irq(cpu) {
     cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv4, memory, cp14);
 }
 
@@ -19,6 +19,8 @@ void System::System::reset() {
     cartridge.reset();
     cartridge.load(config.game_path);
     memory.reset();
+    ppu.reset();
+    irq.reset();
 
     frames = 0;
 
@@ -28,7 +30,18 @@ void System::System::reset() {
 }
 
 void System::run_frame() {
-    logger.todo("handle run_frame");
+    auto frame_end = scheduler.get_current_time() + 280095;
+    while (scheduler.get_current_time() < frame_end) {
+        auto cycles = scheduler.get_event_time() - scheduler.get_current_time();
+
+        if (!cpu->is_halted()) {
+            cycles = std::min(static_cast<u64>(16), cycles);
+        }
+
+        cpu->run(cycles);
+        scheduler.tick(cycles);
+        scheduler.run();
+    }
 }
 
 void System::set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) {
