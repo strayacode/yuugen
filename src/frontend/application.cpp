@@ -81,9 +81,18 @@ void Application::handle_input() {
         } else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
             window_width = event.window.data1;
             window_height = event.window.data2;
+        } else {
+            switch (system_type) {
+            case SystemType::GBA:
+                handle_input_gba(event);
+                break;
+            case SystemType::NDS:
+                handle_input_nds(event);
+                break;
+            case SystemType::None:
+                break;
+            }
         }
-        
-        // TODO: handle input
     }
 }
 
@@ -130,12 +139,12 @@ void Application::render_nds() {
     const f64 scale = scale_x < scale_y ? scale_x : scale_y;
 
     scaled_dimensions = ImVec2(256 * scale, 192 * scale);
-    double center_y = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
+    center_pos_x = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
 
     ImGui::GetBackgroundDrawList()->AddImage(
         (void*)(intptr_t)top_screen.get_texture(),
-        ImVec2(center_y, menubar_height),
-        ImVec2(center_y + scaled_dimensions.x, scaled_dimensions.y),
+        ImVec2(center_pos_x, menubar_height),
+        ImVec2(center_pos_x + scaled_dimensions.x, scaled_dimensions.y),
         ImVec2(0, 0),
         ImVec2(1, 1),
         IM_COL32_WHITE
@@ -143,8 +152,8 @@ void Application::render_nds() {
 
     ImGui::GetBackgroundDrawList()->AddImage(
         (void*)(intptr_t)bottom_screen.get_texture(),
-        ImVec2(center_y, scaled_dimensions.y),
-        ImVec2(center_y + scaled_dimensions.x, scaled_dimensions.y * 2),
+        ImVec2(center_pos_x, scaled_dimensions.y),
+        ImVec2(center_pos_x + scaled_dimensions.x, scaled_dimensions.y * 2),
         ImVec2(0, 0),
         ImVec2(1, 1),
         IM_COL32_WHITE
@@ -293,6 +302,93 @@ void Application::end_fullscreen_window() {
     ImGui::End();
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
+}
+
+void Application::handle_input_gba(SDL_Event& event) {
+    auto& gba_system = reinterpret_cast<gba::System&>(*system);
+    if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
+        bool pressed = event.type == SDL_KEYDOWN;
+        switch (event.key.keysym.sym) {
+        case SDLK_d:
+            gba_system.input.handle_input(gba::InputEvent::A, pressed);
+            break;
+        case SDLK_s:
+            gba_system.input.handle_input(gba::InputEvent::B, pressed);
+            break;
+        case SDLK_RSHIFT:
+            gba_system.input.handle_input(gba::InputEvent::Select, pressed);
+            break;
+        case SDLK_RETURN:
+            gba_system.input.handle_input(gba::InputEvent::Start, pressed);
+            break;
+        case SDLK_RIGHT:
+            gba_system.input.handle_input(gba::InputEvent::Right, pressed);
+            break;
+        case SDLK_LEFT:
+            gba_system.input.handle_input(gba::InputEvent::Left, pressed);
+            break;
+        case SDLK_UP:
+            gba_system.input.handle_input(gba::InputEvent::Up, pressed);
+            break;
+        case SDLK_DOWN:
+            gba_system.input.handle_input(gba::InputEvent::Down, pressed);
+            break;
+        case SDLK_e:
+            gba_system.input.handle_input(gba::InputEvent::R, pressed);
+            break;
+        case SDLK_w:
+            gba_system.input.handle_input(gba::InputEvent::L, pressed);
+            break;
+        }
+    }
+}
+
+void Application::handle_input_nds(SDL_Event& event) {
+    auto& nds_system = reinterpret_cast<nds::System&>(*system);
+    if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
+        bool pressed = event.type == SDL_KEYDOWN;
+        switch (event.key.keysym.sym) {
+        case SDLK_d:
+            nds_system.input.handle_input(nds::InputEvent::A, pressed);
+            break;
+        case SDLK_s:
+            nds_system.input.handle_input(nds::InputEvent::B, pressed);
+            break;
+        case SDLK_RSHIFT:
+            nds_system.input.handle_input(nds::InputEvent::Select, pressed);
+            break;
+        case SDLK_RETURN:
+            nds_system.input.handle_input(nds::InputEvent::Start, pressed);
+            break;
+        case SDLK_RIGHT:
+            nds_system.input.handle_input(nds::InputEvent::Right, pressed);
+            break;
+        case SDLK_LEFT:
+            nds_system.input.handle_input(nds::InputEvent::Left, pressed);
+            break;
+        case SDLK_UP:
+            nds_system.input.handle_input(nds::InputEvent::Up, pressed);
+            break;
+        case SDLK_DOWN:
+            nds_system.input.handle_input(nds::InputEvent::Down, pressed);
+            break;
+        case SDLK_e:
+            nds_system.input.handle_input(nds::InputEvent::R, pressed);
+            break;
+        case SDLK_w:
+            nds_system.input.handle_input(nds::InputEvent::L, pressed);
+            break;
+        }
+    } else if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+        int x = ((event.button.x - center_pos_x) / scaled_dimensions.x) * 256;
+        int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
+        
+        if ((x >= 0 && x < 256) && (y >= 0 && y < 192)) {
+            bool pressed = reinterpret_cast<SDL_MouseMotionEvent*>(&event)->state & SDL_BUTTON_LMASK;
+            nds_system.input.set_touch(pressed);
+            nds_system.input.set_point(x, y);
+        }
+    }
 }
 
 void Application::boot_game(const std::string& path) {

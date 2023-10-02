@@ -40,6 +40,7 @@ public:
 
     ImVec2 scaled_dimensions;
     static constexpr float menubar_height = 21;
+    double center_pos_x{0};
     int window_width = 0;
     int window_height = 0;
 
@@ -53,6 +54,9 @@ private:
     void render_nds();
     void render_menubar();
     void render_performance_overlay();
+
+    void handle_input_gba(SDL_Event& event);
+    void handle_input_nds(SDL_Event& event);
     
     void boot_game(const std::string& path);
     void boot_firmware();
@@ -76,4 +80,6 @@ private:
 
     f32 fps;
     std::shared_ptr<common::AudioDevice> audio_device;
+
+    // TODO: create an SDLInputDevice to abstract away input
 };

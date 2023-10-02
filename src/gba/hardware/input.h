@@ -4,10 +4,23 @@
 
 namespace gba {
 
+enum class InputEvent : int {
+    A,
+    B,
+    Start,
+    Select,
+    Left,
+    Right,
+    Up,
+    Down,
+    L,
+    R,
+};
+
 class Input {
 public:
     void reset();
-    
+    void handle_input(InputEvent event, bool pressed);
     u16 read_keyinput() { return keyinput.data & 0x3ff; }
     u16 read_extkeyin() { return extkeyin; }
 
