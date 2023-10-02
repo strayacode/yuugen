@@ -258,6 +258,15 @@ u16 Interpreter::read_half(u32 addr) {
     return memory.read<u16, Bus::Data>(addr);
 }
 
+u32 Interpreter::read_half_rotate(u32 addr) {
+    u32 value = memory.read<u16, Bus::Data>(addr);
+    if (arch == Arch::ARMv4 && (addr & 0x1)) {
+        return common::rotate_right(value, 8);
+    }
+    
+    return value;
+}
+
 u32 Interpreter::read_word(u32 addr) {
     return memory.read<u32, Bus::Data>(addr);
 }

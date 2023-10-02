@@ -3,7 +3,6 @@ set(SOURCES
     application.h application.cpp
     imgui_video_device.h imgui_video_device.cpp
     sdl_audio_device.h sdl_audio_device.cpp
-    widgets/cpu_debugger.h widgets/cpu_debugger.cpp
     font_database.h
 )
 
@@ -42,7 +41,7 @@ endif(NOT OPENGL_FOUND)
 target_link_libraries(yuugen ${OPENGL_LIBRARIES})
 
 include_directories(imgui ${SDL2_INCLUDE_DIRS})
-target_link_libraries(yuugen arm core common ${SDL2_LIBRARIES})
+target_link_libraries(yuugen arm gba nds common ${SDL2_LIBRARIES})
 
 find_package(Threads REQUIRED)
 

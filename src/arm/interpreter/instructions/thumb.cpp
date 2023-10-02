@@ -294,10 +294,15 @@ void Interpreter::thumb_load_store_signed() {
         state.gpr[opcode.rd] = common::sign_extend<s32, 8>(read_byte(addr));
         break;
     case ThumbLoadStoreSigned::Opcode::LDRH:
-        state.gpr[opcode.rd] = read_half(addr);
+        state.gpr[opcode.rd] = read_half_rotate(addr);
         break;
     case ThumbLoadStoreSigned::Opcode::LDRSH:
-        state.gpr[opcode.rd] = common::sign_extend<s32, 16>(read_half(addr));
+        if (arch == Arch::ARMv4 && (addr & 0x1)) {
+            state.gpr[opcode.rd] = common::sign_extend<s32, 8>(read_byte(addr));
+        } else {
+            state.gpr[opcode.rd] = common::sign_extend<s32, 16>(read_half(addr));
+        }
+        
         break;
     }
 
@@ -396,7 +401,7 @@ void Interpreter::thumb_load_store_halfword() {
     auto opcode = ThumbLoadStoreHalfword::decode(instruction);
     u32 addr = state.gpr[opcode.rn] + (opcode.imm << 1);
     if (opcode.load) {
-        state.gpr[opcode.rd] = read_half(addr);
+        state.gpr[opcode.rd] = read_half_rotate(addr);
     } else {
         write_half(addr, state.gpr[opcode.rd]);
     }
@@ -408,12 +413,13 @@ void Interpreter::thumb_load_store_multiple() {
     auto opcode = ThumbLoadStoreMultiple::decode(instruction);
     u32 addr = state.gpr[opcode.rn];
 
-    if (opcode.rlist == 0) {
-        state.gpr[15] += 2;
+    state.gpr[15] += 2;
 
+    if (opcode.rlist == 0) {
         if (arch == Arch::ARMv4) {
             if (opcode.load) {
                 state.gpr[15] = read_word(addr);
+                thumb_flush_pipeline();
             } else {
                 write_word(addr, state.gpr[15]);
             }
@@ -436,17 +442,35 @@ void Interpreter::thumb_load_store_multiple() {
             state.gpr[opcode.rn] = addr;
         }
     } else {
+        int first = 0;
+        int bytes = 0;
+
+        for (int i = 7; i >= 0; i--) {
+            if (opcode.rlist & (1 << i)) {
+                first = i;
+                bytes += 4;
+            }
+        }
+
+        // writeback with rb in list:
+        // stm armv4: store old base if rb is first in rlist, otherwise store new base
+        // stm armv5: always store old base
+        u32 new_base = addr + bytes;
+
         for (int i = 0; i < 8; i++) {
             if (opcode.rlist & (1 << i)) {
-                write_word(addr, state.gpr[i]);
+                if (i == opcode.rn && first != opcode.rn) {
+                    write_word(addr, new_base);
+                } else {
+                    write_word(addr, state.gpr[i]);
+                }
+                
                 addr += 4;
             }
         }
 
         state.gpr[opcode.rn] = addr;
     }
-
-    state.gpr[15] += 2;
 }
 
 } // namespace arm

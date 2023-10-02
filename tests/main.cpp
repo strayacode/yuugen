@@ -1,5 +1,5 @@
 #include "common/logger.h"
-#include "core/system.h"
+#include "nds/system.h"
 
 void compare_states(arm::Arch arch, arm::CPU& a, arm::CPU& b) {
     for (int i = 0; i < 16; i++) {
@@ -27,8 +27,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    core::System a_system;
-    core::System b_system;
+    nds::System a_system;
+    nds::System b_system;
 
     a_system.set_update_callback([](f32) {});
     b_system.set_update_callback([](f32) {});
@@ -37,11 +37,11 @@ int main(int argc, char *argv[]) {
     b_system.select_cpu_backend(arm::BackendType::IRInterpreter, false);
 
     a_system.set_game_path(argv[1]);
-    a_system.set_boot_mode(core::BootMode::Direct);
+    a_system.set_boot_mode(common::BootMode::Fast);
     a_system.reset();
 
     b_system.set_game_path(argv[1]);
-    b_system.set_boot_mode(core::BootMode::Direct);
+    b_system.set_boot_mode(common::BootMode::Fast);
     b_system.reset();
 
     auto& a_arm7 = a_system.arm7;

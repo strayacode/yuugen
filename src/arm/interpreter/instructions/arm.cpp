@@ -428,7 +428,11 @@ void Interpreter::arm_halfword_data_transfer() {
 
     if (opcode.half && opcode.sign) {
         if (opcode.load) {
-            state.gpr[opcode.rd] = common::sign_extend<s32, 16>(read_half(addr));
+            if (arch == Arch::ARMv4 && (addr & 0x1)) {
+                state.gpr[opcode.rd] = common::sign_extend<s32, 8>(read_byte(addr));
+            } else {
+                state.gpr[opcode.rd] = common::sign_extend<s32, 16>(read_half(addr));
+            }
         } else if (arch == Arch::ARMv5) {
             if (opcode.rd & 0x1) {
                 logger.error("Interpreter: undefined strd exception");
@@ -439,7 +443,7 @@ void Interpreter::arm_halfword_data_transfer() {
         }
     } else if (opcode.half) {
         if (opcode.load) {
-            state.gpr[opcode.rd] = read_half(addr);
+            state.gpr[opcode.rd] = read_half_rotate(addr);
         } else {
             write_half(addr, state.gpr[opcode.rd]);
         }

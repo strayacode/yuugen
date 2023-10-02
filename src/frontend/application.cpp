@@ -1,6 +1,11 @@
+#include <cassert>
 #include "common/logger.h"
 #include "common/string.h"
+#include "gba/system.h"
+#include "nds/system.h"
 #include "frontend/application.h"
+#include "frontend/sdl_audio_device.h"
+#include "frontend/imgui_video_device.h"
 
 Application::Application() {}
 
@@ -38,17 +43,7 @@ bool Application::initialise() {
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
 
-    top_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
-    bottom_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
-
-    system.set_update_callback([this](f32 fps) {
-        this->fps = fps;
-    });
-
     audio_device = std::make_shared<SDLAudioDevice>();
-    system.set_audio_device(audio_device);
-
-    system.select_cpu_backend(arm::BackendType::IRInterpreter, true);
     return true;
 }
 
@@ -86,68 +81,61 @@ void Application::handle_input() {
         } else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
             window_width = event.window.data1;
             window_height = event.window.data2;
-        } else if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
-            bool pressed = event.type == SDL_KEYDOWN;
-            switch (event.key.keysym.sym) {
-            case SDLK_d:
-                system.input.handle_input(core::InputEvent::A, pressed);
-                break;
-            case SDLK_s:
-                system.input.handle_input(core::InputEvent::B, pressed);
-                break;
-            case SDLK_RSHIFT:
-                system.input.handle_input(core::InputEvent::Select, pressed);
-                break;
-            case SDLK_RETURN:
-                system.input.handle_input(core::InputEvent::Start, pressed);
-                break;
-            case SDLK_RIGHT:
-                system.input.handle_input(core::InputEvent::Right, pressed);
-                break;
-            case SDLK_LEFT:
-                system.input.handle_input(core::InputEvent::Left, pressed);
-                break;
-            case SDLK_UP:
-                system.input.handle_input(core::InputEvent::Up, pressed);
-                break;
-            case SDLK_DOWN:
-                system.input.handle_input(core::InputEvent::Down, pressed);
-                break;
-            case SDLK_e:
-                system.input.handle_input(core::InputEvent::R, pressed);
-                break;
-            case SDLK_w:
-                system.input.handle_input(core::InputEvent::L, pressed);
-                break;
-            }
-        } else if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
-            int x = ((event.button.x - center_pos) / scaled_dimensions.x) * 256;
-            int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
-            
-            if ((x >= 0 && x < 256) && (y >= 0 && y < 192)) {
-                bool pressed = reinterpret_cast<SDL_MouseMotionEvent*>(&event)->state & SDL_BUTTON_LMASK;
-                system.input.set_touch(pressed);
-                system.input.set_point(x, y);
-            }
         }
+        
+        // TODO: handle input
     }
 }
 
-void Application::render_screens() {
-    top_screen.update_texture(system.video_unit.fetch_framebuffer(core::Screen::Top));
-    bottom_screen.update_texture(system.video_unit.fetch_framebuffer(core::Screen::Bottom));
+void Application::render_gba() {
+    static ImGuiVideoDevice main_screen;
+    main_screen.configure(240, 160, ImGuiVideoDevice::Filter::Nearest);
+    
+    auto framebuffers = system->fetch_framebuffers();
+    assert(framebuffers.size() == 1);
+
+    main_screen.update_texture(framebuffers[0]);
+    
+    const f64 scale_x = static_cast<f64>(window_width) / 240;
+    const f64 scale_y = static_cast<f64>(window_height) / 160;
+    const f64 scale = scale_x < scale_y ? scale_x : scale_y;
+
+    scaled_dimensions = ImVec2(240 * scale, 160 * scale);
+    ImVec2 center_pos = ImVec2((static_cast<f64>(window_width) - scaled_dimensions.x) / 2, (static_cast<f64>(window_height) - scaled_dimensions.y) / 2);
+
+    ImGui::GetBackgroundDrawList()->AddImage(
+        (void*)(intptr_t)main_screen.get_texture(),
+        ImVec2(center_pos.x, menubar_height + center_pos.y),
+        ImVec2(center_pos.x + scaled_dimensions.x, center_pos.y + scaled_dimensions.y),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+        IM_COL32_WHITE
+    );
+}
+
+void Application::render_nds() {
+    static ImGuiVideoDevice top_screen;
+    static ImGuiVideoDevice bottom_screen;
+    top_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
+    bottom_screen.configure(256, 192, ImGuiVideoDevice::Filter::Nearest);
+
+    auto framebuffers = system->fetch_framebuffers();
+    assert(framebuffers.size() == 2);
+
+    top_screen.update_texture(framebuffers[0]);
+    bottom_screen.update_texture(framebuffers[1]);
 
     const f64 scale_x = static_cast<f64>(window_width) / 256;
     const f64 scale_y = static_cast<f64>(window_height) / 384;
     const f64 scale = scale_x < scale_y ? scale_x : scale_y;
 
     scaled_dimensions = ImVec2(256 * scale, 192 * scale);
-    center_pos = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
+    double center_y = (static_cast<f64>(window_width) - scaled_dimensions.x) / 2;
 
     ImGui::GetBackgroundDrawList()->AddImage(
         (void*)(intptr_t)top_screen.get_texture(),
-        ImVec2(center_pos, menubar_height),
-        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y),
+        ImVec2(center_y, menubar_height),
+        ImVec2(center_y + scaled_dimensions.x, scaled_dimensions.y),
         ImVec2(0, 0),
         ImVec2(1, 1),
         IM_COL32_WHITE
@@ -155,8 +143,8 @@ void Application::render_screens() {
 
     ImGui::GetBackgroundDrawList()->AddImage(
         (void*)(intptr_t)bottom_screen.get_texture(),
-        ImVec2(center_pos, scaled_dimensions.y),
-        ImVec2(center_pos + scaled_dimensions.x, scaled_dimensions.y * 2),
+        ImVec2(center_y, scaled_dimensions.y),
+        ImVec2(center_y + scaled_dimensions.x, scaled_dimensions.y * 2),
         ImVec2(0, 0),
         ImVec2(1, 1),
         IM_COL32_WHITE
@@ -188,13 +176,6 @@ void Application::render_menubar() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Debug")) {
-            ImGui::MenuItem("ARM7", nullptr, arm7_debugger.get_visible_pointer());
-            ImGui::MenuItem("ARM9", nullptr, arm9_debugger.get_visible_pointer());
-
-            ImGui::EndMenu();
-        }
-
         ImGui::EndMainMenuBar();
     }
 
@@ -210,11 +191,11 @@ void Application::render_menubar() {
 
 void Application::render_performance_overlay() {
     font_database.push_style(FontDatabase::Style::Large);
-    if (system.get_state() == core::System::State::Running && static_cast<int>(fps) != 0) {
+    if (system->get_state() == common::System::State::Running && static_cast<int>(fps) != 0) {
         auto fps_string = common::format("%.0f FPS | %.2f ms", fps, 1000.0f / fps);
         auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
         ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string.c_str());
-    } else if (system.get_state() == core::System::State::Paused) {
+    } else if (system->get_state() == common::System::State::Paused) {
         auto fps_string = "Paused";
         auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
         ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string);
@@ -268,16 +249,24 @@ void Application::render() {
     ImGui::NewFrame();
     
     render_menubar();
-    render_screens();
-    render_performance_overlay();
+
+    switch (system_type) {
+    case SystemType::GBA:
+        render_gba();
+        render_performance_overlay();
+        break;
+    case SystemType::NDS:
+        render_nds();
+        render_performance_overlay();
+        break;
+    case SystemType::None:
+        break;
+    }
     
     if (demo_window) {
         ImGui::ShowDemoWindow();
     }
 
-    arm7_debugger.render(*this, system.arm7.get_cpu(), system.arm7.get_irq());
-    arm9_debugger.render(*this, system.arm9.get_cpu(), system.arm9.get_irq());
-    
     ImGui::Render();
     glViewport(0, 0, 1280, 720);
     glClearColor(grey2.x, grey2.y, grey2.z, grey2.w);
@@ -307,9 +296,25 @@ void Application::end_fullscreen_window() {
 }
 
 void Application::boot_game(const std::string& path) {
-    system.set_game_path(path);
-    system.set_boot_mode(core::BootMode::Direct);
-    system.start();
+    auto extension = path.substr(path.find_last_of(".") + 1, path.size());
+    if (extension == "gba") {
+        system = std::make_unique<gba::System>();
+        system_type = SystemType::GBA;
+    } else if (extension == "nds") {
+        system = std::make_unique<nds::System>();
+        system_type = SystemType::NDS;
+    } else {
+        logger.todo("unhandled game extension %s", extension.c_str());
+    }
+
+    system->set_update_callback([this](f32 fps) {
+        this->fps = fps;
+    });
+
+    system->set_audio_device(audio_device);
+    system->set_game_path(path);
+    system->set_boot_mode(common::BootMode::Fast);
+    system->start();
 }
 
 void Application::boot_firmware() {

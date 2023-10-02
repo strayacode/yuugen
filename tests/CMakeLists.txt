@@ -1,5 +1,5 @@
 add_executable(yuugen_tests main.cpp)
-target_link_libraries(yuugen_tests arm core common)
+target_link_libraries(yuugen_tests arm nds common)
 
 find_package(Threads REQUIRED)
 
