@@ -90,14 +90,14 @@ void PPU::render_scanline(int line) {
 }
 
 void PPU::render_mode4(int line) {
+    auto bitmap_start = dispcnt.display_frame_select * 0xa000;
+
     for (int x = 0; x < 240; x++) {
-        int offset = (240 * line) + x;
+        int offset = bitmap_start + (240 * line) + x;
         int palette_index = vram[offset];
         u16 colour = common::read<u16>(palette_ram.data(), palette_index * 2);
         plot(x, line, 0xff000000 | rgb555_to_rgb888(colour));
     }
-    
-    // 240x160 8bpp page flip yes
 }
 
 u32 PPU::rgb555_to_rgb888(u32 colour) {

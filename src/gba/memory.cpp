@@ -15,10 +15,16 @@ void Memory::reset() {
     iwram.fill(0);
 
     map(0x00000000, 0x01000000, bios.data(), 0x3fff, arm::RegionAttributes::Read);
-    map(0x02000000, 0x02040000, ewram.data(), 0x3ffff, arm::RegionAttributes::ReadWrite);
-    map(0x03000000, 0x03008000, iwram.data(), 0x7fff, arm::RegionAttributes::ReadWrite);
+    map(0x02000000, 0x03000000, ewram.data(), 0x3ffff, arm::RegionAttributes::ReadWrite);
+    map(0x03000000, 0x04000000, iwram.data(), 0x7fff, arm::RegionAttributes::ReadWrite);
 
-    map(0x06000000, 0x06018000, system.ppu.vram.data(), 0x17fff, arm::RegionAttributes::ReadWrite);
+    for (u32 addr = 0x06000000; addr < 0x07000000; addr += 0x20000) {
+        // 0x00000 - 0x18000 is mapped directly
+        map(addr, addr + 0x18000, system.ppu.vram.data(), 0x17fff, arm::RegionAttributes::ReadWrite);
+
+        // 0x18000 - 0x20000 is mapped to 0x10000 - 0x18000
+        map(addr + 0x18000, addr + 0x20000, system.ppu.vram.data() + 0x10000, 0x7fff, arm::RegionAttributes::ReadWrite);
+    }
 
     // TODO: how does the rom get mirrored if it's < 32mb?
     map(0x08000000, 0x0a000000, system.cartridge.get_rom_pointer(), 0x1ffffff, arm::RegionAttributes::Read);
@@ -50,6 +56,8 @@ u32 Memory::read_word(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_word(addr);
+    case 0x05:
+        return system.ppu.read_palette_ram<u32>(addr);
     default:
         logger.warn("Memory: handle 32-bit read %08x", addr);
     }
@@ -84,6 +92,9 @@ void Memory::write_word(u32 addr, u32 value) {
     switch (addr >> 24) {
     case 0x04:
         mmio_write_word(addr, value);
+        break;
+    case 0x05:
+        system.ppu.write_palette_ram<u32>(addr, value);
         break;
     default:
         logger.warn("Memory: handle 32-bit write %08x = %02x", addr, value);
