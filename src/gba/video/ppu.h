@@ -35,7 +35,15 @@ public:
 
     template <typename T>
     void write_palette_ram(u32 addr, T value) {
-        common::write<T>(palette_ram.data(), value, addr & 0x3ff);
+        u32 masked_addr = addr & 0x3ff;
+        if constexpr (sizeof(T) == 1) {
+            // for 8-bit writes the value gets duplicated into a 16-bit write
+            auto aligned_addr = masked_addr & ~0x1;
+            palette_ram[aligned_addr] = value;
+            palette_ram[aligned_addr + 1] = value;
+        } else {
+            common::write<T>(palette_ram.data(), value, addr & 0x3ff);
+        }
     }
 
     template <typename T>

@@ -28,6 +28,8 @@ u8 Memory::read_byte(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_byte(addr);
+    case 0x05:
+        return system.ppu.read_palette_ram<u8>(addr);
     case 0x06:
         return system.ppu.read_vram<u8>(addr);
     default:
@@ -41,6 +43,8 @@ u16 Memory::read_half(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_half(addr);
+    case 0x05:
+        return system.ppu.read_palette_ram<u16>(addr);
     case 0x06:
         return system.ppu.read_vram<u16>(addr);
     default:
@@ -71,6 +75,9 @@ void Memory::write_byte(u32 addr, u8 value) {
     switch (addr >> 24) {
     case 0x04:
         mmio_write_byte(addr, value);
+        break;
+    case 0x05:
+        system.ppu.write_palette_ram<u8>(addr, value);
         break;
     case 0x06:
         system.ppu.write_vram<u8>(addr, value);
