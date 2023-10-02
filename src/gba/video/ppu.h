@@ -43,6 +43,44 @@ public:
         common::write<T>(oam.data(), value, addr & 0x3ff);
     }
 
+    template <typename T>
+    T read_vram(u32 addr) {
+        // 0x00000 - 0x18000 is mapped directly
+        // 0x18000 - 0x20000 is mapped to 0x10000 - 0x18000
+        u32 masked_addr = addr & 0x1ffff;
+        if (masked_addr >= 0x18000) {
+            masked_addr -= 0x8000;
+        }
+
+        return common::read<T>(vram.data(), masked_addr);
+    }
+
+    template <typename T>
+    void write_vram(u32 addr, T value) {
+        // 0x00000 - 0x17fff is mapped directly
+        // 0x18000 - 0x1ffff is mapped to 0x10000 - 0x17fff
+        u32 masked_addr = addr & 0x1ffff;
+        if (masked_addr >= 0x18000) {
+            masked_addr -= 0x8000;
+        }
+
+        if constexpr (sizeof(T) == 1) {
+            // 8-bit writes will be ignored when:
+            // writing to the obj region of vram (0x10000 - 0x17fff)
+            // when in bitmap mode (0x14000 - 0x17fff)
+            u32 bound = dispcnt.bg_mode >= 3 ? 0x14000 : 0x10000;
+
+            // otherwise the 8-bit value gets duplicated into a 16-bit write
+            if (masked_addr < bound) {
+                auto aligned_addr = masked_addr & ~0x1;
+                vram[aligned_addr] = value;
+                vram[aligned_addr + 1] = value;
+            }
+        } else {
+            common::write<T>(vram.data(), value, masked_addr);
+        }
+    }
+
     std::array<u8, 0x18000> vram;
 
 private:

@@ -18,22 +18,18 @@ void Memory::reset() {
     map(0x02000000, 0x03000000, ewram.data(), 0x3ffff, arm::RegionAttributes::ReadWrite);
     map(0x03000000, 0x04000000, iwram.data(), 0x7fff, arm::RegionAttributes::ReadWrite);
 
-    for (u32 addr = 0x06000000; addr < 0x07000000; addr += 0x20000) {
-        // 0x00000 - 0x18000 is mapped directly
-        map(addr, addr + 0x18000, system.ppu.vram.data(), 0x17fff, arm::RegionAttributes::ReadWrite);
-
-        // 0x18000 - 0x20000 is mapped to 0x10000 - 0x18000
-        map(addr + 0x18000, addr + 0x20000, system.ppu.vram.data() + 0x10000, 0x7fff, arm::RegionAttributes::ReadWrite);
-    }
-
     // TODO: how does the rom get mirrored if it's < 32mb?
     map(0x08000000, 0x0a000000, system.cartridge.get_rom_pointer(), 0x1ffffff, arm::RegionAttributes::Read);
+    map(0x0a000000, 0x0c000000, system.cartridge.get_rom_pointer(), 0x1ffffff, arm::RegionAttributes::Read);
+    map(0x0c000000, 0x0e000000, system.cartridge.get_rom_pointer(), 0x1ffffff, arm::RegionAttributes::Read);
 }
 
 u8 Memory::read_byte(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_byte(addr);
+    case 0x06:
+        return system.ppu.read_vram<u8>(addr);
     default:
         logger.warn("Memory: handle 8-bit read %08x", addr);
     }
@@ -45,6 +41,8 @@ u16 Memory::read_half(u32 addr) {
     switch (addr >> 24) {
     case 0x04:
         return mmio_read_half(addr);
+    case 0x06:
+        return system.ppu.read_vram<u16>(addr);
     default:
         logger.warn("Memory: handle 16-bit read %08x", addr);
     }
@@ -58,6 +56,8 @@ u32 Memory::read_word(u32 addr) {
         return mmio_read_word(addr);
     case 0x05:
         return system.ppu.read_palette_ram<u32>(addr);
+    case 0x06:
+        return system.ppu.read_vram<u16>(addr);
     case 0x07:
         return system.ppu.read_oam<u32>(addr);
     default:
@@ -72,6 +72,12 @@ void Memory::write_byte(u32 addr, u8 value) {
     case 0x04:
         mmio_write_byte(addr, value);
         break;
+    case 0x06:
+        system.ppu.write_vram<u8>(addr, value);
+        break;
+    case 0x07:
+        // 8-bit oam writes are ignored
+        break;
     default:
         logger.warn("Memory: handle 8-bit write %08x = %02x", addr, value);
     }
@@ -85,6 +91,9 @@ void Memory::write_half(u32 addr, u16 value) {
     case 0x05:
         system.ppu.write_palette_ram<u16>(addr, value);
         break;
+    case 0x06:
+        system.ppu.write_vram<u16>(addr, value);
+        break;
     default:
         logger.warn("Memory: handle 16-bit write %08x = %02x", addr, value);
     }
@@ -97,6 +106,9 @@ void Memory::write_word(u32 addr, u32 value) {
         break;
     case 0x05:
         system.ppu.write_palette_ram<u32>(addr, value);
+        break;
+    case 0x06:
+        system.ppu.write_vram<u32>(addr, value);
         break;
     case 0x07:
         system.ppu.write_oam<u32>(addr, value);
