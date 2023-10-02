@@ -14,15 +14,15 @@ void PPU::reset() {
     
     scanline_start_event = scheduler.register_event("Scanline Start", [this]() {
         render_scanline_start();
-        scheduler.add_event(272, &scanline_end_event);
+        scheduler.add_event(228, &scanline_end_event);
     });
 
     scanline_end_event = scheduler.register_event("Scanline End", [this]() {
         render_scanline_end();
-        scheduler.add_event(960, &scanline_start_event);
+        scheduler.add_event(1004, &scanline_start_event);
     });
 
-    scheduler.add_event(960, &scanline_start_event);
+    scheduler.add_event(1004, &scanline_start_event);
 }
 
 void PPU::write_dispcnt(u16 value, u32 mask) {

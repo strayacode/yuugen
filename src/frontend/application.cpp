@@ -296,7 +296,7 @@ void Application::end_fullscreen_window() {
 }
 
 void Application::boot_game(const std::string& path) {
-    auto extension = path.substr(path.find(".") + 1, path.size());
+    auto extension = path.substr(path.find_last_of(".") + 1, path.size());
     if (extension == "gba") {
         system = std::make_unique<gba::System>();
         system_type = SystemType::GBA;

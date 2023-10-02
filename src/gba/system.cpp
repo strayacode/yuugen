@@ -1,5 +1,7 @@
 #include "common/logger.h"
 #include "arm/interpreter/interpreter.h"
+#include "arm/jit/jit.h"
+#include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 #include "gba/system.h"
 
 namespace gba {
@@ -31,7 +33,7 @@ void System::System::reset() {
 }
 
 void System::run_frame() {
-    auto frame_end = scheduler.get_current_time() + 280095;
+    auto frame_end = scheduler.get_current_time() + 280896;
     while (scheduler.get_current_time() < frame_end) {
         auto cycles = scheduler.get_event_time() - scheduler.get_current_time();
 
