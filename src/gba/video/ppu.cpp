@@ -7,6 +7,7 @@ PPU::PPU(System& system) : scheduler(system.scheduler), irq(system.irq) {}
 
 void PPU::reset() {
     vram.fill(0);
+    oam.fill(0);
     dispcnt.data = 0;
     dispstat.data = 0;
     vcount = 0;

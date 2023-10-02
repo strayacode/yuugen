@@ -29,8 +29,18 @@ public:
     }
 
     template <typename T>
+    T read_oam(u32 addr) {
+        return common::read<T>(oam.data(), addr & 0x3ff);
+    }
+
+    template <typename T>
     void write_palette_ram(u32 addr, T value) {
         common::write<T>(palette_ram.data(), value, addr & 0x3ff);
+    }
+
+    template <typename T>
+    void write_oam(u32 addr, T value) {
+        common::write<T>(oam.data(), value, addr & 0x3ff);
     }
 
     std::array<u8, 0x18000> vram;
@@ -83,6 +93,7 @@ private:
     DISPSTAT dispstat;
     u16 vcount;
     std::array<u8, 0x400> palette_ram;
+    std::array<u8, 0x400> oam;
 
     common::Scheduler& scheduler;
     IRQ& irq;

@@ -58,6 +58,8 @@ u32 Memory::read_word(u32 addr) {
         return mmio_read_word(addr);
     case 0x05:
         return system.ppu.read_palette_ram<u32>(addr);
+    case 0x07:
+        return system.ppu.read_oam<u32>(addr);
     default:
         logger.warn("Memory: handle 32-bit read %08x", addr);
     }
@@ -95,6 +97,9 @@ void Memory::write_word(u32 addr, u32 value) {
         break;
     case 0x05:
         system.ppu.write_palette_ram<u32>(addr, value);
+        break;
+    case 0x07:
+        system.ppu.write_oam<u32>(addr, value);
         break;
     default:
         logger.warn("Memory: handle 32-bit write %08x = %02x", addr, value);
