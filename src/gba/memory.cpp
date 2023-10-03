@@ -13,6 +13,7 @@ Memory::Memory(System& system) : system(system) {
 void Memory::reset() {
     ewram.fill(0);
     iwram.fill(0);
+    haltcnt = 0;
 
     map(0x00000000, 0x01000000, bios.data(), 0x3fff, arm::RegionAttributes::Read);
     map(0x02000000, 0x03000000, ewram.data(), 0x3ffff, arm::RegionAttributes::ReadWrite);
@@ -32,6 +33,8 @@ u8 Memory::read_byte(u32 addr) {
         return system.ppu.read_palette_ram<u8>(addr);
     case 0x06:
         return system.ppu.read_vram<u8>(addr);
+    case 0x07:
+        return system.ppu.read_oam<u8>(addr);
     default:
         logger.warn("Memory: handle 8-bit read %08x", addr);
     }
@@ -47,6 +50,8 @@ u16 Memory::read_half(u32 addr) {
         return system.ppu.read_palette_ram<u16>(addr);
     case 0x06:
         return system.ppu.read_vram<u16>(addr);
+    case 0x07:
+        return system.ppu.read_oam<u16>(addr);
     default:
         logger.warn("Memory: handle 16-bit read %08x", addr);
     }
@@ -101,6 +106,9 @@ void Memory::write_half(u32 addr, u16 value) {
     case 0x06:
         system.ppu.write_vram<u16>(addr, value);
         break;
+    case 0x07:
+        system.ppu.write_oam<u16>(addr, value);
+        break;
     default:
         logger.warn("Memory: handle 16-bit write %08x = %02x", addr, value);
     }
@@ -129,6 +137,15 @@ void Memory::load_bios(const std::string& path) {
     common::RegularFile file;
     file.load(path);
     bios = common::read<std::array<u8, 0x4000>>(file.get_pointer(0));
+}
+
+void Memory::write_haltcnt(u8 value) {
+    haltcnt = value & 0xc0;
+    if ((haltcnt >> 7) & 0x1) {
+        logger.todo("haltcnt stop");
+    } else {
+        system.cpu->update_halted(true);
+    }
 }
 
 } // namespace gba

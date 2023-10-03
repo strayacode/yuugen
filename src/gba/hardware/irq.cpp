@@ -14,26 +14,29 @@ void IRQ::reset() {
 void IRQ::raise(IRQ::Source source) {
     irf |= 1 << static_cast<int>(source);
 
+    logger.debug("ime %d ie %04x irf %04x", ime, ie, irf);
+
     if (ime && (ie & (1 << static_cast<int>(source)))) {
+        logger.debug("fire irq %d", static_cast<int>(source));
         cpu->update_halted(false);
     }
 
     cpu->update_irq(ime && (ie & irf));
 }
 
-void IRQ::write_ime(u32 value, u32 mask) {
+void IRQ::write_ime(u16 value, u32 mask) {
     mask &= 0x1;
     ime = (ime & ~mask) | (value & mask);
 
     cpu->update_irq(ime && (ie & irf));
 }
 
-void IRQ::write_ie(u32 value, u32 mask) {
+void IRQ::write_ie(u16 value, u32 mask) {
     ie = (ie & ~mask) | (value & mask);
     cpu->update_irq(ime && (ie & irf));
 }
 
-void IRQ::write_irf(u32 value, u32 mask) {
+void IRQ::write_irf(u16 value, u32 mask) {
     irf &= ~(value & mask);
     cpu->update_irq(ime && (ie & irf));
 }

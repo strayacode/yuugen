@@ -10,8 +10,9 @@ void PPU::reset() {
     oam.fill(0);
     dispcnt.data = 0;
     dispstat.data = 0;
+    bgcnt.fill(BGCNT{});
     vcount = 0;
-    framebuffer.fill(0);
+    framebuffer.fill(0xff000000);
     
     scanline_start_event = scheduler.register_event("Scanline Start", [this]() {
         render_scanline_start();
@@ -28,6 +29,15 @@ void PPU::reset() {
 
 void PPU::write_dispcnt(u16 value, u32 mask) {
     dispcnt.data = (dispcnt.data & ~mask) | (value & mask);
+}
+
+void PPU::write_dispstat(u16 value, u32 mask) {
+    mask &= 0xffbf;
+    dispstat.data = (dispstat.data & ~mask) | (value & mask);
+}
+
+void PPU::write_bgcnt(int id, u16 value, u32 mask) {
+    bgcnt[id].data = (bgcnt[id].data & ~mask) | (value & mask);
 }
 
 void PPU::render_scanline_start() {
@@ -82,11 +92,22 @@ void PPU::render_scanline(int line) {
     case 0:
         logger.warn("mode 0");
         break;
+    case 3:
+        render_mode3(line);
+        break;
     case 4:
         render_mode4(line);
         break;
     default:
         logger.todo("PPU: handle bg mode %d", dispcnt.bg_mode);
+    }
+}
+
+void PPU::render_mode3(int line) {
+    for (int x = 0; x < 240; x++) {
+        int offset = ((240 * line) + x) * 2;
+        u16 colour = common::read<u16>(vram.data(), offset);
+        plot(x, line, 0xff000000 | rgb555_to_rgb888(colour));
     }
 }
 

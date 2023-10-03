@@ -42,10 +42,13 @@ private:
 
     void load_bios(const std::string& path);
 
+    void write_haltcnt(u8 value);
+
     System& system;
     std::array<u8, 0x40000> ewram;
     std::array<u8, 0x8000> iwram;
     std::array<u8, 0x4000> bios;
+    u8 haltcnt;
 };
 
 } // namespace gba

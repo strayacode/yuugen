@@ -30,18 +30,18 @@ public:
     void reset();
     void raise(Source source);
 
-    u32 read_ime() { return ime; }
-    u32 read_ie() { return ie; }
-    u32 read_irf() { return irf; }
+    u16 read_ime() { return ime; }
+    u16 read_ie() { return ie; }
+    u16 read_irf() { return irf; }
 
-    void write_ime(u32 value, u32 mask);
-    void write_ie(u32 value, u32 mask);
-    void write_irf(u32 value, u32 mask);
+    void write_ime(u16 value, u32 mask);
+    void write_ie(u16 value, u32 mask);
+    void write_irf(u16 value, u32 mask);
 
 private:
-    u32 ime;
-    u32 ie;
-    u32 irf;
+    u16 ime;
+    u16 ie;
+    u16 irf;
     std::unique_ptr<arm::CPU>& cpu;
 };
 

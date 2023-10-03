@@ -18,10 +18,14 @@ public:
 
     u16 read_dispcnt() { return dispcnt.data; }
     u16 read_dispstat() { return dispstat.data; }
+    u16 read_vcount() { return vcount; }
+    u16 read_bgcnt(int id) { return bgcnt[id].data; }
 
     u32* fetch_framebuffer() { return framebuffer.data(); }
 
     void write_dispcnt(u16 value, u32 mask);
+    void write_dispstat(u16 value, u32 mask);
+    void write_bgcnt(int id, u16 value, u32 mask);
 
     template <typename T>
     T read_palette_ram(u32 addr) {
@@ -95,6 +99,7 @@ private:
     void render_scanline_start();
     void render_scanline_end();
     void render_scanline(int line);
+    void render_mode3(int line);
     void render_mode4(int line);
     u32 rgb555_to_rgb888(u32 colour);
     void plot(int x, int y, u32 colour);
@@ -135,8 +140,24 @@ private:
         u16 data;
     };
 
+    union BGCNT {
+        struct {
+            u8 priority : 2;
+            u8 character_base : 2;
+            u16 : 2;
+            bool mosaic : 1;
+            bool palette_8bpp : 1;
+            u8 screen_base : 5;
+            bool display_area_overflow : 1;
+            u8 size : 2;
+        };
+
+        u16 data;
+    };
+
     DISPCNT dispcnt;
     DISPSTAT dispstat;
+    std::array<BGCNT, 4> bgcnt;
     u16 vcount;
     std::array<u8, 0x400> palette_ram;
     std::array<u8, 0x400> oam;
