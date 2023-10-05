@@ -9,6 +9,8 @@ add_library(gba
     hardware/input.h hardware/input.cpp
 
     video/ppu.h video/ppu.cpp
+    video/background.cpp video/bitmap.cpp
+    video/composer.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

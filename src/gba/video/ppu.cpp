@@ -1,3 +1,4 @@
+#include "common/bits.h"
 #include "gba/video/ppu.h"
 #include "gba/system.h"
 
@@ -11,7 +12,13 @@ void PPU::reset() {
     dispcnt.data = 0;
     dispstat.data = 0;
     bgcnt.fill(BGCNT{});
+    bghofs.fill(0);
+    bgvofs.fill(0);
     vcount = 0;
+    winh.fill(0);
+    winv.fill(0);
+    winin = 0;
+    winout = 0;
     framebuffer.fill(0xff000000);
     
     scanline_start_event = scheduler.register_event("Scanline Start", [this]() {
@@ -25,6 +32,8 @@ void PPU::reset() {
     });
 
     scheduler.add_event(1004, &scanline_start_event);
+
+    reset_layers();
 }
 
 void PPU::write_dispcnt(u16 value, u32 mask) {
@@ -38,6 +47,14 @@ void PPU::write_dispstat(u16 value, u32 mask) {
 
 void PPU::write_bgcnt(int id, u16 value, u32 mask) {
     bgcnt[id].data = (bgcnt[id].data & ~mask) | (value & mask);
+}
+
+void PPU::write_bghofs(int id, u16 value, u32 mask) {
+    bghofs[id] = (bghofs[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgvofs(int id, u16 value, u32 mask) {
+    bgvofs[id] = (bgvofs[id] & ~mask) | (value & mask);
 }
 
 void PPU::render_scanline_start() {
@@ -88,56 +105,60 @@ void PPU::render_scanline_end() {
 }
 
 void PPU::render_scanline(int line) {
-    switch (dispcnt.bg_mode) {
-    case 0:
-        logger.warn("mode 0");
-        break;
-    case 3:
-        render_mode3(line);
-        break;
-    case 4:
-        render_mode4(line);
-        break;
-    case 5:
-        render_mode5(line);
-        break;
-    default:
-        logger.todo("PPU: handle bg mode %d", dispcnt.bg_mode);
-    }
-}
-
-void PPU::render_mode3(int line) {
-    for (int x = 0; x < 240; x++) {
-        int offset = ((240 * line) + x) * 2;
-        u16 colour = common::read<u16>(vram.data(), offset);
-        plot(x, line, 0xff000000 | rgb555_to_rgb888(colour));
-    }
-}
-
-void PPU::render_mode4(int line) {
-    auto bitmap_start = dispcnt.display_frame_select * 0xa000;
-
-    for (int x = 0; x < 240; x++) {
-        int offset = bitmap_start + (240 * line) + x;
-        int palette_index = vram[offset];
-        u16 colour = common::read<u16>(palette_ram.data(), palette_index * 2);
-        plot(x, line, 0xff000000 | rgb555_to_rgb888(colour));
-    }
-}
-
-void PPU::render_mode5(int line) {
-    // the bitmap is only 160x128
-    if (line >= 128) {
-        return;
+    if (dispcnt.enable_bg0) {
+        switch (dispcnt.bg_mode) {
+        case 0:
+            render_mode0(0, line);
+            break;
+        default:
+            logger.todo("PPU: handle bg mode %d for bg0", dispcnt.bg_mode);
+        }
     }
 
-    auto bitmap_start = dispcnt.display_frame_select * 0xa000;
-
-    for (int x = 0; x < 160; x++) {
-        int offset = bitmap_start + ((160 * line) + x) * 2;
-        u16 colour = common::read<u16>(vram.data(), offset);
-        plot(x, line, 0xff000000 | rgb555_to_rgb888(colour));
+    if (dispcnt.enable_bg1) {
+        switch (dispcnt.bg_mode) {
+        case 0:
+            render_mode0(1, line);
+            break;
+        default:
+            logger.todo("PPU: handle bg mode %d for bg1", dispcnt.bg_mode);
+        }
     }
+
+    if (dispcnt.enable_bg2) {
+        switch (dispcnt.bg_mode) {
+        case 0:
+            render_mode0(2, line);
+            break;
+        case 3:
+            render_mode3(2, line);
+            break;
+        case 4:
+            render_mode4(2, line);
+            break;
+        case 5:
+            render_mode5(2, line);
+            break;
+        default:
+            logger.todo("PPU: handle bg mode %d for bg2", dispcnt.bg_mode);
+        }
+    }
+
+    if (dispcnt.enable_bg3) {
+        switch (dispcnt.bg_mode) {
+        case 0:
+            render_mode0(3, line);
+            break;
+        default:
+            logger.todo("PPU: handle bg mode %d for bg3", dispcnt.bg_mode);
+        }
+    }
+
+    if (dispcnt.enable_obj) {
+        logger.todo("PPU: handle object rendering");
+    }
+
+    compose_scanline(line);
 }
 
 u32 PPU::rgb555_to_rgb888(u32 colour) {
@@ -149,6 +170,48 @@ u32 PPU::rgb555_to_rgb888(u32 colour) {
 
 void PPU::plot(int x, int y, u32 colour) {
     framebuffer[(240 * y) + x] = colour;
+}
+
+void PPU::reset_layers() {
+    for (int i = 0; i < 4; i++) {
+        bg_layers[i].fill(0);
+    }
+}
+
+u8 PPU::calculate_enabled_layers(int x, int line) {
+    u8 enabled = common::get_field<8, 5>(dispcnt.data);
+    u8 window = common::get_field<13, 3>(dispcnt.data);
+
+    if (window) {
+        u8 win0_x1 = winh[0] >> 8;
+        u8 win0_x2 = winh[0] & 0xff;
+        u8 win0_y1 = winv[0] >> 8;
+        u8 win0_y2 = winv[0] & 0xff;
+        u8 win1_x1 = winh[1] >> 8;
+        u8 win1_x2 = winh[1] & 0xff;
+        u8 win1_y1 = winv[1] >> 8;
+        u8 win1_y2 = winv[1] & 0xff;
+
+        if (dispcnt.enable_win0 && in_window_bounds(x, win0_x1, win0_x2) && in_window_bounds(line, win0_y1, win0_y2)) {
+            enabled &= winin & 0xf;
+        } else if (dispcnt.enable_win1 && in_window_bounds(x, win1_x1, win1_x2) && in_window_bounds(line, win1_y1, win1_y2)) {
+            enabled &= (winin >> 8) & 0xf;
+        } else if (dispcnt.enable_objwin) {
+            logger.todo("PPU: handle object window");
+        } else {
+            enabled &= winout & 0xf;  
+        }
+    }
+
+    return enabled;
+}
+
+bool PPU::in_window_bounds(int coord, int start, int end) {
+    if (start <= end) {
+        return coord >= start && coord < end;
+    } else {
+        return coord >= start || coord < end;
+    }
 }
 
 } // namespace gba

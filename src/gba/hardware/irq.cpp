@@ -14,10 +14,7 @@ void IRQ::reset() {
 void IRQ::raise(IRQ::Source source) {
     irf |= 1 << static_cast<int>(source);
 
-    logger.debug("ime %d ie %04x irf %04x", ime, ie, irf);
-
     if (ime && (ie & (1 << static_cast<int>(source)))) {
-        logger.debug("fire irq %d", static_cast<int>(source));
         cpu->update_halted(false);
     }
 

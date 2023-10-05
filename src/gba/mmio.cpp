@@ -125,6 +125,22 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff) system.ppu.write_bgcnt(2, value, mask);
         if constexpr (mask & 0xffff0000) system.ppu.write_bgcnt(3, value >> 16, mask >> 16);
         break;
+    case MMIO(0x04000010):
+        if constexpr (mask & 0xffff) system.ppu.write_bghofs(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bgvofs(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000014):
+        if constexpr (mask & 0xffff) system.ppu.write_bghofs(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bgvofs(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000018):
+        if constexpr (mask & 0xffff) system.ppu.write_bghofs(2, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bgvofs(2, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x0400001c):
+        if constexpr (mask & 0xffff) system.ppu.write_bghofs(3, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bgvofs(3, value >> 16, mask >> 16);
+        break;
     case MMIO(0x04000200):
         if constexpr (mask & 0xffff) system.irq.write_ie(value, mask);
         if constexpr (mask & 0xffff0000) system.irq.write_irf(value >> 16, mask >> 16);

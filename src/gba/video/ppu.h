@@ -26,6 +26,8 @@ public:
     void write_dispcnt(u16 value, u32 mask);
     void write_dispstat(u16 value, u32 mask);
     void write_bgcnt(int id, u16 value, u32 mask);
+    void write_bghofs(int id, u16 value, u32 mask);
+    void write_bgvofs(int id, u16 value, u32 mask);
 
     template <typename T>
     T read_palette_ram(u32 addr) {
@@ -99,11 +101,19 @@ private:
     void render_scanline_start();
     void render_scanline_end();
     void render_scanline(int line);
-    void render_mode3(int line);
-    void render_mode4(int line);
-    void render_mode5(int line);
+    void render_mode0(int id, int line);
+    void render_mode3(int id, int line);
+    void render_mode4(int id, int line);
+    void render_mode5(int id, int line);
     u32 rgb555_to_rgb888(u32 colour);
     void plot(int x, int y, u32 colour);
+    void reset_layers();
+
+    void compose_scanline(int line);
+    void compose_pixel(int x, int line);
+
+    u8 calculate_enabled_layers(int x, int line);
+    bool in_window_bounds(int coord, int start, int end);
 
     union DISPCNT {
         struct {
@@ -159,15 +169,25 @@ private:
     DISPCNT dispcnt;
     DISPSTAT dispstat;
     std::array<BGCNT, 4> bgcnt;
+    std::array<u16, 4> bghofs;
+    std::array<u16, 4> bgvofs;
     u16 vcount;
+    std::array<u16, 2> winh;
+    std::array<u16, 2> winv;
+    u16 winin;
+    u16 winout;
     std::array<u8, 0x400> palette_ram;
     std::array<u8, 0x400> oam;
+
+    std::array<std::array<u16, 256>, 4> bg_layers;
 
     common::Scheduler& scheduler;
     IRQ& irq;
     common::EventType scanline_start_event;
     common::EventType scanline_end_event;
     std::array<u32, 240 * 160> framebuffer;
+
+    static constexpr u16 colour_transparent = 0x8000;
 };
 
 } // namespace gba
