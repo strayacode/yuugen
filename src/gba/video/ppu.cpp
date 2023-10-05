@@ -105,53 +105,49 @@ void PPU::render_scanline_end() {
 }
 
 void PPU::render_scanline(int line) {
-    if (dispcnt.enable_bg0) {
-        switch (dispcnt.bg_mode) {
-        case 0:
+    switch (dispcnt.bg_mode) {
+    case 0:
+        if (dispcnt.enable_bg0) {
             render_mode0(0, line);
-            break;
-        default:
-            logger.todo("PPU: handle bg mode %d for bg0", dispcnt.bg_mode);
         }
-    }
 
-    if (dispcnt.enable_bg1) {
-        switch (dispcnt.bg_mode) {
-        case 0:
+        if (dispcnt.enable_bg1) {
             render_mode0(1, line);
-            break;
-        default:
-            logger.todo("PPU: handle bg mode %d for bg1", dispcnt.bg_mode);
         }
-    }
 
-    if (dispcnt.enable_bg2) {
-        switch (dispcnt.bg_mode) {
-        case 0:
+        if (dispcnt.enable_bg2) {
             render_mode0(2, line);
-            break;
-        case 3:
-            render_mode3(2, line);
-            break;
-        case 4:
-            render_mode4(2, line);
-            break;
-        case 5:
-            render_mode5(2, line);
-            break;
-        default:
-            logger.todo("PPU: handle bg mode %d for bg2", dispcnt.bg_mode);
         }
-    }
 
-    if (dispcnt.enable_bg3) {
-        switch (dispcnt.bg_mode) {
-        case 0:
+        if (dispcnt.enable_bg3) {
             render_mode0(3, line);
-            break;
-        default:
-            logger.todo("PPU: handle bg mode %d for bg3", dispcnt.bg_mode);
         }
+
+        break;
+    case 1:
+        logger.todo("handle mode 1");
+        break;
+    case 2:
+        logger.todo("handle mode 2");
+        break;
+    case 3:
+        if (dispcnt.enable_bg2) {
+            render_mode3(2, line);
+        }
+
+        break;
+    case 4:
+        if (dispcnt.enable_bg2) {
+            render_mode4(2, line);
+        }
+
+        break;
+    case 5:
+        if (dispcnt.enable_bg2) {
+            render_mode5(2, line);
+        }
+
+        break;
     }
 
     if (dispcnt.enable_obj) {
