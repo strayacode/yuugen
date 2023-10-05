@@ -101,6 +101,7 @@ private:
     void render_scanline(int line);
     void render_mode3(int line);
     void render_mode4(int line);
+    void render_mode5(int line);
     u32 rgb555_to_rgb888(u32 colour);
     void plot(int x, int y, u32 colour);
 

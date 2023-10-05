@@ -98,6 +98,9 @@ void PPU::render_scanline(int line) {
     case 4:
         render_mode4(line);
         break;
+    case 5:
+        render_mode5(line);
+        break;
     default:
         logger.todo("PPU: handle bg mode %d", dispcnt.bg_mode);
     }
@@ -118,6 +121,21 @@ void PPU::render_mode4(int line) {
         int offset = bitmap_start + (240 * line) + x;
         int palette_index = vram[offset];
         u16 colour = common::read<u16>(palette_ram.data(), palette_index * 2);
+        plot(x, line, 0xff000000 | rgb555_to_rgb888(colour));
+    }
+}
+
+void PPU::render_mode5(int line) {
+    // the bitmap is only 160x128
+    if (line >= 128) {
+        return;
+    }
+
+    auto bitmap_start = dispcnt.display_frame_select * 0xa000;
+
+    for (int x = 0; x < 160; x++) {
+        int offset = bitmap_start + ((160 * line) + x) * 2;
+        u16 colour = common::read<u16>(vram.data(), offset);
         plot(x, line, 0xff000000 | rgb555_to_rgb888(colour));
     }
 }
