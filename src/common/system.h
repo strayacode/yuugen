@@ -21,8 +21,6 @@ public:
     virtual void set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) = 0;
     virtual std::vector<u32*> fetch_framebuffers() = 0;
 
-    void start();
-    void stop();
     void set_game_path(const std::string& game_path);
     void set_boot_mode(BootMode boot_mode);
 
@@ -37,13 +35,22 @@ public:
     };
 
     State get_state() { return state; }
+    bool is_running() { return state == State::Running; }
+
+    void set_state(State new_state);
+    void toggle_framelimiter();
+    void stop();
+    void pause();
+    void resume();
 
     Config config;
     std::shared_ptr<common::AudioDevice> audio_device;
     int frames{0};
+    bool framelimiter{false};
 
 private:
     void run_thread();
+    void start();
 
     std::thread thread;
 
@@ -57,7 +64,6 @@ private:
 
     using Frame = std::chrono::duration<int, std::ratio<1, 60>>;
 
-    bool framelimiter{false};
     UpdateCallback update_callback;
 
     static constexpr int FPS_UPDATE_INTERVAL = 1000;

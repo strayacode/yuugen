@@ -113,6 +113,7 @@ private:
     void render_mode3(int id, int line);
     void render_mode4(int id, int line);
     void render_mode5(int id, int line);
+    void render_objects(int line);
     u32 rgb555_to_rgb888(u32 colour);
     void plot(int x, int y, u32 colour);
     void reset_layers();
@@ -228,6 +229,11 @@ private:
         u32 data;
     };
 
+    struct Object {
+        int priority;
+        u16 colour;
+    };
+
     DISPCNT dispcnt;
     DISPSTAT dispstat;
     std::array<BGCNT, 4> bgcnt;
@@ -246,6 +252,7 @@ private:
     std::array<u8, 0x400> oam;
 
     std::array<std::array<u16, 256>, 4> bg_layers;
+    std::array<Object, 256> obj_buffer;
 
     common::Scheduler& scheduler;
     IRQ& irq;

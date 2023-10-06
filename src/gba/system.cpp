@@ -25,8 +25,6 @@ void System::System::reset() {
     irq.reset();
     input.reset();
 
-    frames = 0;
-
     if (config.boot_mode == common::BootMode::Fast) {
         skip_bios();
     }

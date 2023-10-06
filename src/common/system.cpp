@@ -3,18 +3,42 @@
 
 namespace common {
 
-void System::start() {
-    // stop the previous thread if one was running
-    stop();
-    reset();
+void System::set_game_path(const std::string& game_path) {
+    config.game_path = game_path;
+}
 
-    audio_device->set_state(common::AudioState::Playing);
+void System::set_boot_mode(BootMode boot_mode) {
+    config.boot_mode = boot_mode;
+}
 
-    thread_state = ThreadState::Running;
-    state = State::Running;
-    thread = std::thread{[this]() {
-        run_thread();
-    }};
+void System::set_state(State new_state) {
+    switch (new_state) {
+    case State::Running:
+        stop();
+        if (state == State::Idle) {
+            frames = 0;
+            reset();
+        }
+
+        start();
+        break;
+    case State::Paused:
+    case State::Idle:
+        stop();
+        break;
+    }
+
+    state = new_state;
+}
+
+void System::toggle_framelimiter() {
+    if (state == State::Running) {
+        set_state(State::Paused);
+        framelimiter = !framelimiter;
+        set_state(State::Running);
+    } else {
+        framelimiter = !framelimiter;
+    }
 }
 
 void System::stop() {
@@ -23,17 +47,16 @@ void System::stop() {
     }
 
     audio_device->set_state(common::AudioState::Idle);
-
     thread_state = ThreadState::Idle;
     thread.join();
 }
 
-void System::set_game_path(const std::string& game_path) {
-    config.game_path = game_path;
+void System::pause() {
+    set_state(State::Paused);
 }
 
-void System::set_boot_mode(BootMode boot_mode) {
-    config.boot_mode = boot_mode;
+void System::resume() {
+    set_state(State::Running);
 }
 
 void System::run_thread() {
@@ -56,6 +79,17 @@ void System::run_thread() {
             frame_end = std::chrono::system_clock::now() + Frame{1};
         }
     }
+}
+
+void System::start() {
+    // stop the previous thread if one was running
+    audio_device->set_state(common::AudioState::Playing);
+
+    thread_state = ThreadState::Running;
+    state = State::Running;
+    thread = std::thread{[this]() {
+        run_thread();
+    }};
 }
 
 } // namespace common

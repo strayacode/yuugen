@@ -208,6 +208,11 @@ void PPU::reset_layers() {
     for (int i = 0; i < 4; i++) {
         bg_layers[i].fill(0);
     }
+
+    for (int i = 0; i < 256; i++) {
+        obj_buffer[i].priority = 4;
+        obj_buffer[i].colour = colour_transparent;
+    }
 }
 
 u8 PPU::calculate_enabled_layers(int x, int line) {

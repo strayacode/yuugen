@@ -21,7 +21,7 @@
 
 namespace nds {
 
-class System : public common::System {
+class System final : public common::System {
 public:
     System();
     ~System();

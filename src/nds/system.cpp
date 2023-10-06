@@ -51,9 +51,7 @@ void System::reset() {
     exmemcnt = 0;
     exmemstat = 0;
     rcnt = 0;
-
-    frames = 0;
-
+    
     if (config.boot_mode == common::BootMode::Fast) {
         direct_boot();
     } else {

@@ -185,6 +185,26 @@ void Application::render_menubar() {
             ImGui::EndMenu();
         }
 
+        if (system) {
+            if (ImGui::BeginMenu("Emulation")) {
+                if (ImGui::MenuItem("Enable Framelimiter", nullptr, system->framelimiter, true)) {
+                    system->toggle_framelimiter();
+                }
+
+                if (system->is_running()) {
+                    if (ImGui::MenuItem("Pause")) {
+                        system->pause();
+                    }
+                } else {
+                    if (ImGui::MenuItem("Resume")) {
+                        system->resume();
+                    }
+                }
+                
+                ImGui::EndMenu();
+            }
+        }
+
         ImGui::EndMainMenuBar();
     }
 
@@ -309,6 +329,17 @@ void Application::handle_input_gba(SDL_Event& event) {
     if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
         bool pressed = event.type == SDL_KEYDOWN;
         switch (event.key.keysym.sym) {
+        case SDLK_SPACE:
+            // TODO: put this in common input handler path
+            if (pressed) {
+                if (gba_system.is_running()) {
+                    gba_system.pause();
+                } else {
+                    gba_system.resume();
+                }
+            }
+            
+            break;
         case SDLK_d:
             gba_system.input.handle_input(gba::InputEvent::A, pressed);
             break;
@@ -348,6 +379,17 @@ void Application::handle_input_nds(SDL_Event& event) {
     if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
         bool pressed = event.type == SDL_KEYDOWN;
         switch (event.key.keysym.sym) {
+        case SDLK_SPACE:
+            // TODO: put this in common input handler path
+            if (pressed) {
+                if (nds_system.is_running()) {
+                    nds_system.pause();
+                } else {
+                    nds_system.resume();
+                }
+            }
+            
+            break;
         case SDLK_d:
             nds_system.input.handle_input(nds::InputEvent::A, pressed);
             break;
@@ -410,7 +452,7 @@ void Application::boot_game(const std::string& path) {
     system->set_audio_device(audio_device);
     system->set_game_path(path);
     system->set_boot_mode(common::BootMode::Fast);
-    system->start();
+    system->set_state(common::System::State::Running);
 }
 
 void Application::boot_firmware() {
