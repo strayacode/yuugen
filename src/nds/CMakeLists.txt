@@ -38,9 +38,5 @@ add_library(nds
     hardware/wifi.h hardware/wifi.cpp
 )
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-target_link_libraries(nds PRIVATE Threads::Threads)
-
 include_directories(nds PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(nds PUBLIC arm common)

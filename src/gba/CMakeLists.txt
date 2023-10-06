@@ -13,9 +13,5 @@ add_library(gba
     video/composer.cpp video/tile_decoder.cpp
 )
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-target_link_libraries(gba PRIVATE Threads::Threads)
-
 include_directories(gba PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(gba PUBLIC arm common)
