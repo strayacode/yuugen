@@ -10,7 +10,7 @@ add_library(gba
 
     video/ppu.h video/ppu.cpp
     video/background.cpp video/bitmap.cpp
-    video/composer.cpp
+    video/composer.cpp video/tile_decoder.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

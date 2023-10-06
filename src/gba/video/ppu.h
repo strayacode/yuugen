@@ -115,6 +115,10 @@ private:
     u8 calculate_enabled_layers(int x, int line);
     bool in_window_bounds(int coord, int start, int end);
 
+    using TileRow = std::array<u16, 8>;
+
+    TileRow decode_tile_row_4bpp(u32 tile_base, int tile_number, int palette_number, int y, bool horizontal_flip, bool vertical_flip);
+
     union DISPCNT {
         struct {
             u32 bg_mode : 3;
@@ -187,6 +191,7 @@ private:
     common::EventType scanline_end_event;
     std::array<u32, 240 * 160> framebuffer;
 
+    static constexpr int bg_dimentions[4][2] = {{256, 256}, {512, 256}, {256, 512}, {512, 512}};
     static constexpr u16 colour_transparent = 0x8000;
 };
 
