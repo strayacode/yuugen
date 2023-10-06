@@ -19,6 +19,10 @@ void PPU::reset() {
     winv.fill(0);
     winin = 0;
     winout = 0;
+    mosaic.data = 0;
+    bldcnt.data = 0;
+    bldalpha.data = 0;
+    bldy.data = 0;
     framebuffer.fill(0xff000000);
     
     scanline_start_event = scheduler.register_event("Scanline Start", [this]() {
@@ -55,6 +59,38 @@ void PPU::write_bghofs(int id, u16 value, u32 mask) {
 
 void PPU::write_bgvofs(int id, u16 value, u32 mask) {
     bgvofs[id] = (bgvofs[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_winh(int id, u16 value, u32 mask) {
+    winh[id] = (winh[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_winv(int id, u16 value, u32 mask) {
+    winv[id] = (winv[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_winin(u16 value, u32 mask) {
+    winin = (winin & ~mask) | (value & mask);
+}
+
+void PPU::write_winout(u16 value, u32 mask) {
+    winout = (winout & ~mask) | (value & mask);
+}
+
+void PPU::write_mosaic(u16 value, u32 mask) {
+    mosaic.data = (mosaic.data & ~mask) | (value & mask);
+}
+
+void PPU::write_bldcnt(u16 value, u32 mask) {
+    bldcnt.data = (bldcnt.data & ~mask) | (value & mask);
+}
+
+void PPU::write_bldalpha(u16 value, u32 mask) {
+    bldalpha.data = (bldalpha.data & ~mask) | (value & mask);
+}
+
+void PPU::write_bldy(u16 value, u32 mask) {
+    bldy.data = (bldy.data & ~mask) | (value & mask);
 }
 
 void PPU::render_scanline_start() {
@@ -151,7 +187,7 @@ void PPU::render_scanline(int line) {
     }
 
     if (dispcnt.enable_obj) {
-        logger.todo("PPU: handle object rendering");
+        logger.warn("PPU: handle object rendering");
     }
 
     compose_scanline(line);

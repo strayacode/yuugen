@@ -14,6 +14,7 @@ void Memory::reset() {
     ewram.fill(0);
     iwram.fill(0);
     haltcnt = 0;
+    waitcnt.data = 0;
 
     map(0x00000000, 0x01000000, bios.data(), 0x3fff, arm::RegionAttributes::Read);
     map(0x02000000, 0x03000000, ewram.data(), 0x3ffff, arm::RegionAttributes::ReadWrite);
@@ -145,6 +146,14 @@ void Memory::write_haltcnt(u8 value) {
         logger.todo("haltcnt stop");
     } else {
         system.cpu->update_halted(true);
+    }
+}
+
+void Memory::write_waitcnt(u16 value, u32 mask) {
+    waitcnt.data = (waitcnt.data & ~mask) | (value & mask);
+
+    if (waitcnt.prefetch_buffer) {
+        logger.warn("Memory: handle prefetch buffer");
     }
 }
 

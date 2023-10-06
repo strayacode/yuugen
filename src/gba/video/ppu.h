@@ -28,6 +28,14 @@ public:
     void write_bgcnt(int id, u16 value, u32 mask);
     void write_bghofs(int id, u16 value, u32 mask);
     void write_bgvofs(int id, u16 value, u32 mask);
+    void write_winh(int id, u16 value, u32 mask);
+    void write_winv(int id, u16 value, u32 mask);
+    void write_winin(u16 value, u32 mask);
+    void write_winout(u16 value, u32 mask);
+    void write_mosaic(u16 value, u32 mask);
+    void write_bldcnt(u16 value, u32 mask);
+    void write_bldalpha(u16 value, u32 mask);
+    void write_bldy(u16 value, u32 mask);
 
     template <typename T>
     T read_palette_ram(u32 addr) {
@@ -171,6 +179,55 @@ private:
         u16 data;
     };
 
+    union MOSAIC {
+        struct {
+            u8 bg_width : 4;
+            u8 bg_height : 4;
+            u8 obj_width : 4;
+            u8 obj_height : 4;
+        };
+
+        u16 data;
+    };
+
+    enum SpecialEffect : u16 {
+        None = 0,
+        AlphaBlending = 1,
+        BrightnessIncrease = 2,
+        BrightnessDecrease = 3,
+    };
+
+    union BLDCNT {
+        struct {
+            u16 first_target : 6;
+            SpecialEffect special_effect : 2;
+            u16 second_target : 6;
+            u16 : 2;
+        };
+
+        u16 data;
+    };
+
+    union BLDALPHA {
+        struct {
+            u16 eva : 5;
+            u16 : 3;
+            u16 evb : 5;
+            u16 : 3;
+        };
+
+        u16 data;
+    };
+
+    union BLDY {
+        struct {
+            u32 evy : 5;
+            u32 : 27;
+        };
+
+        u32 data;
+    };
+
     DISPCNT dispcnt;
     DISPSTAT dispstat;
     std::array<BGCNT, 4> bgcnt;
@@ -181,6 +238,10 @@ private:
     std::array<u16, 2> winv;
     u16 winin;
     u16 winout;
+    MOSAIC mosaic;
+    BLDCNT bldcnt;
+    BLDALPHA bldalpha;
+    BLDY bldy;
     std::array<u8, 0x400> palette_ram;
     std::array<u8, 0x400> oam;
 

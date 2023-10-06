@@ -97,10 +97,12 @@ u32 Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.irq.read_ie();
         if constexpr (mask & 0xffff0000) value |= system.irq.read_irf() << 16;
         return value;
+    case MMIO(0x04000204):
+        return read_waitcnt();
     case MMIO(0x04000208):
         return system.irq.read_ime();
     default:
-        logger.todo("Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
+        logger.warn("Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
     }
 
@@ -141,9 +143,34 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff) system.ppu.write_bghofs(3, value, mask);
         if constexpr (mask & 0xffff0000) system.ppu.write_bgvofs(3, value >> 16, mask >> 16);
         break;
+    case MMIO(0x04000040):
+        if constexpr (mask & 0xffff) system.ppu.write_winh(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_winh(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000044):
+        if constexpr (mask & 0xffff) system.ppu.write_winv(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_winv(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000048):
+        if constexpr (mask & 0xffff) system.ppu.write_winin(value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_winout(value >> 16, mask >> 16);
+        break;
+    case MMIO(0x0400004c):
+        system.ppu.write_mosaic(value, mask & 0xffff);
+        break;
+    case MMIO(0x04000050):
+        if constexpr (mask & 0xffff) system.ppu.write_bldcnt(value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bldalpha(value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000054):
+        system.ppu.write_bldy(value, mask & 0xffff);
+        break;
     case MMIO(0x04000200):
         if constexpr (mask & 0xffff) system.irq.write_ie(value, mask);
         if constexpr (mask & 0xffff0000) system.irq.write_irf(value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000204):
+        write_waitcnt(value, mask);
         break;
     case MMIO(0x04000208):
         system.irq.write_ime(value, mask);
@@ -153,7 +180,7 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xff00) write_haltcnt(value >> 8);
         break;
     default:
-        logger.todo("Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
+        logger.warn("Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
         break;
     }
 }
