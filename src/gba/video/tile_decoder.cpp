@@ -22,4 +22,28 @@ PPU::TileRow PPU::decode_tile_row_4bpp(u32 tile_base, int tile_number, int palet
     return pixels;
 }
 
+PPU::TileRow PPU::decode_tile_row_8bpp(u32 tile_base, int tile_number, int y, bool horizontal_flip, bool vertical_flip) {
+    TileRow pixels;
+    int row = (vertical_flip ? (y ^ 7) : y) % 8;
+    u32 tile_addr = tile_base + (tile_number * 64) + (row * 8);
+    u64 palette_indices = common::read<u64>(vram.data(), tile_addr);
+
+    for (int x = 0; x < 8; x++) {
+        int column = horizontal_flip ? (x ^ 7) : x;
+        int palette_index = palette_indices & 0xff;
+        u16 colour = 0;
+
+        if (palette_index == 0) {
+            colour = colour_transparent;
+        } else {
+            colour = common::read<u16>(palette_ram.data(), (palette_index * 2) & 0x3ff);
+        }
+
+        pixels[column] = colour;
+        palette_indices >>= 8;
+    }
+    
+    return pixels;
+}
+
 } // namespace gba

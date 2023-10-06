@@ -39,8 +39,7 @@ void PPU::render_mode0(int id, int line) {
         int palette_number = common::get_field<12, 4>(tile_info);
 
         if (bgcnt[id].palette_8bpp) {
-            logger.todo("handle 8bpp palette");
-            // pixels = decode_tile_row_8bpp(character_base, tile_number, palette_number, y, horizontal_flip, vertical_flip, extended_palette_slot);
+            pixels = decode_tile_row_8bpp(character_base, tile_number, y, horizontal_flip, vertical_flip);
         } else {
             pixels = decode_tile_row_4bpp(character_base, tile_number, palette_number, y, horizontal_flip, vertical_flip);
         }

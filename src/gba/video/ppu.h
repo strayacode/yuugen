@@ -118,6 +118,7 @@ private:
     using TileRow = std::array<u16, 8>;
 
     TileRow decode_tile_row_4bpp(u32 tile_base, int tile_number, int palette_number, int y, bool horizontal_flip, bool vertical_flip);
+    TileRow decode_tile_row_8bpp(u32 tile_base, int tile_number, int y, bool horizontal_flip, bool vertical_flip);
 
     union DISPCNT {
         struct {
