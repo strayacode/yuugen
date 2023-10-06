@@ -89,6 +89,22 @@ u32 Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.ppu.read_bgcnt(2);
         if constexpr (mask & 0xffff0000) value |= system.ppu.read_bgcnt(3) << 16;
         return value;
+    case MMIO(0x04000100):
+        if constexpr (mask & 0xffff) value |= system.timers.read_length(0);
+        if constexpr (mask & 0xffff0000) value |= system.timers.read_control(0) << 16;
+        return value;
+    case MMIO(0x04000104):
+        if constexpr (mask & 0xffff) value |= system.timers.read_length(1);
+        if constexpr (mask & 0xffff0000) value |= system.timers.read_control(1) << 16;
+        return value;
+    case MMIO(0x04000108):
+        if constexpr (mask & 0xffff) value |= system.timers.read_length(2);
+        if constexpr (mask & 0xffff0000) value |= system.timers.read_control(2) << 16;
+        return value;
+    case MMIO(0x0400010c):
+        if constexpr (mask & 0xffff) value |= system.timers.read_length(3);
+        if constexpr (mask & 0xffff0000) value |= system.timers.read_control(3) << 16;
+        return value;
     case MMIO(0x04000130):
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
         if constexpr (mask & 0xffff0000) logger.error("gba::Memory: handle keycnt read");
@@ -102,7 +118,7 @@ u32 Memory::mmio_read_word(u32 addr) {
     case MMIO(0x04000208):
         return system.irq.read_ime();
     default:
-        logger.warn("Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
+        logger.todo("Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
     }
 
@@ -165,6 +181,22 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x04000054):
         system.ppu.write_bldy(value, mask & 0xffff);
         break;
+    case MMIO(0x04000100):
+        if constexpr (mask & 0xffff) system.timers.write_length(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers.write_control(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000104):
+        if constexpr (mask & 0xffff) system.timers.write_length(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers.write_control(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000108):
+        if constexpr (mask & 0xffff) system.timers.write_length(2, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers.write_control(2, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x0400010c):
+        if constexpr (mask & 0xffff) system.timers.write_length(3, value, mask);
+        if constexpr (mask & 0xffff0000) system.timers.write_control(3, value >> 16, mask >> 16);
+        break;
     case MMIO(0x04000200):
         if constexpr (mask & 0xffff) system.irq.write_ie(value, mask);
         if constexpr (mask & 0xffff0000) system.irq.write_irf(value >> 16, mask >> 16);
@@ -180,7 +212,7 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xff00) write_haltcnt(value >> 8);
         break;
     default:
-        logger.warn("Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
+        logger.todo("Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
         break;
     }
 }

@@ -7,6 +7,7 @@ add_library(gba
     hardware/cartridge.h hardware/cartridge.cpp
     hardware/irq.h hardware/irq.cpp
     hardware/input.h hardware/input.cpp
+    hardware/timers.h hardware/timers.cpp
 
     video/ppu.h video/ppu.cpp
     video/background.cpp video/bitmap.cpp

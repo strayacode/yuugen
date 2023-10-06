@@ -11,6 +11,7 @@
 #include "gba/hardware/cartridge.h"
 #include "gba/hardware/irq.h"
 #include "gba/hardware/input.h"
+#include "gba/hardware/timers.h"
 #include "gba/video/ppu.h"
 
 namespace gba {
@@ -33,6 +34,7 @@ public:
     PPU ppu;
     IRQ irq;
     Input input;
+    Timers timers;
     
 private:
     void skip_bios();
