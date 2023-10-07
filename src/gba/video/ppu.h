@@ -5,6 +5,7 @@
 #include "common/memory.h"
 #include "common/scheduler.h"
 #include "gba/hardware/irq.h"
+#include "gba/hardware/dma.h"
 
 namespace gba {
 
@@ -256,6 +257,7 @@ private:
 
     common::Scheduler& scheduler;
     IRQ& irq;
+    DMA& dma;
     common::EventType scanline_start_event;
     common::EventType scanline_end_event;
     std::array<u32, 240 * 160> framebuffer;

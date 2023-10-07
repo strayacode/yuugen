@@ -4,7 +4,7 @@
 
 namespace gba {
 
-PPU::PPU(System& system) : scheduler(system.scheduler), irq(system.irq) {}
+PPU::PPU(System& system) : scheduler(system.scheduler), irq(system.irq), dma(system.dma) {}
 
 void PPU::reset() {
     vram.fill(0);
@@ -96,8 +96,7 @@ void PPU::write_bldy(u16 value, u32 mask) {
 void PPU::render_scanline_start() {
     if (vcount < 160) {
         render_scanline(vcount);
-
-        // TODO: trigger hblank dma
+        dma.trigger(DMA::Timing::HBlank);
     }
 
     dispstat.hblank = true;
@@ -122,7 +121,7 @@ void PPU::render_scanline_end() {
             irq.raise(IRQ::Source::VBlank);
         }
 
-        // TODO: trigger vblank dma
+        dma.trigger(DMA::Timing::VBlank);
         break;
     case 228:
         dispstat.vblank = false;

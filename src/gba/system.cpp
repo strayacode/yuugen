@@ -6,7 +6,7 @@
 
 namespace gba {
 
-System::System() : memory(*this), ppu(*this), irq(cpu), timers(scheduler, irq) {
+System::System() : memory(*this), ppu(*this), irq(cpu), timers(scheduler, irq), dma(scheduler, memory, irq) {
     cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv4, memory, cp14);
 }
 
@@ -25,6 +25,7 @@ void System::System::reset() {
     irq.reset();
     input.reset();
     timers.reset();
+    dma.reset();
 
     if (config.boot_mode == common::BootMode::Fast) {
         skip_bios();

@@ -8,6 +8,7 @@ add_library(gba
     hardware/irq.h hardware/irq.cpp
     hardware/input.h hardware/input.cpp
     hardware/timers.h hardware/timers.cpp
+    hardware/dma.h hardware/dma.cpp
 
     video/ppu.h video/ppu.cpp
     video/background.cpp video/bitmap.cpp

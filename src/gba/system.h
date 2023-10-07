@@ -12,6 +12,7 @@
 #include "gba/hardware/irq.h"
 #include "gba/hardware/input.h"
 #include "gba/hardware/timers.h"
+#include "gba/hardware/dma.h"
 #include "gba/video/ppu.h"
 
 namespace gba {
@@ -35,6 +36,7 @@ public:
     IRQ irq;
     Input input;
     Timers timers;
+    DMA dma;
     
 private:
     void skip_bios();
