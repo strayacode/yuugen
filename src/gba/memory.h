@@ -72,6 +72,7 @@ private:
     };
 
     WAITCNT waitcnt;
+    u8 postflg;
 };
 
 } // namespace gba

@@ -6,7 +6,7 @@ namespace gba {
 
 void PPU::render_mode0(int id, int line) {
     if (bgcnt[id].mosaic) {
-        logger.todo("handle mosaic");
+        logger.warn("handle mosaic");
     }
 
     int y = (line + bgvofs[id]) % 512;

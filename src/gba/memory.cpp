@@ -15,6 +15,7 @@ void Memory::reset() {
     iwram.fill(0);
     haltcnt = 0;
     waitcnt.data = 0;
+    postflg = 0;
 
     map(0x00000000, 0x01000000, bios.data(), 0x3fff, arm::RegionAttributes::Read);
     map(0x02000000, 0x03000000, ewram.data(), 0x3ffff, arm::RegionAttributes::ReadWrite);

@@ -150,8 +150,7 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
         system.ppu.write_dispcnt(value, mask);
         break;
     case MMIO(0x04000004):
-        if constexpr (mask & 0xffff) system.ppu.write_dispstat(value, mask);
-        if constexpr (mask & 0xffff0000) logger.todo("Memory: handle vcount write");
+        if constexpr (mask & 0xffff) system.ppu.write_dispstat(value, mask & 0xffff);
         break;
     case MMIO(0x04000008):
         if constexpr (mask & 0xffff) system.ppu.write_bgcnt(0, value, mask);
@@ -266,7 +265,8 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
         system.irq.write_ime(value, mask);
         break;
     case MMIO(0x04000300):
-        if constexpr (mask & 0xff) logger.todo("handle postflg write");
+        // TODO: check how postflg should be properly handled
+        if constexpr (mask & 0xff) postflg = value & 0x1;
         if constexpr (mask & 0xff00) write_haltcnt(value >> 8);
         break;
     default:
