@@ -25,12 +25,11 @@ void PPU::compose_pixel(int x, int line) {
         }
     }
 
-    // TODO: handle later when we implement object rendering
-    // if (dispcnt.enable_obj && obj_buffer[x].colour != colour_transparent) {
-    //     if (obj_buffer[x].priority <= priority) {
-    //         pixel = obj_buffer[x].colour;
-    //     }
-    // }
+    if (dispcnt.enable_obj && obj_buffer[x].colour != colour_transparent) {
+        if (obj_buffer[x].priority <= priority) {
+            pixel = obj_buffer[x].colour;
+        }
+    }
 
     plot(x, line, 0xff000000 | rgb555_to_rgb888(pixel));
 }

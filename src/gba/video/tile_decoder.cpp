@@ -3,6 +3,25 @@
 
 namespace gba {
 
+u16 PPU::decode_obj_pixel_4bpp(u32 base, int number, int x, int y) {
+    auto indices = common::read<u8>(vram.data(), base + (y * 4) + (x / 2));
+    auto index = (indices >> (4 * (x & 0x1))) & 0xf;
+    if (index == 0) {
+        return colour_transparent;
+    } else {
+        return common::read<u16>(palette_ram.data(), (0x200 + (number * 32) + (index * 2)) & 0x3ff);
+    }
+}
+
+u16 PPU::decode_obj_pixel_8bpp(u32 base, int number, int x, int y) {
+    auto index = common::read<u8>(vram.data(), base + (y * 8) + x);
+    if (index == 0) {
+        return colour_transparent;
+    } else {
+        return common::read<u16>(palette_ram.data(), (0x200 + (index * 2)) & 0x3ff);
+    }
+}
+
 PPU::TileRow PPU::decode_tile_row_4bpp(u32 tile_base, int tile_number, int palette_number, int y, bool horizontal_flip, bool vertical_flip) {
     TileRow pixels;
     int row = (vertical_flip ? (y ^ 7) : y) % 8;

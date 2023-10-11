@@ -1,4 +1,5 @@
 #include "common/memory.h"
+#include "common/bits.h"
 #include "gba/video/ppu.h"
 
 namespace gba {
@@ -9,11 +10,15 @@ void PPU::render_objects(int line) {
             continue;
         }
 
+        // TODO: optimisation
+        // don't do any extra processing if the object
+        // doesn't have a chance to be rendered in the first place (lower priority)
+
         std::array<u16, 3> attributes;
         std::array<s16, 4> affine_parameters;
-        attributes[0] = common::read<u16>(oam, i * 8);
-        attributes[1] = common::read<u16>(oam, (i * 8) + 2);
-        attributes[2] = common::read<u16>(oam, (i * 8) + 4);
+        attributes[0] = common::read<u16>(oam.data(), i * 8);
+        attributes[1] = common::read<u16>(oam.data(), (i * 8) + 2);
+        attributes[2] = common::read<u16>(oam.data(), (i * 8) + 4);
 
         int y = common::get_field<0, 8>(attributes[0]);
         bool affine = common::get_bit<8>(attributes[0]);
@@ -29,11 +34,11 @@ void PPU::render_objects(int line) {
         u16 priority = common::get_field<10, 2>(attributes[2]);
         u16 palette_number = common::get_field<12, 4>(attributes[2]);
 
-        if (x >= 256) {
+        if (x >= 240) {
             x -= 512;
         }
 
-        if (y >= 192) {
+        if (y >= 160) {
             y -= 256;
         }
 
@@ -53,10 +58,10 @@ void PPU::render_objects(int line) {
             bool double_size = common::get_bit<9>(attributes[0]);
             u16 group = common::get_field<9, 5>(attributes[1]) * 32;
             
-            affine_parameters[0] = common::read<u16>(oam, group + 0x6);
-            affine_parameters[1] = common::read<u16>(oam, group + 0xe);
-            affine_parameters[2] = common::read<u16>(oam, group + 0x16);
-            affine_parameters[3] = common::read<u16>(oam, group + 0x1e);
+            affine_parameters[0] = common::read<u16>(oam.data(), group + 0x6);
+            affine_parameters[1] = common::read<u16>(oam.data(), group + 0xe);
+            affine_parameters[2] = common::read<u16>(oam.data(), group + 0x16);
+            affine_parameters[3] = common::read<u16>(oam.data(), group + 0x1e);
 
             if (double_size) {
                 x += half_width;
@@ -76,7 +81,7 @@ void PPU::render_objects(int line) {
         }
 
         if (mode == ObjectMode::SemiTransparent) {
-            logger.error("PPU: handle semi transparent mode");
+            logger.warn("PPU: handle semi transparent objects");
         }
 
         if (mode == ObjectMode::ObjectWindow) {
@@ -117,33 +122,11 @@ void PPU::render_objects(int line) {
             int tile_y = transformed_y / 8;
             int tile_addr = 0;
 
-            if (mode == ObjectMode::Bitmap) {
-                if (dispcnt.bitmap_obj_mapping) {
-                    colour = obj.read<u16>(((tile_number * (64 << dispcnt.bitmap_obj_1d_boundary)) + (transformed_y * width) + transformed_x) * 2);
-                } else {
-                    logger.error("PPU: handle 2d mapping bitmap");
-                }
-
-                if (!(colour & colour_transparent)) {
-                    colour = colour_transparent;
-                }
-            } else if (is_8bpp) {
-                if (dispcnt.tile_obj_mapping) {
-                    tile_addr = (tile_number * (32 << dispcnt.tile_obj_1d_boundary)) + (tile_y * width * 8);
-                } else {
-                    logger.error("PPU: handle 2d mapping 8bpp");
-                }
-
-                tile_addr += tile_x * 64;
+            if (is_8bpp) {
+                tile_addr = vram_obj_offset + (tile_number * 64);
                 colour = decode_obj_pixel_8bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
             } else {
-                if (dispcnt.tile_obj_mapping) {
-                    tile_addr = (tile_number * (32 << dispcnt.tile_obj_1d_boundary)) + (tile_y * width * 4);
-                } else {
-                    logger.error("PPU: handle 2d mapping 8bpp");
-                }
-
-                tile_addr += tile_x * 32;
+                tile_addr = vram_obj_offset + (tile_number * 32);
                 colour = decode_obj_pixel_4bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
             }
 

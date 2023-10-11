@@ -46,7 +46,7 @@ public:
     Config config;
     std::shared_ptr<common::AudioDevice> audio_device;
     int frames{0};
-    bool framelimiter{false};
+    bool framelimiter{true};
 
 private:
     void run_thread();
@@ -66,7 +66,7 @@ private:
 
     UpdateCallback update_callback;
 
-    static constexpr int FPS_UPDATE_INTERVAL = 1000;
+    static constexpr int FPS_UPDATE_INTERVAL = 500;
 };
 
 } // namespace common

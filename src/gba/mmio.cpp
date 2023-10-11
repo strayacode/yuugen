@@ -176,6 +176,34 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff) system.ppu.write_bghofs(3, value, mask);
         if constexpr (mask & 0xffff0000) system.ppu.write_bgvofs(3, value >> 16, mask >> 16);
         break;
+    case MMIO(0x04000020):
+        if constexpr (mask & 0xffff) system.ppu.write_bgpa(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bgpb(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000024):
+        if constexpr (mask & 0xffff) system.ppu.write_bgpc(0, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bgpd(0, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000028):
+        system.ppu.write_bgx(0, value, mask);
+        break;
+    case MMIO(0x0400002c):
+        system.ppu.write_bgy(0, value, mask);
+        break;
+    case MMIO(0x04000030):
+        if constexpr (mask & 0xffff) system.ppu.write_bgpa(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bgpb(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000034):
+        if constexpr (mask & 0xffff) system.ppu.write_bgpc(1, value, mask);
+        if constexpr (mask & 0xffff0000) system.ppu.write_bgpd(1, value >> 16, mask >> 16);
+        break;
+    case MMIO(0x04000038):
+        system.ppu.write_bgx(1, value, mask);
+        break;
+    case MMIO(0x0400003c):
+        system.ppu.write_bgy(1, value, mask);
+        break;
     case MMIO(0x04000040):
         if constexpr (mask & 0xffff) system.ppu.write_winh(0, value, mask);
         if constexpr (mask & 0xffff0000) system.ppu.write_winh(1, value >> 16, mask >> 16);

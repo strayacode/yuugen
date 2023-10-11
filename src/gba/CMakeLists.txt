@@ -13,6 +13,7 @@ add_library(gba
     video/ppu.h video/ppu.cpp
     video/background.cpp video/bitmap.cpp
     video/composer.cpp video/tile_decoder.cpp
+    video/object.cpp
 )
 
 include_directories(gba PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")

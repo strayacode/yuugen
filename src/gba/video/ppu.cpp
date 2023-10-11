@@ -14,6 +14,14 @@ void PPU::reset() {
     bgcnt.fill(BGCNT{});
     bghofs.fill(0);
     bgvofs.fill(0);
+    bgpa.fill(0);
+    bgpb.fill(0);
+    bgpc.fill(0);
+    bgpd.fill(0);
+    bgx.fill(0);
+    bgy.fill(0);
+    internal_x.fill(0);
+    internal_y.fill(0);
     vcount = 0;
     winh.fill(0);
     winv.fill(0);
@@ -59,6 +67,34 @@ void PPU::write_bghofs(int id, u16 value, u32 mask) {
 
 void PPU::write_bgvofs(int id, u16 value, u32 mask) {
     bgvofs[id] = (bgvofs[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgpa(int id, u16 value, u32 mask) {
+    bgpa[id] = (bgpa[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgpb(int id, u16 value, u32 mask) {
+    bgpb[id] = (bgpb[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgpc(int id, u16 value, u32 mask) {
+    bgpc[id] = (bgpc[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgpd(int id, u16 value, u32 mask) {
+    bgpd[id] = (bgpd[id] & ~mask) | (value & mask);
+}
+
+void PPU::write_bgx(int id, u32 value, u32 mask) {
+    mask &= 0xfffffff;
+    bgx[id] = common::sign_extend<u32, 28>((bgx[id] & ~mask) | (value & mask));
+    internal_x[id] = bgx[id];
+}
+
+void PPU::write_bgy(int id, u32 value, u32 mask) {
+    mask &= 0xfffffff;
+    bgy[id] = common::sign_extend<u32, 28>((bgy[id] & ~mask) | (value & mask));
+    internal_y[id] = bgy[id];
 }
 
 void PPU::write_winh(int id, u16 value, u32 mask) {
@@ -140,6 +176,13 @@ void PPU::render_scanline_end() {
 }
 
 void PPU::render_scanline(int line) {
+    if (line == 0) {
+        internal_x[0] = bgx[0];
+        internal_y[0] = bgy[0];
+        internal_x[1] = bgx[1];
+        internal_y[1] = bgy[1];
+    }
+
     switch (dispcnt.bg_mode) {
     case 0:
         if (dispcnt.enable_bg0) {
@@ -186,10 +229,16 @@ void PPU::render_scanline(int line) {
     }
 
     if (dispcnt.enable_obj) {
-        logger.warn("PPU: handle object rendering");
+        render_objects(line);
     }
 
     compose_scanline(line);
+
+    // update internal affine registers
+    for (int i = 0; i < 2; i++) {
+        internal_x[i] += bgpb[i];
+        internal_y[i] += bgpd[i];
+    }
 }
 
 u32 PPU::rgb555_to_rgb888(u32 colour) {

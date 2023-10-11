@@ -29,6 +29,12 @@ public:
     void write_bgcnt(int id, u16 value, u32 mask);
     void write_bghofs(int id, u16 value, u32 mask);
     void write_bgvofs(int id, u16 value, u32 mask);
+    void write_bgpa(int id, u16 value, u32 mask);
+    void write_bgpb(int id, u16 value, u32 mask);
+    void write_bgpc(int id, u16 value, u32 mask);
+    void write_bgpd(int id, u16 value, u32 mask);
+    void write_bgx(int id, u32 value, u32 mask);
+    void write_bgy(int id, u32 value, u32 mask);
     void write_winh(int id, u16 value, u32 mask);
     void write_winv(int id, u16 value, u32 mask);
     void write_winin(u16 value, u32 mask);
@@ -127,6 +133,8 @@ private:
 
     using TileRow = std::array<u16, 8>;
 
+    u16 decode_obj_pixel_4bpp(u32 base, int number, int x, int y);
+    u16 decode_obj_pixel_8bpp(u32 base, int number, int x, int y);
     TileRow decode_tile_row_4bpp(u32 tile_base, int tile_number, int palette_number, int y, bool horizontal_flip, bool vertical_flip);
     TileRow decode_tile_row_8bpp(u32 tile_base, int tile_number, int y, bool horizontal_flip, bool vertical_flip);
 
@@ -235,11 +243,26 @@ private:
         u16 colour;
     };
 
+    enum class ObjectMode : int {
+        Normal = 0,
+        SemiTransparent = 1,
+        ObjectWindow = 2,
+        Reserved,
+    };
+
     DISPCNT dispcnt;
     DISPSTAT dispstat;
     std::array<BGCNT, 4> bgcnt;
     std::array<u16, 4> bghofs;
     std::array<u16, 4> bgvofs;
+    std::array<s16, 2> bgpa;
+    std::array<s16, 2> bgpb;
+    std::array<s16, 2> bgpc;
+    std::array<s16, 2> bgpd;
+    std::array<s32, 2> bgx;
+    std::array<s32, 2> bgy;
+    std::array<s32, 2> internal_x;
+    std::array<s32, 2> internal_y;
     u16 vcount;
     std::array<u16, 2> winh;
     std::array<u16, 2> winv;
@@ -263,7 +286,9 @@ private:
     std::array<u32, 240 * 160> framebuffer;
 
     static constexpr int bg_dimentions[4][2] = {{256, 256}, {512, 256}, {256, 512}, {512, 512}};
+    static constexpr int obj_dimensions[4][4][2] = {{{8, 8}, {16, 16}, {32, 32}, {64, 64}}, {{16, 8}, {32, 8}, {32, 16}, {64, 32}}, {{8, 16}, {8, 32}, {16, 32}, {32, 64}}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}}};
     static constexpr u16 colour_transparent = 0x8000;
+    static constexpr u32 vram_obj_offset = 0x10000;
 };
 
 } // namespace gba
