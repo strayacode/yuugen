@@ -176,6 +176,8 @@ void PPU::render_scanline_end() {
 }
 
 void PPU::render_scanline(int line) {
+    reset_layers();
+
     if (line == 0) {
         internal_x[0] = bgx[0];
         internal_y[0] = bgy[0];

@@ -34,6 +34,10 @@ void PPU::render_objects(int line) {
         u16 priority = common::get_field<10, 2>(attributes[2]);
         u16 palette_number = common::get_field<12, 4>(attributes[2]);
 
+        if (shape == 3) {
+            continue;
+        }
+
         if (x >= 240) {
             x -= 512;
         }
@@ -96,7 +100,7 @@ void PPU::render_objects(int line) {
         for (int local_x = -half_width; local_x <= half_width; local_x++) {
             u16 colour = 0;
             int global_x = x + local_x;
-            if (global_x < 0 || global_x >= 256) {
+            if (global_x < 0 || global_x >= 240) {
                 continue;
             }
 
@@ -123,10 +127,22 @@ void PPU::render_objects(int line) {
             int tile_addr = 0;
 
             if (is_8bpp) {
-                tile_addr = vram_obj_offset + (tile_number * 64);
-                colour = decode_obj_pixel_8bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
+                if (dispcnt.obj_mapping) {
+                    logger.todo("handle 8bpp 1d mapping");
+                } else {
+                    logger.todo("handle 8bpp 2d mapping");
+                }
+
+                tile_addr += tile_x * 64;
+                colour = decode_obj_pixel_8bpp(tile_addr, inner_tile_x, inner_tile_y);
             } else {
-                tile_addr = vram_obj_offset + (tile_number * 32);
+                if (dispcnt.obj_mapping) {
+                    tile_addr = vram_obj_offset + (tile_number * 32) + (tile_y * width * 4);
+                } else {
+                    tile_addr = vram_obj_offset + (tile_number * 256);
+                }
+
+                tile_addr += tile_x * 32;
                 colour = decode_obj_pixel_4bpp(tile_addr, palette_number, inner_tile_x, inner_tile_y);
             }
 

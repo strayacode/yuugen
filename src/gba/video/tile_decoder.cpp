@@ -13,7 +13,7 @@ u16 PPU::decode_obj_pixel_4bpp(u32 base, int number, int x, int y) {
     }
 }
 
-u16 PPU::decode_obj_pixel_8bpp(u32 base, int number, int x, int y) {
+u16 PPU::decode_obj_pixel_8bpp(u32 base, int x, int y) {
     auto index = common::read<u8>(vram.data(), base + (y * 8) + x);
     if (index == 0) {
         return colour_transparent;
