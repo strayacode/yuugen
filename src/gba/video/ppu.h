@@ -116,7 +116,8 @@ private:
     void render_scanline_start();
     void render_scanline_end();
     void render_scanline(int line);
-    void render_mode0(int id, int line);
+    void render_background(int id, int line);
+    void render_affine(int id);
     void render_mode3(int id, int line);
     void render_mode4(int id, int line);
     void render_mode5(int id, int line);

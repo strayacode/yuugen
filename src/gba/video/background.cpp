@@ -4,7 +4,7 @@
 
 namespace gba {
 
-void PPU::render_mode0(int id, int line) {
+void PPU::render_background(int id, int line) {
     if (bgcnt[id].mosaic) {
         logger.warn("handle mosaic");
     }

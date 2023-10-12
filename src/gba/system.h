@@ -13,6 +13,7 @@
 #include "gba/hardware/input.h"
 #include "gba/hardware/timers.h"
 #include "gba/hardware/dma.h"
+#include "gba/hardware/apu.h"
 #include "gba/video/ppu.h"
 
 namespace gba {
@@ -37,6 +38,7 @@ public:
     Input input;
     Timers timers;
     DMA dma;
+    APU apu;
     
 private:
     void skip_bios();

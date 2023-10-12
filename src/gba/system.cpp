@@ -26,6 +26,7 @@ void System::System::reset() {
     input.reset();
     timers.reset();
     dma.reset();
+    apu.reset();
 
     if (config.boot_mode == common::BootMode::Fast) {
         skip_bios();

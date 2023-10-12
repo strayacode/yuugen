@@ -89,6 +89,8 @@ u32 Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.ppu.read_bgcnt(2);
         if constexpr (mask & 0xffff0000) value |= system.ppu.read_bgcnt(3) << 16;
         return value;
+    case MMIO(0x04000088):
+        return system.apu.read_soundbias();
     case MMIO(0x040000b0):
         return system.dma.read_source(0);
     case MMIO(0x040000b8):
@@ -225,6 +227,9 @@ void Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000054):
         system.ppu.write_bldy(value, mask & 0xffff);
+        break;
+    case MMIO(0x04000088):
+        system.apu.write_soundbias(value, mask & 0xffff);
         break;
     case MMIO(0x040000b0):
         system.dma.write_source(0, value, mask);
