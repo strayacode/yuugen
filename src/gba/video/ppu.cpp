@@ -205,7 +205,18 @@ void PPU::render_scanline(int line) {
 
         break;
     case 1:
-        logger.todo("handle mode 1");
+        if (dispcnt.enable_bg0) {
+            render_background(0, line);
+        }
+
+        if (dispcnt.enable_bg1) {
+            render_background(1, line);
+        }
+
+        if (dispcnt.enable_bg2) {
+            render_affine(2);
+        }
+
         break;
     case 2:
         if (dispcnt.enable_bg0) {
