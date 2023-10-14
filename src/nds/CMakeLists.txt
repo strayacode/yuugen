@@ -19,6 +19,7 @@ add_library(nds
     video/ppu/object.cpp video/ppu/text.cpp 
     video/ppu/tile_decoder.cpp
     video/gpu/gpu.h video/gpu/gpu.cpp
+    video/gpu/commands.cpp
 
     hardware/cartridge/cartridge.h hardware/cartridge/cartridge.cpp
     hardware/cartridge/save_database.h

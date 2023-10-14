@@ -5,7 +5,8 @@
 
 namespace nds {
 
-PPU::PPU(u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& obj_extended_palette, VRAMRegion& lcdc) : 
+PPU::PPU(GPU& gpu, u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& obj_extended_palette, VRAMRegion& lcdc) : 
+    gpu(gpu),
     palette_ram(palette_ram),
     oam(oam),
     bg(bg),
@@ -199,7 +200,9 @@ void PPU::render_blank_screen(int line) {
 void PPU::render_graphics_display(int line) {
     if (dispcnt.enable_bg0) {
         if (dispcnt.bg0_3d || dispcnt.bg_mode == 6) {
-            logger.error("PPU: handle 3d rendering");
+            for (int i = 0; i < 256; i++) {
+                bg_layers[0][(256 * line) + i] = gpu.framebuffer[(256 * line) + i];
+            }
         } else {
             render_text(0, line);
         }

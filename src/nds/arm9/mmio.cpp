@@ -184,6 +184,8 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x04000304):
         return system.video_unit.read_powcnt1();
+    case MMIO(0x04000600):
+        return system.video_unit.gpu.read_gxstat();
     case MMIO(0x04001000):
         return system.video_unit.ppu_b.read_dispcnt();
     case MMIO(0x04001008):
@@ -448,6 +450,12 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x04000304):
         system.video_unit.write_powcnt1(value, mask);
+        break;
+    case MMIO(0x04000440) ... MMIO(0x040005cc):
+        system.video_unit.gpu.queue_command(addr, value);
+        break;
+    case MMIO(0x04000600):
+        system.video_unit.gpu.write_gxstat(value, mask);
         break;
     case MMIO(0x04001000):
         system.video_unit.ppu_b.write_dispcnt(value, mask);

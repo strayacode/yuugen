@@ -5,12 +5,13 @@
 #include "common/types.h"
 #include "common/callback.h"
 #include "nds/video/vram_region.h"
+#include "nds/video/gpu/gpu.h"
 
 namespace nds {
 
 class PPU {
 public:
-    PPU(u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& obj_extended_palette, VRAMRegion& lcdc);
+    PPU(GPU& gpu, u8* palette_ram, u8* oam, VRAMRegion& bg, VRAMRegion& obj, VRAMRegion& bg_extended_palette, VRAMRegion& obj_extended_palette, VRAMRegion& lcdc);
 
     void reset();
     void render_scanline(int line);
@@ -238,6 +239,7 @@ private:
     std::array<std::array<u16, 256>, 4> bg_layers;
     std::array<Object, 256> obj_buffer;
     
+    GPU& gpu;
     u8* palette_ram;
     u8* oam;
     VRAMRegion& bg;
