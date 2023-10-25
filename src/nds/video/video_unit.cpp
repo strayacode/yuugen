@@ -7,7 +7,7 @@ namespace nds {
 VideoUnit::VideoUnit(System& system) :
     ppu_a(gpu, get_palette_ram(), get_oam(), vram.bga, vram.obja, vram.bga_extended_palette, vram.obja_extended_palette, vram.lcdc),
     ppu_b(gpu, get_palette_ram() + 0x400, get_oam() + 0x400, vram.bgb, vram.objb, vram.bgb_extended_palette, vram.objb_extended_palette, vram.lcdc),
-    gpu(system.scheduler),
+    gpu(system.scheduler, system.dma9),
     system(system),
     irq7(system.arm7.get_irq()),
     irq9(system.arm9.get_irq()) {}

@@ -63,7 +63,7 @@ void DMA::write_control(int id, u16 value, u32 mask) {
     channel.length &= 0xffff;
     channel.length |= (value & 0x1f & mask) << 16;
     channel.control.data = (channel.control.data & ~mask) | (value & mask);
-
+    
     if (channel.control.enable && channel.control.timing == Timing::GXFIFO) {
         logger.todo("DMA: handle gxfifo dmas");
     }
@@ -95,22 +95,32 @@ void DMA::write_dmafill(u32 addr, u32 value) {
 }
 
 void DMA::transfer(int id) {
-    // TODO: handle gxfifo transfer limit
     auto& channel = channels[id];
     auto source_adjust = adjust_lut[channel.control.transfer_words][channel.control.source_control];
     auto destination_adjust = adjust_lut[channel.control.transfer_words][channel.control.destination_control];
+    auto gxfifo_transfers = 0;
 
     if (channel.control.transfer_words) {
         for (u32 i = 0; i < channel.internal_length; i++) {
             memory.write<u32, arm::Bus::System>(channel.internal_destination, memory.read<u32, arm::Bus::System>(channel.internal_source));
             channel.internal_source += source_adjust;
             channel.internal_destination += destination_adjust;
+
+            // gxfifo dma can only transfer 112 words
+            if (channel.control.timing == Timing::GXFIFO && ++gxfifo_transfers == 112) {
+                break;
+            }
         }
     } else {
         for (u32 i = 0; i < channel.internal_length; i++) {
             memory.write<u16, arm::Bus::System>(channel.internal_destination, memory.read<u16, arm::Bus::System>(channel.internal_source));
             channel.internal_source += source_adjust;
             channel.internal_destination += destination_adjust;
+
+            // gxfifo dma can only transfer 112 words
+            if (channel.control.timing == Timing::GXFIFO && ++gxfifo_transfers == 112) {
+                break;
+            }
         }
     }
 
@@ -137,9 +147,10 @@ void DMA::transfer(int id) {
         if (channel.control.destination_control == AddressMode::Reload) {
             channel.internal_destination = channel.destination;
         }
-        
+
+        // schedule another gxfifo dma if the gxfifo is still half empty
         if (channel.control.timing == Timing::GXFIFO) {
-            logger.todo("DMA: handle gxfifo transfers");
+            scheduler.add_event(1, &transfer_events[id]);
         }
     } else {
         channel.control.enable = false;

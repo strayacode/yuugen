@@ -22,7 +22,7 @@ static constexpr std::array<int, 256> parameter_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 }};
 
-GPU::GPU(common::Scheduler& scheduler) : scheduler(scheduler) {}
+GPU::GPU(common::Scheduler& scheduler, DMA& dma) : scheduler(scheduler), dma(dma) {}
 
 void GPU::reset() {
     framebuffer.fill(0);
@@ -118,7 +118,7 @@ GPU::Entry GPU::dequeue_entry() {
         check_gxfifo_irq();
 
         if (gxfifo.get_size() < 128) {
-            logger.warn("trigger gxfifo dma");
+            dma.trigger(DMA::Timing::GXFIFO);
         }
     }
 

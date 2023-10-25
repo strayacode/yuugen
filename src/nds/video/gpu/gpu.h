@@ -4,12 +4,13 @@
 #include "common/types.h"
 #include "common/ring_buffer.h"
 #include "common/scheduler.h"
+#include "nds/hardware/dma.h"
 
 namespace nds {
 
 class GPU {
 public:
-    GPU(common::Scheduler& scheduler);
+    GPU(common::Scheduler& scheduler, DMA& dma);
 
     void reset();
     void write_disp3dcnt(u32 value, u32 mask);
@@ -98,6 +99,7 @@ private:
     common::Scheduler& scheduler;
     common::EventType geometry_command_event;
     MatrixMode matrix_mode{MatrixMode::Projection};
+    DMA& dma;
 };
 
 } // namespace nds
