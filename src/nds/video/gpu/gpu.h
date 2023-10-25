@@ -5,6 +5,7 @@
 #include "common/ring_buffer.h"
 #include "common/scheduler.h"
 #include "nds/hardware/dma.h"
+#include "nds/video/gpu/matrix_stack.h"
 
 namespace nds {
 
@@ -27,6 +28,13 @@ private:
         u32 parameter{0};
     };
 
+    enum class PolygonType {
+        Triangle = 0,
+        Quad = 1,
+        TriangleStrip = 2,
+        QuadStrip = 3,
+    };
+
     enum class MatrixMode {
         Projection = 0,
         Modelview = 1,
@@ -42,6 +50,7 @@ private:
     // geometry commands
     void set_matrix_mode();
     void pop_current_matrix();
+    void load_unit_matrix();
 
     union DISP3DCNT {
         struct {
@@ -96,9 +105,17 @@ private:
     common::RingBuffer<Entry, 256> gxfifo;
     common::RingBuffer<Entry, 4> gxpipe;
     bool busy{false};
-    common::Scheduler& scheduler;
+    
     common::EventType geometry_command_event;
     MatrixMode matrix_mode{MatrixMode::Projection};
+
+    MatrixStack<1> projection;
+    MatrixStack<31> modelview;
+    MatrixStack<31> direction;
+    MatrixStack<1> texture;
+    Matrix clip;
+
+    common::Scheduler& scheduler;
     DMA& dma;
 };
 

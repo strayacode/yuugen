@@ -38,6 +38,12 @@ void GPU::reset() {
     });
 
     matrix_mode = MatrixMode::Projection;
+
+    projection.reset();
+    modelview.reset();
+    direction.reset();
+    texture.reset();
+    clip.reset();
 }
 
 void GPU::write_disp3dcnt(u32 value, u32 mask) {
@@ -138,6 +144,12 @@ void GPU::execute_command() {
         switch (command) {
         case 0x10:
             set_matrix_mode();
+            break;
+        case 0x12:
+            pop_current_matrix();
+            break;
+        case 0x15:
+            load_unit_matrix();
             break;
         default:
             logger.todo("GPU: handle command %02x", command);
