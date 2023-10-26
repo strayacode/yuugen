@@ -2,8 +2,8 @@
 
 #include <memory>
 #include "arm/cpu.h"
+#include "arm/null_coprocessor.h"
 #include "nds/arm7/memory.h"
-#include "nds/arm7/coprocessor.h"
 #include "nds/hardware/irq.h"
 
 namespace nds {
@@ -20,14 +20,14 @@ public:
     void direct_boot();
     bool is_halted();
     ARM7Memory& get_memory() { return memory; }
-    ARM7Coprocessor& get_coprocessor() { return coprocessor; }
+    arm::NullCoprocessor& get_coprocessor() { return coprocessor; }
     IRQ& get_irq() { return irq; }
     arm::CPU& get_cpu() { return *cpu; }
 
 private:
     System& system;
     ARM7Memory memory;
-    ARM7Coprocessor coprocessor;
+    arm::NullCoprocessor coprocessor;
     IRQ irq;
     std::unique_ptr<arm::CPU> cpu;
 };

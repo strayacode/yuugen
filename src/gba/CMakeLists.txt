@@ -1,6 +1,5 @@
 add_library(gba
     system.h system.cpp
-    cp14.h cp14.cpp
     memory.h memory.cpp
     mmio.cpp
 

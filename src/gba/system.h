@@ -6,8 +6,8 @@
 #include "common/system.h"
 #include "common/scheduler.h"
 #include "arm/cpu.h"
+#include "arm/null_coprocessor.h"
 #include "gba/memory.h"
-#include "gba/cp14.h"
 #include "gba/hardware/cartridge.h"
 #include "gba/hardware/irq.h"
 #include "gba/hardware/input.h"
@@ -29,7 +29,7 @@ public:
     std::vector<u32*> fetch_framebuffers() override;
 
     Memory memory;
-    CP14 cp14;
+    arm::NullCoprocessor cp14;
     std::unique_ptr<arm::CPU> cpu;
     common::Scheduler scheduler;
     Cartridge cartridge;

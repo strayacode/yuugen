@@ -1,6 +1,6 @@
 add_library(arm
     arch.h
-    coprocessor.h
+    coprocessor.h null_coprocessor.h
     memory.h
     cpu.h state.h
     arithmetic.h arithmetic.cpp

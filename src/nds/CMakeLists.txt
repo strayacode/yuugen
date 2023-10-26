@@ -4,8 +4,7 @@ add_library(nds
     arm7/arm7.h arm7/arm7.cpp
     arm7/memory.h arm7/memory.cpp
     arm7/mmio.cpp
-    arm7/coprocessor.h arm7/coprocessor.cpp
-
+    
     arm9/arm9.h arm9/arm9.cpp
     arm9/memory.h arm9/memory.cpp
     arm9/mmio.cpp
