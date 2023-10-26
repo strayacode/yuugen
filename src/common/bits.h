@@ -1,19 +1,18 @@
 #pragma once
 
-#include "common/types.h"
-// #include <stdio.h>
 #include <type_traits>
+#include "common/types.h"
 
 namespace common {
 
 template <typename T>
-inline int num_bits() {
+constexpr int num_bits() {
     return sizeof(T) * 8;
 }
 
 template <typename T>
 inline int bit_count(T value) {
-    int n = num_bits<T>();
+    const int n = num_bits<T>();
     int count = 0;
 
     for (int i = 0; i < n; i++) {
@@ -27,7 +26,7 @@ inline int bit_count(T value) {
 
 template <typename T>
 inline int countl_zeroes(T value) {
-    int n = num_bits<T>();
+    const int n = num_bits<T>();
     int count = 0;
     
     while (value != 0) {
@@ -40,7 +39,7 @@ inline int countl_zeroes(T value) {
 
 template <typename T>
 inline int countr_zeroes(T value) {
-    int n = num_bits<T>();
+    const int n = num_bits<T>();
     int count = 0;
 
     for (int i = 0; i < n; i++) {
@@ -55,14 +54,14 @@ inline int countr_zeroes(T value) {
 }
 
 template <typename T, int N>
-inline constexpr T sign_extend(T value) {
+constexpr T sign_extend(T value) {
     constexpr int shift = 8 * sizeof(T) - N;
     return static_cast<T>((static_cast<std::make_signed_t<T>>(value) << shift) >> shift);
 }
 
 template <typename T>
 inline T rotate_right(T value, int amount) {
-    int n = num_bits<T>();
+    const int n = num_bits<T>();
     return (value >> amount) | (value << (n - amount));
 }
 

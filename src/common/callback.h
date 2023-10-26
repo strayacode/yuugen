@@ -12,8 +12,8 @@ namespace common {
 template <typename Func, size_t N = 16>
 class Callback;
 
-template <typename Return, typename... Args, size_t N>
-class Callback<Return(Args...), N> {
+template <typename ReturnType, typename... Args, size_t N>
+class Callback<ReturnType(Args...), N> {
 public:
     Callback() = default;
 
@@ -23,17 +23,17 @@ public:
 
         new (state) Func(static_cast<Func&&>(func));
 
-        fn = [](void* ptr, Args... args) -> Return {
+        fn = [](void* ptr, Args... args) -> ReturnType {
             return (*reinterpret_cast<Func*>(ptr))(std::forward<Args>(args)...);
         };
     }
 
-    Return operator()(Args... args) {
+    ReturnType operator()(Args... args) {
         return fn(state, std::forward<Args>(args)...);
     }
     
 private:
-    Return (*fn)(void*, Args...) = nullptr;
+    ReturnType (*fn)(void*, Args...) = nullptr;
 
     // store all lambda state
     char state[N] = {0};

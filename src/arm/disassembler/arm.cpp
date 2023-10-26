@@ -13,7 +13,7 @@ std::string Disassembler::arm_branch_link_maybe_exchange(u32 instruction) {
 }
 
 std::string Disassembler::arm_branch_exchange(u32 instruction) {
-    auto opcode = ARMBranchExchange::decode(instruction);
+    const const auto opcode = ARMBranchExchange::decode(instruction);
     return common::format("bx%s %s", condition_names[opcode.condition], register_names[opcode.rm]);
 }
 
@@ -22,7 +22,7 @@ std::string Disassembler::arm_count_leading_zeroes(u32 instruction) {
 }
 
 std::string Disassembler::arm_branch_link(u32 instruction) {
-    auto opcode = ARMBranchLink::decode(instruction);
+    const auto opcode = ARMBranchLink::decode(instruction);
     if (opcode.link) {
         return common::format("bl%s #0x%08x", condition_names[opcode.condition], opcode.offset + 8);
     } else {
@@ -35,7 +35,7 @@ std::string Disassembler::arm_branch_link_exchange(u32 instruction) {
 }
 
 std::string Disassembler::arm_branch_link_exchange_register(u32 instruction) {
-    auto opcode = ARMBranchExchange::decode(instruction);
+    const auto opcode = ARMBranchExchange::decode(instruction);
     return common::format("blx%s %s", condition_names[opcode.condition], register_names[opcode.rm]);
 }
 
@@ -56,7 +56,7 @@ std::string Disassembler::arm_multiply_long(u32 instruction) {
 }
 
 std::string Disassembler::arm_halfword_data_transfer(u32 instruction) {
-    auto opcode = ARMHalfwordDataTransfer::decode(instruction);
+    const auto opcode = ARMHalfwordDataTransfer::decode(instruction);
     std::string rhs_string = common::format(" %s [%s%s, ", register_names[opcode.rd], register_names[opcode.rn], opcode.pre ? "" : "]");
 
     if (opcode.imm) {
@@ -95,13 +95,13 @@ std::string Disassembler::arm_halfword_data_transfer(u32 instruction) {
 }
 
 std::string Disassembler::arm_status_load(u32 instruction) {
-    auto opcode = ARMStatusLoad::decode(instruction);
+    const auto opcode = ARMStatusLoad::decode(instruction);
     auto psr_string = opcode.spsr ? "spsr" : "cpsr";
     return common::format("mrs %s, %s", register_names[opcode.rd], psr_string);
 }
 
 std::string Disassembler::arm_status_store_register(u32 instruction) {
-    auto opcode = ARMStatusStore::decode(instruction);
+    const auto opcode = ARMStatusStore::decode(instruction);
     std::string mask = "";
     if (opcode.mask & 0xff000000) {
         mask += "f";
@@ -123,7 +123,7 @@ std::string Disassembler::arm_status_store_register(u32 instruction) {
 }
 
 std::string Disassembler::arm_status_store_immediate(u32 instruction) {
-    auto opcode = ARMStatusStore::decode(instruction);
+    const auto opcode = ARMStatusStore::decode(instruction);
     std::string mask = "";
     if (opcode.mask & 0xff000000) {
         mask += "f";
@@ -149,9 +149,9 @@ std::string Disassembler::arm_block_data_transfer(u32 instruction) {
 }
 
 std::string Disassembler::arm_single_data_transfer(u32 instruction) {
-    auto opcode = ARMSingleDataTransfer::decode(instruction);
+    const auto opcode = ARMSingleDataTransfer::decode(instruction);
     std::string rhs_string = "";
-    auto opcode_string = opcode.load ? "ldr" : "str";
+    const auto opcode_string = opcode.load ? "ldr" : "str";
     auto byte_string = opcode.byte ? "b" : "";
 
     if (opcode.imm) {
@@ -174,7 +174,7 @@ std::string Disassembler::arm_single_data_transfer(u32 instruction) {
 }
 
 std::string Disassembler::arm_data_processing(u32 instruction) {
-    auto opcode = ARMDataProcessing::decode(instruction);
+    const auto opcode = ARMDataProcessing::decode(instruction);
     auto set_flags_string = opcode.set_flags ? "s" : "";
     std::string rhs_string = "";
 

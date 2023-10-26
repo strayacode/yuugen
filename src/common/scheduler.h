@@ -29,14 +29,13 @@ public:
     void cancel_event(EventType* type);
     EventType register_event(std::string name, SchedulerCallback callback);
 
-    u64 get_current_time();
-    u64 get_event_time();
+    u64 get_current_time() const { return current_time; }
+    u64 get_event_time() const { return events[0].time; }
+    
     void set_current_time(u64 value);
 
-    std::vector<Event>& get_events() { return events; }
-    
 private:
-    int calculate_event_index(Event& event);
+    int calculate_event_index(const Event& event);
 
     std::vector<Event> events;
     u64 current_time;

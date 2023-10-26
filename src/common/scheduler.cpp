@@ -21,9 +21,9 @@ void Scheduler::run() {
 }
 
 void Scheduler::add_event(u64 delay, EventType* type) {
-    u64 time = current_time + delay;
-    Event event{time, type};
-    auto index = calculate_event_index(event);
+    const u64 time = current_time + delay;
+    const Event event{time, type};
+    const int index = calculate_event_index(event);
     events.insert(events.begin() + index, event);
 }
 
@@ -45,19 +45,11 @@ EventType Scheduler::register_event(std::string name, SchedulerCallback callback
     return type;
 }
 
-u64 Scheduler::get_current_time() {
-    return current_time;
-}
-
-u64 Scheduler::get_event_time() {
-    return events[0].time;
-}
-
 void Scheduler::set_current_time(u64 value) {
     current_time = value;
 }
 
-int Scheduler::calculate_event_index(Event& event) {
+int Scheduler::calculate_event_index(const Event& event) {
     if (events.size() == 0) {
         return 0;
     }

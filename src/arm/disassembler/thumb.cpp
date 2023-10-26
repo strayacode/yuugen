@@ -5,7 +5,7 @@
 namespace arm {
 
 std::string Disassembler::thumb_alu_immediate(u32 instruction) {
-    auto opcode = ThumbALUImmediate::decode(instruction);
+    const auto opcode = ThumbALUImmediate::decode(instruction);
     switch (opcode.opcode) {
     case ThumbALUImmediate::Opcode::MOV:
         return common::format("mov %s, #0x%08x", register_names[opcode.rd], opcode.imm);
@@ -19,7 +19,7 @@ std::string Disassembler::thumb_alu_immediate(u32 instruction) {
 }
 
 std::string Disassembler::thumb_branch_link_offset(u32 instruction) {
-    auto opcode = ThumbBranchLinkOffset::decode(instruction); 
+    const auto opcode = ThumbBranchLinkOffset::decode(instruction); 
     return common::format("bl #0x%08x", opcode.offset + 4);
 }
 
@@ -36,7 +36,7 @@ std::string Disassembler::thumb_branch(u32 instruction) {
 }
 
 std::string Disassembler::thumb_push_pop(u32 instruction) {
-    auto opcode = ThumbPushPop::decode(instruction);
+    const auto opcode = ThumbPushPop::decode(instruction);
     if (opcode.pop) {
         return "handle pop";
     } else {
@@ -77,7 +77,7 @@ std::string Disassembler::thumb_load_store_sp_relative(u32 instruction) {
 }
 
 std::string Disassembler::thumb_load_store_halfword(u32 instruction) {
-    auto opcode = ThumbLoadStoreHalfword::decode(instruction);
+    const auto opcode = ThumbLoadStoreHalfword::decode(instruction);
     if (opcode.load) {
         return common::format("ldrh %s, [%s]", register_names[opcode.rd], register_names[opcode.rn]);
     } else {
@@ -106,7 +106,7 @@ std::string Disassembler::thumb_load_store_multiple(u32 instruction) {
 }
 
 std::string Disassembler::thumb_load_store_immediate(u32 instruction) {
-    auto opcode = ThumbLoadStoreImmediate::decode(instruction);
+    const auto opcode = ThumbLoadStoreImmediate::decode(instruction);
     switch (opcode.opcode) {
     case ThumbLoadStoreImmediate::Opcode::STR:
         return common::format("str %s, [%s]", register_names[opcode.rn], register_names[opcode.rd]);
