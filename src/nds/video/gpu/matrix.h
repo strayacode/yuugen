@@ -7,6 +7,10 @@ namespace nds {
 
 class Matrix {
 public:
+    Matrix() {
+        reset();
+    }
+
     void reset() {
         // initialise to a 4x4 identity matrix in fixed point notation
         for (int i = 0; i < 4; i++) {

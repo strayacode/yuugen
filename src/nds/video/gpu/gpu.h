@@ -16,7 +16,10 @@ public:
     GPU(common::Scheduler& scheduler, DMA& dma);
 
     void reset();
+
+    u32 read_disp3dcnt() const { return disp3dcnt.data; }
     void write_disp3dcnt(u32 value, u32 mask);
+
     u32 read_gxstat();
     void write_gxstat(u32 value, u32 mask);
     void write_clear_colour(u32 value, u32 mask);
@@ -52,11 +55,24 @@ private:
     Entry dequeue_entry();
     void execute_command();
 
+    Matrix multiply_matrix_matrix(const Matrix& a, const Matrix& b);
+    Vertex multiply_vertex_matrix(const Vertex& a, const Matrix& b);
+
     // geometry commands
     void set_matrix_mode();
     void pop_current_matrix();
     void load_unit_matrix();
     void swap_buffers();
+    void set_texture_parameters();
+    void set_polygon_attributes();
+    void set_viewport();
+    void multiply_4x4();
+    void multiply_4x3();
+    void push_current_matrix();
+    void multiply_translation();
+    void multiply_3x3();
+    void begin_vertex_list();
+    void set_vertex_colour();
 
     union DISP3DCNT {
         struct {
@@ -132,6 +148,21 @@ private:
     u32 clear_colour{0};
     u16 clear_depth{0};
     u16 clrimage_offset{0};
+
+    Vertex current_vertex;
+    Polygon current_polygon;
+
+    struct Viewport {
+        u32 x0{0};
+        u32 y0{0};
+        u32 x1{0};
+        u32 y1{0};
+    };
+
+    Viewport viewport;
+
+    PolygonType polygon_type{PolygonType::Triangle};
+    int vertex_count;
 
     common::Scheduler& scheduler;
     DMA& dma;

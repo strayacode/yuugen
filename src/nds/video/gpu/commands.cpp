@@ -56,4 +56,152 @@ void GPU::swap_buffers() {
     swap_buffers_requested = true;
 }
 
+void GPU::set_texture_parameters() {
+    const u32 parameter = dequeue_entry().parameter;
+    current_polygon.texture_attributes.parameters = parameter;
+}
+
+void GPU::set_polygon_attributes() {
+    const u32 parameter = dequeue_entry().parameter;
+    current_polygon.polygon_attributes = parameter;
+}
+
+void GPU::set_viewport() {
+    const u32 parameter = dequeue_entry().parameter;
+    viewport.x0 = common::get_field<0, 8>(parameter);
+    viewport.y0 = common::get_field<8, 8>(parameter);
+    viewport.x1 = common::get_field<16, 8>(parameter);
+    viewport.y1 = common::get_field<24, 8>(parameter);
+}
+
+void GPU::multiply_4x4() {
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            matrix.field[y][x] = dequeue_entry().parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.current = multiply_matrix_matrix(matrix, projection.current);
+        break;
+    case MatrixMode::Modelview: 
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        break;
+    case MatrixMode::Simultaneous:
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        direction.current = multiply_matrix_matrix(matrix, direction.current);
+        break;
+    case MatrixMode::Texture:
+        texture.current = multiply_matrix_matrix(matrix, texture.current);
+        break;
+    }
+}
+
+void GPU::multiply_4x3() {
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 3; x++) {
+            matrix.field[y][x] = dequeue_entry().parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.current = multiply_matrix_matrix(matrix, projection.current);
+        break;
+    case MatrixMode::Modelview: 
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        break;
+    case MatrixMode::Simultaneous:
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        direction.current = multiply_matrix_matrix(matrix, direction.current);
+        break;
+    case MatrixMode::Texture:
+        texture.current = multiply_matrix_matrix(matrix, texture.current);
+        break;
+    }
+}
+
+void GPU::push_current_matrix() {
+    dequeue_entry();
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.push();
+        break;
+    case MatrixMode::Modelview: case MatrixMode::Simultaneous:
+        modelview.push();
+        direction.push();
+        break;
+    case MatrixMode::Texture:
+        texture.push();
+        break;
+    }
+}
+
+void GPU::multiply_translation() {
+    Matrix matrix;
+
+    for (int i = 0; i < 3; i++) {
+        matrix.field[3][i] = dequeue_entry().parameter;
+    }
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.current = multiply_matrix_matrix(matrix, projection.current);
+        break;
+    case MatrixMode::Modelview: 
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        break;
+    case MatrixMode::Simultaneous:
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        direction.current = multiply_matrix_matrix(matrix, direction.current);
+        break;
+    case MatrixMode::Texture:
+        texture.current = multiply_matrix_matrix(matrix, texture.current);
+        break;
+    }
+}
+
+void GPU::multiply_3x3() {
+    Matrix matrix;
+
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+            matrix.field[y][x] = dequeue_entry().parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.current = multiply_matrix_matrix(matrix, projection.current);
+        break;
+    case MatrixMode::Modelview: 
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        break;
+    case MatrixMode::Simultaneous:
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        direction.current = multiply_matrix_matrix(matrix, direction.current);
+        break;
+    case MatrixMode::Texture:
+        texture.current = multiply_matrix_matrix(matrix, texture.current);
+        break;
+    }
+}
+
+void GPU::begin_vertex_list() {
+    const u32 parameter = dequeue_entry().parameter;
+    polygon_type = static_cast<PolygonType>(common::get_field<0, 2>(parameter));
+    vertex_count = 0;
+}
+
+void GPU::set_vertex_colour() {
+    const u32 parameter = common::get_field<0, 15>(dequeue_entry().parameter);
+    current_vertex.colour = Colour::from_u16(parameter);
+}
+
 } // namespace nds

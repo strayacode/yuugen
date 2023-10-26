@@ -55,6 +55,14 @@ void GPU::reset() {
     clear_colour = 0;
     clear_depth = 0;
     clrimage_offset = 0;
+
+    viewport.x0 = 0;
+    viewport.y0 = 0;
+    viewport.x1 = 0;
+    viewport.y1 = 0;
+
+    polygon_type = PolygonType::Triangle;
+    vertex_count = 0;
 }
 
 void GPU::write_disp3dcnt(u32 value, u32 mask) {
@@ -168,22 +176,85 @@ void GPU::execute_command() {
         case 0x10:
             set_matrix_mode();
             break;
+        case 0x11:
+            push_current_matrix();
+            break;
         case 0x12:
             pop_current_matrix();
             break;
         case 0x15:
             load_unit_matrix();
             break;
+        case 0x18:
+            multiply_4x4();
+            break;
+        case 0x19:
+            multiply_4x3();
+            break;
+        case 0x1a:
+            multiply_3x3();
+            break;
+        case 0x1c:
+            multiply_translation();
+            break;
+        case 0x20:
+            set_vertex_colour();
+            break;
+        case 0x29:
+            set_polygon_attributes();
+            break;
+        case 0x2a:
+            set_texture_parameters();
+            break;
+        case 0x40:
+            begin_vertex_list();
+            break;
         case 0x50:
             swap_buffers();
             break;
+        case 0x60:
+            set_viewport();
+            break;
         default:
+            // if (parameter_count == 0) {
+            //     dequeue_entry();
+            // }
+
+            // for (int i = 0; i < parameter_count; i++) {
+            //     dequeue_entry();
+            // }
+
             logger.todo("GPU: handle command %02x", command);
         }
 
         busy = true;
         scheduler.add_event(1, &geometry_command_event);
     }
+}
+
+Matrix GPU::multiply_matrix_matrix(const Matrix& a, const Matrix& b) {
+    Matrix multiplied_matrix;
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            s64 result = 0;
+            for (int i = 0; i < 4; i++) {
+                result += (static_cast<s64>(a.field[y][i]) * b.field[i][x]);
+            }
+
+            multiplied_matrix.field[y][x] = result >> 12;
+        }
+    }
+
+    return multiplied_matrix;
+}
+
+Vertex GPU::multiply_vertex_matrix(const Vertex& a, const Matrix& b) {
+    Vertex multiplied_vertex;
+    multiplied_vertex.x = (static_cast<s64>(a.x) * b.field[0][0] + static_cast<s64>(a.y) * b.field[1][0] + static_cast<s64>(a.z) * b.field[2][0] + static_cast<s64>(a.w) * b.field[3][0]) >> 12;
+    multiplied_vertex.y = (static_cast<s64>(a.x) * b.field[0][1] + static_cast<s64>(a.y) * b.field[1][1] + static_cast<s64>(a.z) * b.field[2][1] + static_cast<s64>(a.w) * b.field[3][1]) >> 12;
+    multiplied_vertex.z = (static_cast<s64>(a.x) * b.field[0][2] + static_cast<s64>(a.y) * b.field[1][2] + static_cast<s64>(a.z) * b.field[2][2] + static_cast<s64>(a.w) * b.field[3][2]) >> 12;
+    multiplied_vertex.w = (static_cast<s64>(a.x) * b.field[0][3] + static_cast<s64>(a.y) * b.field[1][3] + static_cast<s64>(a.z) * b.field[2][3] + static_cast<s64>(a.w) * b.field[3][3]) >> 12;
+    return multiplied_vertex;
 }
 
 } // namespace nds
