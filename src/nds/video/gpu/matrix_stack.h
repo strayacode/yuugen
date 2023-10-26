@@ -64,10 +64,10 @@ public:
     }
 
     Matrix current;
+    bool error;
 
 private:
     std::array<Matrix, N> stack;
-    bool error;
     int pointer;
 };
 

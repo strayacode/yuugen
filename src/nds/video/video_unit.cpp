@@ -130,6 +130,8 @@ void VideoUnit::render_scanline_end() {
         }
 
         system.dma9.trigger(DMA::Timing::VBlank);
+
+        logger.todo("execute swap buffers");
         break;
     case 262:
         dispstat7.vblank = false;

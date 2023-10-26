@@ -6,6 +6,8 @@
 #include "common/scheduler.h"
 #include "nds/hardware/dma.h"
 #include "nds/video/gpu/matrix_stack.h"
+#include "nds/video/gpu/vertex.h"
+#include "nds/video/gpu/polygon.h"
 
 namespace nds {
 
@@ -17,6 +19,9 @@ public:
     void write_disp3dcnt(u32 value, u32 mask);
     u32 read_gxstat();
     void write_gxstat(u32 value, u32 mask);
+    void write_clear_colour(u32 value, u32 mask);
+    void write_clear_depth(u16 value, u32 mask);
+    void write_clrimage_offset(u16 value, u32 mask);
     void queue_command(u32 addr, u32 data);
     void render();
 
@@ -51,6 +56,7 @@ private:
     void set_matrix_mode();
     void pop_current_matrix();
     void load_unit_matrix();
+    void swap_buffers();
 
     union DISP3DCNT {
         struct {
@@ -114,6 +120,18 @@ private:
     MatrixStack<31> direction;
     MatrixStack<1> texture;
     Matrix clip;
+
+    std::array<std::array<Vertex, 6144>, 2> vertex_ram;
+    std::array<std::array<Polygon, 2048>, 2> polygon_ram;
+
+    // tracks which vertex/polygon ram is currently being used
+    int current_buffer{0};
+
+    bool swap_buffers_requested{false};
+
+    u32 clear_colour{0};
+    u16 clear_depth{0};
+    u16 clrimage_offset{0};
 
     common::Scheduler& scheduler;
     DMA& dma;

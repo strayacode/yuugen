@@ -47,4 +47,13 @@ void GPU::load_unit_matrix() {
     }
 }
 
+void GPU::swap_buffers() {
+    const u32 parameter = dequeue_entry().parameter;
+    
+    // TODO: handle these bits later
+    const bool manual_polygon_y_sorting = common::get_bit<0>(parameter);
+    const bool w_buffering = common::get_bit<1>(parameter);
+    swap_buffers_requested = true;
+}
+
 } // namespace nds

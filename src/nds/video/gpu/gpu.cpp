@@ -44,6 +44,17 @@ void GPU::reset() {
     direction.reset();
     texture.reset();
     clip.reset();
+
+    for (int i = 0; i < 2; i++) {
+        vertex_ram[i].fill(Vertex{});
+        polygon_ram[i].fill(Polygon{});
+    }
+
+    current_buffer = 0;
+    swap_buffers_requested = false;
+    clear_colour = 0;
+    clear_depth = 0;
+    clrimage_offset = 0;
 }
 
 void GPU::write_disp3dcnt(u32 value, u32 mask) {
@@ -73,6 +84,18 @@ u32 GPU::read_gxstat() {
 void GPU::write_gxstat(u32 value, u32 mask) {
     gxstat.data = (gxstat.data & ~mask) | (value & mask);
     check_gxfifo_irq();
+}
+
+void GPU::write_clear_colour(u32 value, u32 mask) {
+    clear_colour = (clear_colour & ~mask) | (value & mask);
+}
+
+void GPU::write_clear_depth(u16 value, u32 mask) {
+    clear_depth = (clear_depth & ~mask) | (value & mask);
+}
+
+void GPU::write_clrimage_offset(u16 value, u32 mask) {
+    clrimage_offset = (clrimage_offset & ~mask) | (value & mask);
 }
 
 void GPU::queue_command(u32 addr, u32 data) {
@@ -150,6 +173,9 @@ void GPU::execute_command() {
             break;
         case 0x15:
             load_unit_matrix();
+            break;
+        case 0x50:
+            swap_buffers();
             break;
         default:
             logger.todo("GPU: handle command %02x", command);
