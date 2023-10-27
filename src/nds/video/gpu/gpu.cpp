@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "common/logger.h"
 #include "common/bits.h"
 #include "nds/video/gpu/gpu.h"
@@ -64,7 +65,9 @@ void GPU::reset() {
     viewport.y1 = 0;
 
     polygon_type = PolygonType::Triangle;
+    vertex_list.fill(Vertex{});
     vertex_count = 0;
+    polygon_count = 0;
 }
 
 void GPU::write_disp3dcnt(u32 value, u32 mask) {
@@ -266,17 +269,17 @@ void GPU::update_clip_matrix() {
     clip = multiply_matrix_matrix(modelview.current, projection.current);
 }
 
-void GPU::add_vertex() {
+void GPU::submit_vertex() {
     if (vertex_ram_size >= 6144) {
         logger.todo("GPU: handle when vertex ram is full");
     }
 
-    auto& current_vertex_ram = vertex_ram[current_buffer];
-
     update_clip_matrix();
-
     current_vertex.w = 1 << 12;
-    current_vertex = multiply_vertex_matrix(current_vertex, clip);
+
+    auto clipped_vertex = multiply_vertex_matrix(current_vertex, clip);
+    auto& vertex = vertex_list[vertex_count++];
+    vertex = clipped_vertex;
 
     switch (current_polygon.texture_attributes.parameters.transformation_mode) {
     case 1:
@@ -290,38 +293,53 @@ void GPU::add_vertex() {
         break;
     }
 
-    current_vertex_ram[vertex_ram_size++] = current_vertex;
-    vertex_count++;
-
     switch (polygon_type) {
     case PolygonType::Triangle:
-        if (vertex_count % 3 == 0) {
-            add_polygon();
+        if (vertex_count == 3) {
+            submit_polygon();
         }
         
         break;
     case PolygonType::Quad:
-        if (vertex_count % 4 == 0) {
-            add_polygon();
+        if (vertex_count == 4) {
+            submit_polygon();
         }
 
         break;
     case PolygonType::TriangleStrip:
-        if (vertex_count >= 3) {
-            add_polygon();
+        if (polygon_count % 2 == 1) {
+            std::swap(vertex_list[0], vertex_list[1]);
+            submit_polygon();
+            vertex_list[1] = vertex_list[2];
+        } else if (vertex_count == 3) {
+            submit_polygon();
+            vertex_list[0] = vertex_list[1];
+            vertex_list[1] = vertex_list[2];
         }
-
+        
         break;
     case PolygonType::QuadStrip:
-        if (vertex_count >= 4 && vertex_count % 2 == 0) {
-            add_polygon();
+        if (vertex_count == 4) {
+            std::swap(vertex_list[2], vertex_list[3]);
+            submit_polygon();
+            vertex_list[0] = vertex_list[3];
+            vertex_list[1] = vertex_list[2];
         }
-
+        
         break;
     }
 }
 
-void GPU::add_polygon() {
+void GPU::submit_polygon() {
+    polygon_count++;
+
+    const bool is_strip = polygon_type == PolygonType::TriangleStrip || polygon_type == PolygonType::QuadStrip;
+    if (is_strip) {
+        vertex_count = 2;
+    } else {
+        vertex_count = 0;
+    }
+
     if (polygon_ram_size >= 2048) {
         logger.todo("GPU: handle when polygon ram is full");
     }

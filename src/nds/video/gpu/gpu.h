@@ -59,8 +59,8 @@ private:
     Vertex multiply_vertex_matrix(const Vertex& a, const Matrix& b);
 
     void update_clip_matrix();
-    void add_vertex();
-    void add_polygon();
+    void submit_vertex();
+    void submit_polygon();
 
     // geometry commands
     void set_matrix_mode();
@@ -169,7 +169,9 @@ private:
     Viewport viewport;
 
     PolygonType polygon_type{PolygonType::Triangle};
-    int vertex_count;
+    std::array<Vertex, 10> vertex_list;
+    int vertex_count{0};
+    int polygon_count{0};
 
     common::Scheduler& scheduler;
     DMA& dma;

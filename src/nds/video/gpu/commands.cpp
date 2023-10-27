@@ -197,6 +197,7 @@ void GPU::begin_vertex_list() {
     const u32 parameter = dequeue_entry().parameter;
     polygon_type = static_cast<PolygonType>(common::get_field<0, 2>(parameter));
     vertex_count = 0;
+    polygon_count = 0;
 }
 
 void GPU::set_vertex_colour() {
@@ -211,7 +212,7 @@ void GPU::add_vertex16() {
     current_vertex.x = static_cast<s16>(common::get_field<0, 16>(parameter1));
     current_vertex.y = static_cast<s16>(parameter1 >> 16);
     current_vertex.z = static_cast<s16>(common::get_field<0, 16>(parameter2));
-    add_vertex();
+    submit_vertex();
 }
 
 } // namespace nds
