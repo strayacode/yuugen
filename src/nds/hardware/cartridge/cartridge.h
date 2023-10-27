@@ -17,6 +17,7 @@ public:
     void reset();
     void load(const std::string& path);
     void direct_boot();
+    void firmware_boot();
 
     u16 read_auxspicnt() { return auxspicnt.data; }
     void write_auxspicnt(u16 value, u32 mask);

@@ -18,6 +18,7 @@ public:
     void run(int cycles);
     void select_backend(arm::BackendType backend, bool optimise);
     void direct_boot();
+    void firmware_boot();
     bool is_halted();
     ARM9Memory& get_memory() { return memory; }
     ARM9Coprocessor& get_coprocessor() { return coprocessor; }

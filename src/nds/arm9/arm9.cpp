@@ -64,6 +64,10 @@ void ARM9::direct_boot() {
     cpu->set_gpr(arm::GPR::PC, system.cartridge.get_arm9_entrypoint());
 }
 
+void ARM9::firmware_boot() {
+    cpu->set_gpr(arm::GPR::PC, 0xffff0000);
+}
+
 bool ARM9::is_halted() {
     return cpu->is_halted();
 }

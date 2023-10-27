@@ -170,7 +170,7 @@ void Application::render_menubar() {
                 file_dialog.Open();
             }
 
-            if (ImGui::MenuItem("Boot Firmware")) {
+            if (ImGui::MenuItem("Boot NDS Firmware")) {
                 boot_firmware();
             }
 
@@ -456,12 +456,12 @@ void Application::boot_game(const std::string& path) {
 }
 
 void Application::boot_firmware() {
-    // window_type = WindowType::Game;
-    // BootMode old_boot_mode = m_system.boot_mode();
-
-    // m_system.set_boot_mode(BootMode::Firmware);
-    // m_system.boot();
-    // m_system.set_boot_mode(old_boot_mode);
-
-    // set_fullscreen(Settings::Get().fullscreen_on_game_launch);
+    system = std::make_unique<nds::System>();
+    system_type = SystemType::NDS;
+    
+    const auto old_boot_mode = system->get_boot_mode();
+    system->set_game_path("");
+    system->set_boot_mode(common::BootMode::Regular);
+    system->set_state(common::System::State::Running);
+    system->set_boot_mode(old_boot_mode);
 }

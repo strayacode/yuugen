@@ -12,3 +12,6 @@ yuugen is a WIP Nintendo DS emulator written in C++
 ## currently working on:
 - jit for the arm core
 - gba support
+
+## Thanks:
+- [fleroviux](https://github.com/fleroviux) and [StrikerX3](https://github.com/StrikerX3) for providing initial inspiration with their ARM recompilers

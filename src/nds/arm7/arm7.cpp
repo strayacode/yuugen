@@ -51,6 +51,10 @@ void ARM7::direct_boot() {
     cpu->set_gpr(arm::GPR::PC, system.cartridge.get_arm7_entrypoint());
 }
 
+void ARM7::firmware_boot() {
+    cpu->set_gpr(arm::GPR::PC, 0x00000000);
+}
+
 bool ARM7::is_halted() {
     return cpu->is_halted();
 }

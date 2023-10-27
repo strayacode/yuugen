@@ -21,6 +21,8 @@ public:
     virtual void set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) = 0;
     virtual std::vector<u32*> fetch_framebuffers() = 0;
 
+    BootMode get_boot_mode() const { return config.boot_mode; }
+
     void set_game_path(const std::string& game_path);
     void set_boot_mode(BootMode boot_mode);
 

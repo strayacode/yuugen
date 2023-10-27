@@ -60,6 +60,36 @@ void Cartridge::direct_boot() {
     logger.debug("Cartridge: cartridge data transferred into memory");
 }
 
+void Cartridge::firmware_boot() {
+    logger.debug("Cartridge: firmware boot");
+    // if (loader.GetSize() >= 0x8000) {
+    //     u64 encry_obj = 0x6A624F7972636E65;
+
+    //     memcpy(loader.GetPointer(0x4000), &encry_obj, 8);
+
+    //     InitKeyCode(3, 2);
+
+    //     // encrypt the first 2kb of the secure area
+    //     for (int i = 0; i < 0x800; i += 8) {
+    //         u64 data = 0;
+    //         memcpy(&data, loader.GetPointer(0x4000 + i), 8);
+
+    //         u64 encrypted_data = Encrypt64(data);
+    //         memcpy(loader.GetPointer(0x4000 + i), &encrypted_data, 8);
+    //     }
+
+    //     // double encrypt the first 8 bytes
+    //     u64 data = 0;
+    //     memcpy(&data, loader.GetPointer(0x4000), 8);
+
+    //     InitKeyCode(2, 2);
+    //     u64 encrypted_data = Encrypt64(data);
+    //     memcpy(loader.GetPointer(0x4000), &encrypted_data, 8);
+
+    //     log_debug("[Cartridge] First 2kb of secure area encrypted successfully");
+    // }
+}
+
 void Cartridge::write_auxspicnt(u16 value, u32 mask) {
     auxspicnt.data = (auxspicnt.data & ~mask) | (value & mask);
 }

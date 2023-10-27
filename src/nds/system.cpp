@@ -30,7 +30,11 @@ void System::reset() {
     arm7.reset();
     arm9.reset();
     cartridge.reset();
-    cartridge.load(config.game_path);
+
+    if (config.game_path != "") {
+        cartridge.load(config.game_path);
+    }
+    
     video_unit.reset();
     input.reset();
     spu.reset();
@@ -150,7 +154,9 @@ void System::direct_boot() {
 }
 
 void System::firmware_boot() {
-    logger.error("System: handle firmware boot");
+    cartridge.firmware_boot();
+    arm7.firmware_boot();
+    arm9.firmware_boot();
 }
 
 } // namespace nds
