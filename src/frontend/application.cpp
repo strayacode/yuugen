@@ -460,6 +460,7 @@ void Application::boot_firmware() {
     system_type = SystemType::NDS;
     
     const auto old_boot_mode = system->get_boot_mode();
+    system->set_audio_device(audio_device);
     system->set_game_path("");
     system->set_boot_mode(common::BootMode::Regular);
     system->set_state(common::System::State::Running);

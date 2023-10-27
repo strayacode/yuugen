@@ -27,6 +27,7 @@ public:
     void write_clrimage_offset(u16 value, u32 mask);
     void queue_command(u32 addr, u32 data);
     void render();
+    void do_swap_buffers();
 
     std::array<u32, 256 * 192> framebuffer;
 
@@ -59,8 +60,9 @@ private:
     Vertex multiply_vertex_matrix(const Vertex& a, const Matrix& b);
 
     void update_clip_matrix();
-    void add_vertex();
-    void add_polygon();
+    void submit_vertex();
+    void submit_polygon();
+    Vertex normalise_vertex(const Vertex& vertex);
 
     // geometry commands
     void set_matrix_mode();
@@ -78,6 +80,7 @@ private:
     void begin_vertex_list();
     void set_vertex_colour();
     void add_vertex16();
+    void end_vertex_list();
 
     union DISP3DCNT {
         struct {
@@ -169,7 +172,9 @@ private:
     Viewport viewport;
 
     PolygonType polygon_type{PolygonType::Triangle};
-    int vertex_count;
+    std::array<Vertex, 10> vertex_list;
+    int vertex_count{0};
+    int polygon_count{0};
 
     common::Scheduler& scheduler;
     DMA& dma;

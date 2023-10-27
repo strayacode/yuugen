@@ -79,6 +79,20 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.video_unit.read_dispstat(arm::Arch::ARMv4);
         if constexpr (mask & 0xffff0000) value |= system.video_unit.read_vcount() << 16;
         return value;
+    case MMIO(0x040000b0):
+        return system.dma7.read_source(0);
+    case MMIO(0x040000b8):
+        if constexpr (mask & 0xffff) value |= system.dma7.read_length(0);
+        if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(0) << 16;
+        return value;
+    case MMIO(0x040000c4):
+        if constexpr (mask & 0xffff) value |= system.dma7.read_length(1);
+        if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(1) << 16;
+        return value;
+    case MMIO(0x040000d0):
+        if constexpr (mask & 0xffff) value |= system.dma7.read_length(2);
+        if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(2) << 16;
+        return value;
     case MMIO(0x040000dc):
         if constexpr (mask & 0xffff) value |= system.dma7.read_length(3);
         if constexpr (mask & 0xffff0000) value |= system.dma7.read_control(3) << 16;
@@ -118,6 +132,12 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.cartridge.read_auxspicnt();
         if constexpr (mask & 0xffff0000) value |= system.cartridge.read_auxspidata() << 16;
         return value;
+    case MMIO(0x040001a4):
+        return system.cartridge.read_romctrl();
+    case MMIO(0x040001a8):
+        return system.cartridge.read_command_buffer();
+    case MMIO(0x040001ac):
+        return system.cartridge.read_command_buffer() >> 32;
     case MMIO(0x040001c0):
         if constexpr (mask & 0xffff) value |= system.spi.read_spicnt();
         if constexpr (mask & 0xff0000) value |= system.spi.read_spidata() << 16;
@@ -151,6 +171,8 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x04100000):
         return system.ipc.read_ipcfiforecv(arm::Arch::ARMv4);
+    case MMIO(0x04100010):
+        return system.cartridge.read_data();
     default:
         if (addr >= 0x04800000 && addr < 0x04900000) {
             // TODO: handle wifi reads
@@ -245,6 +267,15 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x040001a0):
         if constexpr (mask & 0xffff) system.cartridge.write_auxspicnt(value, mask);
         if constexpr (mask & 0xffff0000) system.cartridge.write_auxspidata(value >> 16);
+        break;
+    case MMIO(0x040001a4):
+        system.cartridge.write_romctrl(value, mask);
+        break;
+    case MMIO(0x040001a8):
+        system.cartridge.write_command_buffer(value, mask);
+        break;
+    case MMIO(0x040001ac):
+        system.cartridge.write_command_buffer(static_cast<u64>(value) << 32, static_cast<u64>(mask) << 32);
         break;
     case MMIO(0x040001c0):
         if constexpr (mask & 0xffff) system.spi.write_spicnt(value, mask & 0xffff);

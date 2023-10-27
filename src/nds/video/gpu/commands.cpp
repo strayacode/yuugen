@@ -1,3 +1,4 @@
+#include <cassert>
 #include "common/logger.h"
 #include "common/bits.h"
 #include "nds/video/gpu/gpu.h"
@@ -72,6 +73,10 @@ void GPU::set_viewport() {
     viewport.y0 = common::get_field<8, 8>(parameter);
     viewport.x1 = common::get_field<16, 8>(parameter);
     viewport.y1 = common::get_field<24, 8>(parameter);
+
+    // TODO: what happens when viewport parameters are reversed
+    assert(viewport.x1 >= viewport.x0);
+    assert(viewport.y1 >= viewport.y0);
 }
 
 void GPU::multiply_4x4() {
@@ -197,6 +202,7 @@ void GPU::begin_vertex_list() {
     const u32 parameter = dequeue_entry().parameter;
     polygon_type = static_cast<PolygonType>(common::get_field<0, 2>(parameter));
     vertex_count = 0;
+    polygon_count = 0;
 }
 
 void GPU::set_vertex_colour() {
@@ -211,7 +217,11 @@ void GPU::add_vertex16() {
     current_vertex.x = static_cast<s16>(common::get_field<0, 16>(parameter1));
     current_vertex.y = static_cast<s16>(parameter1 >> 16);
     current_vertex.z = static_cast<s16>(common::get_field<0, 16>(parameter2));
-    add_vertex();
+    submit_vertex();
+}
+
+void GPU::end_vertex_list() {
+    dequeue_entry();
 }
 
 } // namespace nds

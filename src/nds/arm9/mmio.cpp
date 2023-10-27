@@ -384,7 +384,7 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x040001a0):
         if constexpr (mask & 0xffff) system.cartridge.write_auxspicnt(value, mask);
-        if constexpr (mask & 0x00ff0000) logger.error("handle auxspidata writes");
+        if constexpr (mask & 0x00ff0000) system.cartridge.write_auxspidata(value >> 16);
         break;
     case MMIO(0x040001a4):
         system.cartridge.write_romctrl(value, mask);
