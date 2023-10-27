@@ -26,7 +26,24 @@ public:
     std::array<Vertex*, 10> vertices;
 
     struct TextureAttributes {
-        u32 parameters{0};
+        union TextureParameters {
+            struct {
+                u32 vram_offset : 16;
+                bool repeat_in_s_direction : 1;
+                bool repeat_in_t_direction : 1;
+                bool flip_in_s_direction : 1;
+                bool flip_in_t_direction : 1;
+                u32 s_size : 3;
+                u32 t_size : 3;
+                u32 texture_format : 3;
+                bool colour0 : 1;
+                u32 transformation_mode : 2;
+            };
+
+            u32 data;
+        };
+
+        TextureParameters parameters{};
         u32 palette_base{0};
     };
 

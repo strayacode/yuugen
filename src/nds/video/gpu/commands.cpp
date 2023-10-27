@@ -58,7 +58,7 @@ void GPU::swap_buffers() {
 
 void GPU::set_texture_parameters() {
     const u32 parameter = dequeue_entry().parameter;
-    current_polygon.texture_attributes.parameters = parameter;
+    current_polygon.texture_attributes.parameters.data = parameter;
 }
 
 void GPU::set_polygon_attributes() {
@@ -202,6 +202,16 @@ void GPU::begin_vertex_list() {
 void GPU::set_vertex_colour() {
     const u32 parameter = common::get_field<0, 15>(dequeue_entry().parameter);
     current_vertex.colour = Colour::from_u16(parameter);
+}
+
+void GPU::add_vertex16() {
+    const u32 parameter1 = dequeue_entry().parameter;
+    const u32 parameter2 = dequeue_entry().parameter;
+
+    current_vertex.x = static_cast<s16>(common::get_field<0, 16>(parameter1));
+    current_vertex.y = static_cast<s16>(parameter1 >> 16);
+    current_vertex.z = static_cast<s16>(common::get_field<0, 16>(parameter2));
+    add_vertex();
 }
 
 } // namespace nds

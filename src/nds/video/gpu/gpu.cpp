@@ -50,6 +50,8 @@ void GPU::reset() {
         polygon_ram[i].fill(Polygon{});
     }
 
+    vertex_ram_size = 0;
+    polygon_ram_size = 0;
     current_buffer = 0;
     swap_buffers_requested = false;
     clear_colour = 0;
@@ -200,6 +202,9 @@ void GPU::execute_command() {
         case 0x20:
             set_vertex_colour();
             break;
+        case 0x23:
+            add_vertex16();
+            break;
         case 0x29:
             set_polygon_attributes();
             break;
@@ -255,6 +260,106 @@ Vertex GPU::multiply_vertex_matrix(const Vertex& a, const Matrix& b) {
     multiplied_vertex.z = (static_cast<s64>(a.x) * b.field[0][2] + static_cast<s64>(a.y) * b.field[1][2] + static_cast<s64>(a.z) * b.field[2][2] + static_cast<s64>(a.w) * b.field[3][2]) >> 12;
     multiplied_vertex.w = (static_cast<s64>(a.x) * b.field[0][3] + static_cast<s64>(a.y) * b.field[1][3] + static_cast<s64>(a.z) * b.field[2][3] + static_cast<s64>(a.w) * b.field[3][3]) >> 12;
     return multiplied_vertex;
+}
+
+void GPU::update_clip_matrix() {
+    clip = multiply_matrix_matrix(modelview.current, projection.current);
+}
+
+void GPU::add_vertex() {
+    if (vertex_ram_size >= 6144) {
+        logger.todo("GPU: handle when vertex ram is full");
+    }
+
+    auto& current_vertex_ram = vertex_ram[current_buffer];
+
+    update_clip_matrix();
+
+    current_vertex.w = 1 << 12;
+    current_vertex = multiply_vertex_matrix(current_vertex, clip);
+
+    switch (current_polygon.texture_attributes.parameters.transformation_mode) {
+    case 1:
+        logger.todo("GPU: handle texcoord source");
+        break;
+    case 2:
+        logger.todo("GPU: handle normal source");
+        break;
+    case 3:
+        logger.todo("GPU: handle vertex source");
+        break;
+    }
+
+    current_vertex_ram[vertex_ram_size++] = current_vertex;
+    vertex_count++;
+
+    switch (polygon_type) {
+    case PolygonType::Triangle:
+        if (vertex_count % 3 == 0) {
+            add_polygon();
+        }
+        
+        break;
+    case PolygonType::Quad:
+        if (vertex_count % 4 == 0) {
+            add_polygon();
+        }
+
+        break;
+    case PolygonType::TriangleStrip:
+        if (vertex_count >= 3) {
+            add_polygon();
+        }
+
+        break;
+    case PolygonType::QuadStrip:
+        if (vertex_count >= 4 && vertex_count % 2 == 0) {
+            add_polygon();
+        }
+
+        break;
+    }
+}
+
+void GPU::add_polygon() {
+    if (polygon_ram_size >= 2048) {
+        logger.todo("GPU: handle when polygon ram is full");
+    }
+
+    // TODO: implement clipping
+
+    int size = 3 + (static_cast<int>(polygon_type) & 0x1);
+    logger.todo("handle polygon with %d vertices type %d", size, polygon_type);
+    // current_polygon.size = size;
+    // current_polygon.texture_attributes = texture_attributes;
+    // current_polygon.polygon_attributes = polygon_attributes;
+
+    // for (int i = 0; i < current_polygon.size; i++) {
+    //     current_polygon.vertices[i] = &vertex_ram[vertex_ram_size - size + i];
+    // }
+    
+    // // make sure quad strips are in an anticlockwise arrangement
+    // if (polygon_type == PolygonType::QuadStrip) {
+    //     std::swap(current_polygon.vertices[2], current_polygon.vertices[3]);
+    // }
+
+    // bool cull = cull_polygon(current_polygon);
+
+    // if (cull) {
+    //     switch (polygon_type) {
+    //     case PolygonType::Triangle: case PolygonType::Quad:
+    //         vertex_ram_size -= size;
+    //         return;
+    //     default:
+    //         log_fatal("handle culling for polygon type %d", static_cast<int>(polygon_type));
+    //     }
+    // }
+
+    // for (int i = 0; i < current_polygon.size; i++) {
+    //     *current_polygon.vertices[i] = normalise_vertex(*current_polygon.vertices[i]);
+    // }
+
+    // polygon_ram[polygon_ram_size++] = current_polygon;
 }
 
 } // namespace nds

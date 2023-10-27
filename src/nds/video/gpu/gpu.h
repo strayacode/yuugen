@@ -58,6 +58,10 @@ private:
     Matrix multiply_matrix_matrix(const Matrix& a, const Matrix& b);
     Vertex multiply_vertex_matrix(const Vertex& a, const Matrix& b);
 
+    void update_clip_matrix();
+    void add_vertex();
+    void add_polygon();
+
     // geometry commands
     void set_matrix_mode();
     void pop_current_matrix();
@@ -73,6 +77,7 @@ private:
     void multiply_3x3();
     void begin_vertex_list();
     void set_vertex_colour();
+    void add_vertex16();
 
     union DISP3DCNT {
         struct {
@@ -138,7 +143,9 @@ private:
     Matrix clip;
 
     std::array<std::array<Vertex, 6144>, 2> vertex_ram;
+    int vertex_ram_size{0};
     std::array<std::array<Polygon, 2048>, 2> polygon_ram;
+    int polygon_ram_size{0};
 
     // tracks which vertex/polygon ram is currently being used
     int current_buffer{0};
