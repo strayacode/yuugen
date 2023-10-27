@@ -61,6 +61,7 @@ private:
     void update_clip_matrix();
     void submit_vertex();
     void submit_polygon();
+    Vertex normalise_vertex(const Vertex& vertex);
 
     // geometry commands
     void set_matrix_mode();

@@ -344,40 +344,66 @@ void GPU::submit_polygon() {
         logger.todo("GPU: handle when polygon ram is full");
     }
 
+    auto& vertex_ram = this->vertex_ram[current_buffer];
+    auto& polygon_ram = this->polygon_ram[current_buffer];
+
     // TODO: implement clipping
+    // TODO: implement culling
 
     int size = 3 + (static_cast<int>(polygon_type) & 0x1);
-    logger.todo("handle polygon with %d vertices type %d", size, polygon_type);
-    // current_polygon.size = size;
-    // current_polygon.texture_attributes = texture_attributes;
-    // current_polygon.polygon_attributes = polygon_attributes;
 
-    // for (int i = 0; i < current_polygon.size; i++) {
-    //     current_polygon.vertices[i] = &vertex_ram[vertex_ram_size - size + i];
-    // }
+    // by this point the polygon will have been clipped and culled,
+    // so we can add the vertices of the vertex list to vertex ram
+    // normalise vertices to screen coordinates
+    for (int i = 0; i < size; i++) {
+        auto& vertex = vertex_list[i];
+        vertex = normalise_vertex(vertex);
+        vertex_ram[vertex_ram_size++] = vertex;
+        
+        logger.debug("normalised vertex %d x %d y %d z %d", i, vertex.x, vertex.y, vertex.z);
+    }
+
+    // now construct the polygon
+    // TODO: figure out what to set the clockwise field to
+    Polygon polygon;
+    polygon.texture_attributes = current_polygon.texture_attributes;
+    polygon.polygon_attributes = current_polygon.polygon_attributes;
+
+    // TODO: eventually size should account for potential vertices that were added from clipping
+    polygon.size = size;
+
+    // make the polygon vertices point to the vertices we just added to vertex ram
+    for (int i = 0; i < polygon.size; i++) {
+        polygon.vertices[i] = &vertex_ram[vertex_ram_size - size + i];
+    }
     
-    // // make sure quad strips are in an anticlockwise arrangement
-    // if (polygon_type == PolygonType::QuadStrip) {
-    //     std::swap(current_polygon.vertices[2], current_polygon.vertices[3]);
-    // }
+    // submit the polygon to polygon ram
+    polygon_ram[polygon_ram_size++] = polygon;
+}
 
-    // bool cull = cull_polygon(current_polygon);
+Vertex GPU::normalise_vertex(const Vertex& vertex) {
+    Vertex normalised;
 
-    // if (cull) {
-    //     switch (polygon_type) {
-    //     case PolygonType::Triangle: case PolygonType::Quad:
-    //         vertex_ram_size -= size;
-    //         return;
-    //     default:
-    //         log_fatal("handle culling for polygon type %d", static_cast<int>(polygon_type));
-    //     }
-    // }
+    if (vertex.w == 0) {
+        normalised.x = 0;
+        normalised.y = 0;
+        normalised.z = vertex.z;
+        normalised.w = vertex.w;
+    } else {
+        const u32 w = vertex.w;
+        const u32 width = (viewport.x1 - viewport.x0 + 1) & 0x1ff;
+        const u32 height = (viewport.y1 - viewport.y0 + 1) & 0xff;
+        const u32 screen_x = (((vertex.x + w) * width) / (w << 1)) + viewport.x0;
+        const u32 screen_y = (((-vertex.y + w) * height) / (w << 1)) + viewport.y1;
 
-    // for (int i = 0; i < current_polygon.size; i++) {
-    //     *current_polygon.vertices[i] = normalise_vertex(*current_polygon.vertices[i]);
-    // }
+        normalised.x = screen_x & 0x1ff;
+        normalised.y = screen_y & 0xff;
+        normalised.z = (((vertex.z << 14) / vertex.w) + 0x3fff) << 9;
 
-    // polygon_ram[polygon_ram_size++] = current_polygon;
+        // TODO: should w be normalised?
+    }
+
+    return normalised;
 }
 
 } // namespace nds

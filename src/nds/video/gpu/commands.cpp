@@ -1,3 +1,4 @@
+#include <cassert>
 #include "common/logger.h"
 #include "common/bits.h"
 #include "nds/video/gpu/gpu.h"
@@ -72,6 +73,10 @@ void GPU::set_viewport() {
     viewport.y0 = common::get_field<8, 8>(parameter);
     viewport.x1 = common::get_field<16, 8>(parameter);
     viewport.y1 = common::get_field<24, 8>(parameter);
+
+    // TODO: what happens when viewport parameters are reversed
+    assert(viewport.x1 >= viewport.x0);
+    assert(viewport.y1 >= viewport.y0);
 }
 
 void GPU::multiply_4x4() {
