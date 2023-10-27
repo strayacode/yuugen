@@ -19,6 +19,7 @@ add_library(arm
     jit/ir/pass.h
     jit/ir/passes/dead_load_store_elimination_pass.h jit/ir/passes/dead_load_store_elimination_pass.cpp
     jit/ir/passes/dead_copy_elimination_pass.h jit/ir/passes/dead_copy_elimination_pass.cpp
+    jit/ir/passes/const_propagation_pass.h jit/ir/passes/const_propagation_pass.cpp
 
     jit/ir/opcodes.h jit/ir/value.h
     jit/ir/translate/arm.cpp jit/ir/translate/thumb.cpp

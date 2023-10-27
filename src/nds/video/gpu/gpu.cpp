@@ -121,6 +121,15 @@ void GPU::render() {
     // figure out how this works on real hardware
 }
 
+void GPU::do_swap_buffers() {
+    if (swap_buffers_requested) {
+        swap_buffers_requested = false;
+        current_buffer ^= 1;
+        vertex_ram_size = 0;
+        polygon_ram_size = 0;
+    }
+}
+
 void GPU::check_gxfifo_irq() {
     if (gxstat.fifo_irq == InterruptType::LessThanHalfFull && gxfifo.get_size() < 128) {
         logger.todo("send less than half full gxfifo irq");
@@ -216,6 +225,9 @@ void GPU::execute_command() {
             break;
         case 0x40:
             begin_vertex_list();
+            break;
+        case 0x41:
+            end_vertex_list();
             break;
         case 0x50:
             swap_buffers();

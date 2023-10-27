@@ -220,4 +220,8 @@ void GPU::add_vertex16() {
     submit_vertex();
 }
 
+void GPU::end_vertex_list() {
+    dequeue_entry();
+}
+
 } // namespace nds

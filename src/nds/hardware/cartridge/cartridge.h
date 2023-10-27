@@ -19,18 +19,26 @@ public:
     void direct_boot();
     void firmware_boot();
 
-    u16 read_auxspicnt() { return auxspicnt.data; }
+    u16 read_auxspicnt() const { return auxspicnt.data; }
     void write_auxspicnt(u16 value, u32 mask);
 
-    u16 read_auxspidata() { return auxspidata; }
+    u16 read_auxspidata() const { return auxspidata; }
     void write_auxspidata(u8 value);
 
-    u32 read_romctrl() { return romctrl.data; }
+    u32 read_romctrl() const { return romctrl.data; }
     void write_romctrl(u32 value, u32 mask);
+
+    u64 read_command_buffer() const { return command_buffer; }
     void write_command_buffer(u64 value, u64 mask);
 
-    u32 get_arm7_entrypoint() { return header.arm7_entrypoint; }
-    u32 get_arm9_entrypoint() { return header.arm9_entrypoint; }
+    u32 get_arm7_entrypoint() const { return header.arm7_entrypoint; }
+    u32 get_arm9_entrypoint() const { return header.arm9_entrypoint; }
+    
+    // for now just stub these
+    u32 read_seed0_lower() const { return 0; }
+    u32 read_seed1_lower() const { return 0; }
+    u16 read_seed0_upper() const { return 0; }
+    u16 read_seed1_upper() const { return 0; }
 
     u32 read_data();
 

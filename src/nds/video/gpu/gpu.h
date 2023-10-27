@@ -27,6 +27,7 @@ public:
     void write_clrimage_offset(u16 value, u32 mask);
     void queue_command(u32 addr, u32 data);
     void render();
+    void do_swap_buffers();
 
     std::array<u32, 256 * 192> framebuffer;
 
@@ -79,6 +80,7 @@ private:
     void begin_vertex_list();
     void set_vertex_colour();
     void add_vertex16();
+    void end_vertex_list();
 
     union DISP3DCNT {
         struct {

@@ -3,6 +3,7 @@
 #include "arm/jit/location.h"
 #include "arm/jit/ir/translator.h"
 #include "arm/jit/ir/passes/dead_load_store_elimination_pass.h"
+#include "arm/jit/ir/passes/const_propagation_pass.h"
 #include "arm/jit/ir/passes/dead_copy_elimination_pass.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 #include "arm/disassembler/disassembler.h"
@@ -24,6 +25,7 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
 
     if (optimise) {
         optimiser.add_pass(std::make_unique<DeadLoadStoreEliminationPass>());
+        optimiser.add_pass(std::make_unique<ConstPropagationPass>());
         optimiser.add_pass(std::make_unique<DeadCopyEliminationPass>());
     }
 }
