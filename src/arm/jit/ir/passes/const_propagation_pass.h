@@ -24,6 +24,7 @@ private:
     std::optional<FoldResult> fold_opcode(std::unique_ptr<IROpcode>& opcode_variant);
     std::optional<FoldResult> fold_add(std::unique_ptr<IROpcode>& opcode_variant);
     std::optional<FoldResult> fold_bitwise_not(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_copy(std::unique_ptr<IROpcode>& opcode_variant);
 
     std::vector<IRValue*> uses;
 };

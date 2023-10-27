@@ -13,8 +13,7 @@ void ConstPropagationPass::optimise(BasicBlock& basic_block) {
         if (fold_result) {
             for (auto& use : uses) {
                 if (use->is_variable() && use->as_variable().id == fold_result->dst_id) {
-                    logger.debug("use %p v%d", use, use->as_variable().id);
-                    logger.debug("folded %08x into uses of v%d", fold_result->folded_value, fold_result->dst_id);
+                    logger.debug("folded %s into uses of v%d", (*it)->to_string().c_str(), fold_result->dst_id);
                     *use = IRConstant{fold_result->folded_value};
                     erase_opcode = true;
                 }
@@ -87,6 +86,8 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_opcod
     case IROpcodeType::MultiplyLong:
         logger.warn("handle multiply long");
         return std::nullopt;
+    case IROpcodeType::Copy:
+        return fold_copy(opcode_variant);
     default:
         return std::nullopt;
     }
@@ -106,6 +107,16 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwi
 
     const auto& src = opcode.src.as_constant();
     return FoldResult{~src.value, opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_copy(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRCopy>();
+    if (!opcode.src.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& src = opcode.src.as_constant();
+    return FoldResult{src.value, opcode.dst.id};
 }
 
 } // namespace arm
