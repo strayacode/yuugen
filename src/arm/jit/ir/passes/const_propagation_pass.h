@@ -22,8 +22,19 @@ private:
     };
 
     std::optional<FoldResult> fold_opcode(std::unique_ptr<IROpcode>& opcode_variant);
-    std::optional<FoldResult> fold_add(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_bitwise_and(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_bitwise_or(std::unique_ptr<IROpcode>& opcode_variant);
     std::optional<FoldResult> fold_bitwise_not(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_bitwise_exclusive_or(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_logical_shift_left(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_logical_shift_right(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_arithmetic_shift_right(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_count_leading_zeroes(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_add(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_add_long(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_subtract(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_multiply(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_multiply_long(std::unique_ptr<IROpcode>& opcode_variant);
     std::optional<FoldResult> fold_copy(std::unique_ptr<IROpcode>& opcode_variant);
 
     std::vector<IRValue*> uses;

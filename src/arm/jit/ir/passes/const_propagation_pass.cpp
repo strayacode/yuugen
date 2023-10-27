@@ -50,42 +50,31 @@ void ConstPropagationPass::record_uses(BasicBlock& basic_block) {
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_opcode(std::unique_ptr<IROpcode>& opcode_variant) {
     switch (opcode_variant->get_type()) {
     case IROpcodeType::BitwiseAnd:
-        logger.warn("handle bitwise and");
-        return std::nullopt;
+        return fold_bitwise_and(opcode_variant);
     case IROpcodeType::BitwiseOr:
-        logger.warn("handle bitwise or");
-        return std::nullopt;
+        return fold_bitwise_or(opcode_variant);
     case IROpcodeType::BitwiseNot:
         return fold_bitwise_not(opcode_variant);
     case IROpcodeType::BitwiseExclusiveOr:
-        logger.warn("handle bitwise exclusive or");
-        return std::nullopt;
+        return fold_bitwise_exclusive_or(opcode_variant);
     case IROpcodeType::LogicalShiftLeft:
-        logger.warn("handle bitwise lsl");
-        return std::nullopt;
+        return fold_logical_shift_left(opcode_variant);
     case IROpcodeType::LogicalShiftRight:
-        logger.warn("handle bitwise lsr");
-        return std::nullopt;
+        return fold_logical_shift_right(opcode_variant);
     case IROpcodeType::ArithmeticShiftRight:
-        logger.warn("handle bitwise asr");
-        return std::nullopt;
+        return fold_arithmetic_shift_right(opcode_variant);
     case IROpcodeType::CountLeadingZeroes:
-        logger.warn("handle bitwise clz");
-        return std::nullopt;
+        return fold_count_leading_zeroes(opcode_variant);
     case IROpcodeType::Add:
         return fold_add(opcode_variant);
     case IROpcodeType::AddLong:
-        logger.warn("handle add long");
-        return std::nullopt;
+        return fold_add_long(opcode_variant);
     case IROpcodeType::Subtract:
-        logger.warn("handle subtract");
-        return std::nullopt;
+        return fold_subtract(opcode_variant);
     case IROpcodeType::Multiply:
-        logger.warn("handle multiply");
-        return std::nullopt;
+        return fold_multiply(opcode_variant);
     case IROpcodeType::MultiplyLong:
-        logger.warn("handle multiply long");
-        return std::nullopt;
+        return fold_multiply_long(opcode_variant);
     case IROpcodeType::Copy:
         return fold_copy(opcode_variant);
     default:
@@ -93,10 +82,26 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_opcod
     }
 }
 
-std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add(std::unique_ptr<IROpcode>& opcode_variant) {
-    logger.warn("handle add");
-    auto& add_opcode = *opcode_variant->as<IRAdd>();
-    return std::nullopt;
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwise_and(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRBitwiseAnd>();
+    if (!opcode.lhs.is_constant() || !opcode.rhs.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& lhs = opcode.lhs.as_constant();
+    const auto& rhs = opcode.rhs.as_constant();
+    return FoldResult{lhs.value & rhs.value, opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwise_or(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRBitwiseOr>();
+    if (!opcode.lhs.is_constant() || !opcode.rhs.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& lhs = opcode.lhs.as_constant();
+    const auto& rhs = opcode.rhs.as_constant();
+    return FoldResult{lhs.value | rhs.value, opcode.dst.id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwise_not(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -107,6 +112,96 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwi
 
     const auto& src = opcode.src.as_constant();
     return FoldResult{~src.value, opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwise_exclusive_or(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRBitwiseExclusiveOr>();
+    if (!opcode.lhs.is_constant() || !opcode.rhs.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& lhs = opcode.lhs.as_constant();
+    const auto& rhs = opcode.rhs.as_constant();
+    return FoldResult{lhs.value ^ rhs.value, opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_logical_shift_left(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRLogicalShiftLeft>();
+    if (!opcode.src.is_constant() || !opcode.amount.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& src = opcode.src.as_constant();
+    const auto& amount = opcode.amount.as_constant();
+    return FoldResult{src.value << amount.value, opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_logical_shift_right(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRLogicalShiftRight>();
+    if (!opcode.src.is_constant() || !opcode.amount.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& src = opcode.src.as_constant();
+    const auto& amount = opcode.amount.as_constant();
+    return FoldResult{src.value >> amount.value, opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_arithmetic_shift_right(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRArithmeticShiftRight>();
+    if (!opcode.src.is_constant() || !opcode.amount.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& src = opcode.src.as_constant();
+    const auto& amount = opcode.amount.as_constant();
+    return FoldResult{static_cast<u32>(static_cast<s32>(src.value) >> amount.value), opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_count_leading_zeroes(std::unique_ptr<IROpcode>& opcode_variant) {
+    logger.warn("handle count_leading_zeroes");
+    auto& opcode = *opcode_variant->as<IRCountLeadingZeroes>();
+    return std::nullopt;
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRAdd>();
+    if (!opcode.lhs.is_constant() || !opcode.rhs.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& lhs = opcode.lhs.as_constant();
+    const auto& rhs = opcode.rhs.as_constant();
+    return FoldResult{lhs.value + rhs.value, opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add_long(std::unique_ptr<IROpcode>& opcode_variant) {
+    logger.warn("handle add_long");
+    auto& opcode = *opcode_variant->as<IRAddLong>();
+    return std::nullopt;
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_subtract(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRSubtract>();
+    if (!opcode.lhs.is_constant() || !opcode.rhs.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& lhs = opcode.lhs.as_constant();
+    const auto& rhs = opcode.rhs.as_constant();
+    return FoldResult{lhs.value - rhs.value, opcode.dst.id};
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multiply(std::unique_ptr<IROpcode>& opcode_variant) {
+    logger.warn("handle multiply");
+    auto& opcode = *opcode_variant->as<IRMultiply>();
+    return std::nullopt;
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multiply_long(std::unique_ptr<IROpcode>& opcode_variant) {
+    logger.warn("handle multiply_long");
+    auto& opcode = *opcode_variant->as<IRMultiplyLong>();
+    return std::nullopt;
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_copy(std::unique_ptr<IROpcode>& opcode_variant) {
