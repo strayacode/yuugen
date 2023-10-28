@@ -28,8 +28,9 @@ void ARM9::select_backend(arm::BackendType backend, bool optimise) {
     case arm::BackendType::IRInterpreter:
         cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv5, memory, coprocessor, arm::BackendType::IRInterpreter, optimise);
         break;
-    default:
-        logger.error("ARM9: unknown backend");
+    case arm::BackendType::Jit:
+        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv5, memory, coprocessor, arm::BackendType::Jit, optimise);
+        break;
     }
 }
 

@@ -6,6 +6,7 @@
 #include "arm/jit/ir/passes/const_propagation_pass.h"
 #include "arm/jit/ir/passes/dead_copy_elimination_pass.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
+#include "arm/jit/backend/a64/backend.h"
 #include "arm/disassembler/disassembler.h"
 
 namespace arm {
@@ -18,6 +19,9 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
     switch (backend_type) {
     case BackendType::IRInterpreter:
         backend = std::make_unique<IRInterpreter>(*this);
+        break;
+    case BackendType::Jit:
+        backend = std::make_unique<A64Backend>(*this);
         break;
     default:
         logger.todo("Jit: unsupported jit backend");

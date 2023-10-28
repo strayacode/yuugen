@@ -16,10 +16,10 @@ class IRInterpreter : public Backend {
 public:
     IRInterpreter(Jit& jit);
 
-    virtual void reset() override;
-    virtual bool has_code_at(Location location) override;
-    virtual void compile(BasicBlock& basic_block) override;
-    virtual int run(Location location) override;
+    void reset() override;
+    bool has_code_at(Location location) override;
+    void compile(BasicBlock& basic_block) override;
+    int run(Location location) override;
 
 private:
     bool evaluate_condition(Condition condition);

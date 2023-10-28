@@ -17,4 +17,4 @@ struct XReg : public Reg {
     XReg(u32 id) : Reg(id, 64) {}
 };
 
-};
+} // namespace arm;
