@@ -159,13 +159,13 @@ IRPair<IRVariable> IREmitter::barrel_shifter_logical_shift_left(IRValue src, IRV
 
 IRPair<IRVariable> IREmitter::barrel_shifter_logical_shift_right(IRValue src, IRValue amount) {
     auto result_and_carry = create_pair();
-    push<IRBarrelShifterLogicalShiftRight>(result_and_carry, src, amount, load_flag(Flag::C));
+    push<IRBarrelShifterLogicalShiftRight>(result_and_carry, src, amount, load_flag(Flag::C), amount.is_constant());
     return result_and_carry;
 }
 
 IRPair<IRVariable> IREmitter::barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount) {
     auto result_and_carry = create_pair();
-    push<IRBarrelShifterArithmeticShiftRight>(result_and_carry, src, amount, load_flag(Flag::C));
+    push<IRBarrelShifterArithmeticShiftRight>(result_and_carry, src, amount, load_flag(Flag::C), amount.is_constant());
     return result_and_carry;
 }
 

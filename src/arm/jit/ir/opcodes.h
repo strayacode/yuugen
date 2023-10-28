@@ -380,7 +380,7 @@ struct IRBarrelShifterLogicalShiftLeft : IROpcode {
 };
 
 struct IRBarrelShifterLogicalShiftRight : IROpcode {
-    IRBarrelShifterLogicalShiftRight(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
+    IRBarrelShifterLogicalShiftRight(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry, bool imm) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry), imm(imm) {}
 
     std::string to_string() override {
         return common::format("%s = barrel_shifter_lsr(%s, %s, %s)", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str(), carry.to_string().c_str());
@@ -394,10 +394,11 @@ struct IRBarrelShifterLogicalShiftRight : IROpcode {
     IRValue src;
     IRValue amount;
     IRValue carry;
+    bool imm;
 };
 
 struct IRBarrelShifterArithmeticShiftRight : IROpcode {
-    IRBarrelShifterArithmeticShiftRight(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterArithmeticShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
+    IRBarrelShifterArithmeticShiftRight(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry, bool imm) : IROpcode(IROpcodeType::BarrelShifterArithmeticShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry), imm(imm) {}
 
     std::string to_string() override {
         return common::format("%s = barrel_shifter_asr(%s, %s, %s)", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str(), carry.to_string().c_str());
@@ -411,6 +412,7 @@ struct IRBarrelShifterArithmeticShiftRight : IROpcode {
     IRValue src;
     IRValue amount;
     IRValue carry;
+    bool imm;
 };
 
 struct IRBarrelShifterRotateRight : IROpcode {

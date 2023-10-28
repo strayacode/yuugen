@@ -13,7 +13,6 @@ void ConstPropagationPass::optimise(BasicBlock& basic_block) {
         if (fold_result) {
             for (auto& use : uses) {
                 if (use->is_variable() && use->as_variable().id == fold_result->dst_id) {
-                    logger.debug("folded %s into uses of v%d", (*it)->to_string().c_str(), fold_result->dst_id);
                     *use = IRConstant{fold_result->folded_value};
                     erase_opcode = true;
                 }
@@ -159,7 +158,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_arith
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_count_leading_zeroes(std::unique_ptr<IROpcode>& opcode_variant) {
-    logger.warn("handle count_leading_zeroes");
+    logger.warn("handle opcode count_leading_zeroes");
     auto& opcode = *opcode_variant->as<IRCountLeadingZeroes>();
     return std::nullopt;
 }
@@ -176,7 +175,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add(s
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add_long(std::unique_ptr<IROpcode>& opcode_variant) {
-    logger.warn("handle add_long");
+    logger.warn("handle opcode add_long");
     auto& opcode = *opcode_variant->as<IRAddLong>();
     return std::nullopt;
 }
@@ -193,13 +192,18 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_subtr
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multiply(std::unique_ptr<IROpcode>& opcode_variant) {
-    logger.warn("handle multiply");
     auto& opcode = *opcode_variant->as<IRMultiply>();
-    return std::nullopt;
+    if (!opcode.lhs.is_constant() || !opcode.rhs.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& lhs = opcode.lhs.as_constant();
+    const auto& rhs = opcode.rhs.as_constant();
+    return FoldResult{lhs.value * rhs.value, opcode.dst.id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multiply_long(std::unique_ptr<IROpcode>& opcode_variant) {
-    logger.warn("handle multiply_long");
+    logger.warn("handle opcode multiply_long");
     auto& opcode = *opcode_variant->as<IRMultiplyLong>();
     return std::nullopt;
 }

@@ -391,7 +391,7 @@ void IRInterpreter::handle_barrel_shifter_logical_shift_right(IROpcodeVariant& o
     auto value = resolve_value(opcode.src);
     auto amount = resolve_value(opcode.amount);
     auto carry_in = resolve_value(opcode.carry);
-    auto [result, carry] = lsr(value, amount, opcode.amount.is_constant());
+    auto [result, carry] = lsr(value, amount, opcode.imm);
     
     assign_variable(opcode.result_and_carry.first, result);
 
@@ -407,7 +407,7 @@ void IRInterpreter::handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant
     auto value = resolve_value(opcode.src);
     auto amount = resolve_value(opcode.amount);
     auto carry_in = resolve_value(opcode.carry);
-    auto [result, carry] = asr(value, amount, opcode.amount.is_constant());
+    auto [result, carry] = asr(value, amount, opcode.imm);
     
     assign_variable(opcode.result_and_carry.first, result);
 
