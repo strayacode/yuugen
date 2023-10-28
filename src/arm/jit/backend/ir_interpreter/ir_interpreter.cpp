@@ -34,10 +34,6 @@ void IRInterpreter::compile(BasicBlock& basic_block)  {
 
 int IRInterpreter::run(Location location)  {
     auto& compiled_block = code_cache.get(location);
-    // if (jit.arch == Arch::ARMv5) {
-    //     logger.debug("run compiled block %08x %08x", location.get_address(), jit.get_gpr(GPR::PC));
-    // }
-    
     if (evaluate_condition(compiled_block.condition)) {
         for (auto& compiled_instruction : compiled_block.instructions) {
             (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);
