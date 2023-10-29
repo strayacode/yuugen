@@ -32,6 +32,8 @@ private:
     Jit& jit;
 
     static constexpr int CODE_CACHE_SIZE = 16 * 1024 * 1024;
+
+    // we have x19, x20, x21, x22, x23, x24, x25, x26, x27 and x28 available for register allocation
 };
 
 } // namespace arm
