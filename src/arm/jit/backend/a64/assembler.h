@@ -14,6 +14,8 @@ public:
     void ret();
     void ret(XReg rn);
 
+    std::vector<u32>& get_code() { return code; }
+
 private:
     void emit(u32 data);
 

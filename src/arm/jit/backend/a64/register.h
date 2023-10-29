@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/types.h"
+
 namespace arm {
 
 struct Reg {
