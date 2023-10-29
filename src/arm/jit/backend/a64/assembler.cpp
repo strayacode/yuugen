@@ -6,10 +6,40 @@ namespace arm {
 A64Assembler::A64Assembler(u32* code) : code(code) {}
 
 void A64Assembler::dump() {
-    logger.debug("buffer:");
+    logger.print("buffer:");
     for (int i = 0; i < num_instructions; i++) {
-        logger.debug("%08x", code[i]);
+        logger.print("%08x", code[i]);
     }
+}
+
+void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm) {
+    switch (index_mode) {
+    case IndexMode::Pre:
+        emit(0x2a7 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+        break;
+    case IndexMode::Post:
+        emit(0x2a3 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+        break;
+    }
+}
+
+void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm) {
+    switch (index_mode) {
+    case IndexMode::Pre:
+        emit(0xa7 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
+        break;
+    case IndexMode::Post:
+        emit(0xa3 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
+        break;
+    }
+}
+
+void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
+    emit(0x2a5 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+}
+
+void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm) {
+    emit(0xa5 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
 }
 
 void A64Assembler::movz(WReg wd, Immediate16 imm) {

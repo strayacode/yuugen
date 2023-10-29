@@ -25,6 +25,24 @@ int main() {
         check_values(STRINGIZE(command), expected, assembler.get_code()[assembler.get_num_instructions() - 1]); \
 
     // credit to oaknut for the tests
+    TEST(0x28de404b, ldp(arm::w11, arm::w16, arm::x2, arm::IndexMode::Post, 240))
+    TEST(0x28f72aed, ldp(arm::w13, arm::w10, arm::x23, arm::IndexMode::Post, -72))
+    TEST(0x28d4aff5, ldp(arm::w21, arm::w11, arm::sp, arm::IndexMode::Post, 164))
+    TEST(0xa8e14240, ldp(arm::x0, arm::x16, arm::x18, arm::IndexMode::Post, -496))
+    TEST(0xa8ee6fd6, ldp(arm::x22, arm::x27, arm::x30, arm::IndexMode::Post, -288))
+    TEST(0xa8c07927, ldp(arm::x7, arm::x30, arm::x9, arm::IndexMode::Post, 0))
+    TEST(0x29de4596, ldp(arm::w22, arm::w17, arm::x12, arm::IndexMode::Pre, 240))
+    TEST(0x29f8cee7, ldp(arm::w7, arm::w19, arm::x23, arm::IndexMode::Pre, -60))
+    TEST(0xa9cd981b, ldp(arm::x27, arm::x6, arm::x0, arm::IndexMode::Pre, 216))
+    TEST(0xa9f73e53, ldp(arm::x19, arm::x15, arm::x18, arm::IndexMode::Pre, -144))
+    TEST(0xa9d669ae, ldp(arm::x14, arm::x26, arm::x13, arm::IndexMode::Pre, 352))
+    TEST(0x297c5bc9, ldp(arm::w9, arm::w22, arm::x30, -32))
+    TEST(0x29564676, ldp(arm::w22, arm::w17, arm::x19, 176))
+    TEST(0x29723d75, ldp(arm::w21, arm::w15, arm::x11, -112))
+    TEST(0xa946c500, ldp(arm::x0, arm::x17, arm::x8, 104))
+    TEST(0xa97cbf1f, ldp(arm::zr, arm::x15, arm::x24, -56))
+    TEST(0xa952210c, ldp(arm::x12, arm::x8, arm::x8, 288))
+
     TEST(0x52b62758, movz(arm::w24, 0xb13a0000))
     TEST(0x52b14a9e, movz(arm::w30, 0x8a540000))
     TEST(0x52837eec, movz(arm::w12, 7159))

@@ -51,6 +51,12 @@ public:
     }
 
     template <typename... Args>
+    void print(const char* pattern, Args... args) {
+        reset_colour();
+        std::printf("%s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
+    }
+
+    template <typename... Args>
     void log(const char* pattern, Args... args) {
         std::fprintf(fp, "%s", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
@@ -92,6 +98,10 @@ private:
         case TextColour::White:
             std::printf("%s", WHITE);
         }
+    }
+
+    void reset_colour() {
+        std::printf("%s", RESET);
     }
 
     FILE* fp = fopen("yuugen.log", "w");

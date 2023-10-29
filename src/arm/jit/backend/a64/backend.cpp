@@ -16,13 +16,8 @@ bool A64Backend::has_code_at(Location location) {
 void A64Backend::compile(BasicBlock& basic_block) {
     code_block.unprotect();
 
-    // save non-volatile registers to the stack
-    save_host_regs();
-
-    // restore non-volatile registers from the stack
-    restore_host_regs();
-
-    assembler.ret();
+    compile_prologue();
+    compile_epilogue();
 
     code_block.protect();
 
@@ -35,17 +30,35 @@ int A64Backend::run(Location location) {
     return 0;
 }
 
-void A64Backend::save_host_regs() {
+void A64Backend::compile_prologue() {
+    // save non-volatile registers to the stack
     assembler.stp(x19, x20, sp, IndexMode::Pre, -96);
     assembler.stp(x21, x22, sp, 16);
     assembler.stp(x23, x24, sp, 32);
     assembler.stp(x25, x26, sp, 48);
     assembler.stp(x27, x28, sp, 64);
     assembler.stp(x29, x30, sp, 80);
+
+    // TODO: store pointer of cpu state struct into a pinned register
+    // TODO: use a dedicated pinned register to record how many cycles have elapsed
+    // in the basic block
+
+    // TODO: generate a condition check for when basic block
+    // condition is not AL or NV
 }
 
-void A64Backend::restore_host_regs() {
-    // assembler.ldp()
+void A64Backend::compile_epilogue() {
+    // restore non-volatile registers from the stack
+    assembler.ldp(x29, x30, sp, 80);
+    assembler.ldp(x27, x28, sp, 64);
+    assembler.ldp(x25, x26, sp, 48);
+    assembler.ldp(x23, x24, sp, 32);
+    assembler.ldp(x21, x22, sp, 16);
+    assembler.ldp(x19, x20, sp, IndexMode::Post, 96);
+
+    // TODO: store the cycles elapsed register into w0
+
+    assembler.ret();
 }
 
 } // namespace arm

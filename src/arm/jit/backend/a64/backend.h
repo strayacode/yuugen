@@ -23,8 +23,8 @@ public:
 private:
     using JitFunction = void (*)();
 
-    void save_host_regs();
-    void restore_host_regs();
+    void compile_prologue();
+    void compile_epilogue();
 
     CodeCache<JitFunction> code_cache;
     CodeBlock code_block;

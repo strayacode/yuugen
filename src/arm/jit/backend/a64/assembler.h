@@ -45,6 +45,14 @@ public:
 
     void dump();
 
+    // pre/post index
+    void ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm);
+    void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm);
+
+    // signed offset
+    void ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
+    void ldp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm = 0);
+
     void movz(WReg wd, Immediate16 imm);
     void movz(XReg xd, Immediate16 imm);
 
