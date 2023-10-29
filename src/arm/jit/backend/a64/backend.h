@@ -4,6 +4,7 @@
 #include "arm/jit/basic_block.h"
 #include "arm/jit/backend/backend.h"
 #include "arm/jit/backend/code_cache.h"
+#include "arm/jit/backend/a64/code_block.h"
 #include "arm/jit/backend/a64/assembler.h"
 
 namespace arm {
@@ -22,7 +23,11 @@ public:
 private:
     using JitFunction = void (*)();
 
+    void save_host_regs();
+    void restore_host_regs();
+
     CodeCache<JitFunction> code_cache;
+    CodeBlock code_block;
     A64Assembler assembler;
     Jit& jit;
 };
