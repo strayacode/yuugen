@@ -30,6 +30,8 @@ private:
     CodeBlock code_block;
     A64Assembler assembler;
     Jit& jit;
+
+    static constexpr int CODE_CACHE_SIZE = 16 * 1024 * 1024;
 };
 
 } // namespace arm

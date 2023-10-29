@@ -7,6 +7,8 @@
 #if defined(PLATFORM_OSX)
 #include <sys/mman.h>
 #include <errno.h>
+#include <pthread.h>
+#include <libkern/OSCacheControl.h>
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
@@ -16,7 +18,7 @@ class CodeBlock {
 public:
     CodeBlock(int size) : size(size) {
 #if defined(PLATFORM_OSX)
-        code = reinterpret_cast<u32*>(mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE | MAP_JIT, -1, 0));
+        code = reinterpret_cast<u32*>(mmap(nullptr, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE | MAP_JIT, -1, 0));
 #endif
 
         if (code == nullptr || code == reinterpret_cast<void*>(-1)) {
@@ -32,6 +34,19 @@ public:
         } else {
             logger.debug("CodeBlock: successfully deallocated");
         }
+    }
+
+    void unprotect() {
+#if defined(PLATFORM_OSX)
+        pthread_jit_write_protect_np(false);
+#endif
+    }
+
+    void protect() {
+#if defined(PLATFORM_OSX)
+        pthread_jit_write_protect_np(true);
+        sys_icache_invalidate(code, size);
+#endif
     }
 
     u32* get_code() const { return code; }

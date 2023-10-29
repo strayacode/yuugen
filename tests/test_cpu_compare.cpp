@@ -33,8 +33,8 @@ int main(int argc, char *argv[]) {
     a_system.set_update_callback([](f32) {});
     b_system.set_update_callback([](f32) {});
 
-    a_system.select_cpu_backend(arm::BackendType::IRInterpreter, false);
-    b_system.select_cpu_backend(arm::BackendType::IRInterpreter, true);
+    a_system.select_cpu_backend(arm::BackendType::Interpreter, false);
+    b_system.select_cpu_backend(arm::BackendType::Jit, false);
 
     a_system.set_game_path(argv[1]);
     a_system.set_boot_mode(common::BootMode::Fast);
@@ -50,13 +50,13 @@ int main(int argc, char *argv[]) {
     auto& b_arm9 = b_system.arm9;
 
     while (true) {
-        run_and_compare_cpus(a_arm9.get_cpu(), b_arm9.get_cpu(), 32);
-        run_and_compare_cpus(a_arm7.get_cpu(), b_arm7.get_cpu(), 16);
+        run_and_compare_cpus(a_arm9.get_cpu(), b_arm9.get_cpu(), 2);
+        run_and_compare_cpus(a_arm7.get_cpu(), b_arm7.get_cpu(), 1);
 
-        a_system.scheduler.tick(16);
+        a_system.scheduler.tick(1);
         a_system.scheduler.run();
 
-        b_system.scheduler.tick(16);
+        b_system.scheduler.tick(1);
         b_system.scheduler.run();
     }
 
