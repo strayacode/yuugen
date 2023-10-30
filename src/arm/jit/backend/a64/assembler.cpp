@@ -42,6 +42,15 @@ void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
     emit(0x2a5 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
 }
 
+void A64Assembler::mov(WReg wd, u32 imm) {
+    if (Immediate16::is_valid(imm)) {
+        movz(wd, imm);
+        return;
+    }
+
+    logger.todo("handle u32 imm for mov that can't be encoded in a single instruction");
+}
+
 void A64Assembler::mov(WReg wd, WReg wm) {
     emit(0x150 << 21 | wm.id << 16 | 0x1f << 5 | wd.id);
 }

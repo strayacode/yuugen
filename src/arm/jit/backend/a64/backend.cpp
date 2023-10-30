@@ -16,6 +16,8 @@ bool A64Backend::has_code_at(Location location) {
 }
 
 void A64Backend::compile(BasicBlock& basic_block) {
+    register_allocator.reset();
+
     // calculate the lifetimes of ir variables
     register_allocator.record_lifetimes(basic_block);
 
@@ -181,9 +183,14 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
 }
 
 void A64Backend::compile_copy(IRCopy& opcode) {
-    logger.todo("handle copy");
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
     if (opcode.src.is_constant()) {
-        const u32 value = opcode.src.as_constant().value;
+        auto& src = opcode.src.as_constant();
+        assembler.mov(dst_reg, src.value);
+    } else {
+        auto& src = opcode.src.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        assembler.mov(dst_reg, src_reg);
     }
 }
 

@@ -43,6 +43,7 @@ int main() {
     TEST(0xa97cbf1f, ldp(arm::zr, arm::x15, arm::x24, -56))
     TEST(0xa952210c, ldp(arm::x12, arm::x8, arm::x8, 288))
 
+    TEST(0x52a08000, mov(arm::w0, 0x04000000))
     TEST(0x2a1b03f2, mov(arm::w18, arm::w27))
     TEST(0x2a1603e5, mov(arm::w5, arm::w22))
     TEST(0x2a0c03ea, mov(arm::w10, arm::w12))

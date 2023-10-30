@@ -2,6 +2,8 @@
 
 #include <vector>
 #include "common/types.h"
+#include "common/bits.h"
+#include "common/logger.h"
 #include "arm/jit/backend/a64/register.h"
 
 namespace arm {
@@ -29,6 +31,15 @@ struct Immediate16 {
             value >>= 16;
             shift++;
         }
+
+        logger.error("value %016lx can't be encoded in an Immediate16", value);
+    }
+
+    static bool is_valid(u64 value) {
+        return ((value & 0xffff) == value) 
+            || ((value & 0xffff0000) == value)
+            || ((value & 0xffff00000000) == value)
+            || ((value & 0xffff000000000000) == value);
     }
 
     u32 value;
@@ -52,6 +63,9 @@ public:
     // signed offset
     void ldp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm = 0);
     void ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
+
+    // convenience function to move a 32-bit imm into a register
+    void mov(WReg wd, u32 imm);
 
     void mov(WReg wd, WReg wm);
     void mov(XReg xd, XReg xm);
