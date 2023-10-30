@@ -19,7 +19,7 @@ public:
     void reset() override;
     bool has_code_at(Location location) override;
     void compile(BasicBlock& basic_block) override;
-    int run(Location location) override;
+    int run(Location location, int cycles_left) override;
 
 private:
     bool evaluate_condition(Condition condition);

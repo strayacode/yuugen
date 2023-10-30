@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     a_system.set_update_callback([](f32) {});
     b_system.set_update_callback([](f32) {});
 
-    a_system.select_cpu_backend(arm::BackendType::Interpreter, false);
+    a_system.select_cpu_backend(arm::BackendType::IRInterpreter, false);
     b_system.select_cpu_backend(arm::BackendType::Jit, false);
 
     a_system.set_game_path(argv[1]);

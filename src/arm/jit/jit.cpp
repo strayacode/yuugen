@@ -14,7 +14,7 @@ namespace arm {
 Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type, bool optimise) : arch(arch), memory(memory), coprocessor(coprocessor) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
-    config.block_size = 32;
+    config.block_size = 1;
 
     switch (backend_type) {
     case BackendType::IRInterpreter:
@@ -74,7 +74,7 @@ void Jit::run(int cycles) {
         }
 
         // TODO: return the cycles elapsed from this function
-        cycles_available -= backend->run(location);
+        cycles_available = backend->run(location, cycles_available);
     }
 }
 

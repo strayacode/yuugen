@@ -6,7 +6,7 @@ namespace arm {
 A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code()), jit(jit) {}
 
 void A64Backend::reset() {
-    
+    code_cache.reset();
 }
 
 bool A64Backend::has_code_at(Location location) {
@@ -14,21 +14,39 @@ bool A64Backend::has_code_at(Location location) {
 }
 
 void A64Backend::compile(BasicBlock& basic_block) {
-    JitFunction fn = assembler.get_current_code<JitFunction>();
+    // TODO: calculate lifetime values for the register allocator
+    // by passing the basic block to a function in it
+
+    JitFunction jit_fn = assembler.get_current_code<JitFunction>();
     code_block.unprotect();
 
     compile_prologue();
+
+    if (basic_block.condition != Condition::AL) {
+        logger.todo("handle conditional basic block");
+    }
+
+    if (basic_block.condition == Condition::NV) {
+        logger.todo("handle basic block that never runs");
+    }
+
+    for (auto& opcode : basic_block.opcodes) {
+        compile_ir_opcode(opcode);
+    }
+
     compile_epilogue();
 
     code_block.protect();
 
     assembler.dump();
+    
+    code_cache.set(basic_block.location, std::move(jit_fn));
     logger.todo("handle end of compilation");
 }
 
-int A64Backend::run(Location location) {
-    logger.todo("run");
-    return 0;
+int A64Backend::run(Location location, int cycles_left) {
+    JitFunction jit_fn = code_cache.get(location);
+    return jit_fn(&jit.state, cycles_left);
 }
 
 void A64Backend::compile_prologue() {
@@ -46,18 +64,7 @@ void A64Backend::compile_prologue() {
     // store the cycles left into the cycles left pinned register
     assembler.mov(cycles_left_reg, w1);
 
-    // TODO: store pointer of cpu state struct into a pinned register
-    // TODO: use a dedicated pinned register to record how many cycles have elapsed
-    // in the basic block
-
-    // TODO: generate a condition check for when basic block
-    // condition is not AL or NV
-
-    // TODO: check interrupts in jitted code
-    
-    // x0 will contain a pointer to the cpu state struct
-    // TODO: store cycles left in x1 eventually so when we do block linking,
-    // we know when enough cycles has passed
+    // TODO: eventually check interrupts in jitted code to reduce time outside of jit context
 }
 
 void A64Backend::compile_epilogue() {
@@ -72,6 +79,102 @@ void A64Backend::compile_epilogue() {
     // store the cycles left into w0
     assembler.mov(w0, cycles_left_reg);
     assembler.ret();
+}
+
+void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
+    auto type = opcode->get_type();
+    switch (type) {
+    case IROpcodeType::LoadGPR:
+        logger.todo("handle LoadGPR");
+        break;
+    case IROpcodeType::StoreGPR:
+        logger.todo("handle StoreGPR");
+        break;
+    case IROpcodeType::LoadCPSR:
+        logger.todo("handle LoadCPSR");
+        break;
+    case IROpcodeType::StoreCPSR:
+        logger.todo("handle StoreCPSR");
+        break;
+    case IROpcodeType::LoadSPSR:
+        logger.todo("handle LoadSPSR");
+        break;
+    case IROpcodeType::StoreSPSR:
+        logger.todo("handle StoreSPSR");
+        break;
+    case IROpcodeType::LoadCoprocessor:
+        logger.todo("handle LoadCoprocessor");
+        break;
+    case IROpcodeType::StoreCoprocessor:
+        logger.todo("handle StoreCoprocessor");
+        break;
+    case IROpcodeType::BitwiseAnd:
+        logger.todo("handle BitwiseAnd");
+        break;
+    case IROpcodeType::BitwiseOr:
+        logger.todo("handle BitwiseOr");
+        break;
+    case IROpcodeType::BitwiseNot:
+        logger.todo("handle BitwiseNot");
+        break;
+    case IROpcodeType::BitwiseExclusiveOr:
+        logger.todo("handle BitwiseExclusiveOr");
+        break;
+    case IROpcodeType::Add:
+        logger.todo("handle Add");
+        break;
+    case IROpcodeType::AddLong:
+        logger.todo("handle AddLong");
+        break;
+    case IROpcodeType::Subtract:
+        logger.todo("handle Subtract");
+        break;
+    case IROpcodeType::Multiply:
+        logger.todo("handle Multiply");
+        break;
+    case IROpcodeType::MultiplyLong:
+        logger.todo("handle MultiplyLong");
+        break;
+    case IROpcodeType::LogicalShiftLeft:
+        logger.todo("handle LogicalShiftLeft");
+        break;
+    case IROpcodeType::LogicalShiftRight:
+        logger.todo("handle LogicalShiftRight");
+        break;
+    case IROpcodeType::ArithmeticShiftRight:
+        logger.todo("handle ArithmeticShiftRight");
+        break;
+    case IROpcodeType::BarrelShifterLogicalShiftLeft:
+        logger.todo("handle BarrelShifterLogicalShiftLeft");
+        break;
+    case IROpcodeType::BarrelShifterLogicalShiftRight:
+        logger.todo("handle BarrelShifterLogicalShiftRight");
+        break;
+    case IROpcodeType::BarrelShifterArithmeticShiftRight:
+        logger.todo("handle BarrelShifterArithmeticShiftRight");
+        break;
+    case IROpcodeType::BarrelShifterRotateRight:
+        logger.todo("handle BarrelShifterRotateRight");
+        break;
+    case IROpcodeType::BarrelShifterRotateRightExtended:
+        logger.todo("handle BarrelShifterRotateRightExtended");
+        break;
+    case IROpcodeType::CountLeadingZeroes:
+        logger.todo("handle CountLeadingZeroes");
+        break;
+    case IROpcodeType::Compare:
+        logger.todo("handle Compare");
+        break;
+    case IROpcodeType::Copy:
+        logger.todo("handle Copy");
+        break;
+    case IROpcodeType::MemoryWrite:
+        logger.todo("handle MemoryWrite");
+        break;
+    case IROpcodeType::MemoryRead:
+        logger.todo("handle MemoryRead");
+        break;
+    }
 }
 
 } // namespace arm

@@ -32,21 +32,21 @@ void IRInterpreter::compile(BasicBlock& basic_block)  {
     code_cache.set(basic_block.location, std::move(compiled_block));
 }
 
-int IRInterpreter::run(Location location)  {
+int IRInterpreter::run(Location location, int cycles_left)  {
     auto& compiled_block = code_cache.get(location);
     if (evaluate_condition(compiled_block.condition)) {
         for (auto& compiled_instruction : compiled_block.instructions) {
             (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);
         }
 
-        return compiled_block.cycles;
+        return cycles_left - compiled_block.cycles;
     } else {
         u32 pc_after_block = jit.get_gpr(GPR::PC) + ((compiled_block.num_instructions - 2) * compiled_block.location.get_instruction_size());
         jit.set_gpr(GPR::PC, pc_after_block);
 
         // when all instructions fail the condition check,
         // then each one takes 1 cycle (for fetching the instruction)
-        return compiled_block.num_instructions;
+        return cycles_left - compiled_block.num_instructions;
     }
 }
 
