@@ -99,6 +99,12 @@ int main() {
     TEST(0xf81c4c08, str(arm::x8, arm::x0, arm::IndexMode::Pre, -60))
     TEST(0xf80fde06, str(arm::x6, arm::x16, arm::IndexMode::Pre, 253))
     TEST(0xf80a8c2d, str(arm::x13, arm::x1, arm::IndexMode::Pre, 168))
+    TEST(0xb91ab6cb, str(arm::w11, arm::x22, 6836))
+    TEST(0xb9223f0c, str(arm::w12, arm::x24, 8764))
+    TEST(0xb902a76c, str(arm::w12, arm::x27, 676))
+    TEST(0xf9025f66, str(arm::x6, arm::x27, 1208))
+    TEST(0xf90ada92, str(arm::x18, arm::x20, 5552))
+    TEST(0xf92357b6, str(arm::x22, arm::x29, 18088))
 
     TEST(0x5133a211, sub(arm::w17, arm::w16, 3304))
     TEST(0x510948af, sub(arm::w15, arm::w5, 594))

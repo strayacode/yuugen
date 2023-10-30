@@ -3,9 +3,7 @@
 
 namespace arm {
 
-A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code()), jit(jit) {
-    logger.debug("bad");
-}
+A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code()), jit(jit) {}
 
 void A64Backend::reset() {
     code_cache.reset();
@@ -22,6 +20,7 @@ void A64Backend::compile(BasicBlock& basic_block) {
     register_allocator.record_lifetimes(basic_block);
 
     JitFunction jit_fn = assembler.get_current_code<JitFunction>();
+    logger.warn("jit fn pointer %p", jit_fn);
     code_block.unprotect();
 
     compile_prologue();
@@ -48,7 +47,6 @@ void A64Backend::compile(BasicBlock& basic_block) {
     assembler.dump();
     
     code_cache.set(basic_block.location, std::move(jit_fn));
-    logger.todo("handle end of compilation");
 }
 
 int A64Backend::run(Location location, int cycles_left) {
@@ -75,6 +73,9 @@ void A64Backend::compile_prologue() {
 }
 
 void A64Backend::compile_epilogue() {
+    // store the cycles left into w0
+    assembler.mov(w0, cycles_left_reg);
+
     // restore non-volatile registers from the stack
     assembler.ldp(x29, x30, sp, 80);
     assembler.ldp(x27, x28, sp, 64);
@@ -83,8 +84,6 @@ void A64Backend::compile_epilogue() {
     assembler.ldp(x21, x22, sp, 16);
     assembler.ldp(x19, x20, sp, IndexMode::Post, 96);
 
-    // store the cycles left into w0
-    assembler.mov(w0, cycles_left_reg);
     assembler.ret();
 }
 

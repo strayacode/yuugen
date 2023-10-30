@@ -3,16 +3,18 @@
 
 namespace arm {
 
-A64Assembler::A64Assembler(u32* code) : code(code) {}
+A64Assembler::A64Assembler(u32* code) : code(code), current_code(code), previous_code(code) {}
 
 void A64Assembler::dump() {
     logger.print("buffer:");
-    for (int i = 0; i < num_instructions; i++) {
-        logger.print("%08x", code[i]);
+    u32* curr = previous_code;
+    while (curr != current_code) {
+        logger.print("%08x", *curr);
+        curr++;
     }
 }
 
-void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm) {
+void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
         emit(0xa7 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
@@ -23,7 +25,7 @@ void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Signed
     }
 }
 
-void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm) {
+void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Offset<10, 3> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
         emit(0x2a7 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
@@ -34,11 +36,11 @@ void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Signed
     }
 }
 
-void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm) {
+void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, Offset<9, 2> imm) {
     emit(0xa5 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
 }
 
-void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
+void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, Offset<10, 3> imm) {
     emit(0x2a5 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
 }
 
@@ -87,7 +89,7 @@ void A64Assembler::ret(XReg rn) {
     emit(0x3597c0 << 10 | rn.id << 5);
 }
 
-void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm) {
+void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
         emit(0xa6 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
@@ -98,7 +100,7 @@ void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Signed
     }
 }
 
-void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm) {
+void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Offset<10, 3> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
         emit(0x2a6 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
@@ -109,15 +111,15 @@ void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Signed
     }
 }
 
-void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm) {
+void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, Offset<9, 2> imm) {
     emit(0xa4 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
 }
 
-void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
+void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, Offset<10, 3> imm) {
     emit(0x2a4 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
 }
 
-void A64Assembler::str(WReg wt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm) {
+void A64Assembler::str(WReg wt, XReg xn, IndexMode index_mode, Offset<9, 0> simm) {
     switch (index_mode) {
     case IndexMode::Pre:
         emit(0x5c0 << 21 | simm.value << 12 | 0x3 << 10 | xn.id << 5 | wt.id);
@@ -128,7 +130,7 @@ void A64Assembler::str(WReg wt, XReg xn, IndexMode index_mode, SignedOffset<9, 0
     }
 }
 
-void A64Assembler::str(XReg xt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm) {
+void A64Assembler::str(XReg xt, XReg xn, IndexMode index_mode, Offset<9, 0> simm) {
     switch (index_mode) {
     case IndexMode::Pre:
         emit(0x7c0 << 21 | simm.value << 12 | 0x3 << 10 | xn.id << 5 | xt.id);
@@ -137,6 +139,14 @@ void A64Assembler::str(XReg xt, XReg xn, IndexMode index_mode, SignedOffset<9, 0
         emit(0x7c0 << 21 | simm.value << 12 | 0x1 << 10 | xn.id << 5 | xt.id);
         break;
     }
+}
+
+void A64Assembler::str(WReg wt, XReg xn, Offset<14, 2> pimm) {
+    emit(0x2e4 << 22 | pimm.value << 10 | xn.id << 5 | wt.id);
+}
+
+void A64Assembler::str(XReg xt, XReg xn, Offset<15, 3> pimm) {
+    emit(0x3e4 << 22 | pimm.value << 10 | xn.id << 5 | xt.id);
 }
 
 void A64Assembler::sub(WReg wd, WReg wn, SubImmediate imm) {
@@ -148,7 +158,8 @@ void A64Assembler::sub(XReg xd, XReg xn, SubImmediate imm) {
 }
 
 void A64Assembler::emit(u32 data) {
-    code[num_instructions++] = data;
+    *current_code++ = data;
+    num_instructions++;
 }
 
 } // namespace arm

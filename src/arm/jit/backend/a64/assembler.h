@@ -9,8 +9,8 @@
 namespace arm {
 
 template <int N, int A>
-struct SignedOffset {
-    SignedOffset(s64 value) {
+struct Offset {
+    Offset(s64 value) {
         this->value = (static_cast<u64>(value) & mask) >> A;
     }
 
@@ -84,12 +84,12 @@ public:
     void dump();
 
     // pre/post index
-    void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm);
-    void ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm);
+    void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm);
+    void ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Offset<10, 3> imm);
 
     // signed offset
-    void ldp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm = 0);
-    void ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
+    void ldp(WReg wt1, WReg wt2, XReg xn, Offset<9, 2> imm = 0);
+    void ldp(XReg xt1, XReg xt2, XReg xn, Offset<10, 3> imm = 0);
 
     // convenience function to move a 32-bit imm into a register
     // TODO: see later if we can do optimisations with imm == 0
@@ -106,23 +106,30 @@ public:
     void ret(XReg rn);
 
     // pre/post index
-    void stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm);
-    void stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm);
+    void stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm);
+    void stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Offset<10, 3> imm);
 
     // signed offset
-    void stp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm = 0);
-    void stp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
+    void stp(WReg wt1, WReg wt2, XReg xn, Offset<9, 2> imm = 0);
+    void stp(XReg xt1, XReg xt2, XReg xn, Offset<10, 3> imm = 0);
 
     // pre/post index
-    void str(WReg wt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm);
-    void str(XReg xt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm);
+    void str(WReg wt, XReg xn, IndexMode index_mode, Offset<9, 0> simm);
+    void str(XReg xt, XReg xn, IndexMode index_mode, Offset<9, 0> simm);
+
+    // unsigned offset
+    void str(WReg wt, XReg xn, Offset<14, 2> pimm = 0);
+    void str(XReg xt, XReg xn, Offset<15, 3> pimm = 0);
 
     void sub(WReg wd, WReg wn, SubImmediate imm);
     void sub(XReg xd, XReg xn, SubImmediate imm);
 
     template <typename T>
     T get_current_code() {
-        return reinterpret_cast<T>(code);
+        // logger.warn("get current code %p %d %p", code, num_instructions, code + num_instructions);
+        logger.warn("current code %p", current_code);
+        previous_code = current_code;
+        return reinterpret_cast<T>(current_code);
     }
 
     u32* get_code() { return code; }
@@ -132,6 +139,8 @@ private:
     void emit(u32 data);
 
     u32* code{nullptr};
+    u32* current_code{nullptr};
+    u32* previous_code{nullptr};
     int num_instructions{0};
 };
 

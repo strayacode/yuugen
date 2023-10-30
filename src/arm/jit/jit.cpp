@@ -73,8 +73,10 @@ void Jit::run(int cycles) {
             backend->compile(basic_block);
         }
 
-        // TODO: return the cycles elapsed from this function
+        logger.debug("cycles available %d", cycles_available);
         cycles_available = backend->run(location, cycles_available);
+        logger.debug("cycles available after %d", cycles_available);
+        log_state();
     }
 }
 
