@@ -114,7 +114,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle StoreCoprocessor");
         break;
     case IROpcodeType::BitwiseAnd:
-        logger.todo("handle BitwiseAnd");
+        compile_bitwise_and(*opcode->as<IRBitwiseAnd>());
         break;
     case IROpcodeType::BitwiseOr:
         logger.todo("handle BitwiseOr");
@@ -194,6 +194,16 @@ void A64Backend::compile_store_gpr(IRStoreGPR& opcode) {
         auto& src = opcode.src.as_variable();
         WReg src_reg = register_allocator.get(src);
         assembler.str(src_reg, state_reg, gpr_offset);
+    }
+}
+
+void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    if (opcode.lhs.is_constant() && opcode.rhs.is_constant()) {
+        u32 result = opcode.lhs.as_constant().value & opcode.rhs.as_constant().value;
+        assembler.mov(dst_reg, result);
+    } else {
+        logger.todo("handle bitwise where lhs and rhs aren't constants");
     }
 }
 
