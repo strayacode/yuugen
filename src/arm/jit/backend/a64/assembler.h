@@ -46,13 +46,15 @@ public:
     void dump();
 
     // pre/post index
-    void ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm);
     void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm);
+    void ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm);
 
     // signed offset
-    void ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
     void ldp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm = 0);
+    void ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
 
+    void mov(WReg wd, WReg wm);
+    void mov(XReg xd, XReg xm);
     void movz(WReg wd, Immediate16 imm);
     void movz(XReg xd, Immediate16 imm);
 
@@ -60,12 +62,12 @@ public:
     void ret(XReg rn);
 
     // pre/post index
-    void stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm);
     void stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm);
+    void stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm);
 
     // signed offset
-    void stp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
     void stp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm = 0);
+    void stp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
 
     template <typename T>
     T get_current_code() {

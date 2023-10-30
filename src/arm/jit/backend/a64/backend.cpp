@@ -14,6 +14,7 @@ bool A64Backend::has_code_at(Location location) {
 }
 
 void A64Backend::compile(BasicBlock& basic_block) {
+    JitFunction fn = assembler.get_current_code<JitFunction>();
     code_block.unprotect();
 
     compile_prologue();
@@ -39,12 +40,24 @@ void A64Backend::compile_prologue() {
     assembler.stp(x27, x28, sp, 64);
     assembler.stp(x29, x30, sp, 80);
 
+    // store the cpu state pointer into the pinned register
+    assembler.mov(state_reg, x0);
+
+    // store the cycles left into the cycles left pinned register
+    assembler.mov(cycles_left_reg, w1);
+
     // TODO: store pointer of cpu state struct into a pinned register
     // TODO: use a dedicated pinned register to record how many cycles have elapsed
     // in the basic block
 
     // TODO: generate a condition check for when basic block
     // condition is not AL or NV
+
+    // TODO: check interrupts in jitted code
+    
+    // x0 will contain a pointer to the cpu state struct
+    // TODO: store cycles left in x1 eventually so when we do block linking,
+    // we know when enough cycles has passed
 }
 
 void A64Backend::compile_epilogue() {
@@ -56,8 +69,8 @@ void A64Backend::compile_epilogue() {
     assembler.ldp(x21, x22, sp, 16);
     assembler.ldp(x19, x20, sp, IndexMode::Post, 96);
 
-    // TODO: store the cycles elapsed register into w0
-
+    // store the cycles left into w0
+    assembler.mov(w0, cycles_left_reg);
     assembler.ret();
 }
 

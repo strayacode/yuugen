@@ -13,7 +13,7 @@ std::string Disassembler::arm_branch_link_maybe_exchange(u32 instruction) {
 }
 
 std::string Disassembler::arm_branch_exchange(u32 instruction) {
-    const const auto opcode = ARMBranchExchange::decode(instruction);
+    const auto opcode = ARMBranchExchange::decode(instruction);
     return common::format("bx%s %s", condition_names[opcode.condition], register_names[opcode.rm]);
 }
 

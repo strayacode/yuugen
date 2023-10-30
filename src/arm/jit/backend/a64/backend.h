@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/logger.h"
+#include "arm/state.h"
 #include "arm/jit/basic_block.h"
 #include "arm/jit/backend/backend.h"
 #include "arm/jit/backend/code_cache.h"
@@ -21,7 +22,10 @@ public:
     int run(Location location) override;
 
 private:
-    using JitFunction = void (*)();
+    // return value: the cycles left after running the jit function (w0)
+    // argument 1: a 64-bit pointer to the cpu state (x0)
+    // argument 2: the cycles left (w1)
+    using JitFunction = int (*)(State* state, int cycles_left);
 
     void compile_prologue();
     void compile_epilogue();
@@ -33,7 +37,10 @@ private:
 
     static constexpr int CODE_CACHE_SIZE = 16 * 1024 * 1024;
 
-    // we have x19, x20, x21, x22, x23, x24, x25, x26, x27 and x28 available for register allocation
+    static constexpr XReg state_reg = x19;
+    static constexpr WReg cycles_left_reg = w20;
+
+    // we have x21, x22, x23, x24, x25, x26, x27 and x28 available for register allocation
 };
 
 } // namespace arm

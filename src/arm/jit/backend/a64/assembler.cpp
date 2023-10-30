@@ -12,17 +12,6 @@ void A64Assembler::dump() {
     }
 }
 
-void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm) {
-    switch (index_mode) {
-    case IndexMode::Pre:
-        emit(0x2a7 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
-        break;
-    case IndexMode::Post:
-        emit(0x2a3 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
-        break;
-    }
-}
-
 void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
@@ -34,12 +23,31 @@ void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Signed
     }
 }
 
-void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
-    emit(0x2a5 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm) {
+    switch (index_mode) {
+    case IndexMode::Pre:
+        emit(0x2a7 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+        break;
+    case IndexMode::Post:
+        emit(0x2a3 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+        break;
+    }
 }
 
 void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm) {
     emit(0xa5 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
+}
+
+void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
+    emit(0x2a5 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+}
+
+void A64Assembler::mov(WReg wd, WReg wm) {
+    emit(0x150 << 21 | wm.id << 16 | 0x1f << 5 | wd.id);
+}
+
+void A64Assembler::mov(XReg xd, XReg xm) {
+    emit(0x550 << 21 | xm.id << 16 | 0x1f << 5 | xd.id);
 }
 
 void A64Assembler::movz(WReg wd, Immediate16 imm) {
@@ -58,17 +66,6 @@ void A64Assembler::ret(XReg rn) {
     emit(0x3597c0 << 10 | rn.id << 5);
 }
 
-void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm) {
-    switch (index_mode) {
-    case IndexMode::Pre:
-        emit(0x2a6 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
-        break;
-    case IndexMode::Post:
-        emit(0x2a2 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
-        break;
-    }
-}
-
 void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, SignedOffset<9, 2> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
@@ -80,12 +77,23 @@ void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Signed
     }
 }
 
-void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
-    emit(0x2a4 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, SignedOffset<10, 3> imm) {
+    switch (index_mode) {
+    case IndexMode::Pre:
+        emit(0x2a6 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+        break;
+    case IndexMode::Post:
+        emit(0x2a2 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+        break;
+    }
 }
 
 void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm) {
     emit(0xa4 << 22 | imm.value << 15 | wt2.id << 10 | xn.id << 5 | wt1.id);
+}
+
+void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
+    emit(0x2a4 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
 }
 
 void A64Assembler::emit(u32 data) {

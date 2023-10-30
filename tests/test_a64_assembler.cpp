@@ -43,6 +43,12 @@ int main() {
     TEST(0xa97cbf1f, ldp(arm::zr, arm::x15, arm::x24, -56))
     TEST(0xa952210c, ldp(arm::x12, arm::x8, arm::x8, 288))
 
+    TEST(0x2a1b03f2, mov(arm::w18, arm::w27))
+    TEST(0x2a1603e5, mov(arm::w5, arm::w22))
+    TEST(0x2a0c03ea, mov(arm::w10, arm::w12))
+    TEST(0xaa1a03ec, mov(arm::x12, arm::x26))
+    TEST(0xaa1e03e4, mov(arm::x4, arm::x30))
+    TEST(0xaa1303f6, mov(arm::x22, arm::x19))
     TEST(0x52b62758, movz(arm::w24, 0xb13a0000))
     TEST(0x52b14a9e, movz(arm::w30, 0x8a540000))
     TEST(0x52837eec, movz(arm::w12, 7159))
