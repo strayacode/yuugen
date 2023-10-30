@@ -8,6 +8,7 @@ void RegisterAllocator::reset() {
     lifetime_map.clear();
     variable_map.clear();
     allocated_registers = 0;
+    temporary_registers.clear();
 }
 
 void RegisterAllocator::record_lifetimes(BasicBlock& basic_block) {
@@ -39,13 +40,12 @@ void RegisterAllocator::advance() {
 
     for (auto& it : lifetime_map) {
         if (it.second == index) {
-            u32 id = variable_map[it.first];
-            logger.debug("w%d available for use", allocation_order[id].id);
-            allocated_registers.reset(id);
-            variable_map.erase(it.first);
-            logger.debug("v%d deallocated from variable map", it.first);
+            free_variable(variable_map[it.first]);
         }
     }
+
+    logger.debug("freeing any temporaries");
+    free_temporaries();
     
     current_index++;
 }
@@ -66,6 +66,22 @@ WReg RegisterAllocator::allocate(IRVariable variable) {
     return WReg{0xffffffff};
 }
 
+WReg RegisterAllocator::allocate_temporary() {
+    for (int i = 0; i < 8; i++) {
+        if (!allocated_registers.test(i)) {
+            WReg reg = allocation_order[i];
+
+            allocated_registers.set(i);
+            temporary_registers.push_back(i);
+            logger.debug("allocate temporary into w%d", reg.id);
+            return reg;
+        }
+    }
+
+    logger.todo("all registers are being used!");
+    return WReg{0xffffffff};
+}
+
 WReg RegisterAllocator::get(IRVariable variable) {
     auto it = variable_map.find(variable.id);
     if (it == variable_map.end()) {
@@ -73,6 +89,24 @@ WReg RegisterAllocator::get(IRVariable variable) {
     }
 
     return allocation_order[it->second];
+}
+
+void RegisterAllocator::free_temporaries() {
+    for (auto& id : temporary_registers) {
+        WReg reg = allocation_order[id];
+        logger.debug("free temporary register w%d", reg.id);
+        allocated_registers.reset(id);
+    }
+
+    temporary_registers.clear();
+}
+
+void RegisterAllocator::free_variable(u32 var_id) {
+    u32 id = variable_map[var_id];
+    logger.debug("w%d available for use", allocation_order[id].id);
+    allocated_registers.reset(id);
+    variable_map.erase(var_id);
+    logger.debug("v%d deallocated from variable map", var_id);
 }
 
 } // namespace arm

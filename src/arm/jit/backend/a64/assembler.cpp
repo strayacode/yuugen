@@ -105,6 +105,28 @@ void A64Assembler::stp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm) {
     emit(0x2a4 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
 }
 
+void A64Assembler::str(WReg wt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm) {
+    switch (index_mode) {
+    case IndexMode::Pre:
+        emit(0x5c0 << 21 | simm.value << 12 | 0x3 << 10 | xn.id << 5 | wt.id);
+        break;
+    case IndexMode::Post:
+        emit(0x5c0 << 21 | simm.value << 12 | 0x1 << 10 | xn.id << 5 | wt.id);
+        break;
+    }
+}
+
+void A64Assembler::str(XReg xt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm) {
+    switch (index_mode) {
+    case IndexMode::Pre:
+        emit(0x7c0 << 21 | simm.value << 12 | 0x3 << 10 | xn.id << 5 | xt.id);
+        break;
+    case IndexMode::Post:
+        emit(0x7c0 << 21 | simm.value << 12 | 0x1 << 10 | xn.id << 5 | xt.id);
+        break;
+    }
+}
+
 void A64Assembler::emit(u32 data) {
     code[num_instructions++] = data;
 }

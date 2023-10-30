@@ -32,6 +32,7 @@ private:
     void compile_epilogue();
 
     void compile_ir_opcode(std::unique_ptr<IROpcode>& opcode);
+    void compile_store_gpr(IRStoreGPR& opcode);
     void compile_copy(IRCopy& opcode);
 
     CodeCache<JitFunction> code_cache;

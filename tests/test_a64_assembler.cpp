@@ -79,6 +79,19 @@ int main() {
     TEST(0xa9222d40, stp(arm::x0, arm::x11, arm::x10, -480))
     TEST(0xa90017ca, stp(arm::x10, arm::x5, arm::x30))
 
+    TEST(0xb8168414, str(arm::w20, arm::x0, arm::IndexMode::Post, -152))
+    TEST(0xb8090760, str(arm::w0, arm::x27, arm::IndexMode::Post, 144))
+    TEST(0xb81457d6, str(arm::w22, arm::x30, arm::IndexMode::Post, -187))
+    TEST(0xf80e8585, str(arm::x5, arm::x12, arm::IndexMode::Post, 232))
+    TEST(0xf81907f9, str(arm::x25, arm::sp, arm::IndexMode::Post, -112))
+    TEST(0xf806956a, str(arm::x10, arm::x11, arm::IndexMode::Post, 105))
+    TEST(0xb809ceba, str(arm::w26, arm::x21, arm::IndexMode::Pre, 156))
+    TEST(0xb8073f34, str(arm::w20, arm::x25, arm::IndexMode::Pre, 115))
+    TEST(0xb8087f73, str(arm::w19, arm::x27, arm::IndexMode::Pre, 135))
+    TEST(0xf81c4c08, str(arm::x8, arm::x0, arm::IndexMode::Pre, -60))
+    TEST(0xf80fde06, str(arm::x6, arm::x16, arm::IndexMode::Pre, 253))
+    TEST(0xf80a8c2d, str(arm::x13, arm::x1, arm::IndexMode::Pre, 168))
+
     code_block.protect();
 
     return 0;

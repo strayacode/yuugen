@@ -65,6 +65,7 @@ public:
     void ldp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
 
     // convenience function to move a 32-bit imm into a register
+    // TODO: see later if we can do optimisations with imm == 0
     void mov(WReg wd, u32 imm);
 
     void mov(WReg wd, WReg wm);
@@ -82,6 +83,10 @@ public:
     // signed offset
     void stp(WReg wt1, WReg wt2, XReg xn, SignedOffset<9, 2> imm = 0);
     void stp(XReg xt1, XReg xt2, XReg xn, SignedOffset<10, 3> imm = 0);
+
+    // pre/post index
+    void str(WReg wt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm);
+    void str(XReg xt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm);
 
     template <typename T>
     T get_current_code() {
