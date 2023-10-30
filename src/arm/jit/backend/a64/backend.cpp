@@ -3,7 +3,9 @@
 
 namespace arm {
 
-A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code()), jit(jit) {}
+A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code()), jit(jit) {
+    logger.debug("bad");
+}
 
 void A64Backend::reset() {
     code_cache.reset();
@@ -14,8 +16,8 @@ bool A64Backend::has_code_at(Location location) {
 }
 
 void A64Backend::compile(BasicBlock& basic_block) {
-    // TODO: calculate lifetime values for the register allocator
-    // by passing the basic block to a function in it
+    // calculate the lifetimes of ir variables
+    register_allocator.record_lifetimes(basic_block);
 
     JitFunction jit_fn = assembler.get_current_code<JitFunction>();
     code_block.unprotect();
@@ -32,6 +34,7 @@ void A64Backend::compile(BasicBlock& basic_block) {
 
     for (auto& opcode : basic_block.opcodes) {
         compile_ir_opcode(opcode);
+        register_allocator.advance();
     }
 
     compile_epilogue();
@@ -166,7 +169,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle Compare");
         break;
     case IROpcodeType::Copy:
-        logger.todo("handle Copy");
+        compile_copy(*opcode->as<IRCopy>());
         break;
     case IROpcodeType::MemoryWrite:
         logger.todo("handle MemoryWrite");
@@ -174,6 +177,13 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
     case IROpcodeType::MemoryRead:
         logger.todo("handle MemoryRead");
         break;
+    }
+}
+
+void A64Backend::compile_copy(IRCopy& opcode) {
+    logger.todo("handle copy");
+    if (opcode.src.is_constant()) {
+        const u32 value = opcode.src.as_constant().value;
     }
 }
 

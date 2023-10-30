@@ -7,6 +7,7 @@
 #include "arm/jit/backend/code_cache.h"
 #include "arm/jit/backend/a64/code_block.h"
 #include "arm/jit/backend/a64/assembler.h"
+#include "arm/jit/backend/a64/register_allocator.h"
 
 namespace arm {
 
@@ -31,6 +32,7 @@ private:
     void compile_epilogue();
 
     void compile_ir_opcode(std::unique_ptr<IROpcode>& opcode);
+    void compile_copy(IRCopy& opcode);
 
     CodeCache<JitFunction> code_cache;
     CodeBlock code_block;
@@ -42,7 +44,8 @@ private:
     static constexpr XReg state_reg = x19;
     static constexpr WReg cycles_left_reg = w20;
 
-    // we have x21, x22, x23, x24, x25, x26, x27 and x28 available for register allocation
+    // we have w21, w22, w23, w24, w25, w26, w27 and w28 available for register allocation
+    RegisterAllocator register_allocator;
 };
 
 } // namespace arm
