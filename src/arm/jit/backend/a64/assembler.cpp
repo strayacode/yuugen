@@ -48,7 +48,11 @@ void A64Assembler::mov(WReg wd, u32 imm) {
         return;
     }
 
-    logger.todo("handle u32 imm for mov that can't be encoded in a single instruction");
+    const u16 lower = imm & 0xffff;
+    const u16 upper = (imm >> 16) & 0xffff;
+
+    movz(wd, lower);
+    movk(wd, {upper, 16});
 }
 
 void A64Assembler::mov(WReg wd, WReg wm) {
@@ -65,6 +69,14 @@ void A64Assembler::movz(WReg wd, Immediate16 imm) {
 
 void A64Assembler::movz(XReg xd, Immediate16 imm) {
     emit(0x1a5 << 23 | imm.value << 5 | xd.id);
+}
+
+void A64Assembler::movk(WReg wd, Immediate16 imm) {
+    emit(0xe5 << 23 | imm.value << 5 | wd.id);
+}
+
+void A64Assembler::movk(XReg xd, Immediate16 imm) {
+    emit(0x1e5 << 23 | imm.value << 5 | xd.id);
 }
 
 void A64Assembler::ret() {

@@ -39,7 +39,7 @@ public:
     StatusRegister* get_pointer_to_cpsr();
     StatusRegister* get_pointer_to_spsr(Mode mode);
 
-    u64 get_offset_to_gpr(GPR gpr, Mode mode);
+    uptr get_offset_to_gpr(GPR gpr, Mode mode);
 
     u8 read_byte(u32 addr);
     u16 read_half(u32 addr);

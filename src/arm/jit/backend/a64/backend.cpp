@@ -37,7 +37,6 @@ void A64Backend::compile(BasicBlock& basic_block) {
     for (auto& opcode : basic_block.opcodes) {
         compile_ir_opcode(opcode);
         register_allocator.advance();
-        assembler.dump();
     }
 
     compile_epilogue();

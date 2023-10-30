@@ -35,6 +35,14 @@ struct Immediate16 {
         logger.error("value %016lx can't be encoded in an Immediate16", value);
     }
 
+    Immediate16(u16 value, u32 shift) {
+        if (shift % 16 != 0 || shift > 48) {
+            logger.error("Immediate16: invalid shift %d", shift);
+        }
+
+        this->value = (shift << 12) | value;
+    }
+
     static bool is_valid(u64 value) {
         return ((value & 0xffff) == value) 
             || ((value & 0xffff0000) == value)
@@ -72,6 +80,8 @@ public:
     void mov(XReg xd, XReg xm);
     void movz(WReg wd, Immediate16 imm);
     void movz(XReg xd, Immediate16 imm);
+    void movk(WReg wd, Immediate16 imm);
+    void movk(XReg xd, Immediate16 imm);
 
     void ret();
     void ret(XReg rn);

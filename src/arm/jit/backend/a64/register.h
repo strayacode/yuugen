@@ -53,7 +53,7 @@ inline constexpr XReg x28{28};
 inline constexpr XReg x29{29};
 inline constexpr XReg x30{30};
 inline constexpr XReg sp{31};
-inline constexpr XReg zr{31};
+inline constexpr XReg xzr{31};
 
 inline constexpr WReg w0{0};
 inline constexpr WReg w1{1};

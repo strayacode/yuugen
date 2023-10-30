@@ -13,6 +13,7 @@ using u64 = std::uint64_t;
 using s64 = std::int64_t;
 using f32 = float;
 using f64 = double;
+using uptr = std::uintptr_t;
 
 template <typename T, typename... Args> 
 struct is_one_of {

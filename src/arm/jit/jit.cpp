@@ -153,8 +153,8 @@ StatusRegister* Jit::get_pointer_to_spsr(Mode mode) {
     return &state.spsr_banked[get_bank_from_mode(mode)];
 }
 
-u64 Jit::get_offset_to_gpr(GPR gpr, Mode mode) {
-    return static_cast<u64>(get_pointer_to_gpr(gpr, mode) - reinterpret_cast<u32*>(&state));
+uptr Jit::get_offset_to_gpr(GPR gpr, Mode mode) {
+    return reinterpret_cast<uptr>(get_pointer_to_gpr(gpr, mode)) - reinterpret_cast<uptr>(&state);
 }
 
 u8 Jit::read_byte(u32 addr) {

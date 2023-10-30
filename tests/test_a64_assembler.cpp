@@ -40,7 +40,7 @@ int main() {
     TEST(0x29564676, ldp(arm::w22, arm::w17, arm::x19, 176))
     TEST(0x29723d75, ldp(arm::w21, arm::w15, arm::x11, -112))
     TEST(0xa946c500, ldp(arm::x0, arm::x17, arm::x8, 104))
-    TEST(0xa97cbf1f, ldp(arm::zr, arm::x15, arm::x24, -56))
+    TEST(0xa97cbf1f, ldp(arm::xzr, arm::x15, arm::x24, -56))
     TEST(0xa952210c, ldp(arm::x12, arm::x8, arm::x8, 288))
 
     TEST(0x52a08000, mov(arm::w0, 0x04000000))
@@ -50,6 +50,14 @@ int main() {
     TEST(0xaa1a03ec, mov(arm::x12, arm::x26))
     TEST(0xaa1e03e4, mov(arm::x4, arm::x30))
     TEST(0xaa1303f6, mov(arm::x22, arm::x19))
+
+    TEST(0x72883d49, movk(arm::w9, 16874))
+    TEST(0x72811bd7, movk(arm::w23, 2270))
+    TEST(0x72a0d0e1, movk(arm::w1, {1671, 16}))
+    TEST(0xf2b37940, movk(arm::x0, {39882, 16}))
+    TEST(0xf2bfb1bf, movk(arm::xzr, {64909, 16}))
+    TEST(0xf2e780fd, movk(arm::x29, {15367, 48}))
+
     TEST(0x52b62758, movz(arm::w24, 0xb13a0000))
     TEST(0x52b14a9e, movz(arm::w30, 0x8a540000))
     TEST(0x52837eec, movz(arm::w12, 7159))
