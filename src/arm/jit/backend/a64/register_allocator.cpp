@@ -36,6 +36,17 @@ void RegisterAllocator::record_lifetimes(BasicBlock& basic_block) {
 void RegisterAllocator::advance() {
     const u32 index = current_index;
     logger.debug("checking if any variables are last used at %d", index);
+
+    for (auto& it : lifetime_map) {
+        if (it.second == index) {
+            u32 id = variable_map[it.first];
+            logger.debug("w%d available for use", allocation_order[id].id);
+            allocated_registers.reset(id);
+            variable_map.erase(it.first);
+            logger.debug("v%d deallocated from variable map", it.first);
+        }
+    }
+    
     current_index++;
 }
 
@@ -45,7 +56,7 @@ WReg RegisterAllocator::allocate(IRVariable variable) {
             WReg reg = allocation_order[i];
 
             allocated_registers.set(i);
-            variable_map.insert({variable.id, reg});
+            variable_map.insert({variable.id, i});
             logger.debug("allocate %s into w%d", variable.to_string().c_str(), reg.id);
             return reg;
         }
@@ -61,7 +72,7 @@ WReg RegisterAllocator::get(IRVariable variable) {
         logger.todo("%s wasn't allocated when it should be", variable.to_string().c_str());
     }
 
-    return it->second;
+    return allocation_order[it->second];
 }
 
 } // namespace arm

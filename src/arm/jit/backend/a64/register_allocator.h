@@ -26,8 +26,8 @@ private:
     // maps IRVariable ids to the index of which instruction their lifetime lasts until
     std::unordered_map<u32, u32> lifetime_map;
 
-    // maps IRVariable ids to what register they're allocated to
-    std::unordered_map<u32, WReg> variable_map;
+    // maps IRVariable ids to an index in allocation_order
+    std::unordered_map<u32, u32> variable_map;
 
     // keep track of which registers are currently allocated
     std::bitset<8> allocated_registers{0};

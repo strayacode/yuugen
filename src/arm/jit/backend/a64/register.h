@@ -12,10 +12,12 @@ struct Reg {
 };
 
 struct WReg : public Reg {
+    constexpr WReg() : Reg(-1, 32) {}
     constexpr WReg(u32 id) : Reg(id, 32) {}
 };
 
 struct XReg : public Reg {
+    constexpr XReg() : Reg(-1, 32) {}
     constexpr XReg(u32 id) : Reg(id, 64) {}
 };
 
