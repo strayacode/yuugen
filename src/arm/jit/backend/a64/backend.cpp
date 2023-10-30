@@ -20,7 +20,6 @@ void A64Backend::compile(BasicBlock& basic_block) {
     register_allocator.record_lifetimes(basic_block);
 
     JitFunction jit_fn = assembler.get_current_code<JitFunction>();
-    logger.warn("jit fn pointer %p", jit_fn);
     code_block.unprotect();
 
     compile_prologue();
@@ -190,11 +189,11 @@ void A64Backend::compile_store_gpr(IRStoreGPR& opcode) {
         auto& src = opcode.src.as_constant();
         WReg tmp_reg = register_allocator.allocate_temporary();
         assembler.mov(tmp_reg, src.value);
-        assembler.str(tmp_reg, state_reg, IndexMode::Pre, gpr_offset);
+        assembler.str(tmp_reg, state_reg, gpr_offset);
     } else {
         auto& src = opcode.src.as_variable();
         WReg src_reg = register_allocator.get(src);
-        assembler.str(src_reg, state_reg, IndexMode::Pre, gpr_offset);
+        assembler.str(src_reg, state_reg, gpr_offset);
     }
 }
 

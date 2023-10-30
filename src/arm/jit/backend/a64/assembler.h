@@ -126,8 +126,6 @@ public:
 
     template <typename T>
     T get_current_code() {
-        // logger.warn("get current code %p %d %p", code, num_instructions, code + num_instructions);
-        logger.warn("current code %p", current_code);
         previous_code = current_code;
         return reinterpret_cast<T>(current_code);
     }
