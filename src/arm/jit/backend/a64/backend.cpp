@@ -37,6 +37,7 @@ void A64Backend::compile(BasicBlock& basic_block) {
     for (auto& opcode : basic_block.opcodes) {
         compile_ir_opcode(opcode);
         register_allocator.advance();
+        assembler.dump();
     }
 
     compile_epilogue();
@@ -93,7 +94,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle LoadGPR");
         break;
     case IROpcodeType::StoreGPR:
-        logger.todo("handle StoreGPR");
+        compile_store_gpr(*opcode->as<IRStoreGPR>());
         break;
     case IROpcodeType::LoadCPSR:
         logger.todo("handle LoadCPSR");
