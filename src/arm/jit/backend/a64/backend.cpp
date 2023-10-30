@@ -39,6 +39,8 @@ void A64Backend::compile(BasicBlock& basic_block) {
         register_allocator.advance();
     }
 
+    assembler.sub(cycles_left_reg, cycles_left_reg, basic_block.cycles);
+
     compile_epilogue();
 
     code_block.protect();

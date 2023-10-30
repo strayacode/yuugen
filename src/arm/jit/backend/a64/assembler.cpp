@@ -139,6 +139,14 @@ void A64Assembler::str(XReg xt, XReg xn, IndexMode index_mode, SignedOffset<9, 0
     }
 }
 
+void A64Assembler::sub(WReg wd, WReg wn, SubImmediate imm) {
+    emit(0xa2 << 23 | imm.value << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::sub(XReg xd, XReg xn, SubImmediate imm) {
+    emit(0x1a2 << 23 | imm.value << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::emit(u32 data) {
     code[num_instructions++] = data;
 }

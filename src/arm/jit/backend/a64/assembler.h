@@ -53,6 +53,25 @@ struct Immediate16 {
     u32 value;
 };
 
+struct SubImmediate {
+    SubImmediate(u64 value) {
+        const u16 masked_value = static_cast<u16>(value & 0xfff);
+        if ((value & 0xfff) == value) {
+            this->value = (0 << 16) | masked_value;
+        } else if ((value & 0xfff000) == value) {
+            this->value = (1 << 16) | masked_value;
+        } else {
+            logger.error("value %016lx can't be encoded in an SubImmediate", value);
+        }
+    }
+
+    static bool is_valid(u64 value) {
+        return ((value & 0xfff) == value) || ((value & 0xfff000) == value);
+    }
+
+    u32 value;
+};
+
 enum class IndexMode {
     Pre,
     Post,
@@ -97,6 +116,9 @@ public:
     // pre/post index
     void str(WReg wt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm);
     void str(XReg xt, XReg xn, IndexMode index_mode, SignedOffset<9, 0> simm);
+
+    void sub(WReg wd, WReg wn, SubImmediate imm);
+    void sub(XReg xd, XReg xn, SubImmediate imm);
 
     template <typename T>
     T get_current_code() {

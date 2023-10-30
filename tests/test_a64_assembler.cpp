@@ -100,6 +100,12 @@ int main() {
     TEST(0xf80fde06, str(arm::x6, arm::x16, arm::IndexMode::Pre, 253))
     TEST(0xf80a8c2d, str(arm::x13, arm::x1, arm::IndexMode::Pre, 168))
 
+    TEST(0x5133a211, sub(arm::w17, arm::w16, 3304))
+    TEST(0x510948af, sub(arm::w15, arm::w5, 594))
+    TEST(0xd1088b3e, sub(arm::x30, arm::x25, 546))
+    TEST(0xd10478ac, sub(arm::x12, arm::x5, 286))
+    TEST(0xd12e98b0, sub(arm::x16, arm::x5, 2982))
+
     code_block.protect();
 
     return 0;
