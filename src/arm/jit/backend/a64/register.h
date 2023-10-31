@@ -21,6 +21,10 @@ struct XReg : public Reg {
     constexpr XReg(u32 id) : Reg(id, 64) {}
 };
 
+enum SystemReg {
+    NZCV = 0xda10,
+};
+
 inline constexpr XReg x0{0};
 inline constexpr XReg x1{1};
 inline constexpr XReg x2{2};

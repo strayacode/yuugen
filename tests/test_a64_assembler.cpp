@@ -64,6 +64,8 @@ int main() {
     TEST(0xd2b5562c, movz(arm::x12, 2863726592))
     TEST(0xd2bbe6f6, movz(arm::x22, 3744923648))
     TEST(0xd2c2e35b, movz(arm::x27, 25400436588544))
+
+    TEST(0xd51b4214, msr(arm::SystemReg::NZCV, arm::x20))
     
     TEST(0xd65f03c0, ret())
     TEST(0xd65f0220, ret(arm::x17))

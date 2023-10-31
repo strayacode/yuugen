@@ -102,6 +102,8 @@ public:
     void movk(WReg wd, Immediate16 imm);
     void movk(XReg xd, Immediate16 imm);
 
+    void msr(SystemReg system_reg, XReg xt);
+
     void ret();
     void ret(XReg rn);
 

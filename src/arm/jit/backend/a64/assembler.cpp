@@ -81,6 +81,10 @@ void A64Assembler::movk(XReg xd, Immediate16 imm) {
     emit(0x1e5 << 23 | imm.value << 5 | xd.id);
 }
 
+void A64Assembler::msr(SystemReg system_reg, XReg xt) {
+    emit(0xd51 << 20 | system_reg << 5 | xt.id);
+}
+
 void A64Assembler::ret() {
     ret(XReg{30});
 }
