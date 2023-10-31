@@ -206,7 +206,6 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
 
 void A64Backend::compile_load_gpr(IRLoadGPR& opcode) {
     u64 gpr_offset = jit.get_offset_to_gpr(opcode.src.gpr, opcode.src.mode);
-    logger.debug("load gpr offset %016lx gpr %d mode %d", gpr_offset, opcode.src.gpr, opcode.src.mode);
     WReg dst_reg = register_allocator.allocate(opcode.dst);
     assembler.ldr(dst_reg, state_reg, gpr_offset);
 }
@@ -292,7 +291,7 @@ void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
     const bool lhs_is_constant = opcode.lhs.is_constant();
     const bool rhs_is_constant = opcode.rhs.is_constant();
     WReg dst_reg = register_allocator.allocate(opcode.dst);
-
+    
     if (lhs_is_constant && rhs_is_constant) {
         u32 result = opcode.lhs.as_constant().value & opcode.rhs.as_constant().value;
         assembler.mov(dst_reg, result);

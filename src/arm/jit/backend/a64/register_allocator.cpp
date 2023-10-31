@@ -40,7 +40,8 @@ void RegisterAllocator::advance() {
 
     for (auto& it : lifetime_map) {
         if (it.second == index) {
-            free_variable(variable_map[it.first]);
+            logger.debug("last use of v%d matches current index %d", it.first, it.second);
+            free_variable(it.first);
         }
     }
 
