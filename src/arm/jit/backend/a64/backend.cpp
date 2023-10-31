@@ -111,13 +111,13 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
     auto type = opcode->get_type();
     switch (type) {
     case IROpcodeType::LoadGPR:
-        logger.todo("handle LoadGPR");
+        compile_load_gpr(*opcode->as<IRLoadGPR>());
         break;
     case IROpcodeType::StoreGPR:
         compile_store_gpr(*opcode->as<IRStoreGPR>());
         break;
     case IROpcodeType::LoadCPSR:
-        logger.todo("handle LoadCPSR");
+        compile_load_cpsr(*opcode->as<IRLoadCPSR>());
         break;
     case IROpcodeType::StoreCPSR:
         logger.todo("handle StoreCPSR");
@@ -203,6 +203,12 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
     }
 }
 
+void A64Backend::compile_load_gpr(IRLoadGPR& opcode) {
+    u64 gpr_offset = jit.get_offset_to_gpr(opcode.src.gpr, opcode.src.mode);
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    assembler.ldr(dst_reg, state_reg, gpr_offset);
+}
+
 void A64Backend::compile_store_gpr(IRStoreGPR& opcode) {
     u64 gpr_offset = jit.get_offset_to_gpr(opcode.dst.gpr, opcode.dst.mode);
 
@@ -216,6 +222,12 @@ void A64Backend::compile_store_gpr(IRStoreGPR& opcode) {
         WReg src_reg = register_allocator.get(src);
         assembler.str(src_reg, state_reg, gpr_offset);
     }
+}
+
+void A64Backend::compile_load_cpsr(IRLoadCPSR& opcode) {
+    u64 cpsr_offset = jit.get_offset_to_cpsr();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    assembler.ldr(dst_reg, state_reg, cpsr_offset);
 }
 
 void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {

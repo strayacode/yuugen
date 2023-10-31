@@ -33,7 +33,9 @@ private:
     void compile_condition_check(Condition condition, Label& label_pass, Label& label_fail);
 
     void compile_ir_opcode(std::unique_ptr<IROpcode>& opcode);
+    void compile_load_gpr(IRLoadGPR& opcode);
     void compile_store_gpr(IRStoreGPR& opcode);
+    void compile_load_cpsr(IRLoadCPSR& opcode);
     void compile_bitwise_and(IRBitwiseAnd& opcode);
     void compile_copy(IRCopy& opcode);
 
