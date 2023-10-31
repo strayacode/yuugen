@@ -26,16 +26,26 @@ void A64Assembler::link(Label& label) {
         
         logger.debug("diff is %p", diff);
         switch (common::get_field<24, 8>(instruction)) {
-        case 0x54: {
+        case 0x14: {
+            // b
             const Offset<28, 2> offset = Offset<28, 2>{static_cast<s64>(diff)};
-            logger.debug("offset value %08x", offset.value);
+            logger.debug("b offset value %08x", offset.value);
             instruction |= offset.value;
+            *label.instruction = instruction;
+            break;
+        }
+        case 0x54: {
+            // b cond
+            const Offset<21, 2> offset = Offset<21, 2>{static_cast<s64>(diff)};
+            logger.debug("b cond offset value %08x", offset.value);
+            instruction |= offset.value << 5;
             *label.instruction = instruction;
             break;
         }
         default:
             logger.todo("handle instruction %08x", instruction);
         }
+
         logger.debug("%08x", *label.instruction);
     }    
 }

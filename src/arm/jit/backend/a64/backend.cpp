@@ -1,3 +1,4 @@
+#include "arm/arithmetic.h"
 #include "arm/jit/backend/a64/backend.h"
 #include "arm/jit/jit.h"
 
@@ -171,7 +172,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle ArithmeticShiftRight");
         break;
     case IROpcodeType::BarrelShifterLogicalShiftLeft:
-        logger.todo("handle BarrelShifterLogicalShiftLeft");
+        compile_barrel_shifter_logical_shift_left(*opcode->as<IRBarrelShifterLogicalShiftLeft>());
         break;
     case IROpcodeType::BarrelShifterLogicalShiftRight:
         logger.todo("handle BarrelShifterLogicalShiftRight");
@@ -205,6 +206,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
 
 void A64Backend::compile_load_gpr(IRLoadGPR& opcode) {
     u64 gpr_offset = jit.get_offset_to_gpr(opcode.src.gpr, opcode.src.mode);
+    logger.debug("load gpr offset %016lx gpr %d mode %d", gpr_offset, opcode.src.gpr, opcode.src.mode);
     WReg dst_reg = register_allocator.allocate(opcode.dst);
     assembler.ldr(dst_reg, state_reg, gpr_offset);
 }
@@ -248,13 +250,66 @@ void A64Backend::compile_logical_shift_right(IRLogicalShiftRight& opcode) {
     }
 }
 
+void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogicalShiftLeft& opcode) {
+    const bool src_is_constant = opcode.src.is_constant();
+    const bool amount_is_constant = opcode.amount.is_constant();
+    WReg result_reg = register_allocator.allocate(opcode.result_and_carry.first);
+    WReg carry_reg = register_allocator.allocate(opcode.result_and_carry.second);
+    WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
+
+    if (opcode.carry.is_constant()) {
+        logger.todo("carry in for barrel shifter lsl being constant was not expected");
+    }
+
+    if (src_is_constant && amount_is_constant) {
+        auto [result, carry] = lsl(opcode.src.as_constant().value, opcode.amount.as_constant().value);
+        assembler.mov(result_reg, result);
+
+        if (carry) {
+            assembler.mov(carry_reg, *carry);
+        } else {
+            assembler.mov(carry_reg, carry_in_reg);
+        }
+    } else if (!src_is_constant && amount_is_constant) {
+        auto& src = opcode.src.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        const u32 amount = opcode.amount.as_constant().value;
+
+        if (amount == 0) {
+            assembler.mov(result_reg, src_reg);
+            assembler.mov(carry_reg, carry_in_reg);
+        } else if (amount >= 32) {
+            logger.todo("barrel shifter lsl handle amount >= 32");
+        } else {
+            logger.todo("barrel shifter lsl handle amount >= 32");
+        }
+    } else {
+        logger.todo("handle barrel shifter lsl case");
+    }
+}
+
 void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
+    const bool lhs_is_constant = opcode.lhs.is_constant();
+    const bool rhs_is_constant = opcode.rhs.is_constant();
     WReg dst_reg = register_allocator.allocate(opcode.dst);
-    if (opcode.lhs.is_constant() && opcode.rhs.is_constant()) {
+
+    if (lhs_is_constant && rhs_is_constant) {
         u32 result = opcode.lhs.as_constant().value & opcode.rhs.as_constant().value;
         assembler.mov(dst_reg, result);
+    } else if (!lhs_is_constant && rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
+        assembler._and(dst_reg, lhs_reg, tmp_imm_reg);
+    } else if (!lhs_is_constant && !rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        auto& rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        assembler._and(dst_reg, lhs_reg, rhs_reg);
     } else {
-        logger.todo("handle bitwise where lhs and rhs aren't constants");
+        logger.todo("handle bitwise and case %s", opcode.to_string().c_str());
     }
 }
 
