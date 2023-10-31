@@ -100,8 +100,8 @@ void A64Backend::compile_condition_check(Condition condition, Label& label_pass,
 
         assembler.msr(SystemReg::NZCV, XReg{tmp_reg.id});
 
-        // assembler.b(condition, label_pass);
-        // assembler.b(Condition::AL, label_fail);
+        assembler.b(condition, label_pass);
+        assembler.b(label_fail);
 
         register_allocator.free_temporaries();
     }

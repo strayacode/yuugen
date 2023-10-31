@@ -5,6 +5,7 @@
 #include "common/bits.h"
 #include "common/logger.h"
 #include "arm/jit/backend/a64/register.h"
+#include "arm/cpu.h"
 
 namespace arm {
 
@@ -78,7 +79,8 @@ enum class IndexMode {
 };
 
 struct Label {
-
+    u32* instruction{nullptr};
+    u32* target{nullptr};
 };
 
 enum class Shift : u32 {
@@ -97,6 +99,9 @@ public:
 
     void _and(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void _and(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
+
+    void b(Label& label);
+    void b(Condition condition, Label& label);
 
     // pre/post index
     void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm);

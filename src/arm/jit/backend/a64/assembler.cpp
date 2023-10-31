@@ -15,7 +15,29 @@ void A64Assembler::dump() {
 }
 
 void A64Assembler::link(Label& label) {
-    logger.error("link label");
+    if (label.instruction != nullptr) {
+        logger.debug("link label to %p", current_code);
+        logger.debug("original instruction %p", label.instruction);
+
+        label.target = current_code;
+
+        u32 instruction = *label.instruction;
+        const uptr diff = reinterpret_cast<uptr>(label.target) - reinterpret_cast<uptr>(label.instruction);
+        
+        logger.debug("diff is %p", diff);
+        switch (common::get_field<24, 8>(instruction)) {
+        case 0x54: {
+            const Offset<28, 2> offset = Offset<28, 2>{static_cast<s64>(diff)};
+            logger.debug("offset value %08x", offset.value);
+            instruction |= offset.value;
+            *label.instruction = instruction;
+            break;
+        }
+        default:
+            logger.todo("handle instruction %08x", instruction);
+        }
+        logger.debug("%08x", *label.instruction);
+    }    
 }
 
 void A64Assembler::_and(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
@@ -24,6 +46,18 @@ void A64Assembler::_and(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
 
 void A64Assembler::_and(XReg xd, XReg xn, XReg xm, Shift shift, u32 amount) {
     emit(0x8a << 24 | static_cast<u32>(shift) << 22 | xm.id << 16 | amount << 10 | xn.id << 5 | xd.id);
+}
+
+void A64Assembler::b(Label& label) {
+    logger.debug("label corresponds to instruction at %p", current_code);
+    label.instruction = current_code;
+    emit(0x5 << 26);
+}
+
+void A64Assembler::b(Condition condition, Label& label) {
+    logger.debug("label corresponds to instruction at %p", current_code);
+    label.instruction = current_code;
+    emit(0x54 << 24 | condition);
 }
 
 void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm) {
@@ -182,6 +216,7 @@ void A64Assembler::sub(XReg xd, XReg xn, SubImmediate imm) {
 }
 
 void A64Assembler::emit(u32 data) {
+    logger.debug("emit %08x to %p", data, current_code);
     *current_code++ = data;
     num_instructions++;
 }
