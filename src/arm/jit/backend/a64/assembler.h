@@ -77,11 +77,16 @@ enum class IndexMode {
     Post,
 };
 
+struct Label {
+
+};
+
 class A64Assembler {
 public:
     A64Assembler(u32* code);
 
     void dump();
+    void link(Label& label);
 
     // pre/post index
     void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm);
@@ -90,6 +95,10 @@ public:
     // signed offset
     void ldp(WReg wt1, WReg wt2, XReg xn, Offset<9, 2> imm = 0);
     void ldp(XReg xt1, XReg xt2, XReg xn, Offset<10, 3> imm = 0);
+
+    // unsigned offset
+    void ldr(WReg wt, XReg xn, Offset<14, 2> pimm = 0);
+    void ldr(XReg xt, XReg xn, Offset<15, 3> pimm = 0);
 
     // convenience function to move a 32-bit imm into a register
     // TODO: see later if we can do optimisations with imm == 0

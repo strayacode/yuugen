@@ -24,19 +24,21 @@ void A64Backend::compile(BasicBlock& basic_block) {
 
     compile_prologue();
 
-    if (basic_block.condition != Condition::AL) {
-        logger.todo("handle conditional basic block");
+    Label label_pass;
+    Label label_fail;
+
+    compile_condition_check(basic_block.condition, label_pass, label_fail);
+
+    // assembler.link(label_pass);
+
+    if (basic_block.condition != Condition::NV) {
+        for (auto& opcode : basic_block.opcodes) {
+            compile_ir_opcode(opcode);
+            register_allocator.advance();
+        }
     }
 
-    if (basic_block.condition == Condition::NV) {
-        logger.todo("handle basic block that never runs");
-    }
-
-    for (auto& opcode : basic_block.opcodes) {
-        compile_ir_opcode(opcode);
-        register_allocator.advance();
-    }
-
+    // assembler.link(label_fail);
     assembler.sub(cycles_left_reg, cycles_left_reg, basic_block.cycles);
 
     compile_epilogue();
@@ -84,6 +86,25 @@ void A64Backend::compile_epilogue() {
     assembler.ldp(x19, x20, sp, IndexMode::Post, 96);
 
     assembler.ret();
+}
+
+void A64Backend::compile_condition_check(Condition condition, Label& label_pass, Label& label_fail) {
+    // if (condition != Condition::AL && condition != Condition::NV) {
+    //     WReg tmp_reg = register_allocator.allocate_temporary();
+    //     assembler.ldr(tmp_reg, state_reg, jit.get_offset_to_cpsr());
+
+    //     WReg tmp_mask_reg = register_allocator.allocate_temporary();
+    //     assembler.mov(tmp_mask_reg, 0xf0000000);
+
+    //     assembler.and(tmp_reg, tmp_reg, tmp_mask_reg);
+
+    //     assembler.msr(SystemReg::NZCV, XReg{tmp_reg.id});
+
+    //     assembler.b(condition, label_pass);
+    //     assembler.b(Condition::AL, label_fail);
+
+    //     register_allocator.free_temporaries();
+    // }
 }
 
 void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {

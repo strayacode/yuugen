@@ -30,6 +30,7 @@ private:
 
     void compile_prologue();
     void compile_epilogue();
+    void compile_condition_check(Condition condition, Label& label_pass, Label& label_fail);
 
     void compile_ir_opcode(std::unique_ptr<IROpcode>& opcode);
     void compile_store_gpr(IRStoreGPR& opcode);

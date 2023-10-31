@@ -14,6 +14,10 @@ void A64Assembler::dump() {
     }
 }
 
+void A64Assembler::link(Label& label) {
+    logger.error("link label");
+}
+
 void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
@@ -42,6 +46,14 @@ void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, Offset<9, 2> imm) {
 
 void A64Assembler::ldp(XReg xt1, XReg xt2, XReg xn, Offset<10, 3> imm) {
     emit(0x2a5 << 22 | imm.value << 15 | xt2.id << 10 | xn.id << 5 | xt1.id);
+}
+
+void A64Assembler::ldr(WReg wt, XReg xn, Offset<14, 2> pimm) {
+    emit(0x2e5 << 22 | pimm.value << 10 | xn.id << 5 | wt.id);
+}
+
+void A64Assembler::ldr(XReg xt, XReg xn, Offset<15, 3> pimm) {
+    emit(0x3e5 << 22 | pimm.value << 10 | xn.id << 5 | xt.id);
 }
 
 void A64Assembler::mov(WReg wd, u32 imm) {
