@@ -29,7 +29,7 @@ void A64Backend::compile(BasicBlock& basic_block) {
 
     compile_condition_check(basic_block.condition, label_pass, label_fail);
 
-    // assembler.link(label_pass);
+    assembler.link(label_pass);
 
     if (basic_block.condition != Condition::NV) {
         for (auto& opcode : basic_block.opcodes) {
@@ -38,7 +38,7 @@ void A64Backend::compile(BasicBlock& basic_block) {
         }
     }
 
-    // assembler.link(label_fail);
+    assembler.link(label_fail);
     assembler.sub(cycles_left_reg, cycles_left_reg, basic_block.cycles);
 
     compile_epilogue();
@@ -89,22 +89,22 @@ void A64Backend::compile_epilogue() {
 }
 
 void A64Backend::compile_condition_check(Condition condition, Label& label_pass, Label& label_fail) {
-    // if (condition != Condition::AL && condition != Condition::NV) {
-    //     WReg tmp_reg = register_allocator.allocate_temporary();
-    //     assembler.ldr(tmp_reg, state_reg, jit.get_offset_to_cpsr());
+    if (condition != Condition::AL && condition != Condition::NV) {
+        WReg tmp_reg = register_allocator.allocate_temporary();
+        assembler.ldr(tmp_reg, state_reg, jit.get_offset_to_cpsr());
 
-    //     WReg tmp_mask_reg = register_allocator.allocate_temporary();
-    //     assembler.mov(tmp_mask_reg, 0xf0000000);
+        WReg tmp_mask_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_mask_reg, 0xf0000000);
 
-    //     assembler.and(tmp_reg, tmp_reg, tmp_mask_reg);
+        assembler._and(tmp_reg, tmp_reg, tmp_mask_reg);
 
-    //     assembler.msr(SystemReg::NZCV, XReg{tmp_reg.id});
+        assembler.msr(SystemReg::NZCV, XReg{tmp_reg.id});
 
-    //     assembler.b(condition, label_pass);
-    //     assembler.b(Condition::AL, label_fail);
+        // assembler.b(condition, label_pass);
+        // assembler.b(Condition::AL, label_fail);
 
-    //     register_allocator.free_temporaries();
-    // }
+        register_allocator.free_temporaries();
+    }
 }
 
 void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {

@@ -81,12 +81,22 @@ struct Label {
 
 };
 
+enum class Shift : u32 {
+    LSL = 0,
+    LSR = 1,
+    ASR = 2,
+    ROR = 3,
+};
+
 class A64Assembler {
 public:
     A64Assembler(u32* code);
 
     void dump();
     void link(Label& label);
+
+    void _and(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
+    void _and(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
     // pre/post index
     void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm);

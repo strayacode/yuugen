@@ -22,11 +22,11 @@ public:
 
     // gets the register corresponding to an already allocated ir variable
     WReg get(IRVariable variable);
-
-private:
+    
     // frees all temporary registers
     void free_temporaries();
 
+private:
     void free_variable(u32 var_id);
 
     u32 current_index{0};
