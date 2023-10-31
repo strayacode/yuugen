@@ -57,6 +57,18 @@ int main() {
     TEST(0xf94a36b7, ldr(arm::x23, arm::x21, 5224))
     TEST(0xf96d8b38, ldr(arm::x24, arm::x25, 23312))
 
+    TEST(0x53157dee, lsr(arm::w14, arm::w15, 21))
+    TEST(0x53117d59, lsr(arm::w25, arm::w10, 17))
+    TEST(0xd37cff9a, lsr(arm::x26, arm::x28, 60))
+    TEST(0xd36afc35, lsr(arm::x21, arm::x1, 42))
+    TEST(0xd37eff6d, lsr(arm::x13, arm::x27, 62))
+    TEST(0x1ac32537, lsr(arm::w23, arm::w9, arm::w3))
+    TEST(0x1adc268a, lsr(arm::w10, arm::w20, arm::w28))
+    TEST(0x1ad027df, lsr(arm::wzr, arm::w30, arm::w16))
+    TEST(0x9ac626b5, lsr(arm::x21, arm::x21, arm::x6))
+    TEST(0x9acb251d, lsr(arm::x29, arm::x8, arm::x11))
+    TEST(0x9ad42493, lsr(arm::x19, arm::x4, arm::x20))
+
     TEST(0x52a08000, mov(arm::w0, 0x04000000))
     TEST(0x2a1b03f2, mov(arm::w18, arm::w27))
     TEST(0x2a1603e5, mov(arm::w5, arm::w22))

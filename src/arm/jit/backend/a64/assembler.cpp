@@ -98,6 +98,22 @@ void A64Assembler::ldr(XReg xt, XReg xn, Offset<15, 3> pimm) {
     emit(0x3e5 << 22 | pimm.value << 10 | xn.id << 5 | xt.id);
 }
 
+void A64Assembler::lsr(WReg wd, WReg wn, u32 amount) {
+    emit(0x14c << 22 | amount << 16 | 0x1f << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::lsr(XReg xd, XReg xn, u32 amount) {
+    emit(0x34d << 22 | amount << 16 | 0x3f << 10 | xn.id << 5 | xd.id);
+}
+
+void A64Assembler::lsr(WReg wd, WReg wn, WReg wm) {
+    emit(0xd6 << 21 | wm.id << 16 | 0x9 << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::lsr(XReg xd, XReg xn, XReg xm) {
+    emit(0x4d6 << 21 | xm.id << 16 | 0x9 << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::mov(WReg wd, u32 imm) {
     if (Immediate16::is_valid(imm)) {
         movz(wd, imm);

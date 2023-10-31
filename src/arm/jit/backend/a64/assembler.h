@@ -115,6 +115,11 @@ public:
     void ldr(WReg wt, XReg xn, Offset<14, 2> pimm = 0);
     void ldr(XReg xt, XReg xn, Offset<15, 3> pimm = 0);
 
+    void lsr(WReg wd, WReg wn, u32 amount);
+    void lsr(XReg xd, XReg xn, u32 amount);
+    void lsr(WReg wd, WReg wn, WReg wm);
+    void lsr(XReg xd, XReg xn, XReg xm);
+
     // convenience function to move a 32-bit imm into a register
     // TODO: see later if we can do optimisations with imm == 0
     void mov(WReg wd, u32 imm);
