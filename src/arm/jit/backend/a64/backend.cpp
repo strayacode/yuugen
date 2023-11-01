@@ -513,13 +513,13 @@ void A64Backend::compile_compare(IRCompare& opcode) {
 
         switch (opcode.compare_type) {
         case CompareType::Equal:
-            logger.todo("handle compare eq");
+            assembler.cset(dst_reg, Condition::EQ);
             break;
         case CompareType::LessThan:
             logger.todo("handle compare lt");
             break;
         case CompareType::GreaterEqual:
-            logger.todo("handle compare ge");
+            assembler.cset(dst_reg, Condition::GE);
             break;
         case CompareType::GreaterThan:
             logger.todo("handle compare gt");
