@@ -6,6 +6,19 @@ namespace arm {
 
 A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code()), jit(jit) {}
 
+// TODO: put memory stuff in separate file
+void write_byte(Jit* jit, u32 addr, u8 data) {
+    jit->write_byte(addr, data);
+}
+
+void write_half(Jit* jit, u32 addr, u16 data) {
+    jit->write_half(addr, data);
+}
+
+void write_word(Jit* jit, u32 addr, u32 data) {
+    jit->write_word(addr, data);
+}
+
 void A64Backend::reset() {
     code_cache.reset();
 }
@@ -53,7 +66,6 @@ void A64Backend::compile(BasicBlock& basic_block) {
 
 int A64Backend::run(Location location, int cycles_left) {
     JitFunction jit_fn = code_cache.get(location);
-    logger.warn("jit state %p jit %p", &jit.state, &jit);
     return jit_fn(&jit, cycles_left);
 }
 
@@ -205,7 +217,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_copy(*opcode->as<IRCopy>());
         break;
     case IROpcodeType::MemoryWrite:
-        logger.todo("handle MemoryWrite");
+        compile_memory_write(*opcode->as<IRMemoryWrite>());
         break;
     case IROpcodeType::MemoryRead:
         logger.todo("handle MemoryRead");
@@ -401,8 +413,35 @@ void A64Backend::compile_copy(IRCopy& opcode) {
 }
 
 void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
-    logger.todo("handle memory write");
-    // assembler.bl()
+    if (opcode.addr.is_constant()) {
+        logger.todo("handle potential constant address optimisation");
+    }
+
+    if (opcode.src.is_constant()) {
+        logger.todo("handle constant value for memory write");
+    } else {
+        WReg addr_reg = register_allocator.get(opcode.addr.as_variable());
+        WReg src_reg = register_allocator.get(opcode.src.as_variable());
+
+        // move jit pointer into x0
+        assembler.mov(x0, jit_reg);
+
+        // move addr and src into x1 and x2 respectively
+        assembler.mov(w1, addr_reg);
+        assembler.mov(w2, src_reg);
+        
+        switch (opcode.access_size) {
+        case AccessSize::Byte:
+            assembler.bl(reinterpret_cast<void*>(write_byte));
+            break;
+        case AccessSize::Half:
+            assembler.bl(reinterpret_cast<void*>(write_half));
+            break;
+        case AccessSize::Word:
+            assembler.bl(reinterpret_cast<void*>(write_word));
+            break;
+        }
+    }
 }
 
 } // namespace arm

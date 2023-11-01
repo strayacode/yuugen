@@ -79,7 +79,9 @@ void A64Assembler::b(Condition condition, Label& label) {
 }
 
 void A64Assembler::bl(void* function_address) {
-    logger.todo("handle bl with function address");
+    const uptr diff = reinterpret_cast<uptr>(function_address) - reinterpret_cast<uptr>(current_code);
+    const Offset<28, 2> offset = Offset<28, 2>{static_cast<s64>(diff)};
+    bl(offset);
 }
 
 void A64Assembler::bl(Offset<28, 2> label) {

@@ -21,9 +21,14 @@ struct Offset {
 
 struct Immediate16 {
     Immediate16(u64 value) {
+        if (value == 0) {
+            this->value = 0;
+            return;
+        }
+
         int shift = 0;
         while (value != 0) {
-            const u16 masked_value = static_cast<u16>(value & 0xffff);
+            const u16 masked_value = static_cast<u16>(value);
             if (masked_value == value) {
                 this->value = (shift << 16) | masked_value;
                 return;
