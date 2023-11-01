@@ -142,7 +142,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_load_cpsr(*opcode->as<IRLoadCPSR>());
         break;
     case IROpcodeType::StoreCPSR:
-        logger.todo("handle StoreCPSR");
+        compile_store_cpsr(*opcode->as<IRStoreCPSR>());
         break;
     case IROpcodeType::LoadSPSR:
         logger.todo("handle LoadSPSR");
@@ -250,6 +250,21 @@ void A64Backend::compile_load_cpsr(IRLoadCPSR& opcode) {
     u64 cpsr_offset = jit.get_offset_to_cpsr();
     WReg dst_reg = register_allocator.allocate(opcode.dst);
     assembler.ldr(dst_reg, jit_reg, cpsr_offset);
+}
+
+void A64Backend::compile_store_cpsr(IRStoreCPSR& opcode) {
+    u64 cpsr_offset = jit.get_offset_to_cpsr();
+
+    if (opcode.src.is_constant()) {
+        auto& src = opcode.src.as_constant();
+        WReg tmp_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_reg, src.value);
+        assembler.str(tmp_reg, jit_reg, cpsr_offset);
+    } else {
+        auto& src = opcode.src.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        assembler.str(src_reg, jit_reg, cpsr_offset);
+    }
 }
 
 void A64Backend::compile_logical_shift_left(IRLogicalShiftLeft& opcode) {
