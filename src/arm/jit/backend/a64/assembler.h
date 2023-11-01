@@ -120,6 +120,9 @@ public:
     void cset(WReg wd, Condition condition);
     void cset(XReg xd, Condition condition);
 
+    void eor(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
+    void eor(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
+
     // pre/post index
     void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm);
     void ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Offset<10, 3> imm);

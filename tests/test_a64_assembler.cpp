@@ -50,6 +50,13 @@ int main() {
     TEST(0x9a9f17f1, cset(arm::x17, arm::Condition::EQ))
     TEST(0x9a9fb7ed, cset(arm::x13, arm::Condition::GE))
 
+    TEST(0x4aca4192, eor(arm::w18, arm::w12, arm::w10, arm::Shift::ROR, 16))
+    TEST(0x4a16409b, eor(arm::w27, arm::w4, arm::w22, arm::Shift::LSL, 16))
+    TEST(0x4a1b2c0e, eor(arm::w14, arm::w0, arm::w27, arm::Shift::LSL, 11))
+    TEST(0xca1512ba, eor(arm::x26, arm::x21, arm::x21, arm::Shift::LSL, 4))
+    TEST(0xcadca40f, eor(arm::x15, arm::x0, arm::x28, arm::Shift::ROR, 41))
+    TEST(0xca450f15, eor(arm::x21, arm::x24, arm::x5, arm::Shift::LSR, 3))
+
     TEST(0x28de404b, ldp(arm::w11, arm::w16, arm::x2, arm::IndexMode::Post, 240))
     TEST(0x28f72aed, ldp(arm::w13, arm::w10, arm::x23, arm::IndexMode::Post, -72))
     TEST(0x28d4aff5, ldp(arm::w21, arm::w11, arm::sp, arm::IndexMode::Post, 164))
