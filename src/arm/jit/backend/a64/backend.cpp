@@ -160,7 +160,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_bitwise_and(*opcode->as<IRBitwiseAnd>());
         break;
     case IROpcodeType::BitwiseOr:
-        logger.todo("handle BitwiseOr");
+        compile_bitwise_or(*opcode->as<IRBitwiseOr>());
         break;
     case IROpcodeType::BitwiseNot:
         compile_bitwise_not(*opcode->as<IRBitwiseNot>());
@@ -390,6 +390,31 @@ void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
         assembler._and(dst_reg, lhs_reg, rhs_reg);
     } else {
         logger.todo("handle bitwise and case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_bitwise_or(IRBitwiseOr& opcode) {
+    const bool lhs_is_constant = opcode.lhs.is_constant();
+    const bool rhs_is_constant = opcode.rhs.is_constant();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    
+    if (lhs_is_constant && rhs_is_constant) {
+        u32 result = opcode.lhs.as_constant().value & opcode.rhs.as_constant().value;
+        assembler.mov(dst_reg, result);
+    } else if (!lhs_is_constant && rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
+        assembler.orr(dst_reg, lhs_reg, tmp_imm_reg);
+    } else if (!lhs_is_constant && !rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        auto& rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        assembler.orr(dst_reg, lhs_reg, rhs_reg);
+    } else {
+        logger.todo("handle bitwise or case %s", opcode.to_string().c_str());
     }
 }
 

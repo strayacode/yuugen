@@ -207,6 +207,14 @@ void A64Assembler::mvn(XReg xd, XReg xm, Shift shift, u32 amount) {
     emit(0xaa << 24 | static_cast<u32>(shift) << 22 | 0x1 << 21 | xm.id << 16 | amount << 10 | 0x1f << 5 | xd.id);
 }
 
+void A64Assembler::orr(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
+    emit(0x2a << 24 | static_cast<u32>(shift) << 22 | wm.id << 16 | amount << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::orr(XReg xd, XReg xn, XReg xm, Shift shift, u32 amount) {
+    emit(0xaa << 24 | static_cast<u32>(shift) << 22 | xm.id << 16 | amount << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::ret() {
     ret(XReg{30});
 }

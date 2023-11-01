@@ -152,6 +152,9 @@ public:
     void mvn(WReg wd, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void mvn(XReg xd, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
+    void orr(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
+    void orr(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
+
     void ret();
     void ret(XReg rn);
 

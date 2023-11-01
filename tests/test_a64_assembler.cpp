@@ -113,6 +113,12 @@ int main() {
     TEST(0xaa2bbbff, mvn(arm::xzr, arm::x11, arm::Shift::LSL, 46))
     TEST(0xaa7abff4, mvn(arm::x20, arm::x26, arm::Shift::LSR, 47))
     TEST(0xaa786beb, mvn(arm::x11, arm::x24, arm::Shift::LSR, 26))
+
+    TEST(0x2add28ac, orr(arm::w12, arm::w5, arm::w29, arm::Shift::ROR, 10))
+    TEST(0x2a556110, orr(arm::w16, arm::w8, arm::w21, arm::Shift::LSR, 24))
+    TEST(0xaa977e5e, orr(arm::x30, arm::x18, arm::x23, arm::Shift::ASR, 31))
+    TEST(0xaa949fd6, orr(arm::x22, arm::x30, arm::x20, arm::Shift::ASR, 39))
+    TEST(0xaa918fd6, orr(arm::x22, arm::x30, arm::x17, arm::Shift::ASR, 35))
     
     TEST(0xd65f03c0, ret())
     TEST(0xd65f0220, ret(arm::x17))
