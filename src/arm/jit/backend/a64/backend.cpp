@@ -28,7 +28,7 @@ void A64Backend::compile(BasicBlock& basic_block) {
     Label label_pass;
     Label label_fail;
 
-    compile_condition_check(basic_block.condition, label_pass, label_fail);
+    compile_condition_check(basic_block, label_pass, label_fail);
 
     assembler.link(label_pass);
 
@@ -89,8 +89,8 @@ void A64Backend::compile_epilogue() {
     assembler.ret();
 }
 
-void A64Backend::compile_condition_check(Condition condition, Label& label_pass, Label& label_fail) {
-    if (condition != Condition::AL && condition != Condition::NV) {
+void A64Backend::compile_condition_check(BasicBlock& basic_block, Label& label_pass, Label& label_fail) {
+    if (basic_block.condition != Condition::AL && basic_block.condition != Condition::NV) {
         WReg tmp_reg = register_allocator.allocate_temporary();
         assembler.ldr(tmp_reg, state_reg, jit.get_offset_to_cpsr());
 
@@ -101,7 +101,15 @@ void A64Backend::compile_condition_check(Condition condition, Label& label_pass,
 
         assembler.msr(SystemReg::NZCV, XReg{tmp_reg.id});
 
-        assembler.b(condition, label_pass);
+        assembler.b(basic_block.condition, label_pass);
+
+        // update pc to be after block when the condition fails
+        u32 pc_after_block = basic_block.location.get_address() + (basic_block.num_instructions * basic_block.location.get_instruction_size()) + 8;
+        
+        WReg tmp_pc_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_pc_reg, pc_after_block);
+        assembler.str(tmp_pc_reg, state_reg, jit.get_offset_to_gpr(GPR::PC, Mode::USR));
+        
         assembler.b(label_fail);
 
         register_allocator.free_temporaries();
