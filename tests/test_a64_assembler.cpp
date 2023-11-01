@@ -143,11 +143,14 @@ int main() {
     TEST(0xf90ada92, str(arm::x18, arm::x20, 5552))
     TEST(0xf92357b6, str(arm::x22, arm::x29, 18088))
 
-    TEST(0x5133a211, sub(arm::w17, arm::w16, 3304))
-    TEST(0x510948af, sub(arm::w15, arm::w5, 594))
-    TEST(0xd1088b3e, sub(arm::x30, arm::x25, 546))
-    TEST(0xd10478ac, sub(arm::x12, arm::x5, 286))
-    TEST(0xd12e98b0, sub(arm::x16, arm::x5, 2982))
+    TEST(0x5133a211, sub(arm::w17, arm::w16, arm::SubImmediate{3304}))
+    TEST(0x510948af, sub(arm::w15, arm::w5, arm::SubImmediate{594}))
+    TEST(0xd1088b3e, sub(arm::x30, arm::x25, arm::SubImmediate{546}))
+    TEST(0xd10478ac, sub(arm::x12, arm::x5, arm::SubImmediate{286}))
+    TEST(0xd12e98b0, sub(arm::x16, arm::x5, arm::SubImmediate{2982}))
+    TEST(0x4b8b06d7, sub(arm::w23, arm::w22, arm::w11, arm::Shift::ASR, 1))
+    TEST(0xcb4adab1, sub(arm::x17, arm::x21, arm::x10, arm::Shift::LSR, 54))
+    TEST(0xcb9656de, sub(arm::x30, arm::x22, arm::x22, arm::Shift::ASR, 21))
 
     code_block.protect();
 

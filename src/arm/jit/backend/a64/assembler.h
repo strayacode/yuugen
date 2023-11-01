@@ -165,6 +165,8 @@ public:
 
     void sub(WReg wd, WReg wn, SubImmediate imm);
     void sub(XReg xd, XReg xn, SubImmediate imm);
+    void sub(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
+    void sub(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
     template <typename T>
     T get_current_code() {

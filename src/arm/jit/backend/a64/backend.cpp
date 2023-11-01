@@ -53,7 +53,7 @@ void A64Backend::compile(BasicBlock& basic_block) {
     }
 
     assembler.link(label_fail);
-    assembler.sub(cycles_left_reg, cycles_left_reg, basic_block.cycles);
+    assembler.sub(cycles_left_reg, cycles_left_reg, SubImmediate{static_cast<u64>(basic_block.cycles)});
 
     compile_epilogue();
 
@@ -175,7 +175,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle AddLong");
         break;
     case IROpcodeType::Subtract:
-        logger.todo("handle Subtract");
+        compile_subtract(*opcode->as<IRSubtract>());
         break;
     case IROpcodeType::Multiply:
         logger.todo("handle Multiply");
@@ -395,6 +395,31 @@ void A64Backend::compile_add(IRAdd& opcode) {
         auto& rhs = opcode.rhs.as_variable();
         WReg rhs_reg = register_allocator.get(rhs);
         assembler.add(dst_reg, lhs_reg, rhs_reg);
+    } else {
+        logger.todo("handle add case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_subtract(IRSubtract& opcode) {
+    const bool lhs_is_constant = opcode.lhs.is_constant();
+    const bool rhs_is_constant = opcode.rhs.is_constant();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    
+    if (lhs_is_constant && rhs_is_constant) {
+        u32 result = opcode.lhs.as_constant().value + opcode.rhs.as_constant().value;
+        assembler.mov(dst_reg, result);
+    } else if (!lhs_is_constant && rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
+        assembler.sub(dst_reg, lhs_reg, tmp_imm_reg);
+    } else if (!lhs_is_constant && !rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        auto& rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        assembler.sub(dst_reg, lhs_reg, rhs_reg);
     } else {
         logger.todo("handle add case %s", opcode.to_string().c_str());
     }

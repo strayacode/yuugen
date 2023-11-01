@@ -38,6 +38,7 @@ private:
     void compile_load_cpsr(IRLoadCPSR& opcode);
     void compile_bitwise_and(IRBitwiseAnd& opcode);
     void compile_add(IRAdd& opcode);
+    void compile_subtract(IRSubtract& opcode);
     void compile_logical_shift_right(IRLogicalShiftRight& opcode);
     void compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogicalShiftLeft& opcode);
     void compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogicalShiftRight& opcode);
