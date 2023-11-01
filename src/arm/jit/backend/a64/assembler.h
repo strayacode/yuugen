@@ -126,6 +126,11 @@ public:
     void ldr(WReg wt, XReg xn, Offset<14, 2> pimm = 0);
     void ldr(XReg xt, XReg xn, Offset<15, 3> pimm = 0);
 
+    void lsl(WReg wd, WReg wn, u32 amount);
+    void lsl(XReg xd, XReg xn, u32 amount);
+    void lsl(WReg wd, WReg wn, WReg wm);
+    void lsl(XReg xd, XReg xn, XReg xm);
+
     void lsr(WReg wd, WReg wn, u32 amount);
     void lsr(XReg xd, XReg xn, u32 amount);
     void lsr(WReg wd, WReg wn, WReg wm);

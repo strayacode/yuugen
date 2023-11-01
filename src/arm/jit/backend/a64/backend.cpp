@@ -184,7 +184,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle MultiplyLong");
         break;
     case IROpcodeType::LogicalShiftLeft:
-        logger.todo("handle LogicalShiftLeft");
+        compile_logical_shift_left(*opcode->as<IRLogicalShiftLeft>());
         break;
     case IROpcodeType::LogicalShiftRight:
         compile_logical_shift_right(*opcode->as<IRLogicalShiftRight>());
@@ -250,6 +250,24 @@ void A64Backend::compile_load_cpsr(IRLoadCPSR& opcode) {
     u64 cpsr_offset = jit.get_offset_to_cpsr();
     WReg dst_reg = register_allocator.allocate(opcode.dst);
     assembler.ldr(dst_reg, jit_reg, cpsr_offset);
+}
+
+void A64Backend::compile_logical_shift_left(IRLogicalShiftLeft& opcode) {
+    const bool src_is_constant = opcode.src.is_constant();
+    const bool amount_is_constant = opcode.amount.is_constant();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+
+    if (src_is_constant && amount_is_constant) {
+        u32 result = opcode.src.as_constant().value << opcode.amount.as_constant().value;
+        assembler.mov(dst_reg, result);
+    } else if (!src_is_constant && amount_is_constant) {
+        auto& src = opcode.src.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        const u32 amount = opcode.amount.as_constant().value & 0x1f;
+        assembler.lsl(dst_reg, src_reg, amount);
+    } else {
+        logger.todo("handle lsl case");
+    }
 }
 
 void A64Backend::compile_logical_shift_right(IRLogicalShiftRight& opcode) {
