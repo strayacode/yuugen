@@ -24,9 +24,9 @@ public:
 
 private:
     // return value: the cycles left after running the jit function (w0)
-    // argument 1: a 64-bit pointer to the cpu state (x0)
+    // argument 1: a 64-bit pointer to the Jit class (x0)
     // argument 2: the cycles left (w1)
-    using JitFunction = int (*)(State* state, int cycles_left);
+    using JitFunction = int (*)(Jit* jit, int cycles_left);
 
     void compile_prologue();
     void compile_epilogue();
@@ -42,6 +42,7 @@ private:
     void compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogicalShiftLeft& opcode);
     void compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogicalShiftRight& opcode);
     void compile_copy(IRCopy& opcode);
+    void compile_memory_write(IRMemoryWrite& opcode);
 
     CodeCache<JitFunction> code_cache;
     CodeBlock code_block;
@@ -50,7 +51,7 @@ private:
 
     static constexpr int CODE_CACHE_SIZE = 16 * 1024 * 1024;
 
-    static constexpr XReg state_reg = x19;
+    static constexpr XReg jit_reg = x19;
     static constexpr WReg cycles_left_reg = w20;
 
     // we have w21, w22, w23, w24, w25, w26, w27 and w28 available for register allocation

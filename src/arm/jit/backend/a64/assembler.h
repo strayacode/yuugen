@@ -106,6 +106,9 @@ public:
     void b(Label& label);
     void b(Condition condition, Label& label);
 
+    void bl(void* function_address);
+    void bl(Offset<28, 2> label);
+
     // pre/post index
     void ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm);
     void ldp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Offset<10, 3> imm);

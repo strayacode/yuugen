@@ -53,7 +53,8 @@ void A64Backend::compile(BasicBlock& basic_block) {
 
 int A64Backend::run(Location location, int cycles_left) {
     JitFunction jit_fn = code_cache.get(location);
-    return jit_fn(&jit.state, cycles_left);
+    logger.warn("jit state %p jit %p", &jit.state, &jit);
+    return jit_fn(&jit, cycles_left);
 }
 
 void A64Backend::compile_prologue() {
@@ -65,8 +66,8 @@ void A64Backend::compile_prologue() {
     assembler.stp(x27, x28, sp, 64);
     assembler.stp(x29, x30, sp, 80);
 
-    // store the cpu state pointer into the pinned register
-    assembler.mov(state_reg, x0);
+    // store the jit pointer into the pinned register
+    assembler.mov(jit_reg, x0);
 
     // store the cycles left into the cycles left pinned register
     assembler.mov(cycles_left_reg, w1);
@@ -92,7 +93,7 @@ void A64Backend::compile_epilogue() {
 void A64Backend::compile_condition_check(BasicBlock& basic_block, Label& label_pass, Label& label_fail) {
     if (basic_block.condition != Condition::AL && basic_block.condition != Condition::NV) {
         WReg tmp_reg = register_allocator.allocate_temporary();
-        assembler.ldr(tmp_reg, state_reg, jit.get_offset_to_cpsr());
+        assembler.ldr(tmp_reg, jit_reg, jit.get_offset_to_cpsr());
 
         WReg tmp_mask_reg = register_allocator.allocate_temporary();
         assembler.mov(tmp_mask_reg, 0xf0000000);
@@ -108,7 +109,7 @@ void A64Backend::compile_condition_check(BasicBlock& basic_block, Label& label_p
         
         WReg tmp_pc_reg = register_allocator.allocate_temporary();
         assembler.mov(tmp_pc_reg, pc_after_block);
-        assembler.str(tmp_pc_reg, state_reg, jit.get_offset_to_gpr(GPR::PC, Mode::USR));
+        assembler.str(tmp_pc_reg, jit_reg, jit.get_offset_to_gpr(GPR::PC, Mode::USR));
         
         assembler.b(label_fail);
 
@@ -215,7 +216,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
 void A64Backend::compile_load_gpr(IRLoadGPR& opcode) {
     u64 gpr_offset = jit.get_offset_to_gpr(opcode.src.gpr, opcode.src.mode);
     WReg dst_reg = register_allocator.allocate(opcode.dst);
-    assembler.ldr(dst_reg, state_reg, gpr_offset);
+    assembler.ldr(dst_reg, jit_reg, gpr_offset);
 }
 
 void A64Backend::compile_store_gpr(IRStoreGPR& opcode) {
@@ -225,18 +226,18 @@ void A64Backend::compile_store_gpr(IRStoreGPR& opcode) {
         auto& src = opcode.src.as_constant();
         WReg tmp_reg = register_allocator.allocate_temporary();
         assembler.mov(tmp_reg, src.value);
-        assembler.str(tmp_reg, state_reg, gpr_offset);
+        assembler.str(tmp_reg, jit_reg, gpr_offset);
     } else {
         auto& src = opcode.src.as_variable();
         WReg src_reg = register_allocator.get(src);
-        assembler.str(src_reg, state_reg, gpr_offset);
+        assembler.str(src_reg, jit_reg, gpr_offset);
     }
 }
 
 void A64Backend::compile_load_cpsr(IRLoadCPSR& opcode) {
     u64 cpsr_offset = jit.get_offset_to_cpsr();
     WReg dst_reg = register_allocator.allocate(opcode.dst);
-    assembler.ldr(dst_reg, state_reg, cpsr_offset);
+    assembler.ldr(dst_reg, jit_reg, cpsr_offset);
 }
 
 void A64Backend::compile_logical_shift_right(IRLogicalShiftRight& opcode) {
@@ -397,6 +398,11 @@ void A64Backend::compile_copy(IRCopy& opcode) {
         WReg src_reg = register_allocator.get(src);
         assembler.mov(dst_reg, src_reg);
     }
+}
+
+void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
+    logger.todo("handle memory write");
+    // assembler.bl()
 }
 
 } // namespace arm

@@ -78,6 +78,14 @@ void A64Assembler::b(Condition condition, Label& label) {
     emit(0x54 << 24 | condition);
 }
 
+void A64Assembler::bl(void* function_address) {
+    logger.todo("handle bl with function address");
+}
+
+void A64Assembler::bl(Offset<28, 2> label) {
+    emit(0x25 << 26 | label.value);
+}
+
 void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
