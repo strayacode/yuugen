@@ -97,6 +97,9 @@ public:
     void dump();
     void link(Label& label);
 
+    void add(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
+    void add(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
+
     void _and(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void _and(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 

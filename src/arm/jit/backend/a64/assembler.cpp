@@ -50,6 +50,14 @@ void A64Assembler::link(Label& label) {
     }    
 }
 
+void A64Assembler::add(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
+    emit(0xb << 24 | static_cast<u32>(shift) << 22 | wm.id << 16 | amount << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::add(XReg xd, XReg xn, XReg xm, Shift shift, u32 amount) {
+    emit(0x8b << 24 | static_cast<u32>(shift) << 22 | xm.id << 16 | amount << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::_and(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
     emit(0xa << 24 | static_cast<u32>(shift) << 22 | wm.id << 16 | amount << 10 | wn.id << 5 | wd.id);
 }

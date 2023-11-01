@@ -37,8 +37,10 @@ private:
     void compile_store_gpr(IRStoreGPR& opcode);
     void compile_load_cpsr(IRLoadCPSR& opcode);
     void compile_bitwise_and(IRBitwiseAnd& opcode);
+    void compile_add(IRAdd& opcode);
     void compile_logical_shift_right(IRLogicalShiftRight& opcode);
     void compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogicalShiftLeft& opcode);
+    void compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogicalShiftRight& opcode);
     void compile_copy(IRCopy& opcode);
 
     CodeCache<JitFunction> code_cache;

@@ -25,6 +25,11 @@ int main() {
         check_values(STRINGIZE(command), expected, assembler.get_code()[assembler.get_num_instructions() - 1]); \
 
     // credit to oaknut for the tests
+    TEST(0x0b874fb9, add(arm::w25, arm::w29, arm::w7, arm::Shift::ASR, 19))
+    TEST(0x0b446a2c, add(arm::w12, arm::w17, arm::w4, arm::Shift::LSR, 26))
+    TEST(0x8b494f4d, add(arm::x13, arm::x26, arm::x9, arm::Shift::LSR, 19))
+    TEST(0x8b5ff514, add(arm::x20, arm::x8, arm::xzr, arm::Shift::LSR, 61))
+
     TEST(0x0a071d7d, _and(arm::w29, arm::w11, arm::w7, arm::Shift::LSL, 7))
     TEST(0x0a5376ff, _and(arm::wzr, arm::w23, arm::w19, arm::Shift::LSR, 29))
     TEST(0x0a5900b8, _and(arm::w24, arm::w5, arm::w25, arm::Shift::LSR, 0))

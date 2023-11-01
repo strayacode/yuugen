@@ -156,7 +156,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle BitwiseExclusiveOr");
         break;
     case IROpcodeType::Add:
-        logger.todo("handle Add");
+        compile_add(*opcode->as<IRAdd>());
         break;
     case IROpcodeType::AddLong:
         logger.todo("handle AddLong");
@@ -183,7 +183,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_barrel_shifter_logical_shift_left(*opcode->as<IRBarrelShifterLogicalShiftLeft>());
         break;
     case IROpcodeType::BarrelShifterLogicalShiftRight:
-        logger.todo("handle BarrelShifterLogicalShiftRight");
+        compile_barrel_shifter_logical_shift_right(*opcode->as<IRBarrelShifterLogicalShiftRight>());
         break;
     case IROpcodeType::BarrelShifterArithmeticShiftRight:
         logger.todo("handle BarrelShifterArithmeticShiftRight");
@@ -295,6 +295,48 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
     }
 }
 
+void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogicalShiftRight& opcode) {
+    const bool src_is_constant = opcode.src.is_constant();
+    const bool amount_is_constant = opcode.amount.is_constant();
+    WReg result_reg = register_allocator.allocate(opcode.result_and_carry.first);
+    WReg carry_reg = register_allocator.allocate(opcode.result_and_carry.second);
+    WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
+
+    if (opcode.carry.is_constant()) {
+        logger.todo("carry in for barrel shifter lsr being constant was not expected");
+    }
+
+    if (src_is_constant && amount_is_constant) {
+        auto [result, carry] = lsr(opcode.src.as_constant().value, opcode.amount.as_constant().value, opcode.imm);
+        assembler.mov(result_reg, result);
+
+        if (carry) {
+            assembler.mov(carry_reg, *carry);
+        } else {
+            assembler.mov(carry_reg, carry_in_reg);
+        }
+    } else if (!src_is_constant && amount_is_constant) {
+        auto& src = opcode.src.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        const u32 amount = opcode.amount.as_constant().value;
+
+        if (amount == 0) {
+            logger.todo("barrel shifter lsr handle amount == 0");
+        } else if (amount >= 32) {
+            logger.todo("barrel shifter lsr handle amount >= 32");
+        } else {
+            assembler.lsr(result_reg, src_reg, amount);
+            assembler.lsr(carry_in_reg, src_reg, amount - 1);
+
+            WReg tmp_mask_reg = register_allocator.allocate_temporary();
+            assembler.mov(tmp_mask_reg, 0x1);
+            assembler._and(carry_in_reg, carry_in_reg, tmp_mask_reg);
+        }
+    } else {
+        logger.todo("handle barrel shifter lsr case");
+    }
+}
+
 void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
     const bool lhs_is_constant = opcode.lhs.is_constant();
     const bool rhs_is_constant = opcode.rhs.is_constant();
@@ -317,6 +359,31 @@ void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
         assembler._and(dst_reg, lhs_reg, rhs_reg);
     } else {
         logger.todo("handle bitwise and case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_add(IRAdd& opcode) {
+    const bool lhs_is_constant = opcode.lhs.is_constant();
+    const bool rhs_is_constant = opcode.rhs.is_constant();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    
+    if (lhs_is_constant && rhs_is_constant) {
+        u32 result = opcode.lhs.as_constant().value + opcode.rhs.as_constant().value;
+        assembler.mov(dst_reg, result);
+    } else if (!lhs_is_constant && rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
+        assembler.add(dst_reg, lhs_reg, tmp_imm_reg);
+    } else if (!lhs_is_constant && !rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        auto& rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        assembler.add(dst_reg, lhs_reg, rhs_reg);
+    } else {
+        logger.todo("handle add case %s", opcode.to_string().c_str());
     }
 }
 
