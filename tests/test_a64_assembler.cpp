@@ -41,6 +41,15 @@ int main() {
     TEST(0x95b27a60, bl(113895808))
     TEST(0x956ab105, bl(95077396))
 
+    TEST(0xeb4b65bf, cmp(arm::x13, arm::x11, arm::Shift::LSR, 25))
+    TEST(0xeb06373f, cmp(arm::x25, arm::x6, arm::Shift::LSL, 13))
+
+    TEST(0x1a9fd7fa, cset(arm::w26, arm::Condition::GT))
+    TEST(0x1a9f47ec, cset(arm::w12, arm::Condition::PL))
+    TEST(0x1a9f87f0, cset(arm::w16, arm::Condition::LS))
+    TEST(0x9a9f17f1, cset(arm::x17, arm::Condition::EQ))
+    TEST(0x9a9fb7ed, cset(arm::x13, arm::Condition::GE))
+
     TEST(0x28de404b, ldp(arm::w11, arm::w16, arm::x2, arm::IndexMode::Post, 240))
     TEST(0x28f72aed, ldp(arm::w13, arm::w10, arm::x23, arm::IndexMode::Post, -72))
     TEST(0x28d4aff5, ldp(arm::w21, arm::w11, arm::sp, arm::IndexMode::Post, 164))

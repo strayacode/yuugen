@@ -88,6 +88,22 @@ void A64Assembler::bl(Offset<28, 2> label) {
     emit(0x25 << 26 | label.value);
 }
 
+void A64Assembler::cmp(WReg wn, WReg wm, Shift shift, u32 amount) {
+    emit(0x6b << 24 | static_cast<u32>(shift) << 22 | wm.id << 16 | amount << 10 | wn.id << 5 | 0x1f);
+}
+
+void A64Assembler::cmp(XReg xn, XReg xm, Shift shift, u32 amount) {
+    emit(0xeb << 24 | static_cast<u32>(shift) << 22 | xm.id << 16 | amount << 10 | xn.id << 5 | 0x1f);
+}
+
+void A64Assembler::cset(WReg wd, Condition condition) {
+    emit(0x1a9f << 16 | (condition ^ 0x1) << 12 | 0x3f << 5 | wd.id);
+}
+
+void A64Assembler::cset(XReg xd, Condition condition) {
+    emit(0x9a9f << 16 | (condition ^ 0x1) << 12 | 0x3f << 5 | xd.id);
+}
+
 void A64Assembler::ldp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm) {
     switch (index_mode) {
     case IndexMode::Pre:

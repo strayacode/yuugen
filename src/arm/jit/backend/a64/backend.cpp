@@ -211,7 +211,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle CountLeadingZeroes");
         break;
     case IROpcodeType::Compare:
-        logger.todo("handle Compare");
+        compile_compare(*opcode->as<IRCompare>());
         break;
     case IROpcodeType::Copy:
         compile_copy(*opcode->as<IRCopy>());
@@ -494,6 +494,41 @@ void A64Backend::compile_subtract(IRSubtract& opcode) {
         assembler.sub(dst_reg, lhs_reg, rhs_reg);
     } else {
         logger.todo("handle add case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_compare(IRCompare& opcode) {
+    const bool lhs_is_constant = opcode.lhs.is_constant();
+    const bool rhs_is_constant = opcode.rhs.is_constant();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+
+    if (lhs_is_constant && rhs_is_constant) {
+        logger.todo("handle when lhs and rhs are both constant");
+    } else if (!lhs_is_constant && rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
+        assembler.cmp(lhs_reg, tmp_imm_reg);
+
+        switch (opcode.compare_type) {
+        case CompareType::Equal:
+            logger.todo("handle compare eq");
+            break;
+        case CompareType::LessThan:
+            logger.todo("handle compare lt");
+            break;
+        case CompareType::GreaterEqual:
+            logger.todo("handle compare ge");
+            break;
+        case CompareType::GreaterThan:
+            logger.todo("handle compare gt");
+            break;
+        }
+    } else if (!lhs_is_constant && !rhs_is_constant) {
+        logger.todo("handle both are variables");
+    } else {
+        logger.todo("handle compare case %s", opcode.to_string().c_str());
     }
 }
 
