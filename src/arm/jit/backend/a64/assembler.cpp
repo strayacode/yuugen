@@ -183,6 +183,14 @@ void A64Assembler::msr(SystemReg system_reg, XReg xt) {
     emit(0xd51 << 20 | system_reg << 5 | xt.id);
 }
 
+void A64Assembler::mvn(WReg wd, WReg wm, Shift shift, u32 amount) {
+    emit(0x2a << 24 | static_cast<u32>(shift) << 22 | 0x1 << 21 | wm.id << 16 | amount << 10 | 0x1f << 5 | wd.id);
+}
+
+void A64Assembler::mvn(XReg xd, XReg xm, Shift shift, u32 amount) {
+    emit(0xaa << 24 | static_cast<u32>(shift) << 22 | 0x1 << 21 | xm.id << 16 | amount << 10 | 0x1f << 5 | xd.id);
+}
+
 void A64Assembler::ret() {
     ret(XReg{30});
 }

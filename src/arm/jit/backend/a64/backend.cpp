@@ -163,7 +163,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         logger.todo("handle BitwiseOr");
         break;
     case IROpcodeType::BitwiseNot:
-        logger.todo("handle BitwiseNot");
+        compile_bitwise_not(*opcode->as<IRBitwiseNot>());
         break;
     case IROpcodeType::BitwiseExclusiveOr:
         logger.todo("handle BitwiseExclusiveOr");
@@ -372,6 +372,20 @@ void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
         assembler._and(dst_reg, lhs_reg, rhs_reg);
     } else {
         logger.todo("handle bitwise and case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_bitwise_not(IRBitwiseNot& opcode) {
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+
+    if (opcode.src.is_constant()) {
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.src.as_constant().value);
+        assembler.mvn(dst_reg, tmp_imm_reg);
+    } else {
+        auto& src = opcode.src.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        assembler.mvn(dst_reg, src_reg);
     }
 }
 

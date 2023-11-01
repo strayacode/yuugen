@@ -101,6 +101,11 @@ int main() {
     TEST(0xd2c2e35b, movz(arm::x27, 25400436588544))
 
     TEST(0xd51b4214, msr(arm::SystemReg::NZCV, arm::x20))
+
+    TEST(0x2a3c27ec, mvn(arm::w12, arm::w28, arm::Shift::LSL, 9))
+    TEST(0xaa2bbbff, mvn(arm::xzr, arm::x11, arm::Shift::LSL, 46))
+    TEST(0xaa7abff4, mvn(arm::x20, arm::x26, arm::Shift::LSR, 47))
+    TEST(0xaa786beb, mvn(arm::x11, arm::x24, arm::Shift::LSR, 26))
     
     TEST(0xd65f03c0, ret())
     TEST(0xd65f0220, ret(arm::x17))
