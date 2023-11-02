@@ -49,6 +49,7 @@ private:
     void compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogicalShiftRight& opcode);
     void compile_compare(IRCompare& opcode);
     void compile_copy(IRCopy& opcode);
+    void compile_memory_read(IRMemoryRead& opcode);
     void compile_memory_write(IRMemoryWrite& opcode);
 
     CodeCache<JitFunction> code_cache;

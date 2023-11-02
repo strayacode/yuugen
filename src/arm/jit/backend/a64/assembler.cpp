@@ -16,20 +16,15 @@ void A64Assembler::dump() {
 
 void A64Assembler::link(Label& label) {
     if (label.instruction != nullptr) {
-        logger.debug("link label to %p", current_code);
-        logger.debug("original instruction %p", label.instruction);
-
         label.target = current_code;
 
         u32 instruction = *label.instruction;
         const uptr diff = reinterpret_cast<uptr>(label.target) - reinterpret_cast<uptr>(label.instruction);
         
-        logger.debug("diff is %p", diff);
         switch (common::get_field<24, 8>(instruction)) {
         case 0x14: {
             // b
             const Offset<28, 2> offset = Offset<28, 2>{static_cast<s64>(diff)};
-            logger.debug("b offset value %08x", offset.value);
             instruction |= offset.value;
             *label.instruction = instruction;
             break;
@@ -37,7 +32,6 @@ void A64Assembler::link(Label& label) {
         case 0x54: {
             // b cond
             const Offset<21, 2> offset = Offset<21, 2>{static_cast<s64>(diff)};
-            logger.debug("b cond offset value %08x", offset.value);
             instruction |= offset.value << 5;
             *label.instruction = instruction;
             break;
@@ -45,8 +39,6 @@ void A64Assembler::link(Label& label) {
         default:
             logger.todo("handle instruction %08x", instruction);
         }
-
-        logger.debug("%08x", *label.instruction);
     }    
 }
 
@@ -79,13 +71,11 @@ void A64Assembler::_and(XReg xd, XReg xn, XReg xm, Shift shift, u32 amount) {
 }
 
 void A64Assembler::b(Label& label) {
-    logger.debug("label corresponds to instruction at %p", current_code);
     label.instruction = current_code;
     emit(0x5 << 26);
 }
 
 void A64Assembler::b(Condition condition, Label& label) {
-    logger.debug("label corresponds to instruction at %p", current_code);
     label.instruction = current_code;
     emit(0x54 << 24 | condition);
 }

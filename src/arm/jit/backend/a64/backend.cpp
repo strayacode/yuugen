@@ -7,6 +7,22 @@ namespace arm {
 A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code()), jit(jit) {}
 
 // TODO: put memory stuff in separate file
+u8 read_byte(Jit* jit, u32 addr) {
+    return jit->read_byte(addr);
+}
+
+u16 read_half(Jit* jit, u32 addr) {
+    return jit->read_half(addr);
+}
+
+u32 read_word(Jit* jit, u32 addr) {
+    return jit->read_word(addr);
+}
+
+u32 read_word_rotate(Jit* jit, u32 addr) {
+    return jit->read_word_rotate(addr);
+}
+
 void write_byte(Jit* jit, u32 addr, u8 data) {
     jit->write_byte(addr, data);
 }
@@ -58,9 +74,6 @@ void A64Backend::compile(BasicBlock& basic_block) {
     compile_epilogue();
 
     code_block.protect();
-
-    assembler.dump();
-    
     code_cache.set(basic_block.location, std::move(jit_fn));
 }
 
@@ -216,11 +229,11 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
     case IROpcodeType::Copy:
         compile_copy(*opcode->as<IRCopy>());
         break;
+    case IROpcodeType::MemoryRead:
+        compile_memory_read(*opcode->as<IRMemoryRead>());
+        break;
     case IROpcodeType::MemoryWrite:
         compile_memory_write(*opcode->as<IRMemoryWrite>());
-        break;
-    case IROpcodeType::MemoryRead:
-        logger.todo("handle MemoryRead");
         break;
     }
 }
@@ -571,6 +584,49 @@ void A64Backend::compile_copy(IRCopy& opcode) {
     }
 }
 
+void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
+    if (opcode.addr.is_constant()) {
+        logger.todo("handle potential constant address optimisation");
+    }
+
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    WReg addr_reg = register_allocator.get(opcode.addr.as_variable());
+    
+    // move jit pointer into x0
+    assembler.mov(x0, jit_reg);
+
+    // move addr into w1
+    assembler.mov(w1, addr_reg);
+
+    switch (opcode.access_size) {
+    case AccessSize::Byte:
+        assembler.invoke_function(reinterpret_cast<void*>(read_byte));
+        assembler.mov(dst_reg, w0);
+        break;
+    case AccessSize::Half:
+        switch (opcode.access_type) {
+        case AccessType::Aligned:
+            assembler.invoke_function(reinterpret_cast<void*>(read_half));
+            assembler.mov(dst_reg, w0);
+        case AccessType::Unaligned:
+            logger.todo("handle unaligned half read");
+            break;
+        }
+        
+        break;
+    case AccessSize::Word:
+        if (opcode.access_type == AccessType::Unaligned) {
+            assembler.invoke_function(reinterpret_cast<void*>(read_word_rotate));
+            assembler.mov(dst_reg, w0);
+        } else {
+            assembler.invoke_function(reinterpret_cast<void*>(read_word));
+            assembler.mov(dst_reg, w0);
+        }
+
+        break;
+    }
+}
+
 void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
     if (opcode.addr.is_constant()) {
         logger.todo("handle potential constant address optimisation");
@@ -585,7 +641,7 @@ void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
         // move jit pointer into x0
         assembler.mov(x0, jit_reg);
 
-        // move addr and src into x1 and x2 respectively
+        // move addr and src into w1 and w2 respectively
         assembler.mov(w1, addr_reg);
         assembler.mov(w2, src_reg);
         
