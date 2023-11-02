@@ -101,6 +101,7 @@ public:
 
     void dump();
     void link(Label& label);
+    void invoke_function(void* address);
 
     void add(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void add(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
@@ -111,8 +112,8 @@ public:
     void b(Label& label);
     void b(Condition condition, Label& label);
 
-    void bl(void* function_address);
     void bl(Offset<28, 2> label);
+    void blr(XReg xn);
 
     void cmp(WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void cmp(XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
@@ -148,6 +149,9 @@ public:
     // convenience function to move a 32-bit imm into a register
     // TODO: see later if we can do optimisations with imm == 0
     void mov(WReg wd, u32 imm);
+
+    // convenience function to move a 64-bit imm into a register
+    void mov(XReg xd, u64 imm);
 
     void mov(WReg wd, WReg wm);
     void mov(XReg xd, XReg xm);

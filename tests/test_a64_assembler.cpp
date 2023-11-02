@@ -40,6 +40,8 @@ int main() {
     TEST(0x9708781e, bl(-64888712))
     TEST(0x95b27a60, bl(113895808))
     TEST(0x956ab105, bl(95077396))
+    TEST(0xd63f0160, blr(arm::x11))
+    TEST(0xd63f0220, blr(arm::x17))
 
     TEST(0xeb4b65bf, cmp(arm::x13, arm::x11, arm::Shift::LSR, 25))
     TEST(0xeb06373f, cmp(arm::x25, arm::x6, arm::Shift::LSL, 13))
@@ -101,7 +103,7 @@ int main() {
     TEST(0x9acb251d, lsr(arm::x29, arm::x8, arm::x11))
     TEST(0x9ad42493, lsr(arm::x19, arm::x4, arm::x20))
 
-    TEST(0x52a08000, mov(arm::w0, 0x04000000))
+    TEST(0x52a08000, mov(arm::w0, static_cast<u32>(0x04000000)))
     TEST(0x2a1b03f2, mov(arm::w18, arm::w27))
     TEST(0x2a1603e5, mov(arm::w5, arm::w22))
     TEST(0x2a0c03ea, mov(arm::w10, arm::w12))

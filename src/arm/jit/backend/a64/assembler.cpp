@@ -50,6 +50,18 @@ void A64Assembler::link(Label& label) {
     }    
 }
 
+void A64Assembler::invoke_function(void* address) {
+    const s64 diff = static_cast<s64>(reinterpret_cast<uptr>(address) - reinterpret_cast<uptr>(current_code));
+    if (diff >= -0x2000000 && diff <= 0x1ffffff) {
+        const Offset<28, 2> offset = Offset<28, 2>{diff};
+        bl(offset);
+    } else {
+        // TODO: make sure x5 doesn't collide with arguments
+        mov(x5, reinterpret_cast<u64>(address));
+        blr(x5);
+    }
+}
+
 void A64Assembler::add(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
     emit(0xb << 24 | static_cast<u32>(shift) << 22 | wm.id << 16 | amount << 10 | wn.id << 5 | wd.id);
 }
@@ -78,14 +90,12 @@ void A64Assembler::b(Condition condition, Label& label) {
     emit(0x54 << 24 | condition);
 }
 
-void A64Assembler::bl(void* function_address) {
-    const uptr diff = reinterpret_cast<uptr>(function_address) - reinterpret_cast<uptr>(current_code);
-    const Offset<28, 2> offset = Offset<28, 2>{static_cast<s64>(diff)};
-    bl(offset);
-}
-
 void A64Assembler::bl(Offset<28, 2> label) {
     emit(0x25 << 26 | label.value);
+}
+
+void A64Assembler::blr(XReg xn) {
+    emit(0x358fc0 << 10 | xn.id << 5);
 }
 
 void A64Assembler::cmp(WReg wn, WReg wm, Shift shift, u32 amount) {
@@ -193,6 +203,18 @@ void A64Assembler::mov(WReg wd, u32 imm) {
 
     movz(wd, lower);
     movk(wd, {upper, 16});
+}
+
+void A64Assembler::mov(XReg xd, u64 imm) {
+    if ((imm & 0xffffffff) == imm) {
+        mov(WReg{xd.id}, static_cast<u32>(imm));
+        return;
+    }
+
+    movz(xd, static_cast<u16>(imm));
+    movk(xd, {static_cast<u16>(imm >> 16), 16});
+    movk(xd, {static_cast<u16>(imm >> 32), 32});
+    movk(xd, {static_cast<u16>(imm >> 48), 48});
 }
 
 void A64Assembler::mov(WReg wd, WReg wm) {
@@ -324,7 +346,6 @@ void A64Assembler::sub(XReg xd, XReg xn, XReg xm, Shift shift, u32 amount) {
 }
 
 void A64Assembler::emit(u32 data) {
-    logger.debug("emit %08x to %p", data, current_code);
     *current_code++ = data;
     num_instructions++;
 }

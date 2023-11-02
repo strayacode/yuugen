@@ -319,7 +319,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
         assembler.mov(result_reg, result);
 
         if (carry) {
-            assembler.mov(carry_reg, *carry);
+            assembler.mov(carry_reg, static_cast<u32>(*carry));
         } else {
             assembler.mov(carry_reg, carry_in_reg);
         }
@@ -357,7 +357,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
         assembler.mov(result_reg, result);
 
         if (carry) {
-            assembler.mov(carry_reg, *carry);
+            assembler.mov(carry_reg, static_cast<u32>(*carry));
         } else {
             assembler.mov(carry_reg, carry_in_reg);
         }
@@ -375,7 +375,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
             assembler.lsr(carry_in_reg, src_reg, amount - 1);
 
             WReg tmp_mask_reg = register_allocator.allocate_temporary();
-            assembler.mov(tmp_mask_reg, 0x1);
+            assembler.mov(tmp_mask_reg, static_cast<u32>(0x1));
             assembler._and(carry_in_reg, carry_in_reg, tmp_mask_reg);
         }
     } else {
@@ -589,13 +589,13 @@ void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
         
         switch (opcode.access_size) {
         case AccessSize::Byte:
-            assembler.bl(reinterpret_cast<void*>(write_byte));
+            assembler.invoke_function(reinterpret_cast<void*>(write_byte));
             break;
         case AccessSize::Half:
-            assembler.bl(reinterpret_cast<void*>(write_half));
+            assembler.invoke_function(reinterpret_cast<void*>(write_half));
             break;
         case AccessSize::Word:
-            assembler.bl(reinterpret_cast<void*>(write_word));
+            assembler.invoke_function(reinterpret_cast<void*>(write_word));
             break;
         }
     }
