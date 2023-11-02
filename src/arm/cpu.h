@@ -59,7 +59,7 @@ enum Condition : u8 {
 enum class BackendType {
     Interpreter,
     IRInterpreter,
-    Recompiler,
+    Jit,
 };
 
 class CPU {
@@ -81,8 +81,6 @@ public:
     virtual void set_cpsr(StatusRegister value) = 0;
     virtual StatusRegister get_spsr(Mode mode) = 0;
     virtual void set_spsr(Mode mode, StatusRegister value) = 0;
-
-    State& get_state() { return state; }
 
     State state;
 };

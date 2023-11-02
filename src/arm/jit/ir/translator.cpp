@@ -83,7 +83,7 @@ void Translator::translate() {
 }
 
 Translator::BlockStatus Translator::illegal_instruction() {
-    logger.error("Translator: illegal instruction %08x at pc = %08x", instruction, jit.get_state().gpr[15]);
+    logger.error("Translator: illegal instruction %08x at pc = %08x", instruction, jit.get_gpr(GPR::PC));
     return BlockStatus::Break;
 }
 

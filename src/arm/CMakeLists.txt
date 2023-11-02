@@ -26,6 +26,11 @@ add_library(arm
     jit/backend/backend.h jit/backend/code_cache.h
     jit/backend/ir_interpreter/ir_interpreter.h jit/backend/ir_interpreter/ir_interpreter.cpp
 
+    jit/backend/a64/backend.h jit/backend/a64/backend.cpp
+    jit/backend/a64/assembler.h jit/backend/a64/assembler.cpp
+    jit/backend/a64/register.h jit/backend/a64/code_block.h
+    jit/backend/a64/register_allocator.h jit/backend/a64/register_allocator.cpp
+
     disassembler/disassembler.h disassembler/disassembler.cpp
     disassembler/arm.cpp disassembler/thumb.cpp
 

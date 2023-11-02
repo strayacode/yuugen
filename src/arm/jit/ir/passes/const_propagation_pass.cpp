@@ -47,6 +47,7 @@ void ConstPropagationPass::record_uses(BasicBlock& basic_block) {
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_opcode(std::unique_ptr<IROpcode>& opcode_variant) {
+    // TODO: handle compare and barrel shifter opcodes
     switch (opcode_variant->get_type()) {
     case IROpcodeType::BitwiseAnd:
         return fold_bitwise_and(opcode_variant);
