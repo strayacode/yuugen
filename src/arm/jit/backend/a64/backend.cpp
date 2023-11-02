@@ -191,7 +191,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_subtract(*opcode->as<IRSubtract>());
         break;
     case IROpcodeType::Multiply:
-        logger.todo("handle Multiply");
+        compile_multiply(*opcode->as<IRMultiply>());
         break;
     case IROpcodeType::MultiplyLong:
         logger.todo("handle MultiplyLong");
@@ -533,7 +533,40 @@ void A64Backend::compile_subtract(IRSubtract& opcode) {
         WReg rhs_reg = register_allocator.get(rhs);
         assembler.sub(dst_reg, lhs_reg, rhs_reg);
     } else {
-        logger.todo("handle add case %s", opcode.to_string().c_str());
+        auto& rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.lhs.as_constant().value);
+        assembler.sub(dst_reg, tmp_imm_reg, rhs_reg);
+    }
+}
+
+void A64Backend::compile_multiply(IRMultiply& opcode) {
+    const bool lhs_is_constant = opcode.lhs.is_constant();
+    const bool rhs_is_constant = opcode.rhs.is_constant();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    
+    if (lhs_is_constant && rhs_is_constant) {
+        u32 result = opcode.lhs.as_constant().value * opcode.rhs.as_constant().value;
+        assembler.mov(dst_reg, result);
+    } else if (!lhs_is_constant && rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
+        assembler.mul(dst_reg, lhs_reg, tmp_imm_reg);
+    } else if (!lhs_is_constant && !rhs_is_constant) {
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        auto& rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        assembler.mul(dst_reg, lhs_reg, rhs_reg);
+    } else {
+        auto& rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, opcode.lhs.as_constant().value);
+        assembler.mul(dst_reg, tmp_imm_reg, rhs_reg);
     }
 }
 
@@ -566,7 +599,26 @@ void A64Backend::compile_compare(IRCompare& opcode) {
             break;
         }
     } else if (!lhs_is_constant && !rhs_is_constant) {
-        logger.todo("handle both are variables");
+        auto& lhs = opcode.lhs.as_variable();
+        WReg lhs_reg = register_allocator.get(lhs);
+        auto& rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        assembler.cmp(lhs_reg, rhs_reg);
+
+        switch (opcode.compare_type) {
+        case CompareType::Equal:
+            assembler.cset(dst_reg, Condition::EQ);
+            break;
+        case CompareType::LessThan:
+            logger.todo("handle compare lt");
+            break;
+        case CompareType::GreaterEqual:
+            assembler.cset(dst_reg, Condition::GE);
+            break;
+        case CompareType::GreaterThan:
+            logger.todo("handle compare gt");
+            break;
+        }
     } else {
         logger.todo("handle compare case %s", opcode.to_string().c_str());
     }
@@ -608,8 +660,9 @@ void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
         case AccessType::Aligned:
             assembler.invoke_function(reinterpret_cast<void*>(read_half));
             assembler.mov(dst_reg, w0);
+            break;
         case AccessType::Unaligned:
-            logger.todo("handle unaligned half read");
+            logger.todo("Jit: handle unaligned half read");
             break;
         }
         

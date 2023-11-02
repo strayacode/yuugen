@@ -88,7 +88,6 @@ WReg RegisterAllocator::get(IRVariable variable) {
 
 void RegisterAllocator::free_temporaries() {
     for (auto& id : temporary_registers) {
-        WReg reg = allocation_order[id];
         allocated_registers.reset(id);
     }
 

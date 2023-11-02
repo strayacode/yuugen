@@ -127,6 +127,13 @@ int main() {
 
     TEST(0xd51b4214, msr(arm::SystemReg::NZCV, arm::x20))
 
+    TEST(0x1b007e8f, mul(arm::w15, arm::w20, arm::w0))
+    TEST(0x1b087dad, mul(arm::w13, arm::w13, arm::w8))
+    TEST(0x1b1b7ebc, mul(arm::w28, arm::w21, arm::w27))
+    TEST(0x9b097ce8, mul(arm::x8, arm::x7, arm::x9))
+    TEST(0x9b1f7e8f, mul(arm::x15, arm::x20, arm::xzr))
+    TEST(0x9b107dc0, mul(arm::x0, arm::x14, arm::x16))
+
     TEST(0x2a3c27ec, mvn(arm::w12, arm::w28, arm::Shift::LSL, 9))
     TEST(0xaa2bbbff, mvn(arm::xzr, arm::x11, arm::Shift::LSL, 46))
     TEST(0xaa7abff4, mvn(arm::x20, arm::x26, arm::Shift::LSR, 47))

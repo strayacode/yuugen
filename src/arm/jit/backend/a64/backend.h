@@ -43,6 +43,7 @@ private:
     void compile_bitwise_exclusive_or(IRBitwiseExclusiveOr& opcode);
     void compile_add(IRAdd& opcode);
     void compile_subtract(IRSubtract& opcode);
+    void compile_multiply(IRMultiply& opcode);
     void compile_logical_shift_left(IRLogicalShiftLeft& opcode);
     void compile_logical_shift_right(IRLogicalShiftRight& opcode);
     void compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogicalShiftLeft& opcode);

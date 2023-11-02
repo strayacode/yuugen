@@ -484,7 +484,7 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
             assign_variable(opcode.dst, jit.read_half(addr));
             break;
         case AccessType::Unaligned:
-            logger.todo("handle unaligned half read");
+            logger.todo("IRInterpreter: handle unaligned half read");
             break;
         }
         

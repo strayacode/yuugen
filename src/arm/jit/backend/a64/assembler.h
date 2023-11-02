@@ -162,6 +162,9 @@ public:
 
     void msr(SystemReg system_reg, XReg xt);
 
+    void mul(WReg wd, WReg wn, WReg wm);
+    void mul(XReg xd, XReg xn, XReg xm);
+
     void mvn(WReg wd, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void mvn(XReg xd, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
