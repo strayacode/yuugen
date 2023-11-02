@@ -279,7 +279,9 @@ void A64Backend::compile_logical_shift_left(IRLogicalShiftLeft& opcode) {
         auto& src = opcode.src.as_variable();
         WReg src_reg = register_allocator.get(src);
         const u32 amount = opcode.amount.as_constant().value & 0x1f;
-        assembler.lsl(dst_reg, src_reg, amount);
+        WReg tmp_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_reg, amount);
+        assembler.lsl(dst_reg, src_reg, tmp_reg);
     } else {
         logger.todo("handle lsl case");
     }
