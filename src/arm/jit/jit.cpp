@@ -160,6 +160,10 @@ uptr Jit::get_offset_to_cpsr() {
     return reinterpret_cast<uptr>(get_pointer_to_cpsr()) - reinterpret_cast<uptr>(this);
 }
 
+uptr Jit::get_offset_to_spsr(Mode mode) {
+    return reinterpret_cast<uptr>(get_pointer_to_spsr(mode)) - reinterpret_cast<uptr>(this);
+}
+
 u8 Jit::read_byte(u32 addr) {
     return memory.read<u8, Bus::Data>(addr);
 }

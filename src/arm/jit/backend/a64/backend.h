@@ -37,6 +37,8 @@ private:
     void compile_store_gpr(IRStoreGPR& opcode);
     void compile_load_cpsr(IRLoadCPSR& opcode);
     void compile_store_cpsr(IRStoreCPSR& opcode);
+    void compile_load_spsr(IRLoadSPSR& opcode);
+    void compile_store_spsr(IRStoreSPSR& opcode);
     void compile_bitwise_and(IRBitwiseAnd& opcode);
     void compile_bitwise_or(IRBitwiseOr& opcode);
     void compile_bitwise_not(IRBitwiseNot& opcode);

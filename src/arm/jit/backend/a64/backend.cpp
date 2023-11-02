@@ -158,10 +158,10 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_store_cpsr(*opcode->as<IRStoreCPSR>());
         break;
     case IROpcodeType::LoadSPSR:
-        logger.todo("handle LoadSPSR");
+        compile_load_spsr(*opcode->as<IRLoadSPSR>());
         break;
     case IROpcodeType::StoreSPSR:
-        logger.todo("handle StoreSPSR");
+        compile_store_spsr(*opcode->as<IRStoreSPSR>());
         break;
     case IROpcodeType::LoadCoprocessor:
         logger.todo("handle LoadCoprocessor");
@@ -277,6 +277,27 @@ void A64Backend::compile_store_cpsr(IRStoreCPSR& opcode) {
         auto& src = opcode.src.as_variable();
         WReg src_reg = register_allocator.get(src);
         assembler.str(src_reg, jit_reg, cpsr_offset);
+    }
+}
+
+void A64Backend::compile_load_spsr(IRLoadSPSR& opcode) {
+    u64 spsr_offset = jit.get_offset_to_spsr(opcode.mode);
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    assembler.ldr(dst_reg, jit_reg, spsr_offset);
+}
+
+void A64Backend::compile_store_spsr(IRStoreSPSR& opcode) {
+    u64 spsr_offset = jit.get_offset_to_spsr(opcode.mode);
+
+    if (opcode.src.is_constant()) {
+        auto& src = opcode.src.as_constant();
+        WReg tmp_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_reg, src.value);
+        assembler.str(tmp_reg, jit_reg, spsr_offset);
+    } else {
+        auto& src = opcode.src.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        assembler.str(src_reg, jit_reg, spsr_offset);
     }
 }
 
