@@ -296,8 +296,15 @@ Translator::BlockStatus Translator::thumb_special_data_processing() {
 }
 
 Translator::BlockStatus Translator::thumb_branch_link_exchange() {
-    logger.todo("Translator: handle thumb_branch_link_exchange");
-    return BlockStatus::Continue;
+    if (jit.arch == Arch::ARMv4) {
+        logger.todo("Translator: handle thumb_branch_link_exchange on armv4");
+    }
+
+    auto opcode = ThumbBranchLinkExchange::decode(instruction);
+    auto address = ir.load_gpr(opcode.rm);
+    ir.link();
+    ir.branch_exchange(address, ExchangeType::Bit0);
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::thumb_branch_exchange() {
