@@ -475,7 +475,72 @@ Translator::BlockStatus Translator::thumb_branch_conditional() {
 }
 
 Translator::BlockStatus Translator::thumb_load_store_multiple() {
-    logger.todo("Translator: handle thumb_load_store_multiple");
+    auto opcode = ThumbLoadStoreMultiple::decode(instruction);
+    auto address = ir.load_gpr(opcode.rn);
+
+    ir.advance_pc();
+
+    if (opcode.rlist == 0) {
+        if (jit.arch == Arch::ARMv4) {
+            if (opcode.load) {
+                auto data = ir.memory_read(address, AccessSize::Word, AccessType::Aligned);
+                ir.store_gpr(GPR::PC, data);
+                ir.flush_pipeline();
+            } else {
+                ir.memory_write(address, ir.load_gpr(GPR::PC), AccessSize::Word);
+            }
+        }
+
+        ir.store_gpr(opcode.rn, ir.add(address, ir.constant(0x40)));
+
+        // TODO: don't always break later
+        return BlockStatus::Break;
+    }
+
+    if (opcode.load) {
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                auto data = ir.memory_read(address, AccessSize::Word, AccessType::Aligned);
+                ir.store_gpr(static_cast<GPR>(i), data);
+                address = ir.add(address, ir.constant(4));
+            }
+        }
+
+        // TODO: sort out edgecases with writeback
+        if (~opcode.rlist & (1 << opcode.rn)) {
+            ir.store_gpr(opcode.rn, address);
+        }
+    } else {
+        int first = 0;
+        int bytes = 0;
+
+        for (int i = 7; i >= 0; i--) {
+            if (opcode.rlist & (1 << i)) {
+                first = i;
+                bytes += 4;
+            }
+        }
+
+        // writeback with rb in list:
+        // stm armv4: store old base if rb is first in rlist, otherwise store new base
+        // stm armv5: always store old base
+        auto new_base = ir.add(address, ir.constant(bytes));
+        
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                if (i == opcode.rn && first != opcode.rn) {
+                    ir.memory_write(address, new_base, AccessSize::Word);
+                } else {
+                    ir.memory_write(address, ir.load_gpr(static_cast<GPR>(i)), AccessSize::Word);
+                }
+                
+                address = ir.add(address, ir.constant(4));
+            }
+        }
+
+        ir.store_gpr(opcode.rn, address);
+    }
+    
     return BlockStatus::Continue;
 }
 
