@@ -39,11 +39,11 @@ void A64Backend::reset() {
     code_cache.reset();
 }
 
-bool A64Backend::has_code_at(Location location) {
-    return code_cache.has_code_at(location);
+Code A64Backend::get_code_at(Location location) {
+    return reinterpret_cast<void*>(code_cache.get(location));
 }
 
-void A64Backend::compile(BasicBlock& basic_block) {
+Code A64Backend::compile(BasicBlock& basic_block) {
     register_allocator.reset();
 
     // calculate the lifetimes of ir variables
@@ -74,11 +74,12 @@ void A64Backend::compile(BasicBlock& basic_block) {
     compile_epilogue();
 
     code_block.protect();
-    code_cache.set(basic_block.location, std::move(jit_fn));
+    code_cache.set(basic_block.location, jit_fn);
+    return reinterpret_cast<void*>(jit_fn);
 }
 
-int A64Backend::run(Location location, int cycles_left) {
-    JitFunction jit_fn = code_cache.get(location);
+int A64Backend::run(Code code, int cycles_left) {
+    JitFunction jit_fn = reinterpret_cast<JitFunction>(code);
     return jit_fn(&jit, cycles_left);
 }
 
@@ -370,7 +371,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
         } else if (amount >= 32) {
             logger.todo("barrel shifter lsl handle amount >= 32");
         } else {
-            logger.todo("barrel shifter lsl handle amount >= 32");
+            logger.todo("barrel shifter lsl handle amount > 0 && amount < 32");
         }
     } else {
         logger.todo("handle barrel shifter lsl case");

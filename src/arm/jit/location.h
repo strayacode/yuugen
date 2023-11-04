@@ -7,6 +7,8 @@ namespace arm {
 struct Location {
     Location() {}
 
+    Location(u64 value) : value(value) {}
+
     Location(State& state) {
         value = state.gpr[15] >> 1;
         value |= common::get_field<0, 6>(static_cast<u64>(state.cpsr.data)) << 31;

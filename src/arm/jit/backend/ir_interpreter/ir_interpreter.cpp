@@ -14,11 +14,15 @@ void IRInterpreter::reset() {
     variables.clear();
 }
 
-bool IRInterpreter::has_code_at(Location location) {
-    return code_cache.has_code_at(location);
+Code IRInterpreter::get_code_at(Location location) {
+    if (code_cache.has_code_at(location)) {
+        return Code(location.value);
+    } else {
+        return nullptr;
+    }
 }
 
-void IRInterpreter::compile(BasicBlock& basic_block)  {
+Code IRInterpreter::compile(BasicBlock& basic_block)  {
     CompiledBlock compiled_block;
     compiled_block.cycles = basic_block.cycles;
     compiled_block.num_instructions = basic_block.num_instructions;
@@ -30,9 +34,11 @@ void IRInterpreter::compile(BasicBlock& basic_block)  {
     }
 
     code_cache.set(basic_block.location, std::move(compiled_block));
+    return Code(basic_block.location.value);
 }
 
-int IRInterpreter::run(Location location, int cycles_left)  {
+int IRInterpreter::run(Code code, int cycles_left)  {
+    auto location = Location{reinterpret_cast<u64>(code)};
     auto& compiled_block = code_cache.get(location);
     if (evaluate_condition(compiled_block.condition)) {
         for (auto& compiled_instruction : compiled_block.instructions) {

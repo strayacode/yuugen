@@ -18,9 +18,9 @@ public:
     A64Backend(Jit& jit);
 
     void reset() override;
-    bool has_code_at(Location location) override;
-    void compile(BasicBlock& basic_block) override;
-    int run(Location location, int cycles_left) override;
+    Code get_code_at(Location location) override;
+    Code compile(BasicBlock& basic_block) override;
+    int run(Code code, int cycles_left) override;
 
 private:
     // return value: the cycles left after running the jit function (w0)

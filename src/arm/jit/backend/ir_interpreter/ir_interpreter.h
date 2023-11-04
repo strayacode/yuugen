@@ -7,6 +7,7 @@
 #include "arm/jit/ir/value.h"
 #include "arm/jit/backend/backend.h"
 #include "arm/jit/backend/code_cache.h"
+#include "arm/jit/backend/code.h"
 
 namespace arm {
 
@@ -17,9 +18,9 @@ public:
     IRInterpreter(Jit& jit);
 
     void reset() override;
-    bool has_code_at(Location location) override;
-    void compile(BasicBlock& basic_block) override;
-    int run(Location location, int cycles_left) override;
+    Code get_code_at(Location location) override;
+    Code compile(BasicBlock& basic_block) override;
+    int run(Code code, int cycles_left) override;
 
 private:
     bool evaluate_condition(Condition condition);

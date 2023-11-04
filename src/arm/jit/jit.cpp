@@ -5,6 +5,7 @@
 #include "arm/jit/ir/passes/dead_load_store_elimination_pass.h"
 #include "arm/jit/ir/passes/const_propagation_pass.h"
 #include "arm/jit/ir/passes/dead_copy_elimination_pass.h"
+#include "arm/jit/backend/code.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 #include "arm/jit/backend/a64/backend.h"
 #include "arm/disassembler/disassembler.h"
@@ -63,17 +64,18 @@ void Jit::run(int cycles) {
         }
 
         Location location{state};
-        if (!backend->has_code_at(location)) {
+        Code code = backend->get_code_at(location);
+        if (code == nullptr) {
             BasicBlock basic_block{location};
             IREmitter ir{basic_block};
             Translator translator{*this, ir};
             translator.translate();
             optimiser.optimise(basic_block);
             basic_block.dump();
-            backend->compile(basic_block);
+            code = backend->compile(basic_block);
         }
 
-        cycles_available = backend->run(location, cycles_available);
+        cycles_available = backend->run(code, cycles_available);
     }
 }
 

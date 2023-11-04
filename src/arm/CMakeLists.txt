@@ -24,6 +24,7 @@ add_library(arm
     jit/ir/opcodes.h jit/ir/value.h
     jit/ir/translate/arm.cpp jit/ir/translate/thumb.cpp
     jit/backend/backend.h jit/backend/code_cache.h
+    jit/backend/code.h
     jit/backend/ir_interpreter/ir_interpreter.h jit/backend/ir_interpreter/ir_interpreter.cpp
 
     jit/backend/a64/backend.h jit/backend/a64/backend.cpp
