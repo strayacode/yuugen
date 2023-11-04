@@ -209,37 +209,35 @@ void SPU::play_sample() {
 
         // increment the timer
         // each sample takes up 512 system cycles
-        for (int j = 0; j < 512; j++) {
-            channel.internal_timer++;
-            if (channel.internal_timer == 0) {
-                channel.internal_timer = channel.timer;
+        channel.internal_timer += 512;
+        while (channel.internal_timer < 512) {
+            channel.internal_timer += channel.timer;
                 
-                switch (channel.control.format) {
-                case AudioFormat::PCM8:
-                    channel.internal_source++;
-                    break;
-                case AudioFormat::PCM16:
-                    channel.internal_source += 2;
-                    break;
-                case AudioFormat::ADPCM:
-                    next_sample_adpcm(i);
-                    break;
-                case AudioFormat::Noise:
-                    logger.error("SPU: handle noise playback");
-                }
+            switch (channel.control.format) {
+            case AudioFormat::PCM8:
+                channel.internal_source++;
+                break;
+            case AudioFormat::PCM16:
+                channel.internal_source += 2;
+                break;
+            case AudioFormat::ADPCM:
+                next_sample_adpcm(i);
+                break;
+            case AudioFormat::Noise:
+                logger.error("SPU: handle noise playback");
+            }
 
-                if (channel.internal_source == (channel.source + (channel.loopstart + channel.length) * 4)) {
-                    if (channel.control.repeat_mode == RepeatMode::Loop) {
-                        channel.internal_source = channel.source + (channel.loopstart * 4);
+            if (channel.internal_source == (channel.source + (channel.loopstart + channel.length) * 4)) {
+                if (channel.control.repeat_mode == RepeatMode::Loop) {
+                    channel.internal_source = channel.source + (channel.loopstart * 4);
 
-                        if (channel.control.format == AudioFormat::ADPCM) {
-                            channel.adpcm_value = channel.adpcm_loopstart_value;
-                            channel.adpcm_index = channel.adpcm_loopstart_index;
-                            channel.adpcm_second_sample = false;
-                        }
-                    } else {
-                        channel.control.start = false;
+                    if (channel.control.format == AudioFormat::ADPCM) {
+                        channel.adpcm_value = channel.adpcm_loopstart_value;
+                        channel.adpcm_index = channel.adpcm_loopstart_index;
+                        channel.adpcm_second_sample = false;
                     }
+                } else {
+                    channel.control.start = false;
                 }
             }
         }
