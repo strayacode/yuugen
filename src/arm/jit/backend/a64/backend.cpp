@@ -40,7 +40,7 @@ void A64Backend::reset() {
 }
 
 Code A64Backend::get_code_at(Location location) {
-    return reinterpret_cast<void*>(code_cache.get(location));
+    return reinterpret_cast<void*>(code_cache.get_or_create(location));
 }
 
 Code A64Backend::compile(BasicBlock& basic_block) {

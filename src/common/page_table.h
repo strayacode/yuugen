@@ -78,4 +78,4 @@ private:
     std::array<L1Entry, L1_SIZE> page_table;
 };
 
-} // common
+} // namespace common

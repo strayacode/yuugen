@@ -39,7 +39,7 @@ Code IRInterpreter::compile(BasicBlock& basic_block)  {
 
 int IRInterpreter::run(Code code, int cycles_left)  {
     auto location = Location{reinterpret_cast<u64>(code)};
-    auto& compiled_block = code_cache.get(location);
+    auto& compiled_block = code_cache.get_or_create(location);
     if (evaluate_condition(compiled_block.condition)) {
         for (auto& compiled_instruction : compiled_block.instructions) {
             (this->*compiled_instruction.fn)(compiled_instruction.opcode_variant);
