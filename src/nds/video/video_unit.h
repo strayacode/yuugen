@@ -61,9 +61,9 @@ public:
     }
 
     VRAM vram;
+    GPU gpu;
     PPU ppu_a;
     PPU ppu_b;
-    GPU gpu;
     
 private:
     void render_scanline_start();
