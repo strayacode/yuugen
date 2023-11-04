@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include "common/types.h"
 #include "common/ring_buffer.h"
 #include "common/scheduler.h"
@@ -8,6 +9,7 @@
 #include "nds/video/gpu/matrix_stack.h"
 #include "nds/video/gpu/vertex.h"
 #include "nds/video/gpu/polygon.h"
+#include "nds/video/gpu/backend/renderer.h"
 
 namespace nds {
 
@@ -16,9 +18,12 @@ public:
     GPU(common::Scheduler& scheduler, DMA& dma);
 
     void reset();
+    const u32* get_framebuffer() { return renderer->get_framebuffer(); };
 
     u32 read_disp3dcnt() const { return disp3dcnt.data; }
     void write_disp3dcnt(u32 value, u32 mask);
+
+    void write_gxfifo(u32 value);
 
     u32 read_gxstat();
     void write_gxstat(u32 value, u32 mask);
@@ -26,11 +31,9 @@ public:
     void write_clear_depth(u16 value, u32 mask);
     void write_clrimage_offset(u16 value, u32 mask);
     void queue_command(u32 addr, u32 data);
-    void render();
     void do_swap_buffers();
-
-    std::array<u32, 256 * 192> framebuffer;
-
+    void render();
+    
 private:
     struct Entry {
         u8 command{0};
@@ -81,7 +84,9 @@ private:
     void set_vertex_colour();
     void add_vertex16();
     void end_vertex_list();
-
+    void set_shininess();
+    void set_normal_vector();
+    
     union DISP3DCNT {
         struct {
             bool texture_mapping : 1;
@@ -132,8 +137,10 @@ private:
 
     DISP3DCNT disp3dcnt;
     GXSTAT gxstat;
-    common::RingBuffer<Entry, 256> gxfifo;
-    common::RingBuffer<Entry, 4> gxpipe;
+    u32 gxfifo{0};
+    int gxfifo_write_count{0};
+    common::RingBuffer<Entry, 256> fifo;
+    common::RingBuffer<Entry, 4> pipe;
     bool busy{false};
     
     common::EventType geometry_command_event;
@@ -175,6 +182,8 @@ private:
     std::array<Vertex, 10> vertex_list;
     int vertex_count{0};
     int polygon_count{0};
+
+    std::unique_ptr<Renderer> renderer;
 
     common::Scheduler& scheduler;
     DMA& dma;

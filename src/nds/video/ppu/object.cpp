@@ -48,7 +48,7 @@ void PPU::render_objects(int line) {
         y += half_height;
 
         if (mosaic) {
-            logger.error("PPU: handle object mosaic");
+            logger.warn("PPU: handle object mosaic");
         }
 
         if (affine) {
@@ -78,11 +78,11 @@ void PPU::render_objects(int line) {
         }
 
         if (mode == ObjectMode::SemiTransparent) {
-            logger.error("PPU: handle semi transparent mode");
+            logger.warn("PPU: handle semi transparent mode");
         }
 
         if (mode == ObjectMode::ObjectWindow) {
-            logger.error("PPU: handle object window mode");
+            logger.warn("PPU: handle object window mode");
         }
 
         int local_y = line - y;

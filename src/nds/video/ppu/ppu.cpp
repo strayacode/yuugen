@@ -200,8 +200,9 @@ void PPU::render_blank_screen(int line) {
 void PPU::render_graphics_display(int line) {
     if (dispcnt.enable_bg0) {
         if (dispcnt.bg0_3d || dispcnt.bg_mode == 6) {
-            for (int i = 0; i < 10; i++) {
-                bg_layers[0][i] = gpu.framebuffer[(256 * line) + i];
+            const auto* framebuffer = gpu.get_framebuffer();
+            for (int i = 0; i < 256; i++) {
+                bg_layers[0][i] = framebuffer[(256 * line) + i];
             }
         } else {
             render_text(0, line);
@@ -310,7 +311,7 @@ u8 PPU::calculate_enabled_layers(int x, int line) {
         } else if (dispcnt.enable_win1 && in_window_bounds(x, win1_x1, win1_x2) && in_window_bounds(line, win1_y1, win1_y2)) {
             enabled &= (winin >> 8) & 0xf;
         } else if (dispcnt.enable_objwin) {
-            logger.todo("PPU: handle object window");
+            logger.warn("PPU: handle object window");
         } else {
             enabled &= winout & 0xf;  
         }

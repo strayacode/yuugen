@@ -63,8 +63,9 @@ void GPU::set_texture_parameters() {
 }
 
 void GPU::set_polygon_attributes() {
+    // TODO: only set until next BEGIN_VTX command
     const u32 parameter = dequeue_entry().parameter;
-    current_polygon.polygon_attributes = parameter;
+    current_polygon.polygon_attributes.data = parameter;
 }
 
 void GPU::set_viewport() {
@@ -221,6 +222,18 @@ void GPU::add_vertex16() {
 }
 
 void GPU::end_vertex_list() {
+    dequeue_entry();
+}
+
+void GPU::set_shininess() {
+    // handle later
+    for (int i = 0; i < 32; i++) {
+        dequeue_entry();
+    }
+}
+
+void GPU::set_normal_vector() {
+    // handle later
     dequeue_entry();
 }
 

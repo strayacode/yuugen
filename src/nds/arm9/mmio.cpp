@@ -460,6 +460,9 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff) system.video_unit.gpu.write_clear_depth(value, mask);
         if constexpr (mask & 0xffff0000) system.video_unit.gpu.write_clrimage_offset(value >> 16, mask >> 16);
         break;
+    case MMIO(0x04000400) ... MMIO(0x0400043c):
+        system.video_unit.gpu.write_gxfifo(value);
+        break;
     case MMIO(0x04000440) ... MMIO(0x040005cc):
         system.video_unit.gpu.queue_command(addr, value);
         break;

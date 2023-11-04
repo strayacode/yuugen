@@ -47,8 +47,36 @@ public:
         u32 palette_base{0};
     };
 
+    enum PolygonMode : u32 {
+        Modulation,
+        Decal,
+        Toon,
+        Shadow,
+    };
+
+    union PolygonAttributes {
+        struct {
+            u32 light_config : 4;
+            PolygonMode polygon_mode : 2;
+            bool back_surface : 1;
+            bool front_surface : 1;
+            u32 : 3;
+            bool translucent_depth : 1;
+            bool clip_far_plane : 1;
+            bool render_1dot : 1;
+            bool depth_test_equal : 1;
+            bool fog_enable : 1;
+            u32 alpha : 5;
+            u32 : 3;
+            u32 id : 6;
+            u32 : 2;
+        };
+
+        u32 data;
+    };
+
     TextureAttributes texture_attributes;
-    u32 polygon_attributes{0};
+    PolygonAttributes polygon_attributes;
     int size{0};
     bool clockwise{false};
 };

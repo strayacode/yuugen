@@ -68,7 +68,7 @@ void VideoUnit::write_powcnt1(u16 value, u32 mask) {
 void VideoUnit::write_dispcapcnt(u32 value, u32 mask) {
     dispcapcnt.data = (dispcapcnt.data & ~mask) | (value & mask);
     if (dispcapcnt.capture_enable) {
-        logger.error("VideoUnit: handle display capture");
+        logger.warn("VideoUnit: handle display capture");
     }
 }
 

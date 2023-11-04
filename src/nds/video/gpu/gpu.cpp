@@ -2,6 +2,7 @@
 #include "common/logger.h"
 #include "common/bits.h"
 #include "nds/video/gpu/gpu.h"
+#include "nds/video/gpu/backend/software/software_renderer.h"
 
 namespace nds {
 
@@ -26,11 +27,12 @@ static constexpr std::array<int, 256> parameter_table = {{
 GPU::GPU(common::Scheduler& scheduler, DMA& dma) : scheduler(scheduler), dma(dma) {}
 
 void GPU::reset() {
-    framebuffer.fill(0);
     disp3dcnt.data = 0;
-    gxstat.data = 0; 
-    gxfifo.reset();
-    gxpipe.reset();
+    gxstat.data = 0;
+    gxfifo = 0;
+    gxfifo_write_count = 0;
+    fifo.reset();
+    pipe.reset();
     busy = false;
 
     geometry_command_event = scheduler.register_event("GeometryCommand", [this]() {
@@ -68,25 +70,49 @@ void GPU::reset() {
     vertex_list.fill(Vertex{});
     vertex_count = 0;
     polygon_count = 0;
+
+    renderer = std::make_unique<SoftwareRenderer>();
 }
 
 void GPU::write_disp3dcnt(u32 value, u32 mask) {
     disp3dcnt.data = (disp3dcnt.data & ~mask) | (value & mask);
 }
 
+void GPU::write_gxfifo(u32 value) {
+    if (gxfifo == 0) {
+        gxfifo = value;
+    } else {
+        u8 command = gxfifo & 0xff;
+        queue_entry({command, value});
+
+        gxfifo_write_count++;
+
+        if (gxfifo_write_count == parameter_table[command]) {
+            gxfifo >>= 8;
+            gxfifo_write_count = 0;
+        }
+    }
+
+    while ((gxfifo != 0) && (parameter_table[gxfifo & 0xff] == 0)) {
+        u8 command = gxfifo & 0xff;
+        queue_entry({command, 0});
+        gxfifo >>= 8;
+    }
+}
+
 u32 GPU::read_gxstat() {
     u32 value = 0;
-    value |= gxfifo.get_size() << 16;
+    value |= fifo.get_size() << 16;
 
-    if (gxfifo.is_full()) {
+    if (fifo.is_full()) {
         value |= 1 << 24;
     }
 
-    if (gxfifo.get_size() < 128) {
+    if (fifo.get_size() < 128) {
         value |= 1 << 25;
     }
 
-    if (gxfifo.is_empty()) {
+    if (fifo.is_empty()) {
         value |= 1 << 26;
     }
 
@@ -116,13 +142,9 @@ void GPU::queue_command(u32 addr, u32 data) {
     queue_entry({command, data});
 }
 
-void GPU::render() {
-    // TODO: ideally we should render scanline by scanline
-    // figure out how this works on real hardware
-}
-
 void GPU::do_swap_buffers() {
     if (swap_buffers_requested) {
+        renderer->submit_polygons(polygon_ram[current_buffer].data(), polygon_ram_size);
         swap_buffers_requested = false;
         current_buffer ^= 1;
         vertex_ram_size = 0;
@@ -130,21 +152,25 @@ void GPU::do_swap_buffers() {
     }
 }
 
+void GPU::render() {
+    renderer->render();
+}
+
 void GPU::check_gxfifo_irq() {
-    if (gxstat.fifo_irq == InterruptType::LessThanHalfFull && gxfifo.get_size() < 128) {
+    if (gxstat.fifo_irq == InterruptType::LessThanHalfFull && fifo.get_size() < 128) {
         logger.todo("send less than half full gxfifo irq");
-    } else if (gxstat.fifo_irq == InterruptType::Empty && gxfifo.is_empty()) {
+    } else if (gxstat.fifo_irq == InterruptType::Empty && fifo.is_empty()) {
         logger.todo("send empty gxfifo irq");
     }
 }
 
 void GPU::queue_entry(Entry entry) {
-    if (gxfifo.is_empty() && !gxpipe.is_full()) {
-        gxpipe.push(entry);
+    if (fifo.is_empty() && !pipe.is_full()) {
+        pipe.push(entry);
     } else {
-        gxfifo.push(entry);
+        fifo.push(entry);
 
-        if (gxfifo.is_full()) {
+        if (fifo.is_full()) {
             logger.todo("gxfifo is full");
         }
     }
@@ -153,22 +179,22 @@ void GPU::queue_entry(Entry entry) {
 }
 
 GPU::Entry GPU::dequeue_entry() {
-    auto entry = gxpipe.pop();
+    auto entry = pipe.pop();
 
     // if the pipe is running half empty
     // then move 2 entries from the fifo to the pipe
-    if (gxpipe.get_size() < 3) {
-        if (!gxfifo.is_empty()) {
-            gxpipe.push(gxfifo.pop());
+    if (pipe.get_size() < 3) {
+        if (!fifo.is_empty()) {
+            pipe.push(fifo.pop());
         }
 
-        if (!gxfifo.is_empty()) {
-            gxpipe.push(gxfifo.pop());
+        if (!fifo.is_empty()) {
+            pipe.push(fifo.pop());
         }
 
         check_gxfifo_irq();
 
-        if (gxfifo.get_size() < 128) {
+        if (fifo.get_size() < 128) {
             dma.trigger(DMA::Timing::GXFIFO);
         }
     }
@@ -177,12 +203,12 @@ GPU::Entry GPU::dequeue_entry() {
 }
 
 void GPU::execute_command() {
-    auto total_size = gxfifo.get_size() + gxpipe.get_size();
+    auto total_size = fifo.get_size() + pipe.get_size();
     if (busy || (total_size == 0)) {
         return;
     }
 
-    u8 command = gxpipe.get_front().command;
+    u8 command = pipe.get_front().command;
     u8 parameter_count = parameter_table[command];
 
     if (total_size >= parameter_count) {
@@ -223,6 +249,9 @@ void GPU::execute_command() {
         case 0x2a:
             set_texture_parameters();
             break;
+        case 0x34:
+            set_shininess();
+            break;
         case 0x40:
             begin_vertex_list();
             break;
@@ -236,15 +265,13 @@ void GPU::execute_command() {
             set_viewport();
             break;
         default:
-            // if (parameter_count == 0) {
-            //     dequeue_entry();
-            // }
+            dequeue_entry();
 
-            // for (int i = 0; i < parameter_count; i++) {
-            //     dequeue_entry();
-            // }
+            for (int i = 1; i < parameter_count; i++) {
+                dequeue_entry();
+            }
 
-            logger.todo("GPU: handle command %02x", command);
+            logger.warn("GPU: handle command %02x", command);
         }
 
         busy = true;
@@ -269,7 +296,7 @@ Matrix GPU::multiply_matrix_matrix(const Matrix& a, const Matrix& b) {
 }
 
 Vertex GPU::multiply_vertex_matrix(const Vertex& a, const Matrix& b) {
-    Vertex multiplied_vertex;
+    Vertex multiplied_vertex = a;
     multiplied_vertex.x = (static_cast<s64>(a.x) * b.field[0][0] + static_cast<s64>(a.y) * b.field[1][0] + static_cast<s64>(a.z) * b.field[2][0] + static_cast<s64>(a.w) * b.field[3][0]) >> 12;
     multiplied_vertex.y = (static_cast<s64>(a.x) * b.field[0][1] + static_cast<s64>(a.y) * b.field[1][1] + static_cast<s64>(a.z) * b.field[2][1] + static_cast<s64>(a.w) * b.field[3][1]) >> 12;
     multiplied_vertex.z = (static_cast<s64>(a.x) * b.field[0][2] + static_cast<s64>(a.y) * b.field[1][2] + static_cast<s64>(a.z) * b.field[2][2] + static_cast<s64>(a.w) * b.field[3][2]) >> 12;
@@ -295,13 +322,13 @@ void GPU::submit_vertex() {
 
     switch (current_polygon.texture_attributes.parameters.transformation_mode) {
     case 1:
-        logger.todo("GPU: handle texcoord source");
+        logger.warn("GPU: handle texcoord source");
         break;
     case 2:
-        logger.todo("GPU: handle normal source");
+        logger.warn("GPU: handle normal source");
         break;
     case 3:
-        logger.todo("GPU: handle vertex source");
+        logger.warn("GPU: handle vertex source");
         break;
     }
 
@@ -371,8 +398,6 @@ void GPU::submit_polygon() {
         auto& vertex = vertex_list[i];
         vertex = normalise_vertex(vertex);
         vertex_ram[vertex_ram_size++] = vertex;
-        
-        logger.debug("normalised vertex %d x %d y %d z %d", i, vertex.x, vertex.y, vertex.z);
     }
 
     // now construct the polygon
@@ -394,7 +419,7 @@ void GPU::submit_polygon() {
 }
 
 Vertex GPU::normalise_vertex(const Vertex& vertex) {
-    Vertex normalised;
+    Vertex normalised = vertex;
 
     if (vertex.w == 0) {
         normalised.x = 0;

@@ -21,6 +21,9 @@ add_library(nds
     video/gpu/commands.cpp
     video/gpu/matrix.h video/gpu/matrix_stack.h
     video/gpu/vertex.h video/gpu/polygon.h
+    video/gpu/backend/renderer.h
+    video/gpu/backend/software/interpolator.h
+    video/gpu/backend/software/software_renderer.h video/gpu/backend/software/software_renderer.cpp
 
     hardware/cartridge/cartridge.h hardware/cartridge/cartridge.cpp
     hardware/cartridge/save_database.h

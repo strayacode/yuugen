@@ -172,7 +172,7 @@ void SPU::start_channel(int id) {
         channel.internal_source += 4;
         break;
     case AudioFormat::Noise:
-        logger.error("SPU: handle noise playback");
+        logger.warn("SPU: handle noise playback");
     }
 }
 
@@ -204,7 +204,7 @@ void SPU::play_sample() {
             data = channel.adpcm_value;
             break;
         case AudioFormat::Noise:
-            logger.error("SPU: handle noise playback");
+            logger.warn("SPU: handle noise playback");
         }
 
         // increment the timer
@@ -224,7 +224,7 @@ void SPU::play_sample() {
                 next_sample_adpcm(i);
                 break;
             case AudioFormat::Noise:
-                logger.error("SPU: handle noise playback");
+                logger.warn("SPU: handle noise playback");
             }
 
             if (channel.internal_source == (channel.source + (channel.loopstart + channel.length) * 4)) {
