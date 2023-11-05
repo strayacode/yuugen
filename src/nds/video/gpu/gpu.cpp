@@ -285,7 +285,7 @@ Matrix GPU::multiply_matrix_matrix(const Matrix& a, const Matrix& b) {
         for (int x = 0; x < 4; x++) {
             s64 result = 0;
             for (int i = 0; i < 4; i++) {
-                result += (static_cast<s64>(a.field[y][i]) * b.field[i][x]);
+                result += (static_cast<s64>(a.field[y][i]) * static_cast<s64>(b.field[i][x]));
             }
 
             multiplied_matrix.field[y][x] = result >> 12;
@@ -427,14 +427,13 @@ Vertex GPU::normalise_vertex(const Vertex& vertex) {
         normalised.z = vertex.z;
         normalised.w = vertex.w;
     } else {
-        const u32 w = vertex.w;
-        const u32 width = (viewport.x1 - viewport.x0 + 1) & 0x1ff;
-        const u32 height = (viewport.y1 - viewport.y0 + 1) & 0xff;
-        const u32 screen_x = (((vertex.x + w) * width) / (w << 1)) + viewport.x0;
-        const u32 screen_y = (((-vertex.y + w) * height) / (w << 1)) + viewport.y1;
-
-        normalised.x = screen_x & 0x1ff;
-        normalised.y = screen_y & 0xff;
+        const s64 w = vertex.w;
+        const s64 width = (viewport.x1 - viewport.x0 + 1) & 0x1ff;
+        const s64 height = (viewport.y1 - viewport.y0 + 1) & 0xff;
+        const s64 w_doubled = w << 1;
+        
+        normalised.x = (((static_cast<s64>(vertex.x) + w) * width) / w_doubled) + static_cast<s64>(viewport.x0);
+        normalised.y = (((-static_cast<s64>(vertex.y) + w) * height) / w_doubled) + static_cast<s64>(viewport.y0);
         normalised.z = (((vertex.z << 14) / vertex.w) + 0x3fff) << 9;
 
         // TODO: should w be normalised?

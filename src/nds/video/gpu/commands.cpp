@@ -75,9 +75,9 @@ void GPU::set_viewport() {
     viewport.x1 = common::get_field<16, 8>(parameter);
     viewport.y1 = common::get_field<24, 8>(parameter);
 
-    // TODO: what happens when viewport parameters are reversed
-    assert(viewport.x1 >= viewport.x0);
-    assert(viewport.y1 >= viewport.y0);
+    if (viewport.x0 > viewport.x1 || viewport.y0 > viewport.y1) {
+        logger.todo("GPU: handle invalid viewport arguments");
+    }
 }
 
 void GPU::multiply_4x4() {
