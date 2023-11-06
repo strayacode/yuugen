@@ -45,6 +45,10 @@ void Translator::translate() {
             basic_block.cycles++;
             basic_block.num_instructions++;
 
+            if (status == BlockStatus::FlagsChanged && basic_block.condition != Condition::AL) {
+                break;
+            }
+
             if (status == BlockStatus::Break) {
                 break;
             }
@@ -72,6 +76,10 @@ void Translator::translate() {
             // with I, N and S cycles
             basic_block.cycles++;
             basic_block.num_instructions++;
+
+            if (status == BlockStatus::FlagsChanged && basic_block.condition != Condition::AL) {
+                break;
+            }
 
             if (status == BlockStatus::Break) {
                 break;

@@ -7,9 +7,7 @@
 namespace gba {
 
 System::System() : memory(*this), ppu(*this), irq(cpu), timers(scheduler, irq), dma(scheduler, memory, irq) {
-    // cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv4, memory, cp14);
     select_cpu_backend(arm::BackendType::IRInterpreter, false);
-    // cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv4, memory, cp14, arm::BackendType::IRInterpreter, false);
 }
 
 System::~System() {

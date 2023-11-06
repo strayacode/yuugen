@@ -18,6 +18,7 @@ public:
     enum class BlockStatus {
         Break,
         Continue,
+        FlagsChanged,
     };
 
     // arm instruction handlers

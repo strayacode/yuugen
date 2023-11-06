@@ -50,7 +50,7 @@ Translator::BlockStatus Translator::thumb_alu_immediate() {
     }
 
     ir.advance_pc();
-    return BlockStatus::Continue;
+    return BlockStatus::FlagsChanged;
 }
 
 Translator::BlockStatus Translator::thumb_branch_link_offset() {
@@ -254,7 +254,7 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
     }
 
     ir.advance_pc();
-    return BlockStatus::Continue;
+    return BlockStatus::FlagsChanged;
 }
 
 Translator::BlockStatus Translator::thumb_special_data_processing() {
@@ -294,6 +294,10 @@ Translator::BlockStatus Translator::thumb_special_data_processing() {
         }
     } else {
         ir.advance_pc();
+    }
+
+    if (opcode.opcode == ThumbSpecialDataProcessing::Opcode::CMP) {
+        return BlockStatus::FlagsChanged;
     }
 
     return BlockStatus::Continue;
@@ -484,7 +488,7 @@ Translator::BlockStatus Translator::thumb_add_subtract() {
     }
 
     ir.advance_pc();
-    return BlockStatus::Continue;
+    return BlockStatus::FlagsChanged;
 }
 
 Translator::BlockStatus Translator::thumb_shift_immediate() {
@@ -502,7 +506,7 @@ Translator::BlockStatus Translator::thumb_shift_immediate() {
     ir.store_nz(result);
     ir.store_gpr(opcode.rd, result);
     ir.advance_pc();
-    return BlockStatus::Continue;
+    return BlockStatus::FlagsChanged;
 }
 
 Translator::BlockStatus Translator::thumb_software_interrupt() {

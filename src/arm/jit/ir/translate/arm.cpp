@@ -4,8 +4,11 @@
 #include "arm/jit/ir/translator.h"
 #include "arm/jit/ir/value.h"
 #include "arm/jit/jit.h"
+#include "arm/disassembler/disassembler.h"
 
 namespace arm {
+
+static Disassembler disassembler;
 
 Translator::BlockStatus Translator::arm_branch_link_maybe_exchange() {
     if (static_cast<Condition>(common::get_field<28, 4>(instruction)) != Condition::NV) {
@@ -110,12 +113,14 @@ Translator::BlockStatus Translator::arm_multiply() {
         result = ir.add(result, op3);
     }
 
-    if (opcode.set_flags) {
-        ir.store_nz(result);
-    }
-
     ir.store_gpr(opcode.rd, result);
     ir.advance_pc();
+
+    if (opcode.set_flags) {
+        ir.store_nz(result);
+        return BlockStatus::FlagsChanged;
+    }
+
     return BlockStatus::Continue;
 }
 
@@ -136,13 +141,15 @@ Translator::BlockStatus Translator::arm_multiply_long() {
         result = ir.add_long(ir.pair(result.first, result.second), ir.pair(op3, op4));
     }
 
-    if (opcode.set_flags) {
-        ir.store_nz_long(result);
-    }
-
     ir.store_gpr(opcode.rdhi, result.first);
     ir.store_gpr(opcode.rdlo, result.second);
     ir.advance_pc();
+
+    if (opcode.set_flags) {
+        ir.store_nz_long(result);
+        return BlockStatus::FlagsChanged;
+    }
+
     return BlockStatus::Continue;
 }
 
@@ -266,9 +273,13 @@ Translator::BlockStatus Translator::arm_status_store_register() {
         ir.store_spsr(psr_new);
     } else {
         ir.store_cpsr(psr_new);
-        
+
         if (opcode.mask & 0xff) {
             return BlockStatus::Break;
+        }
+
+        if (opcode.mask & 0xff000000) {
+            return BlockStatus::FlagsChanged;
         }
     }
 
@@ -296,9 +307,13 @@ Translator::BlockStatus Translator::arm_status_store_immediate() {
         ir.store_spsr(psr_new);
     } else {
         ir.store_cpsr(psr_new);
-        
+
         if (opcode.mask & 0xff) {
             return BlockStatus::Break;
+        }
+
+        if (opcode.mask & 0xff000000) {
+            return BlockStatus::FlagsChanged;
         }
     }
 
@@ -660,6 +675,10 @@ Translator::BlockStatus Translator::arm_data_processing() {
         ir.advance_pc();
     }
 
+    if (opcode.set_flags) {
+        return BlockStatus::FlagsChanged;
+    }
+
     return BlockStatus::Continue;
 }
 
@@ -707,22 +726,22 @@ Translator::BlockStatus Translator::arm_software_interrupt() {
 
 Translator::BlockStatus Translator::arm_signed_multiply_accumulate_long() {
     logger.todo("Translator: handle arm_signed_multiply_accumulate_long");
-    return BlockStatus::Continue;
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_signed_multiply_word() {
     logger.todo("Translator: handle arm_signed_multiply_word");
-    return BlockStatus::Continue;
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_signed_multiply() {
     logger.todo("Translator: handle arm_signed_multiply");
-    return BlockStatus::Continue;
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_breakpoint() {
     logger.todo("Translator: handle arm_breakpoint");
-    return BlockStatus::Continue;
+    return BlockStatus::Break;
 }
 
 } // namespace arm
