@@ -175,9 +175,19 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
 
     if (opcode.half && opcode.sign) {
         if (opcode.load) {
-            logger.todo("Translator: handle ldrsh");
-
-            // TODO: handle unaligned read on armv4
+            if (jit.arch == Arch::ARMv4) {
+                // TODO: handle this
+                auto unaligned = ir.bitwise_and(address, ir.constant(0x1));
+                auto shift = ir.multiply(unaligned, ir.constant(0x8));
+                auto data = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
+                auto sign_extended = ir.sign_extend_half(data);
+                auto dst = ir.arithmetic_shift_right(sign_extended, shift);
+                ir.store_gpr(opcode.rd, dst);
+            } else {
+                auto data = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
+                auto dst = ir.sign_extend_half(data);
+                ir.store_gpr(opcode.rd, dst);
+            }
         } else if (jit.arch == Arch::ARMv5) {
             logger.todo("Translator: handle strd");
         }
