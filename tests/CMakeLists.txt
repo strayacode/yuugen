@@ -1,5 +1,5 @@
 add_executable(test_cpu_compare test_cpu_compare.cpp)
-target_link_libraries(test_cpu_compare arm nds common)
+target_link_libraries(test_cpu_compare arm gba nds common)
 
 find_package(Threads REQUIRED)
 

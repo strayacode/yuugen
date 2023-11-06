@@ -1,4 +1,6 @@
 #include "common/logger.h"
+#include "common/system.h"
+#include "gba/system.h"
 #include "nds/system.h"
 
 void compare_states(arm::Arch arch, arm::CPU& a, arm::CPU& b) {
@@ -21,14 +23,9 @@ void run_and_compare_cpus(arm::CPU& a, arm::CPU& b, int cycles) {
     }
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        logger.todo("yuugen_tests: no game path was supplied");
-        return 1;
-    }
-
-    nds::System a_system;
-    nds::System b_system;
+void run_gba(char *path) {
+    gba::System a_system;
+    gba::System b_system;
 
     a_system.set_update_callback([](f32) {});
     b_system.set_update_callback([](f32) {});
@@ -36,11 +33,43 @@ int main(int argc, char *argv[]) {
     a_system.select_cpu_backend(arm::BackendType::Interpreter, false);
     b_system.select_cpu_backend(arm::BackendType::IRInterpreter, false);
 
-    a_system.set_game_path(argv[1]);
+    a_system.set_game_path(path);
     a_system.set_boot_mode(common::BootMode::Fast);
     a_system.reset();
 
-    b_system.set_game_path(argv[1]);
+    b_system.set_game_path(path);
+    b_system.set_boot_mode(common::BootMode::Fast);
+    b_system.reset();
+
+    auto& a_cpu = a_system.cpu;
+    auto& b_cpu = b_system.cpu;
+
+    while (true) {
+        run_and_compare_cpus(*a_cpu, *b_cpu, 1);
+
+        a_system.scheduler.tick(1);
+        a_system.scheduler.run();
+
+        b_system.scheduler.tick(1);
+        b_system.scheduler.run();
+    }
+}
+
+void run_nds(char *path) {
+    nds::System a_system;
+    nds::System b_system;
+
+    a_system.set_update_callback([](f32) {});
+    b_system.set_update_callback([](f32) {});
+
+    a_system.select_cpu_backend(arm::BackendType::IRInterpreter, false);
+    b_system.select_cpu_backend(arm::BackendType::Jit, false);
+
+    a_system.set_game_path(path);
+    a_system.set_boot_mode(common::BootMode::Fast);
+    a_system.reset();
+
+    b_system.set_game_path(path);
     b_system.set_boot_mode(common::BootMode::Fast);
     b_system.reset();
 
@@ -58,6 +87,24 @@ int main(int argc, char *argv[]) {
 
         b_system.scheduler.tick(1);
         b_system.scheduler.run();
+    }
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        logger.todo("yuugen_tests: no game path was supplied");
+        return 1;
+    }
+
+    std::string path = argv[1];
+
+    auto extension = path.substr(path.find_last_of(".") + 1, path.size());
+    if (extension == "gba") {
+        run_gba(argv[1]);
+    } else if (extension == "nds") {
+        run_nds(argv[1]);
+    } else {
+        logger.todo("unhandled game extension %s", extension.c_str());
     }
 
     return 0;

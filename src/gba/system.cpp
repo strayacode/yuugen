@@ -8,7 +8,8 @@ namespace gba {
 
 System::System() : memory(*this), ppu(*this), irq(cpu), timers(scheduler, irq), dma(scheduler, memory, irq) {
     // cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv4, memory, cp14);
-    cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv4, memory, cp14, arm::BackendType::IRInterpreter, false);
+    select_cpu_backend(arm::BackendType::IRInterpreter, false);
+    // cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv4, memory, cp14, arm::BackendType::IRInterpreter, false);
 }
 
 System::~System() {
@@ -51,6 +52,20 @@ void System::run_frame() {
 
 void System::set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) {
     this->audio_device = audio_device;
+}
+
+void System::select_cpu_backend(arm::BackendType backend_type, bool optimise) {
+    switch (backend_type) {
+    case arm::BackendType::Interpreter:
+        cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv4, memory, cp14);
+        break;
+    case arm::BackendType::IRInterpreter:
+        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv4, memory, cp14, arm::BackendType::IRInterpreter, optimise);
+        break;
+    case arm::BackendType::Jit:
+        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv4, memory, cp14, arm::BackendType::Jit, optimise);
+        break;
+    }
 }
 
 std::vector<u32*> System::fetch_framebuffers() {
