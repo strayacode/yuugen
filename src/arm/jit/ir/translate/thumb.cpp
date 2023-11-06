@@ -259,10 +259,6 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
 
 Translator::BlockStatus Translator::thumb_special_data_processing() {
     auto opcode = ThumbSpecialDataProcessing::decode(instruction);
-    if (opcode.rd == 15) {
-        logger.todo("handle pc in thumb_alu_immediate");
-    }
-
     IRVariable result;
     IRValue op1;
     auto op2 = ir.load_gpr(opcode.rs);
@@ -289,9 +285,16 @@ Translator::BlockStatus Translator::thumb_special_data_processing() {
 
     if (result.is_assigned()) {
         ir.store_gpr(opcode.rd, result);
-    }
 
-    ir.advance_pc();
+        if (opcode.rd == 15) {
+            ir.flush_pipeline();
+            return BlockStatus::Break;
+        } else {
+            ir.advance_pc();
+        }
+    } else {
+        ir.advance_pc();
+    }
 
     return BlockStatus::Continue;
 }

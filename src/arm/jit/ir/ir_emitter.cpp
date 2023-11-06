@@ -346,9 +346,11 @@ void IREmitter::advance_pc() {
 }
 
 void IREmitter::flush_pipeline() {
-    auto pc = load_gpr(GPR::PC);
     auto instruction_size = basic_block.location.get_instruction_size();
-    store_gpr(GPR::PC, add(pc, constant(2 * instruction_size)));
+    auto address_mask = ~(instruction_size - 1);
+    auto pc = load_gpr(GPR::PC);
+    auto adjusted_pc = bitwise_and(pc, constant(address_mask));
+    store_gpr(GPR::PC, add(adjusted_pc, constant(2 * instruction_size)));
 }
 
 void IREmitter::memory_write(IRValue addr, IRVariable src, AccessSize access_size) {
