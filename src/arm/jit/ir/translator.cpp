@@ -39,6 +39,9 @@ void Translator::translate() {
             auto handler = decoder.get_arm_handler(instruction);
             auto status = (this->*handler)();
 
+            logger.debug("after execution:");
+            jit.log_state();
+
             // TODO: for now each instruction takes only 1 cycle,
             // but in the future we should at compile time figure out instruction timings
             // with I, N and S cycles
@@ -66,6 +69,9 @@ void Translator::translate() {
             
             auto handler = decoder.get_thumb_handler(instruction);
             auto status = (this->*handler)();
+
+            logger.debug("after execution:");
+            jit.log_state();
 
             // TODO: for now each instruction takes only 1 cycle,
             // but in the future we should at compile time figure out instruction timings

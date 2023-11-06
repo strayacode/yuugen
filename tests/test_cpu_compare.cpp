@@ -50,13 +50,13 @@ int main(int argc, char *argv[]) {
     auto& b_arm9 = b_system.arm9;
 
     while (true) {
-        run_and_compare_cpus(a_arm9.get_cpu(), b_arm9.get_cpu(), 32);
-        run_and_compare_cpus(a_arm7.get_cpu(), b_arm7.get_cpu(), 16);
+        run_and_compare_cpus(a_arm9.get_cpu(), b_arm9.get_cpu(), 2);
+        run_and_compare_cpus(a_arm7.get_cpu(), b_arm7.get_cpu(), 1);
 
-        a_system.scheduler.tick(16);
+        a_system.scheduler.tick(1);
         a_system.scheduler.run();
 
-        b_system.scheduler.tick(16);
+        b_system.scheduler.tick(1);
         b_system.scheduler.run();
     }
 

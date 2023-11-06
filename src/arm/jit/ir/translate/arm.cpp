@@ -490,7 +490,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
         if (opcode.rhs.reg.imm) {
             amount = ir.constant(opcode.rhs.reg.amount.imm);
         } else {
-            amount = ir.load_gpr(opcode.rhs.reg.amount.rs);
+            amount = ir.bitwise_and(ir.load_gpr(opcode.rhs.reg.amount.rs), ir.constant(0xff));
             ir.advance_pc();
             early_advance_pc = true;
         }
