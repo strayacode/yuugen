@@ -206,6 +206,9 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
     case IROpcodeType::ArithmeticShiftRight:
         logger.todo("handle ArithmeticShiftRight");
         break;
+    case IROpcodeType::RotateRight:
+        logger.todo("handle RotateRight");
+        break;
     case IROpcodeType::BarrelShifterLogicalShiftLeft:
         compile_barrel_shifter_logical_shift_left(*opcode->as<IRBarrelShifterLogicalShiftLeft>());
         break;

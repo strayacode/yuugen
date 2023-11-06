@@ -51,6 +51,7 @@ private:
         IRLogicalShiftLeft,
         IRLogicalShiftRight,
         IRArithmeticShiftRight,
+        IRRotateRight,
         IRBarrelShifterLogicalShiftLeft,
         IRBarrelShifterLogicalShiftRight,
         IRBarrelShifterArithmeticShiftRight,
@@ -117,6 +118,7 @@ private:
     void handle_logical_shift_left(IROpcodeVariant& opcode_variant);
     void handle_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_arithmetic_shift_right(IROpcodeVariant& opcode_variant);
+    void handle_rotate_right(IROpcodeVariant& opcode_variant);
     void handle_barrel_shifter_logical_shift_left(IROpcodeVariant& opcode_variant);
     void handle_barrel_shifter_logical_shift_right(IROpcodeVariant& opcode_variant);
     void handle_barrel_shifter_arithmetic_shift_right(IROpcodeVariant& opcode_variant);

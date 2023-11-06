@@ -142,6 +142,8 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_logical_shift_right, *opcode->as<IRLogicalShiftRight>()};
     case IROpcodeType::ArithmeticShiftRight:
         return {&IRInterpreter::handle_arithmetic_shift_right, *opcode->as<IRArithmeticShiftRight>()};
+    case IROpcodeType::RotateRight:
+        return {&IRInterpreter::handle_rotate_right, *opcode->as<IRRotateRight>()};
     case IROpcodeType::BarrelShifterLogicalShiftLeft:
         return {&IRInterpreter::handle_barrel_shifter_logical_shift_left, *opcode->as<IRBarrelShifterLogicalShiftLeft>()};
     case IROpcodeType::BarrelShifterLogicalShiftRight:
@@ -370,6 +372,13 @@ void IRInterpreter::handle_arithmetic_shift_right(IROpcodeVariant& opcode_varian
     auto value = resolve_value(opcode.src);
     auto amount = resolve_value(opcode.amount);
     assign_variable(opcode.dst, static_cast<s32>(value) >> amount);
+}
+
+void IRInterpreter::handle_rotate_right(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRRotateRight>(opcode_variant);
+    auto value = resolve_value(opcode.src);
+    auto amount = resolve_value(opcode.amount);
+    assign_variable(opcode.dst, common::rotate_right(value, amount));
 }
 
 void IRInterpreter::handle_barrel_shifter_logical_shift_left(IROpcodeVariant& opcode_variant) {

@@ -193,10 +193,16 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
         }
     } else if (opcode.half) {
         if (opcode.load) {
-            auto dst = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
-            ir.store_gpr(opcode.rd, dst);
+            auto data = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
 
-            // TODO: handle unaligned read on armv4
+            if (jit.arch == Arch::ARMv4) {
+                auto unaligned = ir.bitwise_and(address, ir.constant(0x1));
+                auto shift = ir.multiply(unaligned, ir.constant(0x8));
+                auto dst = ir.rotate_right(data, shift);
+                ir.store_gpr(opcode.rd, dst);
+            } else {
+                ir.store_gpr(opcode.rd, data);
+            }
         } else {
             auto src = ir.load_gpr(opcode.rd);
             ir.memory_write(address, src, AccessSize::Half);

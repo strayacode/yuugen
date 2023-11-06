@@ -45,6 +45,7 @@ public:
     IRVariable logical_shift_left(IRValue src, IRValue amount);
     IRVariable logical_shift_right(IRValue src, IRValue amount);
     IRVariable arithmetic_shift_right(IRValue src, IRValue amount);
+    IRVariable rotate_right(IRValue src, IRValue amount);
     IRPair<IRVariable> barrel_shifter_logical_shift_left(IRValue src, IRValue amount);
     IRPair<IRVariable> barrel_shifter_logical_shift_right(IRValue src, IRValue amount);
     IRPair<IRVariable> barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount);

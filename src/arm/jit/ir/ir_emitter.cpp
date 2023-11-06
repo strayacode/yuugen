@@ -151,6 +151,12 @@ IRVariable IREmitter::arithmetic_shift_right(IRValue src, IRValue amount) {
     return dst;
 }
 
+IRVariable IREmitter::rotate_right(IRValue src, IRValue amount) {
+    auto dst = create_variable();
+    push<IRRotateRight>(dst, src, amount);
+    return dst;
+}
+
 IRPair<IRVariable> IREmitter::barrel_shifter_logical_shift_left(IRValue src, IRValue amount) {
     auto result_and_carry = create_pair();
     push<IRBarrelShifterLogicalShiftLeft>(result_and_carry, src, amount, load_flag(Flag::C));

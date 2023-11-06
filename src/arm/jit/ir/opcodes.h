@@ -30,6 +30,7 @@ enum class IROpcodeType {
     LogicalShiftLeft,
     LogicalShiftRight,
     ArithmeticShiftRight,
+    RotateRight,
     BarrelShifterLogicalShiftLeft,
     BarrelShifterLogicalShiftRight,
     BarrelShifterArithmeticShiftRight,
@@ -351,6 +352,22 @@ struct IRArithmeticShiftRight : IROpcode {
 
     std::string to_string() override {
         return common::format("%s = asr(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
+    }
+
+    std::vector<IRValue*> get_parameters() override {
+        return {&src, &amount};
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue amount;
+};
+
+struct IRRotateRight : IROpcode {
+    IRRotateRight(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::RotateRight), dst(dst), src(src), amount(amount) {}
+
+    std::string to_string() override {
+        return common::format("%s = ror(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
     }
 
     std::vector<IRValue*> get_parameters() override {
