@@ -363,11 +363,34 @@ Translator::BlockStatus Translator::thumb_load_store_signed() {
     case ThumbLoadStoreSigned::Opcode::LDRSB:
         ir.store_gpr(opcode.rd, ir.sign_extend_byte(ir.memory_read(address, AccessSize::Byte, AccessType::Aligned)));
         break;
-    case ThumbLoadStoreSigned::Opcode::LDRH:
-        ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Half, AccessType::Aligned));
+    case ThumbLoadStoreSigned::Opcode::LDRH: {
+        auto data = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
+
+        if (jit.arch == Arch::ARMv4) {
+            auto unaligned = ir.bitwise_and(address, ir.constant(0x1));
+            auto shift = ir.multiply(unaligned, ir.constant(0x8));
+            auto dst = ir.rotate_right(data, shift);
+            ir.store_gpr(opcode.rd, dst);
+        } else {
+            ir.store_gpr(opcode.rd, data);
+        }
+
         break;
+    }
     case ThumbLoadStoreSigned::Opcode::LDRSH:
-        ir.store_gpr(opcode.rd, ir.sign_extend_half(ir.memory_read(address, AccessSize::Half, AccessType::Aligned)));
+        if (jit.arch == Arch::ARMv4) {
+            auto unaligned = ir.bitwise_and(address, ir.constant(0x1));
+            auto shift = ir.multiply(unaligned, ir.constant(0x8));
+            auto data = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
+            auto sign_extended = ir.sign_extend_half(data);
+            auto dst = ir.arithmetic_shift_right(sign_extended, shift);
+            ir.store_gpr(opcode.rd, dst);
+        } else {
+            auto data = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
+            auto dst = ir.sign_extend_half(data);
+            ir.store_gpr(opcode.rd, dst);
+        }
+        
         break;
     }
 
@@ -414,7 +437,16 @@ Translator::BlockStatus Translator::thumb_load_store_halfword() {
 
     auto address = ir.add(ir.load_gpr(opcode.rn), ir.constant(opcode.imm << 1));
     if (opcode.load) {
-        ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Half, AccessType::Aligned));
+        auto data = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
+
+        if (jit.arch == Arch::ARMv4) {
+            auto unaligned = ir.bitwise_and(address, ir.constant(0x1));
+            auto shift = ir.multiply(unaligned, ir.constant(0x8));
+            auto dst = ir.rotate_right(data, shift);
+            ir.store_gpr(opcode.rd, dst);
+        } else {
+            ir.store_gpr(opcode.rd, data);
+        }
     } else {
         ir.memory_write(address, ir.load_gpr(opcode.rd), AccessSize::Half);
     }

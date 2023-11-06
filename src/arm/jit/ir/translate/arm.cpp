@@ -176,7 +176,6 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     if (opcode.half && opcode.sign) {
         if (opcode.load) {
             if (jit.arch == Arch::ARMv4) {
-                // TODO: handle this
                 auto unaligned = ir.bitwise_and(address, ir.constant(0x1));
                 auto shift = ir.multiply(unaligned, ir.constant(0x8));
                 auto data = ir.memory_read(address, AccessSize::Half, AccessType::Aligned);
