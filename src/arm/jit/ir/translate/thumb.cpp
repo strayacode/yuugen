@@ -103,6 +103,7 @@ Translator::BlockStatus Translator::thumb_push_pop() {
                 ir.branch_exchange(data, ExchangeType::Bit0);
             } else {
                 ir.branch(data);
+                ir.flush_pipeline();
             }
             
             return BlockStatus::Break;
