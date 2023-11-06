@@ -52,10 +52,16 @@ void IdentityArithmeticPass::identity_bitwise_and(std::unique_ptr<IROpcode>& opc
 
     if (lhs.is_equal(0) || rhs.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, IRConstant{0});
+        mark_modified();
     } else if (lhs.is_equal(0xffffffff)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+        mark_modified();
     } else if (rhs.is_equal(0xffffffff)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+        mark_modified();
+    } else if (lhs.is_equal(rhs)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+        mark_modified();
     }
 }
 
@@ -66,10 +72,16 @@ void IdentityArithmeticPass::identity_bitwise_or(std::unique_ptr<IROpcode>& opco
 
     if (lhs.is_equal(0xffffffff) || rhs.is_equal(0xffffffff)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, IRConstant{0xffffffff});
+        mark_modified();
     } else if (lhs.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+        mark_modified();
     } else if (rhs.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+        mark_modified();
+    } else if (lhs.is_equal(rhs)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+        mark_modified();
     }
 }
 
@@ -80,8 +92,13 @@ void IdentityArithmeticPass::identity_bitwise_exclusive_or(std::unique_ptr<IROpc
 
     if (lhs.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+        mark_modified();
     } else if (rhs.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+        mark_modified();
+    } else if (lhs.is_equal(rhs)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, IRConstant{0});
+        mark_modified();
     }
 }
 
@@ -92,6 +109,7 @@ void IdentityArithmeticPass::identity_logical_shift_left(std::unique_ptr<IROpcod
 
     if (amount.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, src);
+        mark_modified();
     }
 }
 
@@ -102,6 +120,7 @@ void IdentityArithmeticPass::identity_logical_shift_right(std::unique_ptr<IROpco
 
     if (amount.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, src);
+        mark_modified();
     }
 }
 
@@ -112,6 +131,7 @@ void IdentityArithmeticPass::identity_arithmetic_shift_right(std::unique_ptr<IRO
 
     if (amount.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, src);
+        mark_modified();
     }
 }
 
@@ -122,6 +142,7 @@ void IdentityArithmeticPass::identity_rotate_right(std::unique_ptr<IROpcode>& op
 
     if (amount.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, src);
+        mark_modified();
     }
 }
 
@@ -132,8 +153,10 @@ void IdentityArithmeticPass::identity_add(std::unique_ptr<IROpcode>& opcode_vari
 
     if (lhs.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+        mark_modified();
     } else if (rhs.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+        mark_modified();
     }
 }
 
@@ -144,6 +167,10 @@ void IdentityArithmeticPass::identity_subtract(std::unique_ptr<IROpcode>& opcode
 
     if (rhs.is_equal(0)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+        mark_modified();
+    } else if (lhs.is_equal(rhs)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, IRConstant{0});
+        mark_modified();
     }
 }
 
@@ -154,8 +181,10 @@ void IdentityArithmeticPass::identity_multiply(std::unique_ptr<IROpcode>& opcode
 
     if (lhs.is_equal(1)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+        mark_modified();
     } else if (rhs.is_equal(1)) {
         opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+        mark_modified();
     }
 }
 

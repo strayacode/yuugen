@@ -4,8 +4,19 @@
 namespace arm {
 
 void Optimiser::optimise(BasicBlock& basic_block) {
-    for (auto& pass : passes) {
-        pass->optimise(basic_block);
+    int max_iterations = 5;
+    for (int i = 0; i < max_iterations; i++) {
+        bool modified = false;
+
+        for (auto& pass : passes) {
+            pass->clear_modified();
+            pass->optimise(basic_block);
+            modified |= pass->modified_basic_block();
+        }
+
+        if (!modified) {
+            break;
+        }
     }
 }
 

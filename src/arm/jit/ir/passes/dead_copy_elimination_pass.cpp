@@ -21,6 +21,7 @@ void DeadCopyEliminationPass::optimise(BasicBlock& basic_block) {
                 }
 
                 it = std::reverse_iterator(basic_block.opcodes.erase(std::next(it).base()));
+                mark_modified();
             } else {
                 it++;
             }

@@ -56,7 +56,15 @@ Translator::BlockStatus Translator::arm_branch_link() {
 }
 
 Translator::BlockStatus Translator::arm_branch_link_exchange() {
-    logger.todo("Translator: handle arm_branch_link_exchange");
+    if (jit.arch == Arch::ARMv4) {
+        logger.todo("Translator: arm_branch_link_exchange executed by arm7");
+    }
+
+    auto opcode = ARMBranchLinkExchange::decode(instruction);
+    auto instruction_size = ir.basic_block.location.get_instruction_size();
+    ir.link();
+    ir.store_flag(Flag::T, ir.constant(1));
+    ir.branch(ir.constant(ir.basic_block.current_address + (2 * instruction_size) + opcode.offset + 4));
     return BlockStatus::Break;
 }
 
@@ -740,8 +748,44 @@ Translator::BlockStatus Translator::arm_signed_multiply_word() {
 }
 
 Translator::BlockStatus Translator::arm_signed_multiply() {
-    logger.todo("Translator: handle arm_signed_multiply");
-    return BlockStatus::Break;
+    if (jit.arch == Arch::ARMv4) {
+        logger.todo("Translator: handle armv4 arm_signed_multiply");
+    }
+
+    auto opcode = ARMSignedMultiply::decode(instruction);
+    IRVariable lhs;
+    IRVariable rhs;
+
+    if (opcode.x) {
+        lhs = ir.sign_extend_half(ir.logical_shift_right(ir.load_gpr(opcode.rm), ir.constant(16)));
+    } else {
+        lhs = ir.sign_extend_half(ir.load_gpr(opcode.rm));
+    }
+
+    if (opcode.y) {
+        rhs = ir.sign_extend_half(ir.logical_shift_right(ir.load_gpr(opcode.rs), ir.constant(16)));
+    } else {
+        rhs = ir.sign_extend_half(ir.load_gpr(opcode.rs));
+    }
+
+    auto result = ir.multiply(lhs, rhs);
+
+    if (opcode.accumulate) {
+        auto operand = ir.load_gpr(opcode.rn);
+        auto added = ir.add(result, operand);
+
+        auto add_overflow = ir.add_overflow(result, operand, added);
+        auto value_shifted = ir.logical_shift_left(add_overflow, ir.constant(Flag::Q));
+        auto cpsr = ir.load_cpsr();
+        
+        ir.store_cpsr(ir.bitwise_or(cpsr, value_shifted));
+        ir.store_gpr(opcode.rd, added);
+    } else {
+        ir.store_gpr(opcode.rd, result);
+    }
+
+    ir.advance_pc();
+    return BlockStatus::Continue;
 }
 
 Translator::BlockStatus Translator::arm_breakpoint() {

@@ -55,6 +55,20 @@ struct IRValue {
         return type == IRValueType::Constant && constant.value == value;
     }
 
+    bool is_equal(IRValue value) {
+        if (type != value.type) {
+            return false;
+        }
+
+        if (type == IRValueType::Constant) {
+            return constant.value == value.as_constant().value;
+        } else if (type == IRValueType::Variable) {
+            return variable.id == value.as_variable().id;
+        }
+
+        return false;
+    }
+
     IRVariable& as_variable() {
         return variable;
     }
@@ -98,7 +112,16 @@ struct GuestRegister {
     }
 
     int get_id() {
-        return (static_cast<int>(mode) << 4) | static_cast<int>(gpr);
+        auto start = mode == Mode::FIQ ? GPR::R8 : GPR::R13;
+        if (gpr < start || gpr == GPR::PC) {
+            return static_cast<int>(gpr);
+        }
+
+        if (mode == Mode::USR) {
+            return (static_cast<int>(Mode::SYS) << 4) | static_cast<int>(gpr);
+        } else {
+            return (static_cast<int>(mode) << 4) | static_cast<int>(gpr);
+        }
     }
 };
 
@@ -119,6 +142,7 @@ enum Flag : u32 {
     Z = 30,
     C = 29,
     V = 28,
+    Q = 27,
     I = 7,
     T = 5,
 };

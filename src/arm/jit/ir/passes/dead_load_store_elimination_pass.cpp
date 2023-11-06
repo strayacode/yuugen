@@ -13,6 +13,7 @@ void DeadLoadStoreEliminationPass::optimise(BasicBlock& basic_block) {
             auto load_gpr_opcode = *opcode->as<IRLoadGPR>();
             if (gpr_uses[load_gpr_opcode.src.get_id()].is_assigned()) {
                 opcode = std::make_unique<IRCopy>(load_gpr_opcode.dst, gpr_uses[load_gpr_opcode.src.get_id()]);
+                mark_modified();
             } else {
                 gpr_uses[load_gpr_opcode.src.get_id()] = load_gpr_opcode.dst;
             }
@@ -23,6 +24,7 @@ void DeadLoadStoreEliminationPass::optimise(BasicBlock& basic_block) {
             auto load_cpsr_opcode = *opcode->as<IRLoadCPSR>();
             if (cpsr_use.is_assigned()) {
                 opcode = std::make_unique<IRCopy>(load_cpsr_opcode.dst, cpsr_use);
+                mark_modified();
             } else {
                 cpsr_use = load_cpsr_opcode.dst;
             }
@@ -33,6 +35,7 @@ void DeadLoadStoreEliminationPass::optimise(BasicBlock& basic_block) {
             auto load_spsr_opcode = *opcode->as<IRLoadSPSR>();
             if (spsr_use.is_assigned()) {
                 opcode = std::make_unique<IRCopy>(load_spsr_opcode.dst, spsr_use);
+                mark_modified();
             } else {
                 spsr_use = load_spsr_opcode.dst;
             }
@@ -54,6 +57,7 @@ void DeadLoadStoreEliminationPass::optimise(BasicBlock& basic_block) {
             auto store_gpr_opcode = *opcode->as<IRStoreGPR>();
             if (gpr_uses[store_gpr_opcode.dst.get_id()].is_assigned()) {
                 it = std::reverse_iterator(basic_block.opcodes.erase(std::next(it).base()));
+                mark_modified();
             } else {
                 gpr_uses[store_gpr_opcode.dst.get_id()] = store_gpr_opcode.src;
                 it++;
@@ -62,6 +66,7 @@ void DeadLoadStoreEliminationPass::optimise(BasicBlock& basic_block) {
             auto store_cpsr_opcode = *opcode->as<IRStoreCPSR>();
             if (cpsr_use.is_assigned()) {
                 it = std::reverse_iterator(basic_block.opcodes.erase(std::next(it).base()));
+                mark_modified();
             } else {
                 cpsr_use = store_cpsr_opcode.src;
                 it++;
@@ -70,6 +75,7 @@ void DeadLoadStoreEliminationPass::optimise(BasicBlock& basic_block) {
             auto store_spsr_opcode = *opcode->as<IRStoreSPSR>();
             if (spsr_use.is_assigned()) {
                 it = std::reverse_iterator(basic_block.opcodes.erase(std::next(it).base()));
+                mark_modified();
             } else {
                 spsr_use = store_spsr_opcode.src;
                 it++;

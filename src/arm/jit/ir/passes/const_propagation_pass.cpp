@@ -21,6 +21,7 @@ void ConstPropagationPass::optimise(BasicBlock& basic_block) {
 
         if (erase_opcode) {
             it = basic_block.opcodes.erase(it);
+            mark_modified();
         } else {
             it++;
         }
