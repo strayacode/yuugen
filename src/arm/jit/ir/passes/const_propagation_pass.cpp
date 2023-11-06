@@ -47,7 +47,7 @@ void ConstPropagationPass::record_uses(BasicBlock& basic_block) {
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_opcode(std::unique_ptr<IROpcode>& opcode_variant) {
-    // TODO: handle compare and barrel shifter opcodes
+    // TODO: handle rotate right and barrel shifter opcodes
     switch (opcode_variant->get_type()) {
     case IROpcodeType::BitwiseAnd:
         return fold_bitwise_and(opcode_variant);
@@ -75,6 +75,8 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_opcod
         return fold_multiply(opcode_variant);
     case IROpcodeType::MultiplyLong:
         return fold_multiply_long(opcode_variant);
+    case IROpcodeType::Compare:
+        return fold_compare(opcode_variant);
     case IROpcodeType::Copy:
         return fold_copy(opcode_variant);
     default:
@@ -207,6 +209,26 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multi
     logger.warn("handle opcode multiply_long");
     auto& opcode = *opcode_variant->as<IRMultiplyLong>();
     return std::nullopt;
+}
+
+std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_compare(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRCompare>();
+    if (!opcode.lhs.is_constant() || !opcode.rhs.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& lhs = opcode.lhs.as_constant();
+    const auto& rhs = opcode.rhs.as_constant();
+    switch (opcode.compare_type) {
+    case CompareType::Equal:
+        return FoldResult{lhs.value == rhs.value, opcode.dst.id};
+    case CompareType::LessThan:
+        return FoldResult{lhs.value < rhs.value, opcode.dst.id};
+    case CompareType::GreaterEqual:
+        return FoldResult{lhs.value >= rhs.value, opcode.dst.id};
+    case CompareType::GreaterThan:
+        return FoldResult{lhs.value > rhs.value, opcode.dst.id};
+    }
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_copy(std::unique_ptr<IROpcode>& opcode_variant) {

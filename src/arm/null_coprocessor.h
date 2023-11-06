@@ -18,6 +18,10 @@ public:
     u32 get_exception_base() override {
         return 0;
     }
+
+    bool has_side_effects(u32 /* cn */, u32 /* cm */, u32 /* cp */) override {
+        return false;
+    }
 };
 
 } // namespace arm

@@ -18,6 +18,7 @@ public:
     u32 read(u32 cn, u32 cm, u32 cp) override;
     void write(u32 cn, u32 cm, u32 cp, u32 value) override;
     u32 get_exception_base() override;
+    bool has_side_effects(u32 cn, u32 cm, u32 cp) override;
 
     union Control {
         struct {

@@ -4,6 +4,7 @@
 #include "arm/jit/ir/translator.h"
 #include "arm/jit/ir/passes/dead_load_store_elimination_pass.h"
 #include "arm/jit/ir/passes/const_propagation_pass.h"
+#include "arm/jit/ir/passes/identity_arithmetic_pass.h"
 #include "arm/jit/ir/passes/dead_copy_elimination_pass.h"
 #include "arm/jit/backend/code.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
@@ -15,7 +16,7 @@ namespace arm {
 Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type, bool optimise) : arch(arch), memory(memory), coprocessor(coprocessor) {
     // configure jit settings
     // TODO: use a global settings struct to configure the jit
-    config.block_size = 10;
+    config.block_size = 32;
 
     switch (backend_type) {
     case BackendType::IRInterpreter:
@@ -31,6 +32,7 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
     if (optimise) {
         optimiser.add_pass(std::make_unique<DeadLoadStoreEliminationPass>());
         optimiser.add_pass(std::make_unique<ConstPropagationPass>());
+        optimiser.add_pass(std::make_unique<IdentityArithmeticPass>());
         optimiser.add_pass(std::make_unique<DeadCopyEliminationPass>());
     }
 }

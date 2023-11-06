@@ -35,6 +35,7 @@ private:
     std::optional<FoldResult> fold_subtract(std::unique_ptr<IROpcode>& opcode_variant);
     std::optional<FoldResult> fold_multiply(std::unique_ptr<IROpcode>& opcode_variant);
     std::optional<FoldResult> fold_multiply_long(std::unique_ptr<IROpcode>& opcode_variant);
+    std::optional<FoldResult> fold_compare(std::unique_ptr<IROpcode>& opcode_variant);
     std::optional<FoldResult> fold_copy(std::unique_ptr<IROpcode>& opcode_variant);
 
     std::vector<IRValue*> uses;

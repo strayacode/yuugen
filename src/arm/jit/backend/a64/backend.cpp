@@ -662,78 +662,87 @@ void A64Backend::compile_copy(IRCopy& opcode) {
 }
 
 void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
-    if (opcode.addr.is_constant()) {
-        logger.todo("handle potential constant address optimisation");
-    }
-
     WReg dst_reg = register_allocator.allocate(opcode.dst);
-    WReg addr_reg = register_allocator.get(opcode.addr.as_variable());
-    
-    // move jit pointer into x0
-    assembler.mov(x0, jit_reg);
 
-    // move addr into w1
-    assembler.mov(w1, addr_reg);
-
-    switch (opcode.access_size) {
-    case AccessSize::Byte:
-        assembler.invoke_function(reinterpret_cast<void*>(read_byte));
-        assembler.mov(dst_reg, w0);
-        break;
-    case AccessSize::Half:
-        switch (opcode.access_type) {
-        case AccessType::Aligned:
-            assembler.invoke_function(reinterpret_cast<void*>(read_half));
-            assembler.mov(dst_reg, w0);
-            break;
-        case AccessType::Unaligned:
-            logger.todo("Jit: handle unaligned half read");
-            break;
-        }
+    if (opcode.addr.is_constant()) {
+        logger.todo("handle addr as constant");
+    } else {
+        WReg addr_reg = register_allocator.get(opcode.addr.as_variable());
         
-        break;
-    case AccessSize::Word:
-        if (opcode.access_type == AccessType::Unaligned) {
-            assembler.invoke_function(reinterpret_cast<void*>(read_word_rotate));
-            assembler.mov(dst_reg, w0);
-        } else {
-            assembler.invoke_function(reinterpret_cast<void*>(read_word));
-            assembler.mov(dst_reg, w0);
-        }
+        // move jit pointer into x0
+        assembler.mov(x0, jit_reg);
 
-        break;
+        // move addr into w1
+        assembler.mov(w1, addr_reg);
+
+        switch (opcode.access_size) {
+        case AccessSize::Byte:
+            assembler.invoke_function(reinterpret_cast<void*>(read_byte));
+            assembler.mov(dst_reg, w0);
+            break;
+        case AccessSize::Half:
+            switch (opcode.access_type) {
+            case AccessType::Aligned:
+                assembler.invoke_function(reinterpret_cast<void*>(read_half));
+                assembler.mov(dst_reg, w0);
+                break;
+            case AccessType::Unaligned:
+                logger.todo("Jit: handle unaligned half read");
+                break;
+            }
+            
+            break;
+        case AccessSize::Word:
+            if (opcode.access_type == AccessType::Unaligned) {
+                assembler.invoke_function(reinterpret_cast<void*>(read_word_rotate));
+                assembler.mov(dst_reg, w0);
+            } else {
+                assembler.invoke_function(reinterpret_cast<void*>(read_word));
+                assembler.mov(dst_reg, w0);
+            }
+
+            break;
+        }
     }
 }
 
 void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
+    WReg addr_reg;
+    WReg src_reg;
+
     if (opcode.addr.is_constant()) {
-        logger.todo("handle potential constant address optimisation");
+        addr_reg = register_allocator.allocate_temporary();
+        auto& addr = opcode.addr.as_constant();
+        assembler.mov(addr_reg, addr.value);
+    } else {
+        addr_reg = register_allocator.get(opcode.addr.as_variable());
     }
 
     if (opcode.src.is_constant()) {
-        logger.todo("handle constant value for memory write");
+        src_reg = register_allocator.allocate_temporary();
+        auto& src = opcode.src.as_constant();
+        assembler.mov(src_reg, src.value);
     } else {
-        WReg addr_reg = register_allocator.get(opcode.addr.as_variable());
-        WReg src_reg = register_allocator.get(opcode.src.as_variable());
+        src_reg = register_allocator.get(opcode.src.as_variable());
+    }
 
-        // move jit pointer into x0
-        assembler.mov(x0, jit_reg);
+    // move jit pointer into x0
+    assembler.mov(x0, jit_reg);
 
-        // move addr and src into w1 and w2 respectively
-        assembler.mov(w1, addr_reg);
-        assembler.mov(w2, src_reg);
-        
-        switch (opcode.access_size) {
-        case AccessSize::Byte:
-            assembler.invoke_function(reinterpret_cast<void*>(write_byte));
-            break;
-        case AccessSize::Half:
-            assembler.invoke_function(reinterpret_cast<void*>(write_half));
-            break;
-        case AccessSize::Word:
-            assembler.invoke_function(reinterpret_cast<void*>(write_word));
-            break;
-        }
+    // move addr and src into w1 and w2 respectively
+    assembler.mov(w1, addr_reg);
+    assembler.mov(w2, src_reg);
+    
+    switch (opcode.access_size) {
+    case AccessSize::Byte:
+        assembler.invoke_function(reinterpret_cast<void*>(write_byte));
+        break;
+    case AccessSize::Half:
+        assembler.invoke_function(reinterpret_cast<void*>(write_half));
+        break;
+    case AccessSize::Word:
+        assembler.invoke_function(reinterpret_cast<void*>(write_word));
+        break;
     }
 }
 

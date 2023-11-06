@@ -102,4 +102,19 @@ u32 ARM9Coprocessor::get_exception_base() {
     return control.exception_vector ? 0xffff0000 : 0x00000000;
 }
 
+bool ARM9Coprocessor::has_side_effects(u32 cn, u32 cm, u32 cp) {
+    switch ((cn << 16) | (cm << 8) | cp) {
+    case 0x070004:
+    case 0x070802:
+        // wait for irq
+        return true;
+    case 0x070500:
+    case 0x070501:
+        // invalidate icache
+        return true;
+    }
+
+    return false;
+}
+
 } // namespace nds

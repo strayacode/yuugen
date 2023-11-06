@@ -57,7 +57,7 @@ Translator::BlockStatus Translator::arm_branch_link() {
 
 Translator::BlockStatus Translator::arm_branch_link_exchange() {
     logger.todo("Translator: handle arm_branch_link_exchange");
-    return BlockStatus::Continue;
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_branch_link_exchange_register() {
@@ -126,7 +126,7 @@ Translator::BlockStatus Translator::arm_multiply() {
 
 Translator::BlockStatus Translator::arm_saturating_add_subtract() {
     logger.todo("Translator: handle arm_saturating_add_subtract");
-    return BlockStatus::Continue;
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_multiply_long() {
@@ -703,6 +703,11 @@ Translator::BlockStatus Translator::arm_coprocessor_register_transfer() {
     }
 
     ir.advance_pc();
+
+    if (!opcode.load && jit.coprocessor.has_side_effects(opcode.crn, opcode.crm, opcode.cp)) {
+        return BlockStatus::Break;
+    }
+
     return BlockStatus::Continue;
 }
 
