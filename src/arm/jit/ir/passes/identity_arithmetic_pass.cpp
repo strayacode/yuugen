@@ -3,7 +3,6 @@
 namespace arm {
 
 void IdentityArithmeticPass::optimise(BasicBlock& basic_block) {
-    // convert loads to copies with last known value
     for (auto& opcode : basic_block.opcodes) {
         identity_opcode(opcode);
     }
@@ -48,122 +47,116 @@ void IdentityArithmeticPass::identity_opcode(std::unique_ptr<IROpcode>& opcode_v
 
 void IdentityArithmeticPass::identity_bitwise_and(std::unique_ptr<IROpcode>& opcode_variant) {
     auto& opcode = *opcode_variant->as<IRBitwiseAnd>();
-    if (opcode.lhs.is_constant() && !opcode.rhs.is_constant()) {
-        switch (opcode.lhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.lhs);
-            break;
-        case 0xffffffff:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.rhs);
-            break;
-        }
-    } else if (!opcode.lhs.is_constant() && opcode.rhs.is_constant()) {
-        switch (opcode.rhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.rhs);
-            break;
-        case 0xffffffff:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.lhs);
-            break;
-        }
+    auto lhs = opcode.lhs;
+    auto rhs = opcode.rhs;
+
+    if (lhs.is_equal(0) || rhs.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, IRConstant{0});
+    } else if (lhs.is_equal(0xffffffff)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+    } else if (rhs.is_equal(0xffffffff)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
     }
 }
 
 void IdentityArithmeticPass::identity_bitwise_or(std::unique_ptr<IROpcode>& opcode_variant) {
     auto& opcode = *opcode_variant->as<IRBitwiseOr>();
-    if (opcode.lhs.is_constant() && !opcode.rhs.is_constant()) {
-        switch (opcode.lhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.rhs);
-            break;
-        case 0xffffffff:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.lhs);
-            break;
-        }
-    } else if (!opcode.lhs.is_constant() && opcode.rhs.is_constant()) {
-        switch (opcode.rhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.lhs);
-            break;
-        case 0xffffffff:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.rhs);
-            break;
-        }
+    auto lhs = opcode.lhs;
+    auto rhs = opcode.rhs;
+
+    if (lhs.is_equal(0xffffffff) || rhs.is_equal(0xffffffff)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, IRConstant{0xffffffff});
+    } else if (lhs.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+    } else if (rhs.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
     }
 }
 
 void IdentityArithmeticPass::identity_bitwise_exclusive_or(std::unique_ptr<IROpcode>& opcode_variant) {
     auto& opcode = *opcode_variant->as<IRBitwiseExclusiveOr>();
-    if (opcode.lhs.is_constant() && !opcode.rhs.is_constant()) {
-        switch (opcode.lhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.rhs);
-            break;
-        }
-        
-    } else if (!opcode.lhs.is_constant() && opcode.rhs.is_constant()) {
-        switch (opcode.rhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.lhs);
-            break;
-        }
+    auto lhs = opcode.lhs;
+    auto rhs = opcode.rhs;
+
+    if (lhs.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+    } else if (rhs.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
     }
 }
 
 void IdentityArithmeticPass::identity_logical_shift_left(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRLogicalShiftLeft>();
+    auto src = opcode.src;
+    auto amount = opcode.amount;
 
+    if (amount.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, src);
+    }
 }
 
 void IdentityArithmeticPass::identity_logical_shift_right(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRLogicalShiftRight>();
+    auto src = opcode.src;
+    auto amount = opcode.amount;
 
+    if (amount.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, src);
+    }
 }
 
 void IdentityArithmeticPass::identity_arithmetic_shift_right(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRArithmeticShiftRight>();
+    auto src = opcode.src;
+    auto amount = opcode.amount;
 
+    if (amount.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, src);
+    }
 }
 
 void IdentityArithmeticPass::identity_rotate_right(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRRotateRight>();
+    auto src = opcode.src;
+    auto amount = opcode.amount;
 
+    if (amount.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, src);
+    }
 }
 
 void IdentityArithmeticPass::identity_add(std::unique_ptr<IROpcode>& opcode_variant) {
     auto& opcode = *opcode_variant->as<IRAdd>();
-    if (opcode.lhs.is_constant() && !opcode.rhs.is_constant()) {
-        switch (opcode.lhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.rhs);
-            break;
-        }
-        
-    } else if (!opcode.lhs.is_constant() && opcode.rhs.is_constant()) {
-        switch (opcode.rhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.lhs);
-            break;
-        }
+    auto lhs = opcode.lhs;
+    auto rhs = opcode.rhs;
+
+    if (lhs.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+    } else if (rhs.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
     }
 }
 
 void IdentityArithmeticPass::identity_subtract(std::unique_ptr<IROpcode>& opcode_variant) {
     auto& opcode = *opcode_variant->as<IRSubtract>();
-    if (opcode.lhs.is_constant() && !opcode.rhs.is_constant()) {
-        switch (opcode.lhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.rhs);
-            break;
-        }
-        
-    } else if (!opcode.lhs.is_constant() && opcode.rhs.is_constant()) {
-        switch (opcode.rhs.as_constant().value) {
-        case 0x00000000:
-            opcode_variant = std::make_unique<IRCopy>(opcode.dst, opcode.lhs);
-            break;
-        }
+    auto lhs = opcode.lhs;
+    auto rhs = opcode.rhs;
+
+    if (rhs.is_equal(0)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
     }
 }
 
 void IdentityArithmeticPass::identity_multiply(std::unique_ptr<IROpcode>& opcode_variant) {
+    auto& opcode = *opcode_variant->as<IRAdd>();
+    auto lhs = opcode.lhs;
+    auto rhs = opcode.rhs;
 
+    if (lhs.is_equal(1)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, rhs);
+    } else if (rhs.is_equal(1)) {
+        opcode_variant = std::make_unique<IRCopy>(opcode.dst, lhs);
+    }
 }
 
 } // namespace arm

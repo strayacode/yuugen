@@ -51,6 +51,10 @@ struct IRValue {
         return type == IRValueType::Constant;
     }
 
+    bool is_equal(u32 value) {
+        return type == IRValueType::Constant && constant.value == value;
+    }
+
     IRVariable& as_variable() {
         return variable;
     }
