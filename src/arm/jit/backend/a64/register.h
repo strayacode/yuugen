@@ -5,20 +5,20 @@
 namespace arm {
 
 struct Reg {
-    constexpr Reg(u32 id, u32 bits) : id(id), bits(bits) {}
+    constexpr explicit Reg(u32 id, u32 bits) : id(id), bits(bits) {}
 
     u32 id;
     u32 bits;
 };
 
 struct WReg : public Reg {
-    constexpr WReg() : Reg(-1, 32) {}
-    constexpr WReg(u32 id) : Reg(id, 32) {}
+    constexpr explicit WReg() : Reg(-1, 32) {}
+    constexpr explicit WReg(u32 id) : Reg(id, 32) {}
 };
 
 struct XReg : public Reg {
-    constexpr XReg() : Reg(-1, 32) {}
-    constexpr XReg(u32 id) : Reg(id, 64) {}
+    constexpr explicit XReg() : Reg(-1, 32) {}
+    constexpr explicit XReg(u32 id) : Reg(id, 64) {}
 };
 
 enum SystemReg {

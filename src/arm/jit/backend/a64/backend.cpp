@@ -609,12 +609,18 @@ void A64Backend::compile_compare(IRCompare& opcode) {
     if (lhs_is_constant && rhs_is_constant) {
         logger.todo("handle when lhs and rhs are both constant");
     } else if (!lhs_is_constant && rhs_is_constant) {
-        auto& lhs = opcode.lhs.as_variable();
+        const auto lhs = opcode.lhs.as_variable();
+        const auto rhs = opcode.rhs.as_constant();
         WReg lhs_reg = register_allocator.get(lhs);
-        WReg tmp_imm_reg = register_allocator.allocate_temporary();
-        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
-        assembler.cmp(lhs_reg, tmp_imm_reg);
-
+        
+        if (SubImmediate::is_valid(rhs.value)) {
+            assembler.cmp(lhs_reg, rhs.value);
+        } else {
+            WReg tmp_imm_reg = register_allocator.allocate_temporary();
+            assembler.mov(tmp_imm_reg, rhs.value);
+            assembler.cmp(lhs_reg, tmp_imm_reg);
+        }
+        
         switch (opcode.compare_type) {
         case CompareType::Equal:
             assembler.cset(dst_reg, Condition::EQ);

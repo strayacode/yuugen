@@ -97,6 +97,14 @@ void A64Assembler::cmp(XReg xn, XReg xm, Shift shift, u32 amount) {
     emit(0xeb << 24 | static_cast<u32>(shift) << 22 | xm.id << 16 | amount << 10 | xn.id << 5 | 0x1f);
 }
 
+void A64Assembler::cmp(WReg wn, SubImmediate imm) {
+    emit(0xe2 << 23 | imm.value << 10 | wn.id << 5 | 0x1f);
+}
+
+void A64Assembler::cmp(XReg xn, SubImmediate imm) {
+    emit(0x1e2 << 23 | imm.value << 10 | xn.id << 5 | 0x1f);
+}
+
 void A64Assembler::cset(WReg wd, Condition condition) {
     emit(0x1a9f << 16 | (condition ^ 0x1) << 12 | 0x3f << 5 | wd.id);
 }

@@ -8,12 +8,12 @@ void check_values(const char *testcase, u32 expected, u32 actual) {
     if (expected != actual) {
         logger.error("%s expected: %08x got: %08x", testcase, expected, actual);
     } else {
-        logger.debug("%s passed", testcase);
+        logger.print("%s passed", testcase);
     }
 }
 
 int main() {
-    arm::CodeBlock code_block{1000};
+    arm::CodeBlock code_block{4096};
     arm::A64Assembler assembler{code_block.get_code()};
 
     code_block.unprotect();
@@ -45,6 +45,12 @@ int main() {
 
     TEST(0xeb4b65bf, cmp(arm::x13, arm::x11, arm::Shift::LSR, 25))
     TEST(0xeb06373f, cmp(arm::x25, arm::x6, arm::Shift::LSL, 13))
+    TEST(0x717d7a5f, cmp(arm::w18, 16113664))
+    TEST(0x7153bcdf, cmp(arm::w6, 5173248))
+    TEST(0x716584ff, cmp(arm::w7, 9834496))
+    TEST(0xf15a64bf, cmp(arm::x5, 6918144))
+    TEST(0xf179805f, cmp(arm::x2, 15073280))
+    TEST(0xf12c6a7f, cmp(arm::x19, 2842))
 
     TEST(0x1a9fd7fa, cset(arm::w26, arm::Condition::GT))
     TEST(0x1a9f47ec, cset(arm::w12, arm::Condition::PL))

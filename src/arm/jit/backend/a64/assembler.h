@@ -9,6 +9,24 @@
 
 namespace arm {
 
+template<int N>
+struct Immediate {
+    Immediate(u64 value) {
+        if (!is_valid(value)) {
+            logger.error("Assembler: immediate %08x doesn't fit into %d bits", value, N);
+        }
+
+        this->value = value;
+    }
+
+    bool is_valid(u64 value) {
+        return (value & mask) == value;
+    }
+
+    u32 value;
+    static constexpr u64 mask = (static_cast<u64>(1) << N) - 1;
+};
+
 template <int N, int A>
 struct Offset {
     Offset(s64 value) {
@@ -61,11 +79,10 @@ struct Immediate16 {
 
 struct SubImmediate {
     SubImmediate(u64 value) {
-        const u16 masked_value = static_cast<u16>(value & 0xfff);
         if ((value & 0xfff) == value) {
-            this->value = (0 << 16) | masked_value;
+            this->value = value;
         } else if ((value & 0xfff000) == value) {
-            this->value = (1 << 16) | masked_value;
+            this->value = (1 << 12) | (value >> 12);
         } else {
             logger.error("value %016lx can't be encoded in an SubImmediate", value);
         }
@@ -117,6 +134,8 @@ public:
 
     void cmp(WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void cmp(XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
+    void cmp(WReg wn, SubImmediate imm);
+    void cmp(XReg xn, SubImmediate imm);
 
     void cset(WReg wd, Condition condition);
     void cset(XReg xd, Condition condition);
