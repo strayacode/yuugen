@@ -1,5 +1,6 @@
 #include "common/logger.h"
 #include "arm/jit/backend/a64/assembler.h"
+#include "arm/jit/backend/a64/disassembler.h"
 
 namespace arm {
 
@@ -344,6 +345,7 @@ void A64Assembler::sub(XReg xd, XReg xn, XReg xm, Shift shift, u32 amount) {
 }
 
 void A64Assembler::emit(u32 data) {
+    logger.print("%s", disassemble_a64_instruction(reinterpret_cast<u64>(current_code), data).c_str());
     *current_code++ = data;
     num_instructions++;
 }

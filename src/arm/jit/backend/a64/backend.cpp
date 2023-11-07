@@ -44,6 +44,7 @@ Code A64Backend::get_code_at(Location location) {
 }
 
 Code A64Backend::compile(BasicBlock& basic_block) {
+    logger.print("compiling basic block at %08x...", basic_block.location.get_address());
     register_allocator.reset();
 
     // calculate the lifetimes of ir variables
@@ -52,26 +53,31 @@ Code A64Backend::compile(BasicBlock& basic_block) {
     JitFunction jit_fn = assembler.get_current_code<JitFunction>();
     code_block.unprotect();
 
+    logger.print("compiling prologue...");
     compile_prologue();
 
     Label label_pass;
     Label label_fail;
 
+    logger.print("compiling condition check...");
     compile_condition_check(basic_block, label_pass, label_fail);
-
     assembler.link(label_pass);
 
     if (basic_block.condition != Condition::NV) {
         for (auto& opcode : basic_block.opcodes) {
+            logger.print("compiling %s...", opcode->to_string().c_str());
             compile_ir_opcode(opcode);
             register_allocator.advance();
         }
     }
 
     assembler.link(label_fail);
-    assembler.sub(cycles_left_reg, cycles_left_reg, SubImmediate{static_cast<u64>(basic_block.cycles)});
 
+    logger.print("compiling epilogue...");
+    assembler.sub(cycles_left_reg, cycles_left_reg, SubImmediate{static_cast<u64>(basic_block.cycles)});
     compile_epilogue();
+
+    logger.print("");
 
     code_block.protect();
     code_cache.set(basic_block.location, jit_fn);

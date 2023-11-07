@@ -32,6 +32,7 @@ add_library(arm
     jit/backend/a64/assembler.h jit/backend/a64/assembler.cpp
     jit/backend/a64/register.h jit/backend/a64/code_block.h
     jit/backend/a64/register_allocator.h jit/backend/a64/register_allocator.cpp
+    jit/backend/a64/disassembler.h jit/backend/a64/disassembler.cpp
 
     disassembler/disassembler.h disassembler/disassembler.cpp
     disassembler/arm.cpp disassembler/thumb.cpp
@@ -39,5 +40,15 @@ add_library(arm
     decoder.h instructions.h
 )
 
+find_package(LLVM REQUIRED CONFIG)
+
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
+include_directories(arm PUBLIC ${LLVM_INCLUDE_DIRS})
+link_directories(arm PUBLIC ${LLVM_LIBRARY_DIRS})
+
+llvm_map_components_to_libnames(llvm_libs armdesc armdisassembler aarch64desc aarch64disassembler)
+
 include_directories(arm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(arm PUBLIC common)
+target_link_libraries(arm PUBLIC common ${llvm_libs})

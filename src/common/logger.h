@@ -15,44 +15,39 @@ class Logger {
 public:
     template <typename... Args>
     void debug(const char* pattern, Args... args) {
-        set_text_colour(TextColour::Green);
-        Time time = get_current_time();
-        std::printf("[%02d:%02d:%02d] %s\n", time.hour, time.minute, time.second, common::format(pattern, std::forward<Args>(args)...).c_str());
+        // set_text_colour(TextColour::Green);
+        std::printf("[DEBUG] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
 
     template <typename... Args>
     void info(const char* pattern, Args... args) {
-        set_text_colour(TextColour::White);
-        Time time = get_current_time();
-        std::printf("[%02d:%02d:%02d] %s\n", time.hour, time.minute, time.second, common::format(pattern, std::forward<Args>(args)...).c_str());
+        // set_text_colour(TextColour::White);
+        std::printf("[INFO] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
 
     template <typename... Args>
     void warn(const char* pattern, Args... args) {
-        set_text_colour(TextColour::Yellow);
-        Time time = get_current_time();
-        std::printf("[%02d:%02d:%02d] %s\n", time.hour, time.minute, time.second, common::format(pattern, std::forward<Args>(args)...).c_str());
+        // set_text_colour(TextColour::Yellow);
+        std::printf("[WARN] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
 
     template <typename... Args>
     void error(const char* pattern, Args... args) {
-        set_text_colour(TextColour::Red);
-        Time time = get_current_time();
-        std::printf("[%02d:%02d:%02d] %s\n", time.hour, time.minute, time.second, common::format(pattern, std::forward<Args>(args)...).c_str());
+        // set_text_colour(TextColour::Red);
+        std::printf("[ERROR] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
         std::exit(0);
     }
 
     template <typename... Args>
     void todo(const char* pattern, Args... args) {
-        set_text_colour(TextColour::Red);
-        Time time = get_current_time();
-        std::printf("[%02d:%02d:%02d] TODO: %s\n", time.hour, time.minute, time.second, common::format(pattern, std::forward<Args>(args)...).c_str());
+        // set_text_colour(TextColour::Red);
+        std::printf("[TODO] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
         std::exit(0);
     }
 
     template <typename... Args>
     void print(const char* pattern, Args... args) {
-        reset_colour();
+        // reset_colour();
         std::printf("%s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
     }
 
