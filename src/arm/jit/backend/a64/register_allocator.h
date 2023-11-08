@@ -38,14 +38,15 @@ private:
     std::unordered_map<u32, u32> variable_map;
 
     // keep track of which registers are currently allocated
-    std::bitset<8> allocated_registers{0};
+    std::bitset<16> allocated_registers{0};
 
     // keeps track of ids for allocated_registers that are considered temporary
     std::vector<u32> temporary_registers;
 
-    static constexpr WReg allocation_order[8] = {w21, w22, w23, w24, w25, w26, w27, w28};
-
-    // TODO: allocate temporary registers from volatile registers
+    static constexpr WReg allocation_order[16] = {
+        w21, w22, w23, w24, w25, w26, w27, w28,
+        w8, w9, w10, w11, w12, w13, w14, w15,
+    };
 };
 
 } // namespace arm

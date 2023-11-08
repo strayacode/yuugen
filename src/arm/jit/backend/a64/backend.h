@@ -28,6 +28,9 @@ private:
     // argument 2: the cycles left (w1)
     using JitFunction = int (*)(Jit* jit, int cycles_left);
 
+    void push_volatile_registers();
+    void pop_volatile_registers();
+
     void compile_prologue();
     void compile_epilogue();
     void compile_condition_check(BasicBlock& basic_block, Label& label_pass, Label& label_fail);

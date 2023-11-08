@@ -89,6 +89,20 @@ int A64Backend::run(Code code, int cycles_left) {
     return jit_fn(&jit, cycles_left);
 }
 
+void A64Backend::push_volatile_registers() {
+    assembler.stp(x8, x9, sp, IndexMode::Pre, -64);
+    assembler.stp(x10, x11, sp, 16);
+    assembler.stp(x12, x13, sp, 32);
+    assembler.stp(x14, x15, sp, 48);
+}
+
+void A64Backend::pop_volatile_registers() {
+    assembler.ldp(x8, x9, sp, 48);
+    assembler.ldp(x10, x11, sp, 32);
+    assembler.ldp(x12, x13, sp, 16);
+    assembler.ldp(x14, x15, sp, IndexMode::Post, 64);
+}
+
 void A64Backend::compile_prologue() {
     // save non-volatile registers to the stack
     assembler.stp(x19, x20, sp, IndexMode::Pre, -96);
@@ -378,7 +392,9 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
         } else if (amount.value >= 32) {
             logger.todo("barrel shifter lsl handle amount >= 32");
         } else {
-            logger.todo("barrel shifter lsl handle amount > 0 && amount < 32");
+            assembler.lsl(result_reg, src_reg, amount.value);
+            assembler.lsr(carry_reg, src_reg, 32 - amount.value);
+            assembler._and(carry_reg, carry_reg, 0x1);
         }
     } else {
         logger.todo("handle barrel shifter lsl case");
@@ -416,11 +432,8 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
             logger.todo("barrel shifter lsr handle amount >= 32");
         } else {
             assembler.lsr(result_reg, src_reg, amount);
-            assembler.lsr(carry_in_reg, src_reg, amount - 1);
-
-            WReg tmp_mask_reg = register_allocator.allocate_temporary();
-            assembler.mov(tmp_mask_reg, static_cast<u32>(0x1));
-            assembler._and(carry_in_reg, carry_in_reg, tmp_mask_reg);
+            assembler.lsr(carry_reg, src_reg, amount - 1);
+            assembler._and(carry_reg, carry_reg, 0x1);
         }
     } else {
         logger.todo("handle barrel shifter lsr case");
@@ -710,6 +723,9 @@ void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
     // move addr into w1
     assembler.mov(w1, addr_reg);
 
+    // save volatile registers
+    push_volatile_registers();
+
     switch (opcode.access_size) {
     case AccessSize::Byte:
         assembler.invoke_function(reinterpret_cast<void*>(read_byte));
@@ -738,6 +754,9 @@ void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
 
         break;
     }
+
+    // restore volatile registers
+    pop_volatile_registers();
 }
 
 void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
@@ -766,6 +785,9 @@ void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
     // move addr and src into w1 and w2 respectively
     assembler.mov(w1, addr_reg);
     assembler.mov(w2, src_reg);
+
+    // save volatile registers
+    push_volatile_registers();
     
     switch (opcode.access_size) {
     case AccessSize::Byte:
@@ -778,6 +800,9 @@ void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {
         assembler.invoke_function(reinterpret_cast<void*>(write_word));
         break;
     }
+
+    // restore volatile registers
+    pop_volatile_registers();
 }
 
 } // namespace arm

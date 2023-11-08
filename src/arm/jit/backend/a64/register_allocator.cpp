@@ -48,7 +48,7 @@ void RegisterAllocator::advance() {
 }
 
 WReg RegisterAllocator::allocate(IRVariable variable) {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 16; i++) {
         if (!allocated_registers.test(i)) {
             WReg reg = allocation_order[i];
 
@@ -63,7 +63,7 @@ WReg RegisterAllocator::allocate(IRVariable variable) {
 }
 
 WReg RegisterAllocator::allocate_temporary() {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 16; i++) {
         if (!allocated_registers.test(i)) {
             WReg reg = allocation_order[i];
 
