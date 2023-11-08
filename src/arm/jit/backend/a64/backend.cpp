@@ -74,7 +74,7 @@ Code A64Backend::compile(BasicBlock& basic_block) {
     assembler.link(label_fail);
 
     logger.print("compiling epilogue...");
-    assembler.sub(cycles_left_reg, cycles_left_reg, SubImmediate{static_cast<u64>(basic_block.cycles)});
+    assembler.sub(cycles_left_reg, cycles_left_reg, static_cast<u64>(basic_block.cycles));
     compile_epilogue();
 
     logger.print("");
@@ -538,15 +538,22 @@ void A64Backend::compile_add(IRAdd& opcode) {
         u32 result = opcode.lhs.as_constant().value + opcode.rhs.as_constant().value;
         assembler.mov(dst_reg, result);
     } else if (!lhs_is_constant && rhs_is_constant) {
-        auto& lhs = opcode.lhs.as_variable();
+        const auto lhs = opcode.lhs.as_variable();
+        const auto rhs = opcode.rhs.as_constant();
         WReg lhs_reg = register_allocator.get(lhs);
-        WReg tmp_imm_reg = register_allocator.allocate_temporary();
-        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
-        assembler.add(dst_reg, lhs_reg, tmp_imm_reg);
+
+        if (AddSubImmediate::is_valid(rhs.value)) {
+            assembler.add(dst_reg, lhs_reg, rhs.value);
+        } else {
+            WReg tmp_imm_reg = register_allocator.allocate_temporary();
+            assembler.mov(tmp_imm_reg, rhs.value);
+            assembler.add(dst_reg, lhs_reg, tmp_imm_reg);
+        }
     } else if (!lhs_is_constant && !rhs_is_constant) {
-        auto& lhs = opcode.lhs.as_variable();
+        const auto lhs = opcode.lhs.as_variable();
+        const auto rhs = opcode.rhs.as_variable();
+
         WReg lhs_reg = register_allocator.get(lhs);
-        auto& rhs = opcode.rhs.as_variable();
         WReg rhs_reg = register_allocator.get(rhs);
         assembler.add(dst_reg, lhs_reg, rhs_reg);
     } else {
@@ -624,7 +631,7 @@ void A64Backend::compile_compare(IRCompare& opcode) {
         const auto rhs = opcode.rhs.as_constant();
         WReg lhs_reg = register_allocator.get(lhs);
         
-        if (SubImmediate::is_valid(rhs.value)) {
+        if (AddSubImmediate::is_valid(rhs.value)) {
             assembler.cmp(lhs_reg, rhs.value);
         } else {
             WReg tmp_imm_reg = register_allocator.allocate_temporary();
@@ -687,45 +694,49 @@ void A64Backend::compile_copy(IRCopy& opcode) {
 void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
     WReg dst_reg = register_allocator.allocate(opcode.dst);
 
+    WReg addr_reg;
+    
     if (opcode.addr.is_constant()) {
-        logger.todo("handle addr as constant");
+        addr_reg = register_allocator.allocate_temporary();
+        const auto addr = opcode.addr.as_constant();
+        assembler.mov(addr_reg, addr.value);
     } else {
-        WReg addr_reg = register_allocator.get(opcode.addr.as_variable());
-        
-        // move jit pointer into x0
-        assembler.mov(x0, jit_reg);
+        addr_reg = register_allocator.get(opcode.addr.as_variable());
+    }
 
-        // move addr into w1
-        assembler.mov(w1, addr_reg);
+    // move jit pointer into x0
+    assembler.mov(x0, jit_reg);
 
-        switch (opcode.access_size) {
-        case AccessSize::Byte:
-            assembler.invoke_function(reinterpret_cast<void*>(read_byte));
+    // move addr into w1
+    assembler.mov(w1, addr_reg);
+
+    switch (opcode.access_size) {
+    case AccessSize::Byte:
+        assembler.invoke_function(reinterpret_cast<void*>(read_byte));
+        assembler.mov(dst_reg, w0);
+        break;
+    case AccessSize::Half:
+        switch (opcode.access_type) {
+        case AccessType::Aligned:
+            assembler.invoke_function(reinterpret_cast<void*>(read_half));
             assembler.mov(dst_reg, w0);
             break;
-        case AccessSize::Half:
-            switch (opcode.access_type) {
-            case AccessType::Aligned:
-                assembler.invoke_function(reinterpret_cast<void*>(read_half));
-                assembler.mov(dst_reg, w0);
-                break;
-            case AccessType::Unaligned:
-                logger.todo("Jit: handle unaligned half read");
-                break;
-            }
-            
-            break;
-        case AccessSize::Word:
-            if (opcode.access_type == AccessType::Unaligned) {
-                assembler.invoke_function(reinterpret_cast<void*>(read_word_rotate));
-                assembler.mov(dst_reg, w0);
-            } else {
-                assembler.invoke_function(reinterpret_cast<void*>(read_word));
-                assembler.mov(dst_reg, w0);
-            }
-
+        case AccessType::Unaligned:
+            logger.todo("Jit: handle unaligned half read");
             break;
         }
+        
+        break;
+    case AccessSize::Word:
+        if (opcode.access_type == AccessType::Unaligned) {
+            assembler.invoke_function(reinterpret_cast<void*>(read_word_rotate));
+            assembler.mov(dst_reg, w0);
+        } else {
+            assembler.invoke_function(reinterpret_cast<void*>(read_word));
+            assembler.mov(dst_reg, w0);
+        }
+
+        break;
     }
 }
 

@@ -55,6 +55,14 @@ void A64Assembler::invoke_function(void* address) {
     }
 }
 
+void A64Assembler::add(WReg wd, WReg wn, AddSubImmediate imm) {
+    emit(0x22 << 23 | imm.value << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::add(XReg xd, XReg xn, AddSubImmediate imm) {
+    emit(0x122 << 23 | imm.value << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::add(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
     emit(0xb << 24 | static_cast<u32>(shift) << 22 | wm.id << 16 | amount << 10 | wn.id << 5 | wd.id);
 }
@@ -105,11 +113,11 @@ void A64Assembler::cmp(XReg xn, XReg xm, Shift shift, u32 amount) {
     emit(0xeb << 24 | static_cast<u32>(shift) << 22 | xm.id << 16 | amount << 10 | xn.id << 5 | 0x1f);
 }
 
-void A64Assembler::cmp(WReg wn, SubImmediate imm) {
+void A64Assembler::cmp(WReg wn, AddSubImmediate imm) {
     emit(0xe2 << 23 | imm.value << 10 | wn.id << 5 | 0x1f);
 }
 
-void A64Assembler::cmp(XReg xn, SubImmediate imm) {
+void A64Assembler::cmp(XReg xn, AddSubImmediate imm) {
     emit(0x1e2 << 23 | imm.value << 10 | xn.id << 5 | 0x1f);
 }
 
@@ -354,11 +362,11 @@ void A64Assembler::str(XReg xt, XReg xn, Offset<15, 3> pimm) {
     emit(0x3e4 << 22 | pimm.value << 10 | xn.id << 5 | xt.id);
 }
 
-void A64Assembler::sub(WReg wd, WReg wn, SubImmediate imm) {
+void A64Assembler::sub(WReg wd, WReg wn, AddSubImmediate imm) {
     emit(0xa2 << 23 | imm.value << 10 | wn.id << 5 | wd.id);
 }
 
-void A64Assembler::sub(XReg xd, XReg xn, SubImmediate imm) {
+void A64Assembler::sub(XReg xd, XReg xn, AddSubImmediate imm) {
     emit(0x1a2 << 23 | imm.value << 10 | xn.id << 5 | xd.id);
 }
 

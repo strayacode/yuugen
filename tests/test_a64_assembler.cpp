@@ -25,6 +25,12 @@ int main() {
         check_values(STRINGIZE(command), expected, assembler.get_code()[assembler.get_num_instructions() - 1]); \
 
     // credit to oaknut for the tests
+    TEST(0x11549545, add(arm::w5, arm::w10, 5394432))
+    TEST(0x1170da5c, add(arm::w28, arm::w18, 12804096))
+    TEST(0x113d5da2, add(arm::w2, arm::w13, 3927))
+    TEST(0x91204aa8, add(arm::x8, arm::x21, 2066))
+    TEST(0x9123368b, add(arm::x11, arm::x20, 2253))
+    TEST(0x917f9912, add(arm::x18, arm::x8, 16670720))
     TEST(0x0b874fb9, add(arm::w25, arm::w29, arm::w7, arm::Shift::ASR, 19))
     TEST(0x0b446a2c, add(arm::w12, arm::w17, arm::w4, arm::Shift::LSR, 26))
     TEST(0x8b494f4d, add(arm::x13, arm::x26, arm::x9, arm::Shift::LSR, 19))
@@ -208,11 +214,11 @@ int main() {
     TEST(0xf90ada92, str(arm::x18, arm::x20, 5552))
     TEST(0xf92357b6, str(arm::x22, arm::x29, 18088))
 
-    TEST(0x5133a211, sub(arm::w17, arm::w16, arm::SubImmediate{3304}))
-    TEST(0x510948af, sub(arm::w15, arm::w5, arm::SubImmediate{594}))
-    TEST(0xd1088b3e, sub(arm::x30, arm::x25, arm::SubImmediate{546}))
-    TEST(0xd10478ac, sub(arm::x12, arm::x5, arm::SubImmediate{286}))
-    TEST(0xd12e98b0, sub(arm::x16, arm::x5, arm::SubImmediate{2982}))
+    TEST(0x5133a211, sub(arm::w17, arm::w16, 3304))
+    TEST(0x510948af, sub(arm::w15, arm::w5, 594))
+    TEST(0xd1088b3e, sub(arm::x30, arm::x25, 546))
+    TEST(0xd10478ac, sub(arm::x12, arm::x5, 286))
+    TEST(0xd12e98b0, sub(arm::x16, arm::x5, 2982))
     TEST(0x4b8b06d7, sub(arm::w23, arm::w22, arm::w11, arm::Shift::ASR, 1))
     TEST(0xcb4adab1, sub(arm::x17, arm::x21, arm::x10, arm::Shift::LSR, 54))
     TEST(0xcb9656de, sub(arm::x30, arm::x22, arm::x22, arm::Shift::ASR, 21))

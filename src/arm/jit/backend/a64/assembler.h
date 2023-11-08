@@ -129,14 +129,14 @@ struct Immediate16 {
     u32 value;
 };
 
-struct SubImmediate {
-    SubImmediate(u64 value) {
+struct AddSubImmediate {
+    AddSubImmediate(u64 value) {
         if ((value & 0xfff) == value) {
             this->value = value;
         } else if ((value & 0xfff000) == value) {
             this->value = (1 << 12) | (value >> 12);
         } else {
-            logger.error("value %016lx can't be encoded in an SubImmediate", value);
+            logger.error("value %016lx can't be encoded in an AddSubImmediate", value);
         }
     }
 
@@ -172,6 +172,8 @@ public:
     void link(Label& label);
     void invoke_function(void* address);
 
+    void add(WReg wd, WReg wn, AddSubImmediate imm);
+    void add(XReg xd, XReg xn, AddSubImmediate imm);
     void add(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void add(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
@@ -188,8 +190,8 @@ public:
 
     void cmp(WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void cmp(XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
-    void cmp(WReg wn, SubImmediate imm);
-    void cmp(XReg xn, SubImmediate imm);
+    void cmp(WReg wn, AddSubImmediate imm);
+    void cmp(XReg xn, AddSubImmediate imm);
 
     void cset(WReg wd, Condition condition);
     void cset(XReg xd, Condition condition);
@@ -265,8 +267,8 @@ public:
     void str(WReg wt, XReg xn, Offset<14, 2> pimm = 0);
     void str(XReg xt, XReg xn, Offset<15, 3> pimm = 0);
 
-    void sub(WReg wd, WReg wn, SubImmediate imm);
-    void sub(XReg xd, XReg xn, SubImmediate imm);
+    void sub(WReg wd, WReg wn, AddSubImmediate imm);
+    void sub(XReg xd, XReg xn, AddSubImmediate imm);
     void sub(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void sub(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
