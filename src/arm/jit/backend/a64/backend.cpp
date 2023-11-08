@@ -320,12 +320,10 @@ void A64Backend::compile_logical_shift_left(IRLogicalShiftLeft& opcode) {
         u32 result = opcode.src.as_constant().value << opcode.amount.as_constant().value;
         assembler.mov(dst_reg, result);
     } else if (!src_is_constant && amount_is_constant) {
-        auto& src = opcode.src.as_variable();
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_constant();
         WReg src_reg = register_allocator.get(src);
-        const u32 amount = opcode.amount.as_constant().value & 0x1f;
-        WReg tmp_reg = register_allocator.allocate_temporary();
-        assembler.mov(tmp_reg, amount);
-        assembler.lsl(dst_reg, src_reg, tmp_reg);
+        assembler.lsl(dst_reg, src_reg, amount.value & 0x1f);
     } else {
         logger.todo("handle lsl case");
     }
@@ -370,14 +368,14 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
             assembler.mov(carry_reg, carry_in_reg);
         }
     } else if (!src_is_constant && amount_is_constant) {
-        auto& src = opcode.src.as_variable();
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_constant();
         WReg src_reg = register_allocator.get(src);
-        const u32 amount = opcode.amount.as_constant().value;
-
-        if (amount == 0) {
+        
+        if (amount.value == 0) {
             assembler.mov(result_reg, src_reg);
             assembler.mov(carry_reg, carry_in_reg);
-        } else if (amount >= 32) {
+        } else if (amount.value >= 32) {
             logger.todo("barrel shifter lsl handle amount >= 32");
         } else {
             logger.todo("barrel shifter lsl handle amount > 0 && amount < 32");

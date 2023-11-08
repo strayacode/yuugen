@@ -96,6 +96,11 @@ int main() {
     TEST(0x9ada23a7, lsl(arm::x7, arm::x29, arm::x26))
     TEST(0x9ad72280, lsl(arm::x0, arm::x20, arm::x23))
     TEST(0x9aca212b, lsl(arm::x11, arm::x9, arm::x10))
+    TEST(0x530b29ee, lsl(arm::w14, arm::w15, 21))
+    TEST(0x530f3959, lsl(arm::w25, arm::w10, 17))
+    TEST(0xd3440f9a, lsl(arm::x26, arm::x28, 60))
+    TEST(0xd3565435, lsl(arm::x21, arm::x1, 42))
+    TEST(0xd342076d, lsl(arm::x13, arm::x27, 62))
 
     TEST(0x53157dee, lsr(arm::w14, arm::w15, 21))
     TEST(0x53117d59, lsr(arm::w25, arm::w10, 17))

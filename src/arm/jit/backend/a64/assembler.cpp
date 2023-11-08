@@ -160,11 +160,13 @@ void A64Assembler::ldr(XReg xt, XReg xn, Offset<15, 3> pimm) {
 }
 
 void A64Assembler::lsl(WReg wd, WReg wn, u32 amount) {
-    emit(0x14c << 22 | amount << 16 | wn.id << 5 | wd.id);
+    auto encoded = (((32 - amount) & 0x1f) << 6) | (32 - amount - 1);
+    emit(0x14c << 22 | encoded << 10 | wn.id << 5 | wd.id);
 }
 
 void A64Assembler::lsl(XReg xd, XReg xn, u32 amount) {
-    emit(0x34d << 22 | amount << 16 | xn.id << 5 | xd.id);
+    auto encoded = (((64 - amount) & 0x3f) << 6) | (64 - amount - 1);
+    emit(0x34d << 22 | encoded << 10 | xn.id << 5 | xd.id);
 }
 
 void A64Assembler::lsl(WReg wd, WReg wn, WReg wm) {
