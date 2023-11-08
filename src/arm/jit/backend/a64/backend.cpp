@@ -436,11 +436,17 @@ void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
         u32 result = opcode.lhs.as_constant().value & opcode.rhs.as_constant().value;
         assembler.mov(dst_reg, result);
     } else if (!lhs_is_constant && rhs_is_constant) {
-        auto& lhs = opcode.lhs.as_variable();
+        const auto lhs = opcode.lhs.as_variable();
+        const auto rhs = opcode.rhs.as_constant();
         WReg lhs_reg = register_allocator.get(lhs);
-        WReg tmp_imm_reg = register_allocator.allocate_temporary();
-        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
-        assembler._and(dst_reg, lhs_reg, tmp_imm_reg);
+
+        if (BitwiseImmediate<32>::is_valid(rhs.value)) {
+            assembler._and(dst_reg, lhs_reg, rhs.value);
+        } else {
+            WReg tmp_imm_reg = register_allocator.allocate_temporary();
+            assembler.mov(tmp_imm_reg, rhs.value);
+            assembler._and(dst_reg, lhs_reg, tmp_imm_reg);
+        }
     } else if (!lhs_is_constant && !rhs_is_constant) {
         auto& lhs = opcode.lhs.as_variable();
         WReg lhs_reg = register_allocator.get(lhs);
@@ -500,15 +506,22 @@ void A64Backend::compile_bitwise_exclusive_or(IRBitwiseExclusiveOr& opcode) {
         u32 result = opcode.lhs.as_constant().value ^ opcode.rhs.as_constant().value;
         assembler.mov(dst_reg, result);
     } else if (!lhs_is_constant && rhs_is_constant) {
-        auto& lhs = opcode.lhs.as_variable();
+        const auto lhs = opcode.lhs.as_variable();
+        const auto rhs = opcode.rhs.as_constant();
         WReg lhs_reg = register_allocator.get(lhs);
-        WReg tmp_imm_reg = register_allocator.allocate_temporary();
-        assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
-        assembler.eor(dst_reg, lhs_reg, tmp_imm_reg);
+
+        if (BitwiseImmediate<32>::is_valid(rhs.value)) {
+            assembler.eor(dst_reg, lhs_reg, rhs.value);
+        } else {
+            WReg tmp_imm_reg = register_allocator.allocate_temporary();
+            assembler.mov(tmp_imm_reg, opcode.rhs.as_constant().value);
+            assembler.eor(dst_reg, lhs_reg, tmp_imm_reg);
+        }
     } else if (!lhs_is_constant && !rhs_is_constant) {
-        auto& lhs = opcode.lhs.as_variable();
+        const auto lhs = opcode.lhs.as_variable();
+        const auto rhs = opcode.rhs.as_variable();
+        
         WReg lhs_reg = register_allocator.get(lhs);
-        auto& rhs = opcode.rhs.as_variable();
         WReg rhs_reg = register_allocator.get(rhs);
         assembler.eor(dst_reg, lhs_reg, rhs_reg);
     } else {

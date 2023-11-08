@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <bit>
 #include "common/types.h"
 #include "common/bits.h"
 #include "common/logger.h"
@@ -9,7 +10,7 @@
 
 namespace arm {
 
-template<int N>
+template <int N>
 struct Immediate {
     Immediate(u64 value) {
         if (!is_valid(value)) {
@@ -25,6 +26,57 @@ struct Immediate {
 
     u32 value;
     static constexpr u64 mask = (static_cast<u64>(1) << N) - 1;
+};
+
+template <int N>
+struct BitwiseImmediate {
+    BitwiseImmediate(u64 value) {
+        // algorithm taken from dolphin
+        // replicate 32-bit imm in upper and lower 32-bit
+        if (N == 32) {
+            value <<= 32;
+            value |= value >> 32;
+        }
+
+        if (value == 0 || (~value) == 0) {
+            logger.todo("BitwiseImmediate: invalid immediate %016lx", value);
+        }
+
+        const int rotation = std::countr_zero(value & (value + 1));
+        const u64 normalised = std::rotr(value, rotation);
+
+        const int element_size = std::countr_zero(normalised & (normalised + 1));
+        const int ones = std::countr_one(normalised);
+
+        if (std::rotr(value, element_size) != value) {
+            logger.todo("BitwiseImmediate: invalid immediate %016lx", value);
+        }
+
+        const int s = ((-element_size) << 1) | (ones - 1);
+        const int r = (element_size - rotation) & (element_size - 1);
+        const int n = (~s >> 6) & 0x1;
+
+        this->value = static_cast<u32>((s & 0x3f) | (r << 6) | (n << 12));
+    }
+
+    static bool is_valid(u64 value) {
+        if (N == 32) {
+            value <<= 32;
+            value |= value >> 32;
+        }
+
+        if (value == 0 || (~value) == 0) {
+            return false;
+        }
+
+        const int rotation = std::countr_zero(value & (value + 1));
+        const u64 normalised = std::rotr(value, rotation);
+
+        const int element_size = std::countr_zero(normalised & (normalised + 1));
+        return std::rotr(value, element_size) == value;
+    }
+
+    u32 value;
 };
 
 template <int N, int A>
@@ -123,6 +175,8 @@ public:
     void add(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void add(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
+    void _and(WReg wd, WReg wn, BitwiseImmediate<32> imm);
+    void _and(XReg xd, XReg xn, BitwiseImmediate<64> imm);
     void _and(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void _and(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
@@ -140,6 +194,8 @@ public:
     void cset(WReg wd, Condition condition);
     void cset(XReg xd, Condition condition);
 
+    void eor(WReg wd, WReg wn, BitwiseImmediate<32> imm);
+    void eor(XReg xd, XReg xn, BitwiseImmediate<64> imm);
     void eor(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void eor(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 

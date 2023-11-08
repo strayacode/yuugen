@@ -63,6 +63,14 @@ void A64Assembler::add(XReg xd, XReg xn, XReg xm, Shift shift, u32 amount) {
     emit(0x8b << 24 | static_cast<u32>(shift) << 22 | xm.id << 16 | amount << 10 | xn.id << 5 | xd.id);
 }
 
+void A64Assembler::_and(WReg wd, WReg wn, BitwiseImmediate<32> imm) {
+    emit(0x48 << 22 | imm.value << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::_and(XReg xd, XReg xn, BitwiseImmediate<64> imm) {
+    emit(0x124 << 23 | imm.value << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::_and(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
     emit(0xa << 24 | static_cast<u32>(shift) << 22 | wm.id << 16 | amount << 10 | wn.id << 5 | wd.id);
 }
@@ -111,6 +119,14 @@ void A64Assembler::cset(WReg wd, Condition condition) {
 
 void A64Assembler::cset(XReg xd, Condition condition) {
     emit(0x9a9f << 16 | (condition ^ 0x1) << 12 | 0x3f << 5 | xd.id);
+}
+
+void A64Assembler::eor(WReg wd, WReg wn, BitwiseImmediate<32> imm) {
+    emit(0x148 << 22 | imm.value << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::eor(XReg xd, XReg xn, BitwiseImmediate<64> imm) {
+    emit(0x1a4 << 23 | imm.value << 10 | xn.id << 5 | xd.id);
 }
 
 void A64Assembler::eor(WReg wd, WReg wn, WReg wm, Shift shift, u32 amount) {
