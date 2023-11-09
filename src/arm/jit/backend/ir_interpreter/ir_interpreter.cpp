@@ -161,6 +161,10 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
         return {&IRInterpreter::handle_compare, *opcode->as<IRCompare>()};
     case IROpcodeType::Copy:
         return {&IRInterpreter::handle_copy, *opcode->as<IRCopy>()};
+    case IROpcodeType::GetBit:
+        return {&IRInterpreter::handle_get_bit, *opcode->as<IRGetBit>()};
+    case IROpcodeType::SetBit:
+        return {&IRInterpreter::handle_set_bit, *opcode->as<IRSetBit>()};
     case IROpcodeType::MemoryWrite:
         return {&IRInterpreter::handle_memory_write, *opcode->as<IRMemoryWrite>()};
     case IROpcodeType::MemoryRead:
@@ -352,6 +356,21 @@ void IRInterpreter::handle_copy(IROpcodeVariant& opcode_variant) {
     auto& opcode = std::get<IRCopy>(opcode_variant);
     auto value = resolve_value(opcode.src);
     assign_variable(opcode.dst, value);
+}
+
+void IRInterpreter::handle_get_bit(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRGetBit>(opcode_variant);
+    auto src = resolve_value(opcode.src);
+    auto bit = resolve_value(opcode.bit);
+    assign_variable(opcode.dst, (src >> bit) & 0x1);
+}
+
+void IRInterpreter::handle_set_bit(IROpcodeVariant& opcode_variant) {
+    auto& opcode = std::get<IRSetBit>(opcode_variant);
+    auto src = resolve_value(opcode.src);
+    auto value = resolve_value(opcode.value);
+    auto bit = resolve_value(opcode.bit);
+    assign_variable(opcode.dst, (src & ~(1 << bit)) | (value << bit));
 }
 
 void IRInterpreter::handle_logical_shift_left(IROpcodeVariant& opcode_variant) {

@@ -3,8 +3,27 @@
 namespace arm {
 
 void IdentityArithmeticPass::optimise(BasicBlock& basic_block) {
-    for (auto& opcode : basic_block.opcodes) {
-        identity_opcode(opcode);
+    auto it = basic_block.opcodes.begin();
+    while (it != basic_block.opcodes.end()) {
+        auto& opcode_variant = *it;
+        if (opcode_variant->get_type() == IROpcodeType::BarrelShifterLogicalShiftLeft) {
+            auto opcode = *opcode_variant->as<IRBarrelShifterLogicalShiftLeft>();
+            auto amount = opcode.amount;
+
+            if (amount.is_equal(0)) {
+                opcode_variant = std::make_unique<IRCopy>(opcode.result_and_carry.first, opcode.src);
+                it++;
+
+                it = basic_block.opcodes.insert(it, std::make_unique<IRCopy>(opcode.result_and_carry.second, opcode.carry));
+                it++;
+                mark_modified();
+            } else {
+                it++;
+            }
+        } else {
+            identity_opcode(opcode_variant);
+            it++;
+        }
     }
 }
 

@@ -74,6 +74,9 @@ public:
 
     // misc opcodes
     IRVariable copy(IRValue src);
+    IRPair<IRVariable> pair_copy(IRPair<IRValue> pair);
+    IRVariable get_bit(IRValue src, IRValue bit);
+    IRVariable set_bit(IRValue src, IRValue value, IRValue bit);
 
     // helpers
     IRConstant constant(u32 value);

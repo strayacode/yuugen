@@ -50,6 +50,8 @@ enum class IROpcodeType {
 
     // misc opcodes
     Copy,
+    GetBit,
+    SetBit,
     
     MemoryWrite,
     MemoryRead,
@@ -592,6 +594,39 @@ struct IRCopy : IROpcode {
 
     IRVariable dst;
     IRValue src;
+};
+
+struct IRGetBit : IROpcode {
+    IRGetBit(IRVariable dst, IRValue src, IRValue bit) : IROpcode(IROpcodeType::GetBit), dst(dst), src(src), bit(bit) {}
+
+    std::string to_string() override {
+        return common::format("%s = get_bit(%s, %s)", dst.to_string().c_str(), src.to_string().c_str(), bit.to_string().c_str());
+    }
+
+    std::vector<IRValue*> get_parameters() override {
+        return {&src, &bit};
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue bit;
+};
+
+struct IRSetBit : IROpcode {
+    IRSetBit(IRVariable dst, IRValue src, IRValue value, IRValue bit) : IROpcode(IROpcodeType::SetBit), dst(dst), src(src), value(value), bit(bit) {}
+
+    std::string to_string() override {
+        return common::format("%s = set_bit(%s, %s, %s)", dst.to_string().c_str(), src.to_string().c_str(), value.to_string().c_str(), bit.to_string().c_str());
+    }
+
+    std::vector<IRValue*> get_parameters() override {
+        return {&src, &value, &bit};
+    }
+
+    IRVariable dst;
+    IRValue src;
+    IRValue value;
+    IRValue bit;
 };
 
 struct IRMemoryWrite : IROpcode {

@@ -55,7 +55,7 @@ struct IRValue {
         return type == IRValueType::Constant && constant.value == value;
     }
 
-    bool is_equal(IRValue value) {
+    bool is_equal(IRValue value) const {
         if (type != value.type) {
             return false;
         }

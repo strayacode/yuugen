@@ -64,6 +64,8 @@ private:
 
         // misc opcodes
         IRCopy,
+        IRGetBit,
+        IRSetBit,
 
         IRMemoryWrite,
         IRMemoryRead
@@ -131,6 +133,8 @@ private:
 
     // misc opcodes
     void handle_copy(IROpcodeVariant& opcode_variant);
+    void handle_get_bit(IROpcodeVariant& opcode_variant);
+    void handle_set_bit(IROpcodeVariant& opcode_variant);
 
     void handle_set_carry(IROpcodeVariant& opcode_variant);
     void handle_clear_carry(IROpcodeVariant& opcode_variant);

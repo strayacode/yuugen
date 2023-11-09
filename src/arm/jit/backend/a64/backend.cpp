@@ -253,6 +253,12 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
     case IROpcodeType::Copy:
         compile_copy(*opcode->as<IRCopy>());
         break;
+    case IROpcodeType::GetBit:
+        compile_get_bit(*opcode->as<IRGetBit>());
+        break;
+    case IROpcodeType::SetBit:
+        compile_set_bit(*opcode->as<IRSetBit>());
+        break;
     case IROpcodeType::MemoryRead:
         compile_memory_read(*opcode->as<IRMemoryRead>());
         break;
@@ -695,13 +701,21 @@ void A64Backend::compile_compare(IRCompare& opcode) {
 void A64Backend::compile_copy(IRCopy& opcode) {
     WReg dst_reg = register_allocator.allocate(opcode.dst);
     if (opcode.src.is_constant()) {
-        auto& src = opcode.src.as_constant();
+        const auto src = opcode.src.as_constant();
         assembler.mov(dst_reg, src.value);
     } else {
-        auto& src = opcode.src.as_variable();
+        const auto src = opcode.src.as_variable();
         WReg src_reg = register_allocator.get(src);
         assembler.mov(dst_reg, src_reg);
     }
+}
+
+void A64Backend::compile_get_bit(IRGetBit& opcode) {
+    logger.todo("handle get bit");
+}
+
+void A64Backend::compile_set_bit(IRSetBit& opcode) {
+    logger.todo("handle set bit");
 }
 
 void A64Backend::compile_memory_read(IRMemoryRead& opcode) {

@@ -205,14 +205,13 @@ IRVariable IREmitter::count_leading_zeroes(IRValue src) {
 
 IRVariable IREmitter::load_flag(Flag flag) {
     auto cpsr = load_cpsr();
-    return bitwise_and(logical_shift_right(cpsr, constant(flag)), constant(1));
+    return get_bit(cpsr, constant(flag));
 }
 
 void IREmitter::store_flag(Flag flag, IRValue value) {
     auto cpsr = load_cpsr();
-    auto cpsr_masked = bitwise_and(cpsr, bitwise_not(constant(1 << flag)));
-    auto value_shifted = logical_shift_left(value, constant(flag));
-    store_cpsr(bitwise_or(cpsr_masked, value_shifted));
+    auto cpsr_with_flag = set_bit(cpsr, value, constant(flag));
+    store_cpsr(cpsr_with_flag);
 }
 
 void IREmitter::store_nz(IRValue value) {
@@ -300,6 +299,18 @@ void IREmitter::branch_exchange(IRValue address, ExchangeType exchange_type) {
 IRVariable IREmitter::copy(IRValue src) {
     auto dst = create_variable();
     push<IRCopy>(dst, src);
+    return dst;
+}
+
+IRVariable IREmitter::get_bit(IRValue src, IRValue bit) {
+    auto dst = create_variable();
+    push<IRGetBit>(dst, src, bit);
+    return dst;
+}
+
+IRVariable IREmitter::set_bit(IRValue src, IRValue value, IRValue bit) {
+    auto dst = create_variable();
+    push<IRSetBit>(dst, src, value, bit);
     return dst;
 }
 
