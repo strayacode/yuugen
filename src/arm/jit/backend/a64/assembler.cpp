@@ -378,6 +378,14 @@ void A64Assembler::sub(XReg xd, XReg xn, XReg xm, Shift shift, u32 amount) {
     emit(0xcb << 24 | static_cast<u32>(shift) << 22 | xm.id << 16 | amount << 10 | xn.id << 5 | xd.id);
 }
 
+void A64Assembler::ubfx(WReg wd, WReg wn, Immediate<5> lsb, Immediate<5> width) {
+    emit(0x14c << 22 | lsb.value << 16 | (lsb.value + width.value - 1) << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::ubfx(XReg xd, XReg xn, Immediate<6> lsb, Immediate<6> width) {
+    emit(0x34d << 22 | lsb.value << 16 | (lsb.value + width.value - 1) << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::emit(u32 data) {
     logger.print("%s", disassemble_a64_instruction(reinterpret_cast<u64>(current_code), data).c_str());
     *current_code++ = data;

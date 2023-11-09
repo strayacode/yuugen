@@ -272,6 +272,9 @@ public:
     void sub(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void sub(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
+    void ubfx(WReg wd, WReg wn, Immediate<5> lsb, Immediate<5> width);
+    void ubfx(XReg xd, XReg xn, Immediate<6> lsb, Immediate<6> width);
+
     template <typename T>
     T get_current_code() {
         previous_code = current_code;

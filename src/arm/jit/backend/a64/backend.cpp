@@ -711,7 +711,26 @@ void A64Backend::compile_copy(IRCopy& opcode) {
 }
 
 void A64Backend::compile_get_bit(IRGetBit& opcode) {
-    logger.todo("handle get bit");
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    WReg src_reg;
+    
+    if (opcode.src.is_constant()) {
+        src_reg = register_allocator.allocate_temporary();
+        const auto src = opcode.src.as_constant();
+        assembler.mov(src_reg, src.value);
+    } else {
+        src_reg = register_allocator.get(opcode.src.as_variable());
+    }
+
+    if (opcode.bit.is_constant()) {
+        const auto bit = opcode.bit.as_constant();
+        assembler.ubfx(dst_reg, src_reg, bit.value, 1);
+    } else {
+        const auto bit = opcode.bit.as_variable();
+        WReg bit_reg = register_allocator.get(bit);
+        assembler.lsr(dst_reg, src_reg, bit_reg);
+        assembler._and(dst_reg, dst_reg, 0x1);
+    }
 }
 
 void A64Backend::compile_set_bit(IRSetBit& opcode) {

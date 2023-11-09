@@ -223,6 +223,12 @@ int main() {
     TEST(0xcb4adab1, sub(arm::x17, arm::x21, arm::x10, arm::Shift::LSR, 54))
     TEST(0xcb9656de, sub(arm::x30, arm::x22, arm::x22, arm::Shift::ASR, 21))
 
+    TEST(0xd3488e5d, ubfx(arm::x29, arm::x18, 8, 28))
+    TEST(0xd350a352, ubfx(arm::x18, arm::x26, 16, 25))
+    TEST(0xd35cd8fe, ubfx(arm::x30, arm::x7, 28, 27))
+    TEST(0xd34fcc95, ubfx(arm::x21, arm::x4, 15, 37))
+    TEST(0xd34d7391, ubfx(arm::x17, arm::x28, 13, 16))
+
     code_block.protect();
 
     return 0;
