@@ -119,6 +119,7 @@ struct IROpcode {
     virtual ~IROpcode() = default;
     virtual std::string to_string() = 0;
     virtual std::vector<IRValue*> get_parameters() = 0;
+    virtual std::vector<IRVariable*> get_destinations() = 0;
 
     IROpcodeType get_type() {
         return type;
@@ -143,6 +144,10 @@ struct IRLoadGPR : IROpcode {
         return {};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     GuestRegister src;
 };
@@ -156,6 +161,10 @@ struct IRStoreGPR : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&src};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {};
     }
 
     GuestRegister dst;
@@ -173,6 +182,10 @@ struct IRLoadCPSR : IROpcode {
         return {};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
 };
 
@@ -187,6 +200,10 @@ struct IRStoreCPSR : IROpcode {
         return {&src};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {};
+    }
+
     IRValue src;
 };
 
@@ -199,6 +216,10 @@ struct IRLoadSPSR : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -216,6 +237,10 @@ struct IRStoreSPSR : IROpcode {
         return {&src};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {};
+    }
+
     IRValue src;
     Mode mode;
 };
@@ -229,6 +254,10 @@ struct IRLoadCoprocessor : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -248,6 +277,10 @@ struct IRStoreCoprocessor : IROpcode {
         return {&src};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {};
+    }
+
     u32 cn;
     u32 cm;
     u32 cp;
@@ -263,6 +296,10 @@ struct IRBitwiseAnd : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&lhs, &rhs};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -281,6 +318,10 @@ struct IRBitwiseOr : IROpcode {
         return {&lhs, &rhs};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     IRValue lhs;
     IRValue rhs;
@@ -297,6 +338,10 @@ struct IRBitwiseNot : IROpcode {
         return {&src};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     IRValue src;
 };
@@ -310,6 +355,10 @@ struct IRBitwiseExclusiveOr : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&lhs, &rhs};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -328,6 +377,10 @@ struct IRLogicalShiftLeft : IROpcode {
         return {&src, &amount};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     IRValue src;
     IRValue amount;
@@ -342,6 +395,10 @@ struct IRLogicalShiftRight : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&src, &amount};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -360,6 +417,10 @@ struct IRArithmeticShiftRight : IROpcode {
         return {&src, &amount};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     IRValue src;
     IRValue amount;
@@ -374,6 +435,10 @@ struct IRRotateRight : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&src, &amount};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -392,6 +457,10 @@ struct IRBarrelShifterLogicalShiftLeft : IROpcode {
         return {&src, &amount, &carry};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&result_and_carry.first, &result_and_carry.second};
+    }
+
     IRPair<IRVariable> result_and_carry;
     IRValue src;
     IRValue amount;
@@ -407,6 +476,10 @@ struct IRBarrelShifterLogicalShiftRight : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&src, &amount, &carry};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&result_and_carry.first, &result_and_carry.second};
     }
 
     IRPair<IRVariable> result_and_carry;
@@ -427,6 +500,10 @@ struct IRBarrelShifterArithmeticShiftRight : IROpcode {
         return {&src, &amount, &carry};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&result_and_carry.first, &result_and_carry.second};
+    }
+
     IRPair<IRVariable> result_and_carry;
     IRValue src;
     IRValue amount;
@@ -443,6 +520,10 @@ struct IRBarrelShifterRotateRight : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&src, &amount, &carry};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&result_and_carry.first, &result_and_carry.second};
     }
 
     IRPair<IRVariable> result_and_carry;
@@ -462,6 +543,10 @@ struct IRBarrelShifterRotateRightExtended : IROpcode {
         return {&src, &amount, &carry};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&result_and_carry.first, &result_and_carry.second};
+    }
+
     IRPair<IRVariable> result_and_carry;
     IRValue src;
     IRValue amount;
@@ -479,6 +564,10 @@ struct IRCountLeadingZeroes : IROpcode {
         return {&src};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     IRValue src;
 };
@@ -492,6 +581,10 @@ struct IRAdd : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&lhs, &rhs};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -510,6 +603,10 @@ struct IRAddLong : IROpcode {
         return {&lhs.first, &lhs.second, &rhs.first, &rhs.second};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst.first, &dst.second};
+    }
+
     IRPair<IRVariable> dst;
     IRPair<IRValue> lhs;
     IRPair<IRValue> rhs;
@@ -524,6 +621,10 @@ struct IRSubtract : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&lhs, &rhs};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -542,6 +643,10 @@ struct IRMultiply : IROpcode {
         return {&lhs, &rhs};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     IRValue lhs;
     IRValue rhs;
@@ -556,6 +661,10 @@ struct IRMultiplyLong : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&lhs, &rhs};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst.first, &dst.second};
     }
 
     IRPair<IRVariable> dst;
@@ -575,6 +684,10 @@ struct IRCompare : IROpcode {
         return {&lhs, &rhs};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     IRValue lhs;
     IRValue rhs;
@@ -592,6 +705,10 @@ struct IRCopy : IROpcode {
         return {&src};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
+    }
+
     IRVariable dst;
     IRValue src;
 };
@@ -605,6 +722,10 @@ struct IRGetBit : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&src, &bit};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -621,6 +742,10 @@ struct IRSetBit : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&src, &value, &bit};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;
@@ -640,6 +765,10 @@ struct IRMemoryWrite : IROpcode {
         return {&addr, &src};
     }
 
+    std::vector<IRVariable*> get_destinations() override {
+        return {};
+    }
+
     IRValue addr;
     IRValue src;
     AccessSize access_size;
@@ -654,6 +783,10 @@ struct IRMemoryRead : IROpcode {
 
     std::vector<IRValue*> get_parameters() override {
         return {&addr};
+    }
+
+    std::vector<IRVariable*> get_destinations() override {
+        return {&dst};
     }
 
     IRVariable dst;

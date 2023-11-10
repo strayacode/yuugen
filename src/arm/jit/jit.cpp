@@ -6,6 +6,7 @@
 #include "arm/jit/ir/passes/const_propagation_pass.h"
 #include "arm/jit/ir/passes/identity_arithmetic_pass.h"
 #include "arm/jit/ir/passes/dead_copy_elimination_pass.h"
+#include "arm/jit/ir/passes/dead_code_elimination_pass.h"
 #include "arm/jit/backend/code.h"
 #include "arm/jit/backend/ir_interpreter/ir_interpreter.h"
 #include "arm/jit/backend/a64/backend.h"
@@ -34,6 +35,7 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
         optimiser.add_pass(std::make_unique<ConstPropagationPass>());
         optimiser.add_pass(std::make_unique<IdentityArithmeticPass>());
         optimiser.add_pass(std::make_unique<DeadCopyEliminationPass>());
+        optimiser.add_pass(std::make_unique<DeadCodeEliminationPass>());
     }
 }
 
