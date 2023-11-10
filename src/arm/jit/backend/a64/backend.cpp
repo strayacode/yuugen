@@ -762,7 +762,10 @@ void A64Backend::compile_multiply_long(IRMultiplyLong& opcode) {
     }
 
     if (opcode.is_signed) {
-        logger.todo("do smull");
+        WReg result_reg = register_allocator.allocate_temporary();
+        assembler.smull(XReg{result_reg.id}, lhs_reg, rhs_reg);
+        assembler.lsr(XReg{dst_upper_reg.id}, XReg{result_reg.id}, 32);
+        assembler.mov(dst_lower_reg, result_reg);
     } else {
         WReg result_reg = register_allocator.allocate_temporary();
         assembler.umull(XReg{result_reg.id}, lhs_reg, rhs_reg);
