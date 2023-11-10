@@ -53,6 +53,8 @@ private:
     void compile_logical_shift_right(IRLogicalShiftRight& opcode);
     void compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogicalShiftLeft& opcode);
     void compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogicalShiftRight& opcode);
+    void compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterArithmeticShiftRight& opcode);
+    void compile_barrel_shifter_rotate_right_extended(IRBarrelShifterRotateRightExtended& opcode);
     void compile_compare(IRCompare& opcode);
     void compile_copy(IRCopy& opcode);
     void compile_get_bit(IRGetBit& opcode);

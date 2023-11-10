@@ -236,13 +236,13 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_barrel_shifter_logical_shift_right(*opcode->as<IRBarrelShifterLogicalShiftRight>());
         break;
     case IROpcodeType::BarrelShifterArithmeticShiftRight:
-        logger.todo("handle BarrelShifterArithmeticShiftRight");
+        compile_barrel_shifter_arithmetic_shift_right(*opcode->as<IRBarrelShifterArithmeticShiftRight>());
         break;
     case IROpcodeType::BarrelShifterRotateRight:
         logger.todo("handle BarrelShifterRotateRight");
         break;
     case IROpcodeType::BarrelShifterRotateRightExtended:
-        logger.todo("handle BarrelShifterRotateRightExtended");
+        compile_barrel_shifter_rotate_right_extended(*opcode->as<IRBarrelShifterRotateRightExtended>());
         break;
     case IROpcodeType::CountLeadingZeroes:
         logger.todo("handle CountLeadingZeroes");
@@ -446,6 +446,74 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
     }
 }
 
+void A64Backend::compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterArithmeticShiftRight& opcode) {
+    const bool src_is_constant = opcode.src.is_constant();
+    const bool amount_is_constant = opcode.amount.is_constant();
+    WReg result_reg = register_allocator.allocate(opcode.result_and_carry.first);
+    WReg carry_reg = register_allocator.allocate(opcode.result_and_carry.second);
+    WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
+
+    if (opcode.carry.is_constant()) {
+        logger.todo("carry in for barrel shifter asr being constant was not expected");
+    }
+
+    if (src_is_constant && amount_is_constant) {
+        auto [result, carry] = asr(opcode.src.as_constant().value, opcode.amount.as_constant().value, opcode.imm);
+        assembler.mov(result_reg, result);
+
+        if (carry) {
+            assembler.mov(carry_reg, static_cast<u32>(*carry));
+        } else {
+            assembler.mov(carry_reg, carry_in_reg);
+        }
+    } else if (!src_is_constant && amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        auto amount = opcode.amount.as_constant();
+        WReg src_reg = register_allocator.get(src);
+
+        if (amount.value == 0 && opcode.imm) {
+            amount.value = 32;
+        }
+        
+        if (amount.value == 0) {
+            assembler.mov(result_reg, src_reg);
+            assembler.mov(carry_reg, carry_in_reg);
+        } else if (amount.value >= 32) {
+            logger.todo("barrel shifter asr handle amount >= 32");
+        } else {
+            logger.todo("barrel shifter asr handle amount > 0 && amount < 32");
+        }
+    } else {
+        logger.todo("handle barrel shifter asr case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_barrel_shifter_rotate_right_extended(IRBarrelShifterRotateRightExtended& opcode) {
+    const bool src_is_constant = opcode.src.is_constant();
+    const bool amount_is_constant = opcode.amount.is_constant();
+    WReg result_reg = register_allocator.allocate(opcode.result_and_carry.first);
+    WReg carry_reg = register_allocator.allocate(opcode.result_and_carry.second);
+    WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
+
+    if (opcode.carry.is_constant()) {
+        logger.todo("carry in for barrel shifter rrx being constant was not expected");
+    }
+
+    if (src_is_constant && amount_is_constant) {
+        WReg tmp_msb_reg = register_allocator.allocate_temporary();
+        assembler.lsl(tmp_msb_reg, carry_in_reg, 31);
+
+        assembler.mov(carry_reg, opcode.src.as_constant().value & 0x1);
+
+        WReg tmp_value_shifted_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_value_shifted_reg, opcode.src.as_constant().value >> 1);
+
+        assembler.orr(result_reg, tmp_msb_reg, tmp_value_shifted_reg);
+    } else {
+        logger.todo("handle barrel shifter rrx case %s", opcode.to_string().c_str());
+    }
+}
+
 void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
     const bool lhs_is_constant = opcode.lhs.is_constant();
     const bool rhs_is_constant = opcode.rhs.is_constant();
@@ -473,7 +541,17 @@ void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
         WReg rhs_reg = register_allocator.get(rhs);
         assembler._and(dst_reg, lhs_reg, rhs_reg);
     } else {
-        logger.todo("handle bitwise and case %s", opcode.to_string().c_str());
+        const auto lhs = opcode.lhs.as_constant();
+        const auto rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+
+        if (BitwiseImmediate<32>::is_valid(lhs.value)) {
+            assembler._and(dst_reg, rhs_reg, lhs.value);
+        } else {
+            WReg tmp_imm_reg = register_allocator.allocate_temporary();
+            assembler.mov(tmp_imm_reg, lhs.value);
+            assembler._and(dst_reg, rhs_reg, tmp_imm_reg);
+        }
     }
 }
 
@@ -498,7 +576,12 @@ void A64Backend::compile_bitwise_or(IRBitwiseOr& opcode) {
         WReg rhs_reg = register_allocator.get(rhs);
         assembler.orr(dst_reg, lhs_reg, rhs_reg);
     } else {
-        logger.todo("handle bitwise or case %s", opcode.to_string().c_str());
+        const auto lhs = opcode.lhs.as_constant();
+        const auto rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, lhs.value);
+        assembler.orr(dst_reg, tmp_imm_reg, rhs_reg);
     }
 }
 
@@ -544,7 +627,17 @@ void A64Backend::compile_bitwise_exclusive_or(IRBitwiseExclusiveOr& opcode) {
         WReg rhs_reg = register_allocator.get(rhs);
         assembler.eor(dst_reg, lhs_reg, rhs_reg);
     } else {
-        logger.todo("handle bitwise xor case %s", opcode.to_string().c_str());
+        const auto lhs = opcode.lhs.as_constant();
+        const auto rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+
+        if (BitwiseImmediate<32>::is_valid(lhs.value)) {
+            assembler.eor(dst_reg, rhs_reg, lhs.value);
+        } else {
+            WReg tmp_imm_reg = register_allocator.allocate_temporary();
+            assembler.mov(tmp_imm_reg, lhs.value);
+            assembler.eor(dst_reg, rhs_reg, tmp_imm_reg);
+        }
     }
 }
 
@@ -576,7 +669,17 @@ void A64Backend::compile_add(IRAdd& opcode) {
         WReg rhs_reg = register_allocator.get(rhs);
         assembler.add(dst_reg, lhs_reg, rhs_reg);
     } else {
-        logger.todo("handle add case %s", opcode.to_string().c_str());
+        const auto lhs = opcode.lhs.as_constant();
+        const auto rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+
+        if (AddSubImmediate::is_valid(lhs.value)) {
+            assembler.add(dst_reg, rhs_reg, lhs.value);
+        } else {
+            WReg tmp_imm_reg = register_allocator.allocate_temporary();
+            assembler.mov(tmp_imm_reg, lhs.value);
+            assembler.add(dst_reg, tmp_imm_reg, rhs_reg);
+        }
     }
 }
 
@@ -657,44 +760,35 @@ void A64Backend::compile_compare(IRCompare& opcode) {
             assembler.mov(tmp_imm_reg, rhs.value);
             assembler.cmp(lhs_reg, tmp_imm_reg);
         }
-        
-        switch (opcode.compare_type) {
-        case CompareType::Equal:
-            assembler.cset(dst_reg, Condition::EQ);
-            break;
-        case CompareType::LessThan:
-            logger.todo("handle compare lt");
-            break;
-        case CompareType::GreaterEqual:
-            assembler.cset(dst_reg, Condition::GE);
-            break;
-        case CompareType::GreaterThan:
-            logger.todo("handle compare gt");
-            break;
-        }
     } else if (!lhs_is_constant && !rhs_is_constant) {
         auto& lhs = opcode.lhs.as_variable();
         WReg lhs_reg = register_allocator.get(lhs);
         auto& rhs = opcode.rhs.as_variable();
         WReg rhs_reg = register_allocator.get(rhs);
         assembler.cmp(lhs_reg, rhs_reg);
-
-        switch (opcode.compare_type) {
-        case CompareType::Equal:
-            assembler.cset(dst_reg, Condition::EQ);
-            break;
-        case CompareType::LessThan:
-            logger.todo("handle compare lt");
-            break;
-        case CompareType::GreaterEqual:
-            assembler.cset(dst_reg, Condition::GE);
-            break;
-        case CompareType::GreaterThan:
-            logger.todo("handle compare gt");
-            break;
-        }
     } else {
-        logger.todo("handle compare case %s", opcode.to_string().c_str());
+        const auto lhs = opcode.lhs.as_constant();
+        const auto rhs = opcode.rhs.as_variable();
+        WReg rhs_reg = register_allocator.get(rhs);
+        
+        WReg tmp_imm_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_imm_reg, lhs.value);
+        assembler.cmp(tmp_imm_reg, rhs_reg);
+    }
+
+    switch (opcode.compare_type) {
+    case CompareType::Equal:
+        assembler.cset(dst_reg, Condition::EQ);
+        break;
+    case CompareType::LessThan:
+        assembler.cset(dst_reg, Condition::LT);
+        break;
+    case CompareType::GreaterEqual:
+        assembler.cset(dst_reg, Condition::GE);
+        break;
+    case CompareType::GreaterThan:
+        assembler.cset(dst_reg, Condition::GT);
+        break;
     }
 }
 
