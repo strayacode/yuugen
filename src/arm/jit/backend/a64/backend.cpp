@@ -482,7 +482,8 @@ void A64Backend::compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterAr
             assembler.asr(result_reg, src_reg, 31);
             assembler.lsr(carry_reg, src_reg, 31);
         } else {
-            logger.todo("barrel shifter asr handle amount > 0 && amount < 32");
+            assembler.asr(result_reg, src_reg, amount.value);
+            assembler.ubfx(carry_reg, src_reg, amount.value - 1, 1);
         }
     } else {
         logger.todo("handle barrel shifter asr case %s", opcode.to_string().c_str());
