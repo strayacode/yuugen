@@ -251,6 +251,8 @@ public:
     void ret();
     void ret(XReg rn);
 
+    void smull(XReg xd, WReg wn, WReg wm);
+
     // pre/post index
     void stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm);
     void stp(XReg xt1, XReg xt2, XReg xn, IndexMode index_mode, Offset<10, 3> imm);
@@ -274,6 +276,8 @@ public:
 
     void ubfx(WReg wd, WReg wn, Immediate<5> lsb, Immediate<5> width);
     void ubfx(XReg xd, XReg xn, Immediate<6> lsb, Immediate<6> width);
+
+    void umull(XReg xd, WReg wn, WReg wm);
 
     template <typename T>
     T get_current_code() {

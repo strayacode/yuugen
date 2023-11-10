@@ -178,6 +178,10 @@ int main() {
     TEST(0xd65f0080, ret(arm::x4))
     TEST(0xd65f0300, ret(arm::x24))
 
+    TEST(0x9b247cb0, smull(arm::x16, arm::w5, arm::w4))
+    TEST(0x9b217e14, smull(arm::x20, arm::w16, arm::w1))
+    TEST(0x9b327d93, smull(arm::x19, arm::w12, arm::w18))
+
     TEST(0x28977de9, stp(arm::w9, arm::wzr, arm::x15, arm::IndexMode::Post, 184))
     TEST(0x28ab5ae0, stp(arm::w0, arm::w22, arm::x23, arm::IndexMode::Post, -168))
     TEST(0xa8803598, stp(arm::x24, arm::x13, arm::x12, arm::IndexMode::Post, 0))
@@ -228,6 +232,10 @@ int main() {
     TEST(0xd35cd8fe, ubfx(arm::x30, arm::x7, 28, 27))
     TEST(0xd34fcc95, ubfx(arm::x21, arm::x4, 15, 37))
     TEST(0xd34d7391, ubfx(arm::x17, arm::x28, 13, 16))
+    
+    TEST(0x9ba77ddd, umull(arm::x29, arm::w14, arm::w7))
+    TEST(0x9bad7e73, umull(arm::x19, arm::w19, arm::w13))
+    TEST(0x9ba27fd0, umull(arm::x16, arm::w30, arm::w2))
 
     code_block.protect();
 

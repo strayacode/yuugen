@@ -215,7 +215,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_multiply(*opcode->as<IRMultiply>());
         break;
     case IROpcodeType::MultiplyLong:
-        logger.todo("handle MultiplyLong");
+        compile_multiply_long(*opcode->as<IRMultiplyLong>());
         break;
     case IROpcodeType::LogicalShiftLeft:
         compile_logical_shift_left(*opcode->as<IRLogicalShiftLeft>());
@@ -738,6 +738,36 @@ void A64Backend::compile_multiply(IRMultiply& opcode) {
         WReg tmp_imm_reg = register_allocator.allocate_temporary();
         assembler.mov(tmp_imm_reg, opcode.lhs.as_constant().value);
         assembler.mul(dst_reg, tmp_imm_reg, rhs_reg);
+    }
+}
+
+void A64Backend::compile_multiply_long(IRMultiplyLong& opcode) {
+    WReg dst_upper_reg = register_allocator.allocate(opcode.dst.first);
+    WReg dst_lower_reg = register_allocator.allocate(opcode.dst.second);
+    WReg lhs_reg;
+    WReg rhs_reg;
+
+    if (opcode.lhs.is_constant()) {
+        lhs_reg = register_allocator.allocate_temporary();
+        assembler.mov(lhs_reg, opcode.lhs.as_constant().value);
+    } else {
+        lhs_reg = register_allocator.get(opcode.lhs.as_variable());
+    }
+
+    if (opcode.rhs.is_constant()) {
+        rhs_reg = register_allocator.allocate_temporary();
+        assembler.mov(rhs_reg, opcode.rhs.as_constant().value);
+    } else {
+        rhs_reg = register_allocator.get(opcode.rhs.as_variable());
+    }
+
+    if (opcode.is_signed) {
+        logger.todo("do smull");
+    } else {
+        WReg result_reg = register_allocator.allocate_temporary();
+        assembler.umull(XReg{result_reg.id}, lhs_reg, rhs_reg);
+        assembler.lsr(XReg{dst_upper_reg.id}, XReg{result_reg.id}, 32);
+        assembler.mov(dst_lower_reg, result_reg);
     }
 }
 

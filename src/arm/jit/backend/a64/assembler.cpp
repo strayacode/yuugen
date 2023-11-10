@@ -302,6 +302,10 @@ void A64Assembler::ret(XReg rn) {
     emit(0x3597c0 << 10 | rn.id << 5);
 }
 
+void A64Assembler::smull(XReg xd, WReg wn, WReg wm) {
+    emit(0x4d9 << 21 | wm.id << 16 | 0x1f << 10 | wn.id << 5 | xd.id);
+}
+
 void A64Assembler::stp(WReg wt1, WReg wt2, XReg xn, IndexMode index_mode, Offset<9, 2> imm) {
     switch (index_mode) {
     case IndexMode::Pre:
@@ -384,6 +388,10 @@ void A64Assembler::ubfx(WReg wd, WReg wn, Immediate<5> lsb, Immediate<5> width) 
 
 void A64Assembler::ubfx(XReg xd, XReg xn, Immediate<6> lsb, Immediate<6> width) {
     emit(0x34d << 22 | lsb.value << 16 | (lsb.value + width.value - 1) << 10 | xn.id << 5 | xd.id);
+}
+
+void A64Assembler::umull(XReg xd, WReg wn, WReg wm) {
+    emit(0x4dd << 21 | wm.id << 16 | 0x1f << 10 | wn.id << 5 | xd.id);
 }
 
 void A64Assembler::emit(u32 data) {
