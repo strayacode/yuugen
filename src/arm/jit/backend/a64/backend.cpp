@@ -479,7 +479,8 @@ void A64Backend::compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterAr
             assembler.mov(result_reg, src_reg);
             assembler.mov(carry_reg, carry_in_reg);
         } else if (amount.value >= 32) {
-            logger.todo("barrel shifter asr handle amount >= 32");
+            assembler.asr(result_reg, src_reg, 31);
+            assembler.lsr(carry_reg, src_reg, 31);
         } else {
             logger.todo("barrel shifter asr handle amount > 0 && amount < 32");
         }
@@ -814,13 +815,13 @@ void A64Backend::compile_compare(IRCompare& opcode) {
         assembler.cset(dst_reg, Condition::EQ);
         break;
     case CompareType::LessThan:
-        assembler.cset(dst_reg, Condition::LT);
+        assembler.cset(dst_reg, Condition::CC);
         break;
     case CompareType::GreaterEqual:
-        assembler.cset(dst_reg, Condition::GE);
+        assembler.cset(dst_reg, Condition::CS);
         break;
     case CompareType::GreaterThan:
-        assembler.cset(dst_reg, Condition::GT);
+        assembler.cset(dst_reg, Condition::HI);
         break;
     }
 }

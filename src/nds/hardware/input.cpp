@@ -6,8 +6,8 @@ namespace nds {
 void Input::reset() {
     point.x = 0;
     point.y = 0;
-    keyinput.data = 0x3ff;
-    extkeyin = 0x7f;
+    keyinput.data = 0;
+    extkeyin = 0;
 }
 
 void Input::handle_input(InputEvent event, bool pressed) {

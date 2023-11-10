@@ -49,6 +49,11 @@ int main() {
     TEST(0x8a872dcc, _and(arm::x12, arm::x14, arm::x7, arm::Shift::ASR, 11))
     TEST(0x8a10d18f, _and(arm::x15, arm::x12, arm::x16, arm::Shift::LSL, 52))
 
+    TEST(0x13167d11, asr(arm::w17, arm::w8, 22))
+    TEST(0x9347ff0d, asr(arm::x13, arm::x24, 7))
+    TEST(0x9361feb4, asr(arm::x20, arm::x21, 33))
+    TEST(0x9356fda2, asr(arm::x2, arm::x13, 22))
+
     TEST(0x9708781e, bl(-64888712))
     TEST(0x95b27a60, bl(113895808))
     TEST(0x956ab105, bl(95077396))

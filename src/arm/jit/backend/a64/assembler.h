@@ -182,6 +182,9 @@ public:
     void _and(WReg wd, WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void _and(XReg xd, XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
 
+    void asr(WReg wd, WReg wn, u32 amount);
+    void asr(XReg xd, XReg xn, u32 amount);
+
     void b(Label& label);
     void b(Condition condition, Label& label);
 
