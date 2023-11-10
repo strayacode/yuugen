@@ -734,12 +734,46 @@ void A64Backend::compile_get_bit(IRGetBit& opcode) {
 }
 
 void A64Backend::compile_set_bit(IRSetBit& opcode) {
-    logger.todo("handle set bit");
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+    WReg src_reg;
+    WReg value_reg;
+    
+    if (opcode.src.is_constant()) {
+        src_reg = register_allocator.allocate_temporary();
+        const auto src = opcode.src.as_constant();
+        assembler.mov(src_reg, src.value);
+    } else {
+        src_reg = register_allocator.get(opcode.src.as_variable());
+    }
+
+    if (opcode.value.is_constant()) {
+        value_reg = register_allocator.allocate_temporary();
+        const auto value = opcode.value.as_constant();
+        assembler.mov(value_reg, value.value);
+    } else {
+        value_reg = register_allocator.get(opcode.value.as_variable());
+    }
+
+    if (opcode.bit.is_constant()) {
+        const auto bit = opcode.bit.as_constant();
+        assembler._and(dst_reg, src_reg, ~(1 << bit.value));
+        assembler.orr(dst_reg, dst_reg, value_reg, Shift::LSL, bit.value);
+    } else {
+        const auto bit = opcode.bit.as_variable();
+        const auto bit_reg = register_allocator.get(bit);
+        WReg lhs_reg = register_allocator.allocate_temporary();
+        WReg rhs_reg = register_allocator.allocate_temporary();
+        assembler.mov(lhs_reg, 1);
+        assembler.lsl(lhs_reg, lhs_reg, bit_reg);
+        assembler._and(lhs_reg, src_reg, lhs_reg);
+
+        assembler.lsl(rhs_reg, value_reg, bit_reg);
+        assembler.orr(dst_reg, lhs_reg, rhs_reg);
+    }
 }
 
 void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
     WReg dst_reg = register_allocator.allocate(opcode.dst);
-
     WReg addr_reg;
     
     if (opcode.addr.is_constant()) {
