@@ -18,7 +18,7 @@ System::System() :
     timers9(scheduler, arm9.get_irq())
 {
     main_memory = std::make_unique<std::array<u8, 0x400000>>();
-    select_cpu_backend(arm::BackendType::Jit, true);
+    select_cpu_backend(arm::BackendType::Jit, false);
 }
 
 System::~System() {

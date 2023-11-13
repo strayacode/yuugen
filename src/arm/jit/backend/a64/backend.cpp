@@ -79,6 +79,8 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     logger.print("");
 
+    assembler.dump();
+
     code_block.protect();
     code_cache.set(basic_block.location, jit_fn);
     return reinterpret_cast<void*>(jit_fn);
@@ -402,8 +404,54 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
             assembler.lsr(carry_reg, src_reg, 32 - amount.value);
             assembler._and(carry_reg, carry_reg, 0x1);
         }
+    } else if (!src_is_constant && !amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        WReg amount_reg = register_allocator.get(amount);
+
+        Label label_case2;
+        Label label_case3;
+        Label label_finish1;
+        Label label_finish2;
+
+        assembler.cmp(amount_reg, 0);
+        assembler.b(Condition::NE, label_case2);
+
+        // if amount == 0
+        assembler.mov(result_reg, src_reg);
+        assembler.mov(carry_reg, carry_in_reg);
+        assembler.b(label_finish1);
+
+        assembler.link(label_case2);
+        assembler.cmp(amount_reg, 31);
+        assembler.b(Condition::LE, label_case3);
+
+        // if amount >= 32
+        assembler.mov(result_reg, 0);
+        assembler.cmp(amount_reg, 32);
+        assembler.cset(carry_reg, Condition::EQ);
+
+        WReg tmp_masked_src_reg = register_allocator.allocate_temporary();
+        assembler._and(tmp_masked_src_reg, src_reg, 0x1);
+        assembler._and(carry_reg, carry_reg, tmp_masked_src_reg);
+        assembler.b(label_finish2);
+
+        // amount > 0 && amount < 32
+        assembler.link(label_case3);
+        assembler.lsl(result_reg, src_reg, amount_reg);
+
+        WReg tmp_negated_amount_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_negated_amount_reg, 32);
+        assembler.sub(tmp_negated_amount_reg, tmp_negated_amount_reg, amount_reg);
+
+        assembler.lsr(carry_reg, src_reg, tmp_negated_amount_reg);
+        assembler._and(carry_reg, carry_reg, 0x1);
+
+        assembler.link(label_finish1);
+        assembler.link(label_finish2);
     } else {
-        logger.todo("handle barrel shifter lsl case");
+        logger.todo("handle barrel shifter lsl case %s", opcode.to_string().c_str());
     }
 }
 

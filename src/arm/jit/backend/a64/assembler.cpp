@@ -10,7 +10,7 @@ void A64Assembler::dump() {
     logger.print("buffer:");
     u32* curr = previous_code;
     while (curr != current_code) {
-        logger.print("%08x", *curr);
+        logger.print("%s", disassemble_a64_instruction(reinterpret_cast<u64>(curr), *curr).c_str());
         curr++;
     }
 }
