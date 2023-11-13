@@ -410,22 +410,22 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
         WReg src_reg = register_allocator.get(src);
         WReg amount_reg = register_allocator.get(amount);
 
-        Label label_case2;
-        Label label_case3;
+        Label label_ge32;
+        Label label_else;
         Label label_finish1;
         Label label_finish2;
 
         assembler.cmp(amount_reg, 0);
-        assembler.b(Condition::NE, label_case2);
+        assembler.b(Condition::NE, label_ge32);
 
         // if amount == 0
         assembler.mov(result_reg, src_reg);
         assembler.mov(carry_reg, carry_in_reg);
         assembler.b(label_finish1);
 
-        assembler.link(label_case2);
+        assembler.link(label_ge32);
         assembler.cmp(amount_reg, 31);
-        assembler.b(Condition::LE, label_case3);
+        assembler.b(Condition::LE, label_else);
 
         // if amount >= 32
         assembler.mov(result_reg, 0);
@@ -438,7 +438,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
         assembler.b(label_finish2);
 
         // amount > 0 && amount < 32
-        assembler.link(label_case3);
+        assembler.link(label_else);
         assembler.lsl(result_reg, src_reg, amount_reg);
 
         WReg tmp_negated_amount_reg = register_allocator.allocate_temporary();
@@ -476,21 +476,27 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
             assembler.mov(carry_reg, carry_in_reg);
         }
     } else if (!src_is_constant && amount_is_constant) {
-        auto& src = opcode.src.as_variable();
+        const auto src = opcode.src.as_variable();
         WReg src_reg = register_allocator.get(src);
-        const u32 amount = opcode.amount.as_constant().value;
+        auto amount = opcode.amount.as_constant();
 
-        if (amount == 0) {
+        if (amount.value == 0 && opcode.imm) {
+            amount.value = 32;
+        }
+
+        if (amount.value == 0) {
             logger.todo("barrel shifter lsr handle amount == 0");
-        } else if (amount >= 32) {
-            logger.todo("barrel shifter lsr handle amount >= 32");
+        } else if (amount.value >= 32) {
+            assembler.mov(result_reg, 0);
+            assembler.lsr(carry_reg, src_reg, 31);
+            assembler._and(carry_reg, carry_reg, amount.value == 32);
         } else {
-            assembler.lsr(result_reg, src_reg, amount);
-            assembler.lsr(carry_reg, src_reg, amount - 1);
+            assembler.lsr(result_reg, src_reg, amount.value);
+            assembler.lsr(carry_reg, src_reg, amount.value - 1);
             assembler._and(carry_reg, carry_reg, 0x1);
         }
     } else {
-        logger.todo("handle barrel shifter lsr case");
+        logger.todo("handle barrel shifter lsr case %s", opcode.to_string().c_str());
     }
 }
 
@@ -533,6 +539,48 @@ void A64Backend::compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterAr
             assembler.asr(result_reg, src_reg, amount.value);
             assembler.ubfx(carry_reg, src_reg, amount.value - 1, 1);
         }
+    } else if (!src_is_constant && !amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        WReg amount_reg = register_allocator.get(amount);
+
+        Label label_ge32;
+        Label label_else;
+        Label label_finish1;
+        Label label_finish2;
+
+        assembler.cmp(amount_reg, 0);
+        assembler.b(Condition::NE, label_ge32);
+
+        // if amount == 0
+        if (opcode.imm) {
+            assembler.mov(amount_reg, 32);
+            assembler.b(label_ge32);
+        } else {
+            assembler.mov(result_reg, src_reg);
+            assembler.mov(carry_reg, carry_in_reg);
+            assembler.b(label_finish1);
+        }
+
+        assembler.link(label_ge32);
+        assembler.cmp(amount_reg, 31);
+        assembler.b(Condition::LE, label_else);
+
+        // if amount >= 32
+        assembler.asr(result_reg, src_reg, 31);
+        assembler.lsr(carry_reg, src_reg, 31);
+        assembler.b(label_finish2);
+
+        // amount > 0 && amount < 32
+        assembler.link(label_else);
+        assembler.asr(result_reg, src_reg, amount_reg);
+        assembler.sub(amount_reg, amount_reg, 1);
+        assembler.lsr(carry_reg, src_reg, amount_reg);
+        assembler._and(carry_reg, carry_reg, 0x1);
+
+        assembler.link(label_finish1);
+        assembler.link(label_finish2);
     } else {
         logger.todo("handle barrel shifter asr case %s", opcode.to_string().c_str());
     }

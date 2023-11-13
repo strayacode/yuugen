@@ -95,6 +95,14 @@ void A64Assembler::asr(XReg xd, XReg xn, u32 amount) {
     emit(0x24d << 22 | amount << 16 | 0x3f << 10 | xn.id << 5 | xd.id);
 }
 
+void A64Assembler::asr(WReg wd, WReg wn, WReg wm) {
+    emit(0xd6 << 21 | wm.id << 16 | 0xa << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::asr(XReg xd, XReg xn, XReg xm) {
+    emit(0x4d6 << 21 | xm.id << 16 | 0xa << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::b(Label& label) {
     label.instruction = current_code;
     emit(0x5 << 26);

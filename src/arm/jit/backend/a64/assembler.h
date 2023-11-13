@@ -184,6 +184,8 @@ public:
 
     void asr(WReg wd, WReg wn, u32 amount);
     void asr(XReg xd, XReg xn, u32 amount);
+    void asr(WReg wd, WReg wn, WReg wm);
+    void asr(XReg xd, XReg xn, XReg xm);
 
     void b(Label& label);
     void b(Condition condition, Label& label);
