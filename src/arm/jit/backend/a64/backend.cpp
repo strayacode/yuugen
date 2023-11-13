@@ -607,6 +607,20 @@ void A64Backend::compile_barrel_shifter_rotate_right_extended(IRBarrelShifterRot
         assembler.mov(tmp_value_shifted_reg, opcode.src.as_constant().value >> 1);
 
         assembler.orr(result_reg, tmp_msb_reg, tmp_value_shifted_reg);
+    } else if (!src_is_constant && amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        WReg src_reg = register_allocator.get(src);
+
+        WReg tmp_msb_reg = register_allocator.allocate_temporary();
+        assembler.lsl(tmp_msb_reg, carry_in_reg, 31);
+
+        assembler._and(carry_reg, src_reg, 0x1);
+
+        WReg tmp_value_shifted_reg = register_allocator.allocate_temporary();
+
+        // TODO: combine into 1 instruction
+        assembler.lsr(tmp_value_shifted_reg, src_reg, 1);
+        assembler.orr(result_reg, tmp_msb_reg, tmp_value_shifted_reg);
     } else {
         logger.todo("handle barrel shifter rrx case %s", opcode.to_string().c_str());
     }
