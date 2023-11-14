@@ -47,6 +47,7 @@ private:
     void compile_bitwise_not(IRBitwiseNot& opcode);
     void compile_bitwise_exclusive_or(IRBitwiseExclusiveOr& opcode);
     void compile_add(IRAdd& opcode);
+    void compile_add_long(IRAddLong& opcode);
     void compile_subtract(IRSubtract& opcode);
     void compile_multiply(IRMultiply& opcode);
     void compile_multiply_long(IRMultiplyLong& opcode);

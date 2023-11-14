@@ -113,6 +113,8 @@ void Interpreter::arm_data_processing() {
             } else {
                 arm_flush_pipeline();
             }
+        } else {
+            state.gpr[15] += 4;
         }
     } else {
         state.gpr[15] += 4;

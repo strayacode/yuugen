@@ -79,8 +79,6 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     logger.print("");
 
-    assembler.dump();
-
     code_block.protect();
     code_cache.set(basic_block.location, jit_fn);
     return reinterpret_cast<void*>(jit_fn);
@@ -208,7 +206,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_add(*opcode->as<IRAdd>());
         break;
     case IROpcodeType::AddLong:
-        logger.todo("handle AddLong");
+        compile_add_long(*opcode->as<IRAddLong>());
         break;
     case IROpcodeType::Subtract:
         compile_subtract(*opcode->as<IRSubtract>());
@@ -495,6 +493,55 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
             assembler.lsr(carry_reg, src_reg, amount.value - 1);
             assembler._and(carry_reg, carry_reg, 0x1);
         }
+    } else if (!src_is_constant && !amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        WReg amount_reg = register_allocator.get(amount);
+
+        Label label_ge32;
+        Label label_else;
+        Label label_finish1;
+        Label label_finish2;
+
+        assembler.cmp(amount_reg, 0);
+        assembler.b(Condition::NE, label_ge32);
+
+        // if amount == 0
+        if (opcode.imm) {
+            assembler.mov(amount_reg, 32);
+            assembler.b(label_ge32);
+        } else {
+            assembler.mov(result_reg, src_reg);
+            assembler.mov(carry_reg, carry_in_reg);
+            assembler.b(label_finish1);
+        }
+
+        assembler.link(label_ge32);
+        assembler.cmp(amount_reg, 31);
+        assembler.b(Condition::LE, label_else);
+
+        // if amount >= 32
+        assembler.mov(result_reg, 0);
+        assembler.cmp(amount_reg, 32);
+        assembler.cset(carry_reg, Condition::EQ);
+
+        WReg tmp_shifted_src_reg = register_allocator.allocate_temporary();
+        assembler.lsr(tmp_shifted_src_reg, src_reg, 31);
+        assembler._and(carry_reg, carry_reg, tmp_shifted_src_reg);
+        assembler.b(label_finish2);
+
+        // amount > 0 && amount < 32
+        assembler.link(label_else);
+        assembler.lsr(result_reg, src_reg, amount_reg);
+
+        assembler.sub(amount_reg, amount_reg, 1);
+
+        assembler.lsr(carry_reg, src_reg, amount_reg);
+        assembler._and(carry_reg, carry_reg, 0x1);
+
+        assembler.link(label_finish1);
+        assembler.link(label_finish2);
     } else {
         logger.todo("handle barrel shifter lsr case %s", opcode.to_string().c_str());
     }
@@ -793,6 +840,54 @@ void A64Backend::compile_add(IRAdd& opcode) {
             assembler.add(dst_reg, tmp_imm_reg, rhs_reg);
         }
     }
+}
+
+void A64Backend::compile_add_long(IRAddLong& opcode) {
+    WReg dst_upper_reg = register_allocator.allocate(opcode.dst.first);
+    WReg dst_lower_reg = register_allocator.allocate(opcode.dst.second);
+
+    WReg lhs_lower_reg;
+    WReg lhs_upper_reg;
+    WReg rhs_lower_reg;
+    WReg rhs_upper_reg;
+    XReg lhs_reg = XReg{register_allocator.allocate_temporary().id};
+    XReg rhs_reg = XReg{register_allocator.allocate_temporary().id};
+
+    if (opcode.lhs.first.is_constant()) {
+        lhs_upper_reg = register_allocator.allocate_temporary();
+        assembler.mov(lhs_upper_reg, opcode.lhs.first.as_constant().value);
+    } else {
+        lhs_upper_reg = register_allocator.get(opcode.lhs.first.as_variable());
+    }
+
+    if (opcode.lhs.second.is_constant()) {
+        lhs_lower_reg = register_allocator.allocate_temporary();
+        assembler.mov(lhs_lower_reg, opcode.lhs.second.as_constant().value);
+    } else {
+        lhs_lower_reg = register_allocator.get(opcode.lhs.second.as_variable());
+    }
+
+    if (opcode.rhs.first.is_constant()) {
+        rhs_upper_reg = register_allocator.allocate_temporary();
+        assembler.mov(rhs_upper_reg, opcode.rhs.first.as_constant().value);
+    } else {
+        rhs_upper_reg = register_allocator.get(opcode.rhs.first.as_variable());
+    }
+
+    if (opcode.rhs.second.is_constant()) {
+        rhs_lower_reg = register_allocator.allocate_temporary();
+        assembler.mov(rhs_lower_reg, opcode.rhs.second.as_constant().value);
+    } else {
+        rhs_lower_reg = register_allocator.get(opcode.rhs.second.as_variable());
+    }
+    
+    assembler.orr(lhs_reg, XReg{lhs_lower_reg.id}, XReg{lhs_upper_reg.id}, Shift::LSL, 32);
+    assembler.orr(rhs_reg, XReg{rhs_lower_reg.id}, XReg{rhs_upper_reg.id}, Shift::LSL, 32);
+
+    WReg result_reg = register_allocator.allocate_temporary();
+    assembler.add(XReg{result_reg.id}, lhs_reg, rhs_reg);
+    assembler.lsr(XReg{dst_upper_reg.id}, XReg{result_reg.id}, 32);
+    assembler.mov(dst_lower_reg, result_reg);
 }
 
 void A64Backend::compile_subtract(IRSubtract& opcode) {
