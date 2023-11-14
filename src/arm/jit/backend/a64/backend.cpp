@@ -224,7 +224,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_logical_shift_right(*opcode->as<IRLogicalShiftRight>());
         break;
     case IROpcodeType::ArithmeticShiftRight:
-        logger.todo("handle ArithmeticShiftRight");
+        compile_arithmetic_shift_right(*opcode->as<IRArithmeticShiftRight>());
         break;
     case IROpcodeType::RotateRight:
         logger.todo("handle RotateRight");
@@ -363,7 +363,25 @@ void A64Backend::compile_logical_shift_right(IRLogicalShiftRight& opcode) {
         const u32 amount = opcode.amount.as_constant().value & 0x1f;
         assembler.lsr(dst_reg, src_reg, amount);
     } else {
-        logger.todo("handle lsr case");
+        logger.todo("handle lsr case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_arithmetic_shift_right(IRArithmeticShiftRight& opcode) {
+    const bool src_is_constant = opcode.src.is_constant();
+    const bool amount_is_constant = opcode.amount.is_constant();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+
+    if (src_is_constant && amount_is_constant) {
+        u32 result = static_cast<s32>(opcode.src.as_constant().value) >> opcode.amount.as_constant().value;
+        assembler.mov(dst_reg, result);
+    } else if (!src_is_constant && amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_constant();
+        WReg src_reg = register_allocator.get(src);
+        assembler.asr(dst_reg, src_reg, amount.value & 0x1f);
+    } else {
+        logger.todo("handle asr case %s", opcode.to_string().c_str());
     }
 }
 
