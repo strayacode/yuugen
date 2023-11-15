@@ -72,14 +72,6 @@ void SoftwareRenderer::render_polygon_scanline(Polygon& polygon, int y) {
     const auto right_vertex = polygon.vertices[right];
     const auto next_right_vertex = polygon.vertices[next_right];
 
-    if (left_vertex->y == next_left_vertex->y) {
-        next_left_vertex->y++;
-    }
-
-    if (right_vertex->y == next_right_vertex->y) {
-        next_right_vertex->y++;
-    }
-
     left_slope.setup(*left_vertex, *next_left_vertex);
     right_slope.setup(*right_vertex, *next_right_vertex);
 

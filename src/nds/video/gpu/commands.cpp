@@ -237,4 +237,33 @@ void GPU::set_normal_vector() {
     dequeue_entry();
 }
 
+void GPU::set_texture_coordinates() {
+    const u32 parameter = dequeue_entry().parameter;
+    s16 s = static_cast<s16>(common::get_field<0, 16>(parameter));
+    s16 t = static_cast<s16>(common::get_field<16, 16>(parameter));
+
+    switch (current_polygon.texture_attributes.parameters.transformation_mode) {
+    case 0:
+        current_vertex.s = s;
+        current_vertex.t = t;
+        break;
+    case 1:
+        logger.todo("GPU: handle texcoord source");
+        break;
+    case 2:
+        logger.todo("GPU: handle normal source");
+        break;
+    case 3:
+        logger.todo("GPU: handle vertex source");
+        break;
+    }
+}
+
+void GPU::set_vertex_xy() {
+    const u32 parameter = dequeue_entry().parameter;
+    current_vertex.x = static_cast<s16>(common::get_field<0, 16>(parameter));
+    current_vertex.y = static_cast<s16>(common::get_field<16, 16>(parameter));
+    submit_vertex();
+}
+
 } // namespace nds

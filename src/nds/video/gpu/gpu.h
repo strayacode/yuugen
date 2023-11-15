@@ -30,6 +30,8 @@ public:
     void write_clear_colour(u32 value, u32 mask);
     void write_clear_depth(u16 value, u32 mask);
     void write_clrimage_offset(u16 value, u32 mask);
+    void write_fog_colour(u32 value, u32 mask);
+    void write_fog_offset(u16 value, u32 mask);
     void queue_command(u32 addr, u32 data);
     void do_swap_buffers();
     void render();
@@ -86,6 +88,8 @@ private:
     void end_vertex_list();
     void set_shininess();
     void set_normal_vector();
+    void set_texture_coordinates();
+    void set_vertex_xy();
     
     union DISP3DCNT {
         struct {
@@ -165,6 +169,11 @@ private:
     u32 clear_colour{0};
     u16 clear_depth{0};
     u16 clrimage_offset{0};
+    u32 fog_colour{0};
+    u16 fog_offset{0};
+    std::array<u8, 0x10> edge_colour;
+    std::array<u8, 0x20> fog_table;
+    std::array<u8, 0x40> toon_table;
 
     Vertex current_vertex;
     Polygon current_polygon;

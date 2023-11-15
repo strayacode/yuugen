@@ -60,6 +60,11 @@ void GPU::reset() {
     clear_colour = 0;
     clear_depth = 0;
     clrimage_offset = 0;
+    fog_colour = 0;
+    fog_offset = 0;
+    edge_colour.fill(0);
+    fog_table.fill(0);
+    toon_table.fill(0);
 
     viewport.x0 = 0;
     viewport.y0 = 0;
@@ -135,6 +140,14 @@ void GPU::write_clear_depth(u16 value, u32 mask) {
 
 void GPU::write_clrimage_offset(u16 value, u32 mask) {
     clrimage_offset = (clrimage_offset & ~mask) | (value & mask);
+}
+
+void GPU::write_fog_colour(u32 value, u32 mask) {
+    fog_colour = (fog_colour & ~mask) | (value & mask);
+}
+
+void GPU::write_fog_offset(u16 value, u32 mask) {
+    fog_offset = (fog_offset & ~mask) | (value & mask);
 }
 
 void GPU::queue_command(u32 addr, u32 data) {
@@ -240,8 +253,14 @@ void GPU::execute_command() {
         case 0x20:
             set_vertex_colour();
             break;
+        case 0x22:
+            set_texture_coordinates();
+            break;
         case 0x23:
             add_vertex16();
+            break;
+        case 0x25:
+            set_vertex_xy();
             break;
         case 0x29:
             set_polygon_attributes();
