@@ -128,7 +128,7 @@ u32 GPU::read_gxstat() {
 
 u32 GPU::read_clip_matrix(u32 addr) {
     update_clip_matrix();
-    
+
     int x = (addr - 0x04000640) % 4;
     int y = (addr - 0x04000640) / 4;
     return clip.field[y][x];
@@ -300,6 +300,9 @@ void GPU::execute_command() {
             break;
         case 0x27:
             set_vertex_yz();
+            break;
+        case 0x28:
+            set_relative_vertex_coordinates();
             break;
         case 0x29:
             set_polygon_attributes();

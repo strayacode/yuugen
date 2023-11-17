@@ -139,6 +139,10 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.ipc.read_ipcsync(arm::Arch::ARMv5);
     case MMIO(0x04000184):
         return system.ipc.read_ipcfifocnt(arm::Arch::ARMv5);
+    case MMIO(0x040001a0):
+        if constexpr (mask & 0xffff) value |= system.cartridge.read_auxspicnt();
+        if constexpr (mask & 0xffff0000) value |= system.cartridge.read_auxspidata() << 16;
+        return value;
     case MMIO(0x040001a4):
         return system.cartridge.read_romctrl();
     case MMIO(0x04000204):
@@ -209,6 +213,7 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x04004000):
     case MMIO(0x04004008):
+    case MMIO(0x04004010):
         // dsi registers
         return 0;
     case MMIO(0x04100000):

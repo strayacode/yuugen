@@ -409,6 +409,7 @@ void GPU::load_4x3() {
 
 void GPU::set_vertex_xz() {
     const u32 parameter = dequeue_entry().parameter;
+
     current_vertex.x = static_cast<s16>(common::get_field<0, 16>(parameter));
     current_vertex.z = static_cast<s16>(common::get_field<16, 16>(parameter));
     submit_vertex();
@@ -416,8 +417,18 @@ void GPU::set_vertex_xz() {
 
 void GPU::set_vertex_yz() {
     const u32 parameter = dequeue_entry().parameter;
+
     current_vertex.y = static_cast<s16>(common::get_field<0, 16>(parameter));
     current_vertex.z = static_cast<s16>(common::get_field<16, 16>(parameter));
+    submit_vertex();
+}
+
+void GPU::set_relative_vertex_coordinates() {
+    const u32 parameter = dequeue_entry().parameter;
+
+    current_vertex.x += (static_cast<s16>((parameter & 0x000003ff) << 6) / 8) >> 3;
+    current_vertex.y += (static_cast<s16>((parameter & 0x000ffc00) >> 4) / 8) >> 3;
+    current_vertex.z += (static_cast<s16>((parameter & 0x3ff00000) >> 14) / 8) >> 3;
     submit_vertex();
 }
 

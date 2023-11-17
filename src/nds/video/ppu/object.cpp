@@ -82,6 +82,7 @@ void PPU::render_objects(int line) {
         }
 
         if (mode == ObjectMode::ObjectWindow) {
+            // TODO: handle object window
             logger.warn("PPU: handle object window mode");
         }
 

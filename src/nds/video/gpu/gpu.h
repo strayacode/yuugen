@@ -104,6 +104,7 @@ private:
     void load_4x3();
     void set_vertex_xz();
     void set_vertex_yz();
+    void set_relative_vertex_coordinates();
     
     union DISP3DCNT {
         struct {
