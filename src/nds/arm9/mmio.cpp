@@ -186,8 +186,13 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x04000304):
         return system.video_unit.read_powcnt1();
+    case MMIO(0x040004a4):
+        // TODO: is polygon_attr even readable?
+        return 0;
     case MMIO(0x04000600):
         return system.video_unit.gpu.read_gxstat();
+    case MMIO(0x04000640) ... MMIO(0x0400067c):
+        return system.video_unit.gpu.read_clip_matrix(addr);
     case MMIO(0x04001000):
         return system.video_unit.ppu_b.read_dispcnt();
     case MMIO(0x04001008):

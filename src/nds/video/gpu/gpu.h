@@ -23,10 +23,10 @@ public:
 
     u32 read_disp3dcnt() const { return disp3dcnt.data; }
     void write_disp3dcnt(u32 value, u32 mask);
-
     void write_gxfifo(u32 value);
 
     u32 read_gxstat();
+    u32 read_clip_matrix(u32 addr);
     void write_gxstat(u32 value, u32 mask);
     void write_clear_colour(u32 value, u32 mask);
     void write_clear_depth(u16 value, u32 mask);
@@ -102,6 +102,8 @@ private:
     void load_4x4();
     void set_light_vector();
     void load_4x3();
+    void set_vertex_xz();
+    void set_vertex_yz();
     
     union DISP3DCNT {
         struct {

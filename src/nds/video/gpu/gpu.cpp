@@ -126,6 +126,14 @@ u32 GPU::read_gxstat() {
     return value;
 }
 
+u32 GPU::read_clip_matrix(u32 addr) {
+    update_clip_matrix();
+    
+    int x = (addr - 0x04000640) % 4;
+    int y = (addr - 0x04000640) / 4;
+    return clip.field[y][x];
+}
+
 void GPU::write_gxstat(u32 value, u32 mask) {
     gxstat.data = (gxstat.data & ~mask) | (value & mask);
     check_gxfifo_irq();
@@ -287,6 +295,12 @@ void GPU::execute_command() {
         case 0x25:
             set_vertex_xy();
             break;
+        case 0x26:
+            set_vertex_xz();
+            break;
+        case 0x27:
+            set_vertex_yz();
+            break;
         case 0x29:
             set_polygon_attributes();
             break;
@@ -304,6 +318,7 @@ void GPU::execute_command() {
             break;
         case 0x32:
             set_light_vector();
+            break;
         case 0x33:
             set_light_colour();
             break;
@@ -330,6 +345,7 @@ void GPU::execute_command() {
             }
 
             logger.warn("GPU: handle command %02x", command);
+            break;
         }
 
         busy = true;
@@ -368,7 +384,8 @@ void GPU::update_clip_matrix() {
 
 void GPU::submit_vertex() {
     if (vertex_ram_size >= 6144) {
-        logger.todo("GPU: handle when vertex ram is full");
+        disp3dcnt.polygon_vertex_ram_overflow = true;
+        return;
     }
 
     update_clip_matrix();
@@ -438,7 +455,8 @@ void GPU::submit_polygon() {
     }
 
     if (polygon_ram_size >= 2048) {
-        logger.todo("GPU: handle when polygon ram is full");
+        disp3dcnt.polygon_vertex_ram_overflow = true;
+        return;
     }
 
     auto& vertex_ram = this->vertex_ram[current_buffer];

@@ -407,4 +407,18 @@ void GPU::load_4x3() {
     }
 }
 
+void GPU::set_vertex_xz() {
+    const u32 parameter = dequeue_entry().parameter;
+    current_vertex.x = static_cast<s16>(common::get_field<0, 16>(parameter));
+    current_vertex.z = static_cast<s16>(common::get_field<16, 16>(parameter));
+    submit_vertex();
+}
+
+void GPU::set_vertex_yz() {
+    const u32 parameter = dequeue_entry().parameter;
+    current_vertex.y = static_cast<s16>(common::get_field<0, 16>(parameter));
+    current_vertex.z = static_cast<s16>(common::get_field<16, 16>(parameter));
+    submit_vertex();
+}
+
 } // namespace nds
