@@ -133,7 +133,7 @@ void PPU::render_objects(int line) {
                 if (dispcnt.tile_obj_mapping) {
                     tile_addr = (tile_number * (32 << dispcnt.tile_obj_1d_boundary)) + (tile_y * width * 8);
                 } else {
-                    logger.error("PPU: handle 2d mapping 8bpp");
+                    tile_addr = (tile_number & ~0x1 + tile_y * 32) * 32;
                 }
 
                 tile_addr += tile_x * 64;
@@ -142,7 +142,7 @@ void PPU::render_objects(int line) {
                 if (dispcnt.tile_obj_mapping) {
                     tile_addr = (tile_number * (32 << dispcnt.tile_obj_1d_boundary)) + (tile_y * width * 4);
                 } else {
-                    logger.error("PPU: handle 2d mapping 8bpp");
+                    tile_addr = (tile_number + tile_y * 32) * 32;
                 }
 
                 tile_addr += tile_x * 32;

@@ -248,13 +248,13 @@ void GPU::set_texture_coordinates() {
         current_vertex.t = t;
         break;
     case 1:
-        logger.todo("GPU: handle texcoord source");
+        logger.warn("GPU: handle texcoord source");
         break;
     case 2:
-        logger.todo("GPU: handle normal source");
+        logger.warn("GPU: handle normal source");
         break;
     case 3:
-        logger.todo("GPU: handle vertex source");
+        logger.warn("GPU: handle vertex source");
         break;
     }
 }
@@ -315,6 +315,96 @@ void GPU::add_vertex10() {
 void GPU::set_texture_palette_address() {
     const u32 parameter = dequeue_entry().parameter;
     current_polygon.texture_attributes.palette_base = common::get_field<0, 13>(parameter);
+}
+
+void GPU::set_diffuse_ambient_reflect() {
+    // TODO: handle later
+    dequeue_entry();
+}
+
+void GPU::set_specular_reflect_emission() {
+    // TODO: handle later
+    dequeue_entry();
+}
+
+void GPU::store_current_matrix() {
+    const u32 parameter = dequeue_entry().parameter;
+    const u32 offset = common::get_field<0, 5>(parameter);
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.store(offset);
+        break;
+    case MatrixMode::Modelview: case MatrixMode::Simultaneous:
+        modelview.store(offset);
+        direction.store(offset);
+        break;
+    case MatrixMode::Texture:
+        texture.store(offset);
+        break;
+    }
+}
+
+void GPU::set_light_colour() {
+    // TODO: handle later
+    dequeue_entry();
+}
+
+void GPU::load_4x4() {
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            matrix.field[y][x] = dequeue_entry().parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.current = matrix;
+        break;
+    case MatrixMode::Modelview:
+        modelview.current = matrix;
+        break;
+    case MatrixMode::Simultaneous:
+        modelview.current = matrix;
+        direction.current = matrix;
+        break;
+    case MatrixMode::Texture:
+        texture.current = matrix;
+        break;
+    }
+}
+
+void GPU::set_light_vector() {
+    // TODO: handle later
+    dequeue_entry();
+}
+
+void GPU::load_4x3() {
+    Matrix matrix;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 3; x++) {
+            matrix.field[y][x] = dequeue_entry().parameter;
+        }
+    }
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.current = matrix;
+        break;
+    case MatrixMode::Modelview:
+        modelview.current = matrix;
+        break;
+    case MatrixMode::Simultaneous:
+        modelview.current = matrix;
+        direction.current = matrix;
+        break;
+    case MatrixMode::Texture:
+        texture.current = matrix;
+        break;
+    }
 }
 
 } // namespace nds

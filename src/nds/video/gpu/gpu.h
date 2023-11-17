@@ -94,6 +94,13 @@ private:
     void restore_current_matrix();
     void add_vertex10();
     void set_texture_palette_address();
+    void set_diffuse_ambient_reflect();
+    void set_specular_reflect_emission();
+    void store_current_matrix();
+    void set_light_colour();
+    void load_4x4();
+    void set_light_vector();
+    void load_4x3();
     
     union DISP3DCNT {
         struct {

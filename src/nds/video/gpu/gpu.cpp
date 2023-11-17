@@ -184,8 +184,11 @@ void GPU::queue_entry(Entry entry) {
     } else {
         fifo.push(entry);
 
-        if (fifo.is_full()) {
-            logger.todo("gxfifo is full");
+        while (fifo.is_full()) {
+            // just run commands until the fifo isn't full
+            busy = false;
+            scheduler.cancel_event(&geometry_command_event);
+            execute_command();
         }
     }
 
@@ -236,11 +239,20 @@ void GPU::execute_command() {
         case 0x12:
             pop_current_matrix();
             break;
+        case 0x13:
+            store_current_matrix();
+            break;
         case 0x14:
             restore_current_matrix();
             break;
         case 0x15:
             load_unit_matrix();
+            break;
+        case 0x16:
+            load_4x4();
+            break;
+        case 0x17:
+            load_4x3();
             break;
         case 0x18:
             multiply_4x4();
@@ -283,6 +295,17 @@ void GPU::execute_command() {
             break;
         case 0x2b:
             set_texture_palette_address();
+            break;
+        case 0x30:
+            set_diffuse_ambient_reflect();
+            break;
+        case 0x31:
+            set_specular_reflect_emission();
+            break;
+        case 0x32:
+            set_light_vector();
+        case 0x33:
+            set_light_colour();
             break;
         case 0x34:
             set_shininess();
