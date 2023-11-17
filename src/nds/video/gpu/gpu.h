@@ -10,12 +10,13 @@
 #include "nds/video/gpu/vertex.h"
 #include "nds/video/gpu/polygon.h"
 #include "nds/video/gpu/backend/renderer.h"
+#include "nds/hardware/irq.h"
 
 namespace nds {
 
 class GPU {
 public:
-    GPU(common::Scheduler& scheduler, DMA& dma);
+    GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq);
 
     void reset();
     const u32* get_framebuffer() { return renderer->get_framebuffer(); };
@@ -139,7 +140,6 @@ private:
             bool matrix_stack_busy : 1;
             bool matrix_stack_error : 1;
             u32 fifo_num_entries : 9;
-            bool fifo_full : 1;
             bool fifo_less_than_half_full : 1;
             bool fifo_empty : 1;
             bool busy : 1;
@@ -208,6 +208,7 @@ private:
 
     common::Scheduler& scheduler;
     DMA& dma;
+    IRQ& irq;
 };
 
 } // namespace nds

@@ -24,7 +24,7 @@ static constexpr std::array<int, 256> parameter_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 }};
 
-GPU::GPU(common::Scheduler& scheduler, DMA& dma) : scheduler(scheduler), dma(dma) {}
+GPU::GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq) : scheduler(scheduler), dma(dma), irq(irq) {}
 
 void GPU::reset() {
     disp3dcnt.data = 0;
@@ -172,9 +172,9 @@ void GPU::render() {
 
 void GPU::check_gxfifo_irq() {
     if (gxstat.fifo_irq == InterruptType::LessThanHalfFull && fifo.get_size() < 128) {
-        logger.todo("send less than half full gxfifo irq");
+        irq.raise(IRQ::Source::GXFIFO);
     } else if (gxstat.fifo_irq == InterruptType::Empty && fifo.is_empty()) {
-        logger.todo("send empty gxfifo irq");
+        irq.raise(IRQ::Source::GXFIFO);
     }
 }
 
