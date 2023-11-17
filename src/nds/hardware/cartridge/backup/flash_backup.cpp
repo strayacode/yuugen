@@ -68,7 +68,8 @@ u8 FlashBackup::transfer(u8 data, u32 write_count) {
 
         break;
     default:
-        logger.error("FlashBackup: handle command %02x", command);
+        logger.warn("FlashBackup: handle command %02x", command);
+        break;
     }
 
     return 0;

@@ -398,16 +398,9 @@ void GPU::submit_vertex() {
     auto& vertex = vertex_list[vertex_count++];
     vertex = clipped_vertex;
 
-    switch (current_polygon.texture_attributes.parameters.transformation_mode) {
-    case 1:
-        logger.warn("GPU: handle texcoord source");
-        break;
-    case 2:
-        logger.warn("GPU: handle normal source");
-        break;
-    case 3:
-        logger.warn("GPU: handle vertex source");
-        break;
+    // TODO: here we should transform texture coordinates if vertex source is used
+    if (current_polygon.texture_attributes.parameters.transformation_mode == 3) {
+        logger.todo("GPU: use vertex source");
     }
 
     switch (polygon_type) {

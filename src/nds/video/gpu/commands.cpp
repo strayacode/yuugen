@@ -233,6 +233,8 @@ void GPU::set_shininess() {
 }
 
 void GPU::set_normal_vector() {
+    // TODO: here we should transform texture coordinates if normal source is used
+
     // handle later
     dequeue_entry();
 }
@@ -242,20 +244,12 @@ void GPU::set_texture_coordinates() {
     s16 s = static_cast<s16>(common::get_field<0, 16>(parameter));
     s16 t = static_cast<s16>(common::get_field<16, 16>(parameter));
 
-    switch (current_polygon.texture_attributes.parameters.transformation_mode) {
-    case 0:
+    if (current_polygon.texture_attributes.parameters.transformation_mode == 1) {
+        current_vertex.s = ((s * texture.current.field[0][0]) + (t * texture.current.field[1][0]) + texture.current.field[2][0] + texture.current.field[3][0]) >> 12;
+        current_vertex.t = ((s * texture.current.field[0][1]) + (t * texture.current.field[1][1]) + texture.current.field[2][1] + texture.current.field[3][1]) >> 12;
+    } else {
         current_vertex.s = s;
         current_vertex.t = t;
-        break;
-    case 1:
-        logger.warn("GPU: handle texcoord source");
-        break;
-    case 2:
-        logger.warn("GPU: handle normal source");
-        break;
-    case 3:
-        logger.warn("GPU: handle vertex source");
-        break;
     }
 }
 
