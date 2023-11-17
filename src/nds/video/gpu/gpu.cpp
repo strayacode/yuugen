@@ -57,6 +57,7 @@ void GPU::reset() {
     polygon_ram_size = 0;
     current_buffer = 0;
     swap_buffers_requested = false;
+    w_buffering = false;
     clear_colour = 0;
     clear_depth = 0;
     clrimage_offset = 0;
@@ -157,7 +158,7 @@ void GPU::queue_command(u32 addr, u32 data) {
 
 void GPU::do_swap_buffers() {
     if (swap_buffers_requested) {
-        renderer->submit_polygons(polygon_ram[current_buffer].data(), polygon_ram_size);
+        renderer->submit_polygons(polygon_ram[current_buffer].data(), polygon_ram_size, w_buffering);
         swap_buffers_requested = false;
         current_buffer ^= 1;
         vertex_ram_size = 0;

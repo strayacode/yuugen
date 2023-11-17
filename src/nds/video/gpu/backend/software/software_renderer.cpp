@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "common/logger.h"
 #include "nds/video/gpu/backend/software/software_renderer.h"
 
@@ -21,9 +22,10 @@ void SoftwareRenderer::render() {
     }
 }
 
-void SoftwareRenderer::submit_polygons(Polygon* polygons, int num_polygons) {
+void SoftwareRenderer::submit_polygons(Polygon* polygons, int num_polygons, bool w_buffering) {
     this->polygons = polygons;
     this->num_polygons = num_polygons;
+    this->w_buffering = w_buffering;
 }
 
 void SoftwareRenderer::render_scanline(int y) {
@@ -112,16 +114,15 @@ void SoftwareRenderer::render_polygon_scanline(Polygon& polygon, int y) {
             u32 addr = (256 * y) + x;
             u32 depth = 0;
 
-            depth = scanline_interpolator.interpolate_linear(z0, z1, x, span_start, span_end);
+            if (w_buffering) {
+                depth = scanline_interpolator.interpolate(w0, w1, x, span_start, span_end, w0, w1);
+            } else {
+                depth = scanline_interpolator.interpolate_linear(z0, z1, x, span_start, span_end);
+            }
 
-            // TODO: handle w buffering later
-            // if (w_buffering) {
-            //     depth = scanline_interpolator.interpolate(w0, w1, x, span_start, span_end, w0, w1);
-            // } else {
-            //     depth = scanline_interpolator.interpolate_linear(z0, z1, x, span_start, span_end);
-            // }
-
-            // if (!depth_test(depth_buffer[addr], depth, (polygon.polygon_attributes >> 14) & 0x1)) continue;
+            if (!depth_test(depth_buffer[addr], depth, polygon.polygon_attributes.depth_test_equal)) {
+                continue;
+            }
 
             // calculate colour value for scanline at x
             Colour c = scanline_interpolator.interpolate_colour(c0, c1, x, span_start, span_end, w0, w1);
@@ -130,10 +131,18 @@ void SoftwareRenderer::render_polygon_scanline(Polygon& polygon, int y) {
             s16 s = scanline_interpolator.interpolate(s0, s1, x, span_start, span_end, w0, w1);
             s16 t = scanline_interpolator.interpolate(t0, t1, x, span_start, span_end, w0, w1);
 
-            // logger.debug("(%d, %d) = %08x", x, y, c.to_u16());
             framebuffer[addr] = c.to_u16();
             depth_buffer[addr] = depth;
         }
+    }
+}
+
+bool SoftwareRenderer::depth_test(u32 old_depth, u32 depth, bool equal) {
+    if (equal) {
+        int margin = w_buffering ? 0xff : 0x200;
+        return std::abs(static_cast<s32>(depth) - static_cast<s32>(old_depth)) <= margin;
+    } else {
+        return depth < old_depth;
     }
 }
 

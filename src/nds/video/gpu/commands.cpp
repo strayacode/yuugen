@@ -53,7 +53,7 @@ void GPU::swap_buffers() {
     
     // TODO: handle these bits later
     const bool manual_polygon_y_sorting = common::get_bit<0>(parameter);
-    const bool w_buffering = common::get_bit<1>(parameter);
+    w_buffering = common::get_bit<1>(parameter);
     swap_buffers_requested = true;
 }
 

@@ -165,6 +165,7 @@ private:
     int current_buffer{0};
 
     bool swap_buffers_requested{false};
+    bool w_buffering{false};
 
     u32 clear_colour{0};
     u16 clear_depth{0};
