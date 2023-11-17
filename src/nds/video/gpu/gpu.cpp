@@ -236,6 +236,9 @@ void GPU::execute_command() {
         case 0x12:
             pop_current_matrix();
             break;
+        case 0x14:
+            restore_current_matrix();
+            break;
         case 0x15:
             load_unit_matrix();
             break;
@@ -248,17 +251,26 @@ void GPU::execute_command() {
         case 0x1a:
             multiply_3x3();
             break;
+        case 0x1b:
+            multiply_scale();
+            break;
         case 0x1c:
             multiply_translation();
             break;
         case 0x20:
             set_vertex_colour();
             break;
+        case 0x21:
+            set_normal_vector();
+            break;
         case 0x22:
             set_texture_coordinates();
             break;
         case 0x23:
             add_vertex16();
+            break;
+        case 0x24:
+            add_vertex10();
             break;
         case 0x25:
             set_vertex_xy();
@@ -268,6 +280,9 @@ void GPU::execute_command() {
             break;
         case 0x2a:
             set_texture_parameters();
+            break;
+        case 0x2b:
+            set_texture_palette_address();
             break;
         case 0x34:
             set_shininess();

@@ -90,6 +90,10 @@ private:
     void set_normal_vector();
     void set_texture_coordinates();
     void set_vertex_xy();
+    void multiply_scale();
+    void restore_current_matrix();
+    void add_vertex10();
+    void set_texture_palette_address();
     
     union DISP3DCNT {
         struct {

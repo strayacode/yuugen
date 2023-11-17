@@ -266,4 +266,55 @@ void GPU::set_vertex_xy() {
     submit_vertex();
 }
 
+void GPU::multiply_scale() {
+    Matrix matrix;
+
+    for (int i = 0; i < 3; i++) {
+        matrix.field[i][i] = dequeue_entry().parameter;
+    }
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.current = multiply_matrix_matrix(matrix, projection.current);
+        break;
+    case MatrixMode::Modelview: case MatrixMode::Simultaneous:
+        modelview.current = multiply_matrix_matrix(matrix, modelview.current);
+        break;
+    case MatrixMode::Texture:
+        texture.current = multiply_matrix_matrix(matrix, texture.current);
+        break;
+    }
+}
+
+void GPU::restore_current_matrix() {
+    const u32 parameter = dequeue_entry().parameter;
+    const u32 offset = common::get_field<0, 5>(parameter);
+
+    switch (matrix_mode) {
+    case MatrixMode::Projection:
+        projection.restore(offset);
+        break;
+    case MatrixMode::Modelview: case MatrixMode::Simultaneous:
+        modelview.restore(offset);
+        direction.restore(offset);
+        break;
+    case MatrixMode::Texture:
+        texture.restore(offset);
+        break;
+    }
+}
+
+void GPU::add_vertex10() {
+    const u32 parameter = dequeue_entry().parameter;
+    current_vertex.x = static_cast<s16>((parameter & 0x000003ff) << 6);
+    current_vertex.y = static_cast<s16>((parameter & 0x000ffc00) >> 4);
+    current_vertex.z = static_cast<s16>((parameter & 0x3ff00000) >> 14);
+    submit_vertex();
+}
+
+void GPU::set_texture_palette_address() {
+    const u32 parameter = dequeue_entry().parameter;
+    current_polygon.texture_attributes.palette_base = common::get_field<0, 13>(parameter);
+}
+
 } // namespace nds
