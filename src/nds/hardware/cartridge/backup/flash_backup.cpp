@@ -55,6 +55,9 @@ u8 FlashBackup::transfer(u8 data, u32 write_count) {
         break;
     case 0x05:
         return (write_in_progress ? 1 : 0) | (write_enable_latch ? (1 << 1) : 0);
+    case 0x08:
+        // stubbed for games that have IR support
+        return 0xaa;
     case 0x0a:
         if (write_count < 4) {
             address |= (data << ((3 - write_count) * 8));
@@ -68,7 +71,7 @@ u8 FlashBackup::transfer(u8 data, u32 write_count) {
 
         break;
     default:
-        logger.warn("FlashBackup: handle command %02x", command);
+        logger.todo("FlashBackup: handle command %02x", command);
         break;
     }
 

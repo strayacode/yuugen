@@ -100,6 +100,10 @@ void Cartridge::write_auxspidata(u8 value) {
     }
 
     if (backup_write_count == 0) {
+        if (value == 0) {
+            return;
+        }
+
         backup->receive(value);
         auxspidata = 0;
     } else {
@@ -142,7 +146,9 @@ u32 Cartridge::read_data() {
             }
 
             if ((rom_position + transfer_count) >= memory_mapped_file.get_size()) {
-                logger.error("Cartridge: read data command exceeds rom size");
+                // TODO: handle this case
+                // logger.warn("Cartridge: read data command exceeds rom size");
+                return data;
             }
 
             data = common::read<u32>(memory_mapped_file.get_pointer(rom_position + transfer_count));
