@@ -39,6 +39,8 @@ public:
     void write_control(int id, u16 value, u32 mask);
     void write_dmafill(u32 addr, u32 value);
 
+    void set_gxfifo_half_empty(bool value) { gxfifo_half_empty = value; }
+
 private:
     void transfer(int id);
 
@@ -82,6 +84,7 @@ private:
     arm::Memory& memory;
     IRQ& irq;
     arm::Arch arch;
+    bool gxfifo_half_empty{false};
 
     static constexpr int adjust_lut[2][4] = {
         {2, -2, 0, 2},

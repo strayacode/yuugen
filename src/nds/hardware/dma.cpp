@@ -14,6 +14,8 @@ void DMA::reset() {
             transfer(i);
         });
     }
+
+    gxfifo_half_empty = false;
 }
 
 void DMA::trigger(Timing timing) {
@@ -64,8 +66,8 @@ void DMA::write_control(int id, u16 value, u32 mask) {
     channel.length |= (value & 0x1f & mask) << 16;
     channel.control.data = (channel.control.data & ~mask) | (value & mask);
 
-    if (channel.control.enable && channel.control.timing == Timing::GXFIFO) {
-        logger.todo("DMA: handle gxfifo dmas");
+    if (channel.control.enable && channel.control.timing == Timing::GXFIFO && gxfifo_half_empty) {
+        scheduler.add_event(1, &transfer_events[id]);
     }
 
     if (old_control.enable || !channel.control.enable) {
@@ -124,6 +126,16 @@ void DMA::transfer(int id) {
         }
     }
 
+    if (channel.control.timing == Timing::GXFIFO) {
+        channel.internal_length -= gxfifo_transfers;
+
+        // schedule another gxfifo dma if the gxfifo is still half empty
+        if (channel.internal_length > 0 && gxfifo_half_empty) {
+            scheduler.add_event(1, &transfer_events[id]);
+            return;
+        }
+    }
+
     if (channel.control.irq) {
         switch (id) {
         case 0:
@@ -149,7 +161,7 @@ void DMA::transfer(int id) {
         }
 
         // schedule another gxfifo dma if the gxfifo is still half empty
-        if (channel.control.timing == Timing::GXFIFO) {
+        if (channel.control.timing == Timing::GXFIFO && gxfifo_half_empty) {
             scheduler.add_event(1, &transfer_events[id]);
         }
     } else {

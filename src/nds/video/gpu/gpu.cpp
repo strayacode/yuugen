@@ -190,14 +190,15 @@ void GPU::queue_entry(Entry entry) {
     if (fifo.is_empty() && !pipe.is_full()) {
         pipe.push(entry);
     } else {
-        fifo.push(entry);
-
         while (fifo.is_full()) {
             // just run commands until the fifo isn't full
             busy = false;
             scheduler.cancel_event(&geometry_command_event);
             execute_command();
         }
+
+        fifo.push(entry);
+        dma.set_gxfifo_half_empty(fifo.get_size() < 128);
     }
 
     execute_command();
@@ -220,7 +221,10 @@ GPU::Entry GPU::dequeue_entry() {
         check_gxfifo_irq();
 
         if (fifo.get_size() < 128) {
+            dma.set_gxfifo_half_empty(true);
             dma.trigger(DMA::Timing::GXFIFO);
+        } else {
+            dma.set_gxfifo_half_empty(false);
         }
     }
 

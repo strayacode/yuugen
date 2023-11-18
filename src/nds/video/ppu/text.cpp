@@ -6,8 +6,6 @@
 namespace nds {
 
 void PPU::render_text(int id, int line) {
-    logger.debug("render text bg %d line %d", id, line);
-    logger.debug("bgcnt %04x", bgcnt[id].data);
     // apply vertical mosaic
     if (bgcnt[id].mosaic) {
         line -= mosaic_bg_vertical_counter;
@@ -43,8 +41,6 @@ void PPU::render_text(int id, int line) {
         bool vertical_flip = common::get_bit<11>(tile_info);
         int palette_number = common::get_field<12, 4>(tile_info);
 
-        logger.debug("render at x %d 8bpp = %d", x, bgcnt[id].palette_8bpp);
-
         if (bgcnt[id].palette_8bpp) {
             pixels = decode_tile_row_8bpp(character_base, tile_number, palette_number, y, horizontal_flip, vertical_flip, extended_palette_slot);
         } else {
@@ -63,7 +59,6 @@ void PPU::render_text(int id, int line) {
 
     // apply horizontal mosaic
     if (bgcnt[id].mosaic && mosaic.bg_width != 0) {
-        logger.debug("apply horizontal mosaic");
         int mosaic_bg_horizontal_counter = 0;
 
         for (int i = 0; i < 256; i++) {

@@ -36,9 +36,7 @@ PPU::TileRow PPU::decode_tile_row_4bpp(u32 tile_base, int tile_number, int palet
         int column = horizontal_flip ? (x ^ 7) : x;
         int palette_index = palette_indices & 0xf;
         u32 palette_addr = (palette_number * 32) + (palette_index * 2);
-
-        u16 colour = (palette_index == 0) ? colour_transparent : common::read<u16>(palette_ram, palette_addr & 0x3ff);
-        pixels[column] = colour;
+        pixels[column] = (palette_index == 0) ? colour_transparent : common::read<u16>(palette_ram, palette_addr & 0x3ff);
         palette_indices >>= 4;
     }
     
@@ -54,17 +52,15 @@ PPU::TileRow PPU::decode_tile_row_8bpp(u32 tile_base, int tile_number, int palet
     for (int x = 0; x < 8; x++) {
         int column = horizontal_flip ? (x ^ 7) : x;
         int palette_index = palette_indices & 0xff;
-        u16 colour = 0;
-
+        
         if (palette_index == 0) {
-            colour = colour_transparent;
+            pixels[column] = colour_transparent;
         } else if (dispcnt.bg_extended_palette) {
-            colour = bg_extended_palette.read<u16>(extended_palette_slot * 0x2000 + (palette_number * 0xff + palette_index) * 2);
+            pixels[column] = bg_extended_palette.read<u16>(extended_palette_slot * 0x2000 + (palette_number * 256 + palette_index) * 2);
         } else {
-            colour = common::read<u16>(palette_ram, (palette_index * 2) & 0x3ff);
+            pixels[column] = common::read<u16>(palette_ram, (palette_index * 2) & 0x3ff);
         }
 
-        pixels[column] = colour;
         palette_indices >>= 8;
     }
     
