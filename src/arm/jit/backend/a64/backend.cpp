@@ -78,6 +78,7 @@ Code A64Backend::compile(BasicBlock& basic_block) {
     compile_epilogue();
 
     logger.print("");
+    assembler.dump();
 
     code_block.protect();
     code_cache.set(basic_block.location, jit_fn);
@@ -140,11 +141,7 @@ void A64Backend::compile_condition_check(BasicBlock& basic_block, Label& label_p
     if (basic_block.condition != Condition::AL && basic_block.condition != Condition::NV) {
         WReg tmp_reg = register_allocator.allocate_temporary();
         assembler.ldr(tmp_reg, jit_reg, jit.get_offset_to_cpsr());
-
-        WReg tmp_mask_reg = register_allocator.allocate_temporary();
-        assembler.mov(tmp_mask_reg, 0xf0000000);
-
-        assembler._and(tmp_reg, tmp_reg, tmp_mask_reg);
+        assembler._and(tmp_reg, tmp_reg, 0xf0000000);
 
         assembler.msr(SystemReg::NZCV, XReg{tmp_reg.id});
 
