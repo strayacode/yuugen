@@ -77,10 +77,6 @@ void PPU::render_objects(int line) {
             affine_parameters[3] = 0x100;
         }
 
-        if (mode == ObjectMode::SemiTransparent) {
-            logger.warn("PPU: handle semi transparent mode");
-        }
-
         if (mode == ObjectMode::ObjectWindow) {
             // TODO: handle object window
             logger.warn("PPU: handle object window mode");
@@ -155,6 +151,11 @@ void PPU::render_objects(int line) {
                 if (priority < target_obj.priority) {
                     target_obj.colour = colour;
                     target_obj.priority = priority;
+                    target_obj.semi_transparent = mode == ObjectMode::SemiTransparent;
+
+                    if (target_obj.semi_transparent) {
+                        line_has_semi_transparent_obj = true;
+                    }
                 }
             }
         }

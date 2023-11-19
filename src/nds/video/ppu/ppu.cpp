@@ -37,16 +37,16 @@ void PPU::reset() {
     bldy.data = 0;
     master_bright.data = 0;
     bldalpha.data = 0;
+    line_has_semi_transparent_obj = false;
     
     mosaic_bg_vertical_counter = 0;
 
     framebuffer.fill(0);
     converted_framebuffer.fill(0);
-    reset_layers();
 }
 
 void PPU::render_scanline(int line) {
-    reset_layers();
+    begin_scanline();
 
     if (line == 0) {
         internal_x[0] = bgx[0];
@@ -329,7 +329,7 @@ bool PPU::in_window_bounds(int coord, int start, int end) {
     }
 }
 
-void PPU::reset_layers() {
+void PPU::begin_scanline() {
     for (int i = 0; i < 4; i++) {
         bg_layers[i].fill(0);
     }
@@ -337,7 +337,10 @@ void PPU::reset_layers() {
     for (int i = 0; i < 256; i++) {
         obj_buffer[i].priority = 4;
         obj_buffer[i].colour = colour_transparent;
+        obj_buffer[i].semi_transparent = false;
     }
+
+    line_has_semi_transparent_obj = false;
 }
 
 void PPU::apply_master_brightness(int line) {

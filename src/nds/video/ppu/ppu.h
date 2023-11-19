@@ -89,7 +89,7 @@ private:
     u8 calculate_enabled_layers(int x, int line);
     bool in_window_bounds(int coord, int start, int end);
 
-    void reset_layers();
+    void begin_scanline();
     void apply_master_brightness(int line);
 
     union DISPCNT {
@@ -200,6 +200,7 @@ private:
     struct Object {
         int priority;
         u16 colour;
+        bool semi_transparent;
     };
 
     enum class ObjectMode : int {
@@ -230,6 +231,7 @@ private:
     BLDY bldy;
     MASTER_BRIGHT master_bright;
     BLDALPHA bldalpha;
+    bool line_has_semi_transparent_obj{false};
     
     int mosaic_bg_vertical_counter;
 

@@ -8,8 +8,8 @@ namespace nds {
 
 void PPU::compose_scanline(int line) {
     for (int x = 0; x < 256; x++) {
-        // TODO: check if a semi transparent object can override this logic
-        if (bldcnt.special_effect != SpecialEffect::None) {
+        bool blending = bldcnt.special_effect != SpecialEffect::None || line_has_semi_transparent_obj;
+        if (blending) {
             compose_pixel_with_special_effects(x, line);
         } else {
             compose_pixel(x, line);
@@ -50,6 +50,8 @@ void PPU::compose_pixel_with_special_effects(int x, int line) {
 
     targets.fill(5);
     priorities.fill(4);
+
+    bool is_semi_transparent = false;
     
     // find the 2 top-most background pixels
     for (int i = 3; i >= 0; i--) {
@@ -69,10 +71,13 @@ void PPU::compose_pixel_with_special_effects(int x, int line) {
 
     // check if an object pixel can replace one of the background pixels
     // TODO: handle object window later
+    // TODO: if object is semi transparent, force it to be used as the alpha blending 1st target
+    // TODO: if object is semi transparent, we also force alpha blending no matter the bldcnt settings
     if (dispcnt.enable_obj && obj_buffer[x].colour != colour_transparent) {
         if (obj_buffer[x].priority <= priorities[0]) {
             targets[1] = targets[0];
             targets[0] = 4;
+            is_semi_transparent = obj_buffer[x].semi_transparent;
         } else if (obj_buffer[x].priority <= priorities[1]) {
             targets[1] = 4;
         }
@@ -101,11 +106,16 @@ void PPU::compose_pixel_with_special_effects(int x, int line) {
     pixels[0] = rgb555_to_rgb666(pixels[0]);
     pixels[1] = rgb555_to_rgb666(pixels[1]);
 
-    bool top_selected = (bldcnt.first_target >> targets[0]) & 0x1;
+    bool top_selected = ((bldcnt.first_target >> targets[0]) & 0x1) || is_semi_transparent;
     bool bottom_selected = (bldcnt.second_target >> targets[1]) & 0x1;
 
-    // skip blending if the targets aren't selected
+    if (is_semi_transparent && bottom_selected) {
+        plot(x, line, blend(pixels[0], pixels[1], SpecialEffect::AlphaBlending));
+        return;
+    }
+
     if (!top_selected || (bldcnt.special_effect == SpecialEffect::AlphaBlending && !bottom_selected)) {
+        // skip blending if the targets aren't selected
         plot(x, line, pixels[0]);
         return;
     }
