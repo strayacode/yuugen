@@ -177,7 +177,6 @@ void SPU::start_channel(int id) {
 }
 
 void SPU::play_sample() {
-    // TODO: handle left/right channel and mixer
     std::array<s64, 2> mixer;
     std::array<s64, 2> channel1;
     std::array<s64, 2> channel3;
@@ -195,7 +194,7 @@ void SPU::play_sample() {
         s64 data = 0;
         switch (channel.control.format) {
         case AudioFormat::PCM8:
-            data = static_cast<s8>(memory.read<u8, arm::Bus::System>(channel.internal_source)) << 8;
+            data = common::sign_extend<s64, 16>(static_cast<s8>(memory.read<u8, arm::Bus::System>(channel.internal_source)) << 8);
             break;
         case AudioFormat::PCM16:
             data = static_cast<s16>(memory.read<u16, arm::Bus::System>(channel.internal_source));
@@ -242,17 +241,31 @@ void SPU::play_sample() {
             }
         }
 
-        auto divider = channel.control.divider;
+        // apply volume divider
+        u32 divider = channel.control.divider;
         if (divider == 3) {
             divider++;
         }
 
         data <<= 4 - divider;
-        data = (data << 7) * channel.control.factor / 128;
+
+        // apply volume factor
+        u32 factor = channel.control.factor;
+        if (factor == 127) {
+            factor++;
+        }
+
+        data = (data << 7) * factor / 128;
+
+        // apply panning
+        u32 panning = channel.control.panning;
+        if (panning == 127) {
+            panning++;
+        }
 
         std::array<s64, 2> panned_data;
-        panned_data[0] = ((data << 7) * (128 - channel.control.panning) / 128) >> 10;
-        panned_data[1] = ((data << 7) * channel.control.panning / 128) >> 10;
+        panned_data[0] = (data * (128 - panning) / 128) >> 3;
+        panned_data[1] = (data * panning / 128) >> 3;
 
         // store channel 1 and 3 samples for later use
         if (i == 1) {
@@ -306,21 +319,26 @@ void SPU::play_sample() {
         break;
     }
 
-    samples[0] = (samples[0] << 13) * soundcnt.master_volume / 128 / 64;
-    samples[1] = (samples[1] << 13) * soundcnt.master_volume / 128 / 64;
+    // apply master volume
+    u16 master_volume = soundcnt.master_volume;
+    if (master_volume == 127) {
+        master_volume++;
+    }
 
-    samples[0] >>= 21;
-    samples[1] >>= 21;
+    samples[0] = (samples[0] * master_volume / 128) >> 8;
+    samples[1] = (samples[1] * master_volume / 128) >> 8;
 
-    samples[0] += soundbias;
-    samples[1] += soundbias;
+    // apply soundbias
+    samples[0] = (samples[0] >> 6) + soundbias;
+    samples[1] = (samples[1] >> 6) + soundbias;
 
+    // apply clamping
     samples[0] = std::clamp<s64>(samples[0], 0, 0x3ff);
     samples[1] = std::clamp<s64>(samples[1], 0, 0x3ff);
 
-    samples[0] -= 0x200;
-    samples[1] -= 0x200;
-
+    samples[0] = (samples[0] - 0x200) << 5;
+    samples[1] = (samples[1] - 0x200) << 5;
+    
     u32 combined = (samples[1] << 16) | (samples[0] & 0xffff);
 
     std::lock_guard<std::mutex> buffer_lock{buffer_mutex};
