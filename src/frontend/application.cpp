@@ -458,6 +458,10 @@ void Application::boot_game(const std::string& path) {
 void Application::boot_firmware() {
     system = std::make_unique<nds::System>();
     system_type = SystemType::NDS;
+
+    system->set_update_callback([this](f32 fps) {
+        this->fps = fps;
+    });
     
     const auto old_boot_mode = system->get_boot_mode();
     system->set_audio_device(audio_device);
