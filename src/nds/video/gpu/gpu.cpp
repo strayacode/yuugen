@@ -24,7 +24,7 @@ static constexpr std::array<int, 256> parameter_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 }};
 
-GPU::GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq) : scheduler(scheduler), dma(dma), irq(irq) {}
+GPU::GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq, VRAMRegion& texture_data) : scheduler(scheduler), dma(dma), irq(irq), texture_data(texture_data) {}
 
 void GPU::reset() {
     disp3dcnt.data = 0;
@@ -77,7 +77,7 @@ void GPU::reset() {
     vertex_count = 0;
     polygon_count = 0;
 
-    renderer = std::make_unique<SoftwareRenderer>();
+    renderer = std::make_unique<SoftwareRenderer>(disp3dcnt, texture_data);
 }
 
 void GPU::write_disp3dcnt(u32 value, u32 mask) {
@@ -471,6 +471,11 @@ void GPU::submit_polygon() {
     // so we can add the vertices of the vertex list to vertex ram
     // normalise vertices to screen coordinates
     for (int i = 0; i < size; i++) {
+        if (vertex_ram_size >= 6144) {
+            disp3dcnt.polygon_vertex_ram_overflow = true;
+            return;
+        }
+
         auto& vertex = vertex_list[i];
         vertex = normalise_vertex(vertex);
         vertex_ram[vertex_ram_size++] = vertex;
@@ -484,6 +489,8 @@ void GPU::submit_polygon() {
 
     // TODO: eventually size should account for potential vertices that were added from clipping
     polygon.size = size;
+
+    polygon.vertices.fill(nullptr);
 
     // make the polygon vertices point to the vertices we just added to vertex ram
     for (int i = 0; i < polygon.size; i++) {

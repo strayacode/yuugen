@@ -25,6 +25,17 @@ public:
 
     std::array<Vertex*, 10> vertices;
 
+    enum TextureFormat : u32 {
+        None,
+        A3I5,
+        Colour4,
+        Colour16,
+        Colour256,
+        Compressed,
+        A5I3,
+        Direct,
+    };
+
     struct TextureAttributes {
         union TextureParameters {
             struct {
@@ -33,9 +44,9 @@ public:
                 bool repeat_in_t_direction : 1;
                 bool flip_in_s_direction : 1;
                 bool flip_in_t_direction : 1;
-                u32 s_size : 3;
-                u32 t_size : 3;
-                u32 texture_format : 3;
+                u32 width : 3;
+                u32 height : 3;
+                TextureFormat texture_format : 3;
                 bool colour0 : 1;
                 u32 transformation_mode : 2;
             };

@@ -5,11 +5,14 @@
 #include "nds/video/gpu/backend/renderer.h"
 #include "nds/video/gpu/backend/software/interpolator.h"
 #include "nds/video/gpu/backend/software/slope.h"
+#include "nds/video/gpu/gpu.h"
 
 namespace nds {
 
 class SoftwareRenderer : public Renderer {
 public:
+    SoftwareRenderer(GPU::DISP3DCNT& disp3dcnt, VRAMRegion& texture_data);
+
     void reset() override;
     void render() override;
     
@@ -21,6 +24,7 @@ private:
     void render_scanline(int y);
     void render_polygon_scanline(Polygon& polygon, int y);
     bool depth_test(u32 old_depth, u32 depth, bool equal);
+    u16 decode_texture(s16 s, s16 t, Polygon& polygon);
 
     std::array<u32, 256 * 192> framebuffer;
     std::array<u32, 256 * 192> depth_buffer;
@@ -32,6 +36,8 @@ private:
     Interpolator<8> scanline_interpolator;
     Slope left_slope;
     Slope right_slope;
+    GPU::DISP3DCNT& disp3dcnt;
+    VRAMRegion& texture_data;
 };
 
 } // namespace nds

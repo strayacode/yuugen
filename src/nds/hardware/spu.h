@@ -20,6 +20,7 @@ public:
     void set_audio_device(std::shared_ptr<common::AudioDevice> audio_device);
 
     u16 read_soundcnt() { return soundcnt.data; }
+    u16 read_soundbias() { return soundbias; }
     u32 read_channel(u32 addr);
     u8 read_sound_capture_control(int id) { return sound_capture_channels[id].control.data; }
     void write_sound_capture_control(int id, u8 value);

@@ -51,6 +51,7 @@ private:
     std::array<u8, 0x4000> bios;
     u16 rcnt;
     u8 postflg;
+    u32 biosprot{0};
 };
 
 } // namespace nds

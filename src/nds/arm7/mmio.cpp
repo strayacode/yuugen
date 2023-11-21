@@ -165,6 +165,8 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return system.spu.read_channel(addr);
     case MMIO(0x04000500):
         return system.spu.read_soundcnt();
+    case MMIO(0x04000504):
+        return system.spu.read_soundbias();
     case MMIO(0x04000508):
         if constexpr (mask & 0xff) value |= system.spu.read_sound_capture_control(0);
         if constexpr (mask & 0xff00) value |= system.spu.read_sound_capture_control(1) << 8;
@@ -249,6 +251,12 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff) system.timers7.write_length(3, value, mask);
         if constexpr (mask & 0xffff0000) system.timers7.write_control(3, value >> 16, mask >> 16);
         break;
+    case MMIO(0x04000120):
+        // siodata
+        break;
+    case MMIO(0x04000128):
+        // siocnt
+        break;
     case MMIO(0x04000134): 
         if constexpr (mask & 0xffff) rcnt = value;
         break;
@@ -305,6 +313,9 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x04000304):
         system.video_unit.write_powcnt1(value, mask);
         break;
+    case MMIO(0x04000308): 
+        biosprot = value;
+        break;
     case MMIO(0x04000400) ... MMIO(0x040004fc):
         system.spu.write_channel(addr, value, mask);
         break;
@@ -329,6 +340,9 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x0400051c):
         system.spu.write_sound_capture_length(1, value, mask);
+        break;
+    case MMIO(0x04001080):
+        // sio or debugging related
         break;
     default:
         if (addr >= 0x04800000 && addr < 0x04900000) {

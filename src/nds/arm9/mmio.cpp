@@ -145,6 +145,10 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x040001a4):
         return system.cartridge.read_romctrl();
+    case MMIO(0x040001a8):
+        return system.cartridge.read_command_buffer();
+    case MMIO(0x040001ac):
+        return system.cartridge.read_command_buffer() >> 32;
     case MMIO(0x04000204):
         return system.read_exmemcnt();
     case MMIO(0x04000208):
@@ -212,6 +216,7 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_b.read_winout() << 16;
         return value;
     case MMIO(0x04004000):
+    case MMIO(0x04004004):
     case MMIO(0x04004008):
     case MMIO(0x04004010):
         // dsi registers

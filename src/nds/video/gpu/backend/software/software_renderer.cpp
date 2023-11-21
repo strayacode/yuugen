@@ -1,8 +1,11 @@
 #include <algorithm>
 #include "common/logger.h"
 #include "nds/video/gpu/backend/software/software_renderer.h"
+#include "nds/video/vram_region.h"
 
 namespace nds {
+
+SoftwareRenderer::SoftwareRenderer(GPU::DISP3DCNT& disp3dcnt, VRAMRegion& texture_data) : disp3dcnt(disp3dcnt), texture_data(texture_data) {}
 
 void SoftwareRenderer::reset() {
     framebuffer.fill(0);
@@ -131,7 +134,12 @@ void SoftwareRenderer::render_polygon_scanline(Polygon& polygon, int y) {
             s16 s = scanline_interpolator.interpolate(s0, s1, x, span_start, span_end, w0, w1);
             s16 t = scanline_interpolator.interpolate(t0, t1, x, span_start, span_end, w0, w1);
 
-            framebuffer[addr] = c.to_u16();
+            if (disp3dcnt.texture_mapping) {
+                framebuffer[addr] = decode_texture(s, t, polygon);
+            } else {
+                framebuffer[addr] = c.to_u16();
+            }
+
             depth_buffer[addr] = depth;
         }
     }

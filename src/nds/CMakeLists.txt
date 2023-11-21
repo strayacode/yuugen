@@ -23,6 +23,7 @@ add_library(nds
     video/gpu/vertex.h video/gpu/polygon.h
     video/gpu/backend/renderer.h
     video/gpu/backend/software/interpolator.h
+    video/gpu/backend/software/texture_decoder.cpp
     video/gpu/backend/software/software_renderer.h video/gpu/backend/software/software_renderer.cpp
 
     hardware/cartridge/cartridge.h hardware/cartridge/cartridge.cpp
