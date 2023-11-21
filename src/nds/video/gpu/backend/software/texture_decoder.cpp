@@ -48,14 +48,14 @@ u16 SoftwareRenderer::decode_texture(s16 s, s16 t, Polygon& polygon) {
         int data = texture_data.read<u8>(address + offset);
         int index = data & 0x1f;
         int alpha = (data >> 5) & 0x7;
-        u16 colour = texture_palette.read<u16>(palette_base + index * 2);
+        u16 colour = texture_palette.read<u16>(palette_base + index * 2) & 0x7fff;
         alpha = (alpha * 4) + (alpha / 2);
         colour |= alpha << 15;
         return colour;
     }
     case Polygon::TextureFormat::Colour4: {
         const int index = (texture_data.read<u8>(address + (offset / 4)) >> (2 * (offset & 0x3))) & 0x3;
-        return texture_palette.read<u16>(palette_base + index * 2);
+        return texture_palette.read<u16>((palette_base >> 1) + index * 2) & 0x7fff;
     }
     case Polygon::TextureFormat::Colour16: {
         const int index = (texture_data.read<u8>(address + (offset / 2)) >> (4 * (offset & 0x1))) & 0xf;
