@@ -277,6 +277,10 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     case MMIO(0x040001ac):
         system.cartridge.write_command_buffer(static_cast<u64>(value) << 32, static_cast<u64>(mask) << 32);
         break;
+    case MMIO(0x040001b0):
+    case MMIO(0x040001b4):
+    case MMIO(0x040001b8):
+        break;
     case MMIO(0x040001c0):
         if constexpr (mask & 0xffff) system.spi.write_spicnt(value, mask & 0xffff);
         if constexpr (mask & 0xffff0000) system.spi.write_spidata(value >> 16);
