@@ -5,7 +5,7 @@
 
 namespace nds {
 
-SoftwareRenderer::SoftwareRenderer(GPU::DISP3DCNT& disp3dcnt, VRAMRegion& texture_data) : disp3dcnt(disp3dcnt), texture_data(texture_data) {}
+SoftwareRenderer::SoftwareRenderer(GPU::DISP3DCNT& disp3dcnt, VRAMRegion& texture_data, VRAMRegion& texture_palette) : disp3dcnt(disp3dcnt), texture_data(texture_data), texture_palette(texture_palette) {}
 
 void SoftwareRenderer::reset() {
     framebuffer.fill(0);

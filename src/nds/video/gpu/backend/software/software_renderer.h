@@ -11,7 +11,7 @@ namespace nds {
 
 class SoftwareRenderer : public Renderer {
 public:
-    SoftwareRenderer(GPU::DISP3DCNT& disp3dcnt, VRAMRegion& texture_data);
+    SoftwareRenderer(GPU::DISP3DCNT& disp3dcnt, VRAMRegion& texture_data, VRAMRegion& texture_palette);
 
     void reset() override;
     void render() override;
@@ -38,6 +38,7 @@ private:
     Slope right_slope;
     GPU::DISP3DCNT& disp3dcnt;
     VRAMRegion& texture_data;
+    VRAMRegion& texture_palette;
 };
 
 } // namespace nds

@@ -17,7 +17,7 @@ namespace nds {
 
 class GPU {
 public:
-    GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq, VRAMRegion& texture_data);
+    GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq, VRAMRegion& texture_data, VRAMRegion& texture_palette);
 
     void reset();
     const u32* get_framebuffer() { return renderer->get_framebuffer(); };
@@ -216,6 +216,7 @@ private:
     DMA& dma;
     IRQ& irq;
     VRAMRegion& texture_data;
+    VRAMRegion& texture_palette;
 };
 
 } // namespace nds

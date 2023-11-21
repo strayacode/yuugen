@@ -24,7 +24,7 @@ static constexpr std::array<int, 256> parameter_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 }};
 
-GPU::GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq, VRAMRegion& texture_data) : scheduler(scheduler), dma(dma), irq(irq), texture_data(texture_data) {}
+GPU::GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq, VRAMRegion& texture_data, VRAMRegion& texture_palette) : scheduler(scheduler), dma(dma), irq(irq), texture_data(texture_data), texture_palette(texture_palette) {}
 
 void GPU::reset() {
     disp3dcnt.data = 0;
@@ -77,7 +77,7 @@ void GPU::reset() {
     vertex_count = 0;
     polygon_count = 0;
 
-    renderer = std::make_unique<SoftwareRenderer>(disp3dcnt, texture_data);
+    renderer = std::make_unique<SoftwareRenderer>(disp3dcnt, texture_data, texture_palette);
 }
 
 void GPU::write_disp3dcnt(u32 value, u32 mask) {
