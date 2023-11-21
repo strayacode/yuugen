@@ -92,6 +92,7 @@ private:
     void submit_vertex();
     void submit_polygon();
     Vertex normalise_vertex(const Vertex& vertex);
+    bool cull(const Vertex& v0, const Vertex& v1, const Vertex& v2);
 
     // geometry commands
     void set_matrix_mode();

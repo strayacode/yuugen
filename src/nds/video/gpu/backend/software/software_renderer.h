@@ -25,7 +25,7 @@ private:
     void render_polygon_scanline(Polygon& polygon, int y);
     bool depth_test(u32 old_depth, u32 depth, bool equal);
     u16 decode_texture(s16 s, s16 t, Polygon& polygon);
-
+    
     std::array<u32, 256 * 192> framebuffer;
     std::array<u32, 256 * 192> depth_buffer;
     Polygon* polygons{nullptr};

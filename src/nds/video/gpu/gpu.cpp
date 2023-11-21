@@ -166,6 +166,11 @@ void GPU::queue_command(u32 addr, u32 data) {
 
 void GPU::do_swap_buffers() {
     if (swap_buffers_requested) {
+        // normalise all the vertices
+        for (int i = 0; i < vertex_ram_size; i++) {
+            vertex_ram[current_buffer][i] = normalise_vertex(vertex_ram[current_buffer][i]);
+        }
+
         renderer->submit_polygons(polygon_ram[current_buffer].data(), polygon_ram_size, w_buffering);
         swap_buffers_requested = false;
         current_buffer ^= 1;
@@ -459,26 +464,25 @@ void GPU::submit_polygon() {
         return;
     }
 
+    if (cull(vertex_list[0], vertex_list[1], vertex_list[2])) {
+        return;
+    }
+
     auto& vertex_ram = this->vertex_ram[current_buffer];
     auto& polygon_ram = this->polygon_ram[current_buffer];
 
     // TODO: implement clipping
-    // TODO: implement culling
-
     int size = 3 + (static_cast<int>(polygon_type) & 0x1);
 
     // by this point the polygon will have been clipped and culled,
     // so we can add the vertices of the vertex list to vertex ram
-    // normalise vertices to screen coordinates
     for (int i = 0; i < size; i++) {
         if (vertex_ram_size >= 6144) {
             disp3dcnt.polygon_vertex_ram_overflow = true;
             return;
         }
 
-        auto& vertex = vertex_list[i];
-        vertex = normalise_vertex(vertex);
-        vertex_ram[vertex_ram_size++] = vertex;
+        vertex_ram[vertex_ram_size++] = vertex_list[i];
     }
 
     // now construct the polygon
@@ -496,7 +500,7 @@ void GPU::submit_polygon() {
     for (int i = 0; i < polygon.size; i++) {
         polygon.vertices[i] = &vertex_ram[vertex_ram_size - size + i];
     }
-    
+
     // submit the polygon to polygon ram
     polygon_ram[polygon_ram_size++] = polygon;
 }
@@ -523,6 +527,37 @@ Vertex GPU::normalise_vertex(const Vertex& vertex) {
     }
 
     return normalised;
+}
+
+bool GPU::cull(const Vertex& v0, const Vertex& v1, const Vertex& v2) {
+    // take cross product of (v0 - v1) x (v2 - v1)
+    s64 x0 = v0.x - v1.x;
+    s64 x1 = v2.x - v1.x;
+    s64 y0 = v0.y - v1.y;
+    s64 y1 = v2.y - v1.y;
+    s64 w0 = v0.w - v1.w;
+    s64 w1 = v2.w - v1.w;
+
+    s64 xcross = y0 * w1 - w0 * y1;
+    s64 ycross = w0 * x1 - x0 * w1;
+    s64 wcross = x0 * y1 - y0 * x1;
+
+    // reduce cross product results to 32-bit to avoid overflow
+    while (xcross != static_cast<s32>(xcross) || ycross != static_cast<s32>(ycross) || wcross != static_cast<s32>(wcross)) {
+        xcross >>= 4;
+        ycross >>= 4;
+        wcross >>= 4;
+    }
+
+    // calculate dot product of cross . v0
+    s64 dot = xcross * v0.x + ycross * v0.y + wcross * v0.w;
+
+    // if dot is negative, then it's back facing
+    // if dot is positive, then it's front facing
+    bool front_facing = dot < 0;
+    bool render_back = current_polygon.polygon_attributes.back_surface;
+    bool render_front = current_polygon.polygon_attributes.front_surface;
+    return (!render_back && !front_facing) || (!render_front && front_facing);
 }
 
 } // namespace nds
