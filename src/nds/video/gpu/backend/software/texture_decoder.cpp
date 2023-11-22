@@ -55,15 +55,27 @@ u16 SoftwareRenderer::decode_texture(s16 s, s16 t, Polygon& polygon) {
     }
     case Polygon::TextureFormat::Colour4: {
         const int index = (texture_data.read<u8>(address + (offset / 4)) >> (2 * (offset & 0x3))) & 0x3;
+        if (parameters.colour0 && index == 0) {
+            return 0x0000;
+        }
+
         return texture_palette.read<u16>((palette_base >> 1) + index * 2) & 0x7fff;
     }
     case Polygon::TextureFormat::Colour16: {
         const int index = (texture_data.read<u8>(address + (offset / 2)) >> (4 * (offset & 0x1))) & 0xf;
-        return texture_palette.read<u16>(palette_base + index * 2);
+        if (parameters.colour0 && index == 0) {
+            return 0x0000;
+        }
+        
+        return texture_palette.read<u16>(palette_base + index * 2) & 0x7fff;
     }
     case Polygon::TextureFormat::Colour256: {
         const int index = texture_data.read<u8>(address + offset);
-        return texture_palette.read<u16>(palette_base + index * 2);
+        if (parameters.colour0 && index == 0) {
+            return 0x0000;
+        }
+        
+        return texture_palette.read<u16>(palette_base + index * 2) & 0x7fff;
     }
     case Polygon::TextureFormat::Compressed: {
         // get the 2 bit texel
@@ -77,22 +89,18 @@ u16 SoftwareRenderer::decode_texture(s16 s, s16 t, Polygon& polygon) {
         u32 row_address = address + ((tile_x * tile_size) + tile_y) * 4 + texel_y;
 
         // get palette index data from slot 1
+        u32 slot_index = row_address >> 18;
         u32 slot_offset = row_address & 0x1ffff;
-        u32 data_address = 0x20000 + (slot_offset / 2);
-
-        // if slot2 address is being used then add 0x10000
-        if (row_address >= 0x40000) {
-            data_address += 0x10000;
-        }
+        u32 data_address = 0x20000 + (slot_offset / 2) + (slot_index * 0x10000);
 
         u16 palette_index_data = texture_data.read<u16>(data_address);
         u32 palette_offset = palette_index_data & 0x3fff;
-        u8 mode = palette_index_data >> 14;
+        u32 mode = palette_index_data >> 14;
         palette_base += palette_offset * 4;
 
         // now get the 2 bit texel
         u8 row = texture_data.read<u8>(row_address);
-        u8 index = row >> (texel_x * 2);
+        u8 index = (row >> (texel_x * 2)) & 0x3;
 
         switch (mode) {
         case 0:
@@ -100,15 +108,15 @@ u16 SoftwareRenderer::decode_texture(s16 s, s16 t, Polygon& polygon) {
                 return 0x0000;
             }
 
-            return texture_palette.read<u16>(palette_base + index * 2);
+            return texture_palette.read<u16>(palette_base + index * 2) & 0x7fff;
         case 1:
             if (index == 3) {
                 return 0x0000;
             }
 
             if (index == 2) {
-                Colour c1 = Colour::from_u16(texture_palette.read<u16>(palette_base));
-                Colour c2 = Colour::from_u16(texture_palette.read<u16>(palette_base + 2));
+                Colour c1 = Colour::from_u16(texture_palette.read<u16>(palette_base) & 0x7fff);
+                Colour c2 = Colour::from_u16(texture_palette.read<u16>(palette_base + 2) & 0x7fff);
 
                 Colour c3;
                 c3.r = c1.r / 2 + c2.r / 2;
@@ -118,15 +126,15 @@ u16 SoftwareRenderer::decode_texture(s16 s, s16 t, Polygon& polygon) {
                 return c3.to_u16();
             }
 
-            return texture_palette.read<u16>(palette_base + index * 2);
+            return texture_palette.read<u16>(palette_base + index * 2) & 0x7fff;
         case 2:
-            return texture_palette.read<u16>(palette_base + index * 2);
-        case 3:
+            return texture_palette.read<u16>(palette_base + index * 2) & 0x7fff;
+        default:
             if (index == 2 || index == 3) {
                 int c1_multiplier = index == 2 ? 5 : 3;
                 int c2_multiplier = index == 2 ? 3 : 5;
-                Colour c1 = Colour::from_u16(texture_palette.read<u16>(palette_base));
-                Colour c2 = Colour::from_u16(texture_palette.read<u16>(palette_base + 2));
+                Colour c1 = Colour::from_u16(texture_palette.read<u16>(palette_base) & 0x7fff);
+                Colour c2 = Colour::from_u16(texture_palette.read<u16>(palette_base + 2) & 0x7fff);
 
                 Colour c3;
                 c3.r = (c1.r * c1_multiplier + c2.r * c2_multiplier) / 8;
@@ -136,12 +144,8 @@ u16 SoftwareRenderer::decode_texture(s16 s, s16 t, Polygon& polygon) {
                 return c3.to_u16();
             }
 
-            return texture_palette.read<u16>(palette_base + index * 2);
-        default:
-            logger.todo("GPU: handle compressed mode %d", mode);
+            return texture_palette.read<u16>(palette_base + index * 2) & 0x7fff;
         }
-        
-        return texture_data.read<u16>(address + offset * 2);
     }
     case Polygon::TextureFormat::A5I3: {
         int data = texture_data.read<u8>(address + offset);

@@ -9,6 +9,7 @@
 #include "imgui/imfilebrowser.h"
 #include "common/types.h"
 #include "common/system.h"
+#include "common/games_list.h"
 #include "frontend/font_database.h"
 
 class Application {
@@ -53,7 +54,8 @@ private:
     void render_gba();
     void render_nds();
     void render_menubar();
-    void render_performance_overlay();
+    void render_library_screen();
+    void render_settings_screen();
 
     void handle_input_gba(SDL_Event& event);
     void handle_input_nds(SDL_Event& event);
@@ -61,7 +63,7 @@ private:
     void boot_game(const std::string& path);
     void boot_firmware();
 
-    bool demo_window = false;
+    bool demo_window{false};
     std::unique_ptr<common::System> system;
 
     enum class SystemType {
@@ -80,6 +82,15 @@ private:
 
     f32 fps;
     std::shared_ptr<common::AudioDevice> audio_device;
+
+    enum class ScreenType {
+        Library,
+        Settings,
+        Game,
+    };
+
+    ScreenType screen_type{ScreenType::Library};
+    common::GamesList games_list;
 
     // TODO: create an SDLInputDevice to abstract away input
 };

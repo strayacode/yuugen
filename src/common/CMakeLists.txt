@@ -15,6 +15,8 @@ add_library(common
     system.h system.cpp
     scheduler.h scheduler.cpp
     platform.h
+    filesystem.h filesystem.cpp
+    games_list.h games_list.cpp
 )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

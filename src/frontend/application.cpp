@@ -43,6 +43,8 @@ bool Application::initialise() {
     setup_style();
     SDL_GetWindowSize(window, &window_width, &window_height);
 
+    games_list.initialise();
+
     audio_device = std::make_shared<SDLAudioDevice>();
     return true;
 }
@@ -134,6 +136,8 @@ void Application::render_nds() {
     top_screen.update_texture(framebuffers[0]);
     bottom_screen.update_texture(framebuffers[1]);
 
+    const u32 window_height = this->window_height - menubar_height - 2;
+
     const f64 scale_x = static_cast<f64>(window_width) / 256;
     const f64 scale_y = static_cast<f64>(window_height) / 384;
     const f64 scale = scale_x < scale_y ? scale_x : scale_y;
@@ -175,34 +179,44 @@ void Application::render_menubar() {
             }
 
             if (ImGui::MenuItem("Power Off")) {
-                // window_type = WindowType::GamesList;
-                // m_system.set_state(State::Idle);
+                system->stop();
+                screen_type = ScreenType::Library;
+                system = nullptr;
+                system_type = SystemType::None;
             }
 
             if (ImGui::MenuItem("Quit")) {
                 running = false;
             }
+
             ImGui::EndMenu();
         }
 
-        if (system) {
-            if (ImGui::BeginMenu("Emulation")) {
+        if (ImGui::BeginMenu("Emulation")) {
+            if (system) {
                 if (ImGui::MenuItem("Enable Framelimiter", nullptr, system->framelimiter, true)) {
                     system->toggle_framelimiter();
                 }
+            } else {
+                ImGui::MenuItem("Enable Framelimiter", nullptr, false, false);
+            }
+            
 
+            if (system) {
                 if (system->is_running()) {
                     if (ImGui::MenuItem("Pause")) {
                         system->pause();
+                        screen_type = ScreenType::Library;
                     }
                 } else {
                     if (ImGui::MenuItem("Resume")) {
+                        screen_type = ScreenType::Game;
                         system->resume();
                     }
                 }
-                
-                ImGui::EndMenu();
             }
+            
+            ImGui::EndMenu();
         }
 
         ImGui::EndMainMenuBar();
@@ -218,18 +232,68 @@ void Application::render_menubar() {
     }
 }
 
-void Application::render_performance_overlay() {
-    font_database.push_style(FontDatabase::Style::Large);
-    if (system->get_state() == common::System::State::Running && static_cast<int>(fps) != 0) {
-        auto fps_string = common::format("%.0f FPS | %.2f ms", fps, 1000.0f / fps);
-        auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string.c_str()).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
-        ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string.c_str());
-    } else if (system->get_state() == common::System::State::Paused) {
-        auto fps_string = "Paused";
-        auto pos = ImVec2(window_width - ImGui::CalcTextSize(fps_string).x - ImGui::GetStyle().ItemSpacing.x, menubar_height + ImGui::GetStyle().ItemSpacing.y);
-        ImGui::GetBackgroundDrawList()->AddText(pos, IM_COL32_WHITE, fps_string);
+void Application::render_library_screen() {
+    begin_fullscreen_window("Library");
+
+    static ImGuiTableFlags flags =
+        ImGuiTableFlags_Resizable
+        | ImGuiTableFlags_RowBg
+        | ImGuiTableFlags_BordersOuterV
+        | ImGuiTableFlags_SizingStretchProp;
+
+    float min_row_height = 20.0f;
+
+    if (ImGui::BeginTable("Games List", 4, flags)) {
+        ImGui::TableSetupColumn("Title");
+        ImGui::TableSetupColumn("Region");
+        ImGui::TableSetupColumn("Gamecode");
+        ImGui::TableSetupColumn("Size");
+        ImGui::TableHeadersRow();
+
+        for (int row = 0; row < games_list.get_num_entries(); row++) {
+            common::GamesList::Entry entry = games_list.get_entry(row);
+
+            ImGui::TableNextRow(ImGuiTableRowFlags_None);
+            ImGui::PushID(row);
+            ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 0.5f));
+            ImGui::TableSetColumnIndex(0);
+
+            if (ImGui::Selectable(entry.file_name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
+                boot_game(entry.path.c_str());
+            }
+
+            ImGui::TableSetColumnIndex(1);
+
+            if (ImGui::Selectable(entry.region.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
+                boot_game(entry.path.c_str());
+            }
+
+            ImGui::TableSetColumnIndex(2);
+
+            if (ImGui::Selectable(entry.game_code.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
+                boot_game(entry.path.c_str());
+            }
+
+            ImGui::TableSetColumnIndex(3);
+
+            if (ImGui::Selectable(entry.size.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0.0f, min_row_height))) {
+                boot_game(entry.path.c_str());
+            }
+            
+            ImGui::PopStyleVar();
+            ImGui::PopID();
+        }
+        
+        ImGui::EndTable();
     }
-    font_database.pop_style();
+
+    end_fullscreen_window();
+}
+
+void Application::render_settings_screen() {
+    begin_fullscreen_window("Settings");
+    ImGui::Text("Settings");
+    end_fullscreen_window();
 }
 
 void Application::setup_style() {
@@ -267,7 +331,7 @@ void Application::setup_style() {
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = blue;
     ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = blue;
     ImGui::GetStyle().Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-    ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] = ImVec4(0.210f, 0.210f, 0.210f, 1.000f);
+    ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] = ImVec4(0.180f, 0.180f, 0.180f, 1.000f);
     ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = window_bg;
     ImGui::GetStyle().Colors[ImGuiCol_Border] = black;
 }
@@ -279,19 +343,60 @@ void Application::render() {
     
     render_menubar();
 
-    switch (system_type) {
-    case SystemType::GBA:
-        render_gba();
-        render_performance_overlay();
+    switch (screen_type) {
+    case ScreenType::Library:
+        render_library_screen();
         break;
-    case SystemType::NDS:
-        render_nds();
-        render_performance_overlay();
+    case ScreenType::Settings:
+        render_settings_screen();
         break;
-    case SystemType::None:
+    case ScreenType::Game:
+        switch (system_type) {
+        case SystemType::GBA:
+            render_gba();
+            break;
+        case SystemType::NDS:
+            render_nds();
+            break;
+        case SystemType::None:
+            break;
+        }
+
+        ImGui::SetNextWindowPos(ImVec2(0, window_height - menubar_height - 2));
+        ImGui::SetNextWindowSize(ImVec2(window_width, menubar_height + 2));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(6.0f, 3.0f));
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.180f, 0.180f, 0.180f, 1.000f));
+        
+        ImGui::Begin("StatusBar", nullptr,
+                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+                            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
+                            ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+        ImGui::Text("CPU: Interpreter");
+        ImGui::SameLine();
+        ImGui::Text("|");
+        ImGui::SameLine();
+
+        if (system->get_state() != common::System::State::Paused) {
+            if (fps == 0.0f) {
+                ImGui::Text("0.00 FPS");
+            } else {
+                ImGui::Text("%s", common::format("%.2f FPS (%.2f ms)", fps, 1000.0f / fps).c_str());
+            }
+        } else {
+            ImGui::Text("Paused");
+        }
+
+        // Reset style colors
+        ImGui::PopStyleColor();
+
+        ImGui::End();
+        ImGui::PopStyleVar();
+        
         break;
     }
-    
+
     if (demo_window) {
         ImGui::ShowDemoWindow();
     }
@@ -334,8 +439,10 @@ void Application::handle_input_gba(SDL_Event& event) {
             if (pressed) {
                 if (gba_system.is_running()) {
                     gba_system.pause();
+                    screen_type = ScreenType::Library;
                 } else {
                     gba_system.resume();
+                    screen_type = ScreenType::Game;
                 }
             }
             
@@ -384,8 +491,10 @@ void Application::handle_input_nds(SDL_Event& event) {
             if (pressed) {
                 if (nds_system.is_running()) {
                     nds_system.pause();
+                    screen_type = ScreenType::Library;
                 } else {
                     nds_system.resume();
+                    screen_type = ScreenType::Game;
                 }
             }
             
@@ -445,6 +554,8 @@ void Application::boot_game(const std::string& path) {
         logger.todo("unhandled game extension %s", extension.c_str());
     }
 
+    screen_type = ScreenType::Game;
+
     system->set_update_callback([this](f32 fps) {
         this->fps = fps;
     });
@@ -458,6 +569,8 @@ void Application::boot_game(const std::string& path) {
 void Application::boot_firmware() {
     system = std::make_unique<nds::System>();
     system_type = SystemType::NDS;
+
+    screen_type = ScreenType::Game;
 
     system->set_update_callback([this](f32 fps) {
         this->fps = fps;
