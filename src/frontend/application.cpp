@@ -178,7 +178,7 @@ void Application::render_menubar() {
                 boot_firmware();
             }
 
-            if (ImGui::MenuItem("Power Off")) {
+            if (ImGui::MenuItem("Power Off", nullptr, false, system != nullptr)) {
                 system->stop();
                 switch_screen(ScreenType::Library);
                 system = nullptr;
