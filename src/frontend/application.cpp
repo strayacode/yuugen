@@ -37,7 +37,7 @@ bool Application::initialise() {
     ImGuiIO& io = ImGui::GetIO();
 
     font_database.add_font(FontDatabase::Style::Regular, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-light.ttf", 16.0f));
-    font_database.add_font(FontDatabase::Style::Large, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-light.ttf", 19.0f));
+    font_database.add_font(FontDatabase::Style::Large, io.Fonts->AddFontFromFileTTF("../data/fonts/roboto-light.ttf", 24.0f));
     font_database.add_font(FontDatabase::Style::Monospace, io.Fonts->AddFontFromFileTTF("../data/fonts/sf-mono-regular.otf", 15.0f));
 
     setup_style();
@@ -180,7 +180,7 @@ void Application::render_menubar() {
 
             if (ImGui::MenuItem("Power Off")) {
                 system->stop();
-                screen_type = ScreenType::Library;
+                switch_screen(ScreenType::Library);
                 system = nullptr;
                 system_type = SystemType::None;
             }
@@ -201,18 +201,25 @@ void Application::render_menubar() {
                 ImGui::MenuItem("Enable Framelimiter", nullptr, false, false);
             }
             
-
             if (system) {
                 if (system->is_running()) {
                     if (ImGui::MenuItem("Pause")) {
                         system->pause();
-                        screen_type = ScreenType::Library;
+                        switch_screen(ScreenType::Library);
                     }
                 } else {
                     if (ImGui::MenuItem("Resume")) {
-                        screen_type = ScreenType::Game;
+                        switch_screen(ScreenType::Game);
                         system->resume();
                     }
+                }
+            }
+
+            if (ImGui::MenuItem("Settings", nullptr, screen_type == ScreenType::Settings, true)) {
+                if (screen_type == ScreenType::Settings) {
+                    switch_to_previous();
+                } else {
+                    switch_screen(ScreenType::Settings);
                 }
             }
             
@@ -291,8 +298,31 @@ void Application::render_library_screen() {
 }
 
 void Application::render_settings_screen() {
-    begin_fullscreen_window("Settings");
-    ImGui::Text("Settings");
+    begin_fullscreen_window("Settings", 8.0f, 4.0f);
+
+    font_database.push_style(FontDatabase::Style::Large);
+    ImGui::Text("CPU Settings");
+    ImGui::Separator();
+
+    font_database.pop_style();
+
+    font_database.push_style(FontDatabase::Style::Regular);
+
+    ImGui::Text("CPU Backend");
+
+    const char* backends[] = { "Interpreter", "IR Interpreter", "Jit" };
+    static int backend_current = 0;
+    ImGui::Combo("", &backend_current, backends, IM_ARRAYSIZE(backends));
+
+    ImGui::TextColored(light_grey, "Configures the type of CPU backend");
+
+    new_backend_type = static_cast<arm::BackendType>(backend_current);
+
+    if (new_backend_type != backend_type) {
+        ImGui::TextColored(yellow, "Emulation must be restarted to have effect");
+    }
+
+    font_database.pop_style();
     end_fullscreen_window();
 }
 
@@ -373,7 +403,18 @@ void Application::render() {
                             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
                             ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-        ImGui::Text("CPU: Interpreter");
+        switch (backend_type) {
+        case arm::BackendType::Interpreter:
+            ImGui::Text("CPU: Interpreter");
+            break;
+        case arm::BackendType::IRInterpreter:
+            ImGui::Text("CPU: IR Interpreter");
+            break;
+        case arm::BackendType::Jit:
+            ImGui::Text("CPU: Jit");
+            break;
+        }
+
         ImGui::SameLine();
         ImGui::Text("|");
         ImGui::SameLine();
@@ -409,10 +450,10 @@ void Application::render() {
     SDL_GL_SwapWindow(window);
 }
 
-void Application::begin_fullscreen_window(const char *name, float padding) {
+void Application::begin_fullscreen_window(const char *name, float padding_x, float padding_y) {
     ImGui::SetNextWindowPos(ImVec2(0, menubar_height));
     ImGui::SetNextWindowSize(ImVec2(window_width, window_height - menubar_height));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding, padding));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_x, padding_y));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
     ImGui::Begin(
@@ -439,10 +480,10 @@ void Application::handle_input_gba(SDL_Event& event) {
             if (pressed) {
                 if (gba_system.is_running()) {
                     gba_system.pause();
-                    screen_type = ScreenType::Library;
+                    switch_screen(ScreenType::Library);
                 } else {
                     gba_system.resume();
-                    screen_type = ScreenType::Game;
+                    switch_screen(ScreenType::Game);
                 }
             }
             
@@ -491,10 +532,10 @@ void Application::handle_input_nds(SDL_Event& event) {
             if (pressed) {
                 if (nds_system.is_running()) {
                     nds_system.pause();
-                    screen_type = ScreenType::Library;
+                    switch_screen(ScreenType::Library);
                 } else {
                     nds_system.resume();
-                    screen_type = ScreenType::Game;
+                    switch_screen(ScreenType::Game);
                 }
             }
             
@@ -547,14 +588,21 @@ void Application::boot_game(const std::string& path) {
     if (extension == "gba") {
         system = std::make_unique<gba::System>();
         system_type = SystemType::GBA;
+        backend_type = new_backend_type;
     } else if (extension == "nds") {
         system = std::make_unique<nds::System>();
         system_type = SystemType::NDS;
+
+        backend_type = new_backend_type;
+
+        // TODO: fix this mess
+        auto& nds_system = reinterpret_cast<nds::System&>(*system);
+        nds_system.select_cpu_backend(backend_type, true);
     } else {
         logger.todo("unhandled game extension %s", extension.c_str());
     }
 
-    screen_type = ScreenType::Game;
+    switch_screen(ScreenType::Game);
 
     system->set_update_callback([this](f32 fps) {
         this->fps = fps;
@@ -563,14 +611,16 @@ void Application::boot_game(const std::string& path) {
     system->set_audio_device(audio_device);
     system->set_game_path(path);
     system->set_boot_mode(common::BootMode::Fast);
+
     system->set_state(common::System::State::Running);
 }
 
 void Application::boot_firmware() {
+    backend_type = new_backend_type;
     system = std::make_unique<nds::System>();
     system_type = SystemType::NDS;
 
-    screen_type = ScreenType::Game;
+    switch_screen(ScreenType::Game);
 
     system->set_update_callback([this](f32 fps) {
         this->fps = fps;
@@ -580,6 +630,20 @@ void Application::boot_firmware() {
     system->set_audio_device(audio_device);
     system->set_game_path("");
     system->set_boot_mode(common::BootMode::Regular);
+    
+    // TODO: fix this mess
+    auto& nds_system = reinterpret_cast<nds::System&>(*system);
+    nds_system.select_cpu_backend(backend_type, true);
+
     system->set_state(common::System::State::Running);
     system->set_boot_mode(old_boot_mode);
+}
+
+void Application::switch_screen(ScreenType screen_type) {
+    previous_screen_type = this->screen_type;
+    this->screen_type = screen_type;
+}
+
+void Application::switch_to_previous() {
+    screen_type = previous_screen_type;
 }
