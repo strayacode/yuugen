@@ -83,7 +83,7 @@ void Application::handle_input() {
         } else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
             window_width = event.window.data1;
             window_height = event.window.data2;
-        } else {
+        } else if (screen_type == ScreenType::Game) {
             switch (system_type) {
             case SystemType::GBA:
                 handle_input_gba(event);
