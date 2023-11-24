@@ -15,8 +15,10 @@ class Logger {
 public:
     template <typename... Args>
     void debug(const char* pattern, Args... args) {
-        // set_text_colour(TextColour::Green);
-        std::printf("[DEBUG] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
+        if constexpr (enable_logging) {
+            // set_text_colour(TextColour::Green);
+            std::printf("[DEBUG] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
+        }
     }
 
     template <typename... Args>
@@ -47,8 +49,10 @@ public:
 
     template <typename... Args>
     void print(const char* pattern, Args... args) {
-        // reset_colour();
-        std::printf("%s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
+        if constexpr (enable_logging) {
+            // reset_colour();
+            std::printf("%s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
+        }
     }
 
     template <typename... Args>
@@ -100,6 +104,8 @@ private:
     }
 
     FILE* fp = fopen("yuugen.log", "w");
+
+    static constexpr bool enable_logging = false;
 };
 
 extern Logger logger;

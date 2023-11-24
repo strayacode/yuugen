@@ -313,17 +313,22 @@ void Application::render_settings_screen() {
 
     font_database.push_style(FontDatabase::Style::Regular);
 
-    ImGui::Text("CPU Backend");
-
     const char* backends[] = { "Interpreter", "IR Interpreter", "Jit" };
     static int backend_current = static_cast<int>(config.backend_type);
-    ImGui::Combo("", &backend_current, backends, IM_ARRAYSIZE(backends));
+    ImGui::Combo("CPU Backend", &backend_current, backends, IM_ARRAYSIZE(backends));
 
     ImGui::TextColored(light_grey, "Configures the type of CPU backend");
 
     new_config.backend_type = static_cast<arm::BackendType>(backend_current);
 
-    if (new_config.backend_type != config.backend_type) {
+    ImGuiSliderFlags flags = ImGuiSliderFlags_None;
+    ImGui::SliderInt("Block Size", &new_config.block_size, 1, 64, "%d", flags);
+    ImGui::TextColored(light_grey, "Determines the number of instructions that can be compiled per block");
+
+    ImGui::Checkbox("Enable Jit Optimisations", &new_config.optimisations);
+    ImGui::TextColored(light_grey, "Allows optimisations to be performed on IR Interpreter and Jit Backends");
+
+    if (new_config.backend_type != config.backend_type || new_config.block_size != config.block_size) {
         ImGui::TextColored(yellow, "Emulation must be restarted to have effect");
     }
 

@@ -73,7 +73,7 @@ void Jit::run(int cycles) {
             Translator translator{*this, ir};
             translator.translate();
             optimiser.optimise(basic_block);
-            basic_block.dump();
+            // basic_block.dump();
             code = backend->compile(basic_block);
         }
 

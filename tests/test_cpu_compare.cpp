@@ -74,7 +74,7 @@ void run_nds(char *path) {
 
     arm::Config a_config;
     a_config.block_size = 1;
-    a_config.backend_type = arm::BackendType::IRInterpreter;
+    a_config.backend_type = arm::BackendType::Interpreter;
     a_config.optimisations = false;
 
     arm::Config b_config;

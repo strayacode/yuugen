@@ -148,8 +148,6 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
         logger.todo("pc in thumb_data_processing_register");
     }
 
-    logger.debug("thumb data processing register");
-
     IRVariable result;
     IRValue op1;
     auto op2 = ir.load_gpr(opcode.rs);
