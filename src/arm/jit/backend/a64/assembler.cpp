@@ -30,6 +30,16 @@ void A64Assembler::link(Label& label) {
             *label.instruction = instruction;
             break;
         }
+        case 0x34:
+        case 0x35:
+        case 0xb4:
+        case 0xb5: {
+            // cbz / cbnz
+            const Offset<21, 2> offset = Offset<21, 2>{static_cast<s64>(diff)};
+            instruction |= offset.value << 5;
+            *label.instruction = instruction;
+            break;
+        }
         case 0x54: {
             // b cond
             const Offset<21, 2> offset = Offset<21, 2>{static_cast<s64>(diff)};
@@ -119,6 +129,26 @@ void A64Assembler::bl(Offset<28, 2> label) {
 
 void A64Assembler::blr(XReg xn) {
     emit(0x358fc0 << 10 | xn.id << 5);
+}
+
+void A64Assembler::cbz(WReg wt, Label& label) {
+    label.instruction = current_code;
+    emit(0x34 << 24 | wt.id);
+}
+
+void A64Assembler::cbz(XReg xt, Label& label) {
+    label.instruction = current_code;
+    emit(0xb4 << 24 | xt.id);
+}
+
+void A64Assembler::cbnz(WReg wt, Label& label) {
+    label.instruction = current_code;
+    emit(0x35 << 24 | wt.id);
+}
+
+void A64Assembler::cbnz(XReg xt, Label& label) {
+    label.instruction = current_code;
+    emit(0xb5 << 24 | xt.id);
 }
 
 void A64Assembler::cmp(WReg wn, WReg wm, Shift shift, u32 amount) {

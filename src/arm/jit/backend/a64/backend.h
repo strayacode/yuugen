@@ -30,7 +30,7 @@ private:
 
     void push_volatile_registers();
     void pop_volatile_registers();
-
+    
     void compile_prologue();
     void compile_epilogue();
     void compile_condition_check(BasicBlock& basic_block, Label& label_pass, Label& label_fail);
@@ -77,6 +77,25 @@ private:
 
     // we have w21, w22, w23, w24, w25, w26, w27 and w28 available for register allocation
     RegisterAllocator register_allocator;
+    
+    static constexpr std::array<u16, 16> condition_table = {
+        0xf0f0, // eq
+        0x0f0f, // ne
+        0xcccc, // cs
+        0x3333, // cc
+        0xff00, // mi
+        0x00ff, // pl
+        0xaaaa, // vs
+        0x5555, // vc
+        0x0c0c, // hi
+        0xf3f3, // ls
+        0xaa55, // ge
+        0x55aa, // lt
+        0x0a05, // gt
+        0xf5fa, // le
+        0xffff, // al
+        0x0000  // ne
+    };
 };
 
 } // namespace arm

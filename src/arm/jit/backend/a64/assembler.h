@@ -193,6 +193,12 @@ public:
     void bl(Offset<28, 2> label);
     void blr(XReg xn);
 
+    void cbz(WReg wt, Label& label);
+    void cbz(XReg xt, Label& label);
+    
+    void cbnz(WReg wt, Label& label);
+    void cbnz(XReg xt, Label& label);
+
     void cmp(WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void cmp(XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
     void cmp(WReg wn, AddSubImmediate imm);

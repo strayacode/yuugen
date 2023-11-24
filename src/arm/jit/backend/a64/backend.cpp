@@ -148,8 +148,7 @@ void A64Backend::compile_condition_check(BasicBlock& basic_block, Label& label_p
         assembler.b(basic_block.condition, label_pass);
 
         // update pc to be after block when the condition fails
-        u32 pc_after_block = basic_block.location.get_address() + (basic_block.num_instructions * basic_block.location.get_instruction_size()) + 8;
-        
+        u32 pc_after_block = basic_block.location.get_address() + ((2 + basic_block.num_instructions) * basic_block.location.get_instruction_size());
         WReg tmp_pc_reg = register_allocator.allocate_temporary();
         assembler.mov(tmp_pc_reg, pc_after_block);
         assembler.str(tmp_pc_reg, jit_reg, jit.get_offset_to_gpr(GPR::PC, Mode::USR));
@@ -700,6 +699,7 @@ void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
         const auto lhs = opcode.lhs.as_variable();
         const auto rhs = opcode.rhs.as_constant();
         WReg lhs_reg = register_allocator.get(lhs);
+        assembler._and(dst_reg, lhs_reg, rhs.value);
 
         if (BitwiseImmediate<32>::is_valid(rhs.value)) {
             assembler._and(dst_reg, lhs_reg, rhs.value);
