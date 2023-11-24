@@ -45,7 +45,15 @@ std::string Disassembler::thumb_push_pop(u32 instruction) {
 }
 
 std::string Disassembler::thumb_data_processing_register(u32 instruction) {
-    return "handle thumb_data_processing_register";
+    auto opcode = ThumbDataProcessingRegister::decode(instruction);
+    switch (opcode.opcode) {
+    case ThumbDataProcessingRegister::Opcode::SBC:
+        return common::format("sbcs %s, %s, %s", register_names[opcode.rd], register_names[opcode.rd], register_names[opcode.rs]);
+    case ThumbDataProcessingRegister::Opcode::NEG:
+        return common::format("negs %s, %s", register_names[opcode.rd], register_names[opcode.rs]);
+    default:
+        return common::format("handle thumb_data_processing_register %d", static_cast<int>(opcode.opcode));
+    }
 }
 
 std::string Disassembler::thumb_special_data_processing(u32 instruction) {

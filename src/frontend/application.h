@@ -98,8 +98,8 @@ private:
     ScreenType previous_screen_type{ScreenType::Library};
     ScreenType screen_type{ScreenType::Library};
     common::GamesList games_list;
-    arm::BackendType backend_type{arm::BackendType::Interpreter};
-    arm::BackendType new_backend_type{arm::BackendType::Interpreter};
+    arm::BackendType backend_type{arm::BackendType::Jit};
+    arm::BackendType new_backend_type{arm::BackendType::Jit};
 
     // TODO: create an SDLInputDevice to abstract away input
 };

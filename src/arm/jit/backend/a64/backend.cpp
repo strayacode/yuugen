@@ -785,7 +785,7 @@ void A64Backend::compile_bitwise_exclusive_or(IRBitwiseExclusiveOr& opcode) {
     const bool lhs_is_constant = opcode.lhs.is_constant();
     const bool rhs_is_constant = opcode.rhs.is_constant();
     WReg dst_reg = register_allocator.allocate(opcode.dst);
-    
+
     if (lhs_is_constant && rhs_is_constant) {
         u32 result = opcode.lhs.as_constant().value ^ opcode.rhs.as_constant().value;
         assembler.mov(dst_reg, result);

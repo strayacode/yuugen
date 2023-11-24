@@ -148,6 +148,8 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
         logger.todo("pc in thumb_data_processing_register");
     }
 
+    logger.debug("thumb data processing register");
+
     IRVariable result;
     IRValue op1;
     auto op2 = ir.load_gpr(opcode.rs);
@@ -216,7 +218,7 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
     case ThumbDataProcessingRegister::Opcode::NEG:
         result = ir.subtract(ir.constant(0), op2);
         ir.store_nz(result);
-        ir.store_sub_cv(op1, op2, result);
+        ir.store_sub_cv(ir.constant(0), op2, result);
         break;
         break;
     case ThumbDataProcessingRegister::Opcode::CMP: {
@@ -356,7 +358,7 @@ Translator::BlockStatus Translator::thumb_load_store_signed() {
     auto opcode = ThumbLoadStoreSigned::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.debug("pc in thumb_load_store_signed");
+        logger.todo("pc in thumb_load_store_signed");
     }
 
     auto address = ir.add(ir.load_gpr(opcode.rn), ir.load_gpr(opcode.rm));
