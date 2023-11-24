@@ -5,6 +5,7 @@
 #include "common/types.h"
 #include "common/system.h"
 #include "common/scheduler.h"
+#include "arm/config.h"
 #include "nds/arm7/arm7.h"
 #include "nds/arm9/arm9.h"
 #include "nds/hardware/cartridge/cartridge.h"
@@ -30,7 +31,7 @@ public:
     void run_frame() override;
     void set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) override;
     std::vector<u32*> fetch_framebuffers() override;
-    void select_cpu_backend(arm::BackendType backend_type, bool optimise);
+    void configure_cpu_backend(arm::Config config);
     
     u8 read_wramcnt() { return wramcnt; }
     void write_wramcnt(u8 value);

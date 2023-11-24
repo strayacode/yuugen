@@ -18,7 +18,12 @@ System::System() :
     timers9(scheduler, arm9.get_irq())
 {
     main_memory = std::make_unique<std::array<u8, 0x400000>>();
-    select_cpu_backend(arm::BackendType::Interpreter, true);
+    
+    arm::Config config;
+    config.block_size = 1;
+    config.backend_type = arm::BackendType::Interpreter;
+    config.optimisations = false;
+    configure_cpu_backend(config);
 }
 
 System::~System() {
@@ -110,9 +115,9 @@ std::vector<u32*> System::fetch_framebuffers() {
     return {video_unit.fetch_framebuffer(Screen::Top), video_unit.fetch_framebuffer(Screen::Bottom)};
 }
 
-void System::select_cpu_backend(arm::BackendType backend_type, bool optimise) {
-    arm7.select_backend(backend_type, optimise);
-    arm9.select_backend(backend_type, optimise);
+void System::configure_cpu_backend(arm::Config config) {
+    arm7.configure_cpu_backend(config);
+    arm9.configure_cpu_backend(config);
 }
 
 void System::write_wramcnt(u8 value) {

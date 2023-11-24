@@ -11,6 +11,7 @@
 #include "common/system.h"
 #include "common/games_list.h"
 #include "arm/cpu.h"
+#include "arm/config.h"
 #include "frontend/font_database.h"
 
 class Application {
@@ -98,8 +99,8 @@ private:
     ScreenType previous_screen_type{ScreenType::Library};
     ScreenType screen_type{ScreenType::Library};
     common::GamesList games_list;
-    arm::BackendType backend_type{arm::BackendType::Jit};
-    arm::BackendType new_backend_type{arm::BackendType::Jit};
+    arm::Config config;
+    arm::Config new_config;
 
     // TODO: create an SDLInputDevice to abstract away input
 };

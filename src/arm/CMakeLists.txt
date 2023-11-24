@@ -2,6 +2,7 @@ add_library(arm
     arch.h
     coprocessor.h null_coprocessor.h
     memory.h
+    config.h
     cpu.h state.h
     arithmetic.h arithmetic.cpp
 
@@ -10,7 +11,7 @@ add_library(arm
     interpreter/instructions/thumb.cpp
 
     jit/jit.h jit/jit.cpp
-    jit/basic_block.h jit/config.h
+    jit/basic_block.h
     jit/location.h
     jit/ir/ir_emitter.h jit/ir/ir_emitter.cpp
     jit/ir/translator.h jit/ir/translator.cpp

@@ -6,6 +6,7 @@
 #include "common/system.h"
 #include "common/scheduler.h"
 #include "arm/cpu.h"
+#include "arm/config.h"
 #include "arm/null_coprocessor.h"
 #include "gba/memory.h"
 #include "gba/hardware/cartridge.h"
@@ -27,7 +28,7 @@ public:
     void run_frame() override;
     void set_audio_device(std::shared_ptr<common::AudioDevice> audio_device) override;
     std::vector<u32*> fetch_framebuffers() override;
-    void select_cpu_backend(arm::BackendType backend_type, bool optimise);
+    void configure_cpu_backend(arm::Config config);
 
     Memory memory;
     arm::NullCoprocessor cp14;

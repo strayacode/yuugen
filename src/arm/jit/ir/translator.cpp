@@ -19,7 +19,7 @@ void Translator::translate() {
 
     logger.print("Translator: translate basic block instruction size %d pc %08x", location.get_instruction_size(), location.get_address());
     
-    for (int i = 0; i < jit.config.block_size; i++) {
+    for (int i = 0; i < jit.block_size; i++) {
         if (location.is_arm()) {
             instruction = code_read_word(basic_block.current_address);
             auto condition = evaluate_arm_condition();

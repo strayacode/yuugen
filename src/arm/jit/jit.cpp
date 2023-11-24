@@ -14,12 +14,10 @@
 
 namespace arm {
 
-Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type, bool optimise) : arch(arch), memory(memory), coprocessor(coprocessor) {
-    // configure jit settings
-    // TODO: use a global settings struct to configure the jit
-    config.block_size = 1;
+Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, Config config) : arch(arch), memory(memory), coprocessor(coprocessor) {
+    block_size = config.block_size;
 
-    switch (backend_type) {
+    switch (config.backend_type) {
     case BackendType::IRInterpreter:
         backend = std::make_unique<IRInterpreter>(*this);
         break;
@@ -30,7 +28,7 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backen
         logger.todo("Jit: unsupported jit backend");
     }
 
-    if (optimise) {
+    if (config.optimisations) {
         optimiser.add_pass(std::make_unique<DeadLoadStoreEliminationPass>());
         optimiser.add_pass(std::make_unique<ConstPropagationPass>());
         optimiser.add_pass(std::make_unique<IdentityArithmeticPass>());

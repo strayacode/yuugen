@@ -45,6 +45,11 @@ bool Application::initialise() {
 
     games_list.initialise();
 
+    config.block_size = 32;
+    config.backend_type = arm::BackendType::Jit;
+    config.optimisations = true;
+    new_config = config;
+
     audio_device = std::make_shared<SDLAudioDevice>();
     return true;
 }
@@ -311,14 +316,14 @@ void Application::render_settings_screen() {
     ImGui::Text("CPU Backend");
 
     const char* backends[] = { "Interpreter", "IR Interpreter", "Jit" };
-    static int backend_current = static_cast<int>(backend_type);
+    static int backend_current = static_cast<int>(config.backend_type);
     ImGui::Combo("", &backend_current, backends, IM_ARRAYSIZE(backends));
 
     ImGui::TextColored(light_grey, "Configures the type of CPU backend");
 
-    new_backend_type = static_cast<arm::BackendType>(backend_current);
+    new_config.backend_type = static_cast<arm::BackendType>(backend_current);
 
-    if (new_backend_type != backend_type) {
+    if (new_config.backend_type != config.backend_type) {
         ImGui::TextColored(yellow, "Emulation must be restarted to have effect");
     }
 
@@ -403,7 +408,7 @@ void Application::render() {
                             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
                             ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-        switch (backend_type) {
+        switch (config.backend_type) {
         case arm::BackendType::Interpreter:
             ImGui::Text("CPU: Interpreter");
             break;
@@ -588,16 +593,16 @@ void Application::boot_game(const std::string& path) {
     if (extension == "gba") {
         system = std::make_unique<gba::System>();
         system_type = SystemType::GBA;
-        backend_type = new_backend_type;
+        config = new_config;
     } else if (extension == "nds") {
         system = std::make_unique<nds::System>();
         system_type = SystemType::NDS;
 
-        backend_type = new_backend_type;
+        config = new_config;
 
         // TODO: fix this mess
         auto& nds_system = reinterpret_cast<nds::System&>(*system);
-        nds_system.select_cpu_backend(backend_type, true);
+        nds_system.configure_cpu_backend(config);
     } else {
         logger.todo("unhandled game extension %s", extension.c_str());
     }
@@ -616,7 +621,7 @@ void Application::boot_game(const std::string& path) {
 }
 
 void Application::boot_firmware() {
-    backend_type = new_backend_type;
+    config = new_config;
     system = std::make_unique<nds::System>();
     system_type = SystemType::NDS;
 
@@ -633,7 +638,7 @@ void Application::boot_firmware() {
     
     // TODO: fix this mess
     auto& nds_system = reinterpret_cast<nds::System&>(*system);
-    nds_system.select_cpu_backend(backend_type, true);
+    nds_system.configure_cpu_backend(config);
 
     system->set_state(common::System::State::Running);
     system->set_boot_mode(old_boot_mode);

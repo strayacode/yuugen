@@ -1,3 +1,4 @@
+#include "common/bits.h"
 #include "arm/arithmetic.h"
 #include "arm/jit/backend/a64/backend.h"
 #include "arm/jit/jit.h"
@@ -33,6 +34,14 @@ void write_half(Jit* jit, u32 addr, u16 data) {
 
 void write_word(Jit* jit, u32 addr, u32 data) {
     jit->write_word(addr, data);
+}
+
+u32 coprocessor_read(Jit* jit, u32 cn, u32 cm, u32 cp) {
+    return jit->coprocessor.read(cn, cm, cp);
+}
+
+void coprocessor_write(Jit* jit, u32 cn, u32 cm, u32 cp, u32 value) {
+    jit->coprocessor.write(cn, cm, cp, value);
 }
 
 void A64Backend::reset() {
@@ -181,10 +190,10 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_store_spsr(*opcode->as<IRStoreSPSR>());
         break;
     case IROpcodeType::LoadCoprocessor:
-        logger.todo("handle LoadCoprocessor");
+        compile_load_coprocessor(*opcode->as<IRLoadCoprocessor>());
         break;
     case IROpcodeType::StoreCoprocessor:
-        logger.todo("handle StoreCoprocessor");
+        compile_store_coprocessor(*opcode->as<IRStoreCoprocessor>());
         break;
     case IROpcodeType::BitwiseAnd:
         compile_bitwise_and(*opcode->as<IRBitwiseAnd>());
@@ -223,7 +232,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_arithmetic_shift_right(*opcode->as<IRArithmeticShiftRight>());
         break;
     case IROpcodeType::RotateRight:
-        logger.todo("handle RotateRight");
+        compile_rotate_right(*opcode->as<IRRotateRight>());
         break;
     case IROpcodeType::BarrelShifterLogicalShiftLeft:
         compile_barrel_shifter_logical_shift_left(*opcode->as<IRBarrelShifterLogicalShiftLeft>());
@@ -327,6 +336,56 @@ void A64Backend::compile_store_spsr(IRStoreSPSR& opcode) {
     }
 }
 
+void A64Backend::compile_load_coprocessor(IRLoadCoprocessor& opcode) {
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+
+    // move jit pointer into x0
+    assembler.mov(x0, jit_reg);
+
+    // prepare cn, cm, cp and value
+    assembler.mov(w1, opcode.cn);
+    assembler.mov(w2, opcode.cm);
+    assembler.mov(w3, opcode.cp);
+    
+    // save volatile registers
+    push_volatile_registers();
+
+    assembler.invoke_function(reinterpret_cast<void*>(coprocessor_read));
+    assembler.mov(dst_reg, w0);
+
+    // restore volatile registers
+    pop_volatile_registers();
+}
+
+void A64Backend::compile_store_coprocessor(IRStoreCoprocessor& opcode) {
+    WReg src_reg;
+
+    if (opcode.src.is_constant()) {
+        src_reg = register_allocator.allocate_temporary();
+        const auto src = opcode.src.as_constant();
+        assembler.mov(src_reg, src.value);
+    } else {
+        src_reg = register_allocator.get(opcode.src.as_variable());
+    }
+
+    // move jit pointer into x0
+    assembler.mov(x0, jit_reg);
+
+    // prepare cn, cm, cp and value
+    assembler.mov(w1, opcode.cn);
+    assembler.mov(w2, opcode.cm);
+    assembler.mov(w3, opcode.cp);
+    assembler.mov(w4, src_reg);
+
+    // save volatile registers
+    push_volatile_registers();
+
+    assembler.invoke_function(reinterpret_cast<void*>(coprocessor_write));
+
+    // restore volatile registers
+    pop_volatile_registers();
+}
+
 void A64Backend::compile_logical_shift_left(IRLogicalShiftLeft& opcode) {
     const bool src_is_constant = opcode.src.is_constant();
     const bool amount_is_constant = opcode.amount.is_constant();
@@ -376,8 +435,38 @@ void A64Backend::compile_arithmetic_shift_right(IRArithmeticShiftRight& opcode) 
         const auto amount = opcode.amount.as_constant();
         WReg src_reg = register_allocator.get(src);
         assembler.asr(dst_reg, src_reg, amount.value & 0x1f);
+    } else if (!src_is_constant && !amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        WReg amount_reg = register_allocator.get(amount);
+        assembler.asr(dst_reg, src_reg, amount_reg);
     } else {
         logger.todo("handle asr case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_rotate_right(IRRotateRight& opcode) {
+    const bool src_is_constant = opcode.src.is_constant();
+    const bool amount_is_constant = opcode.amount.is_constant();
+    WReg dst_reg = register_allocator.allocate(opcode.dst);
+
+    if (src_is_constant && amount_is_constant) {
+        u32 result = common::rotate_right(opcode.src.as_constant().value, opcode.amount.as_constant().value);
+        assembler.mov(dst_reg, result);
+    } else if (!src_is_constant && amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_constant();
+        WReg src_reg = register_allocator.get(src);
+        assembler.ror(dst_reg, src_reg, amount.value);
+    } else if (!src_is_constant && !amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        WReg amount_reg = register_allocator.get(amount);
+        assembler.ror(dst_reg, src_reg, amount_reg);
+    } else {
+        logger.todo("handle ror case %s", opcode.to_string().c_str());
     }
 }
 
@@ -747,8 +836,7 @@ void A64Backend::compile_bitwise_and(IRBitwiseAnd& opcode) {
         const auto lhs = opcode.lhs.as_variable();
         const auto rhs = opcode.rhs.as_constant();
         WReg lhs_reg = register_allocator.get(lhs);
-        assembler._and(dst_reg, lhs_reg, rhs.value);
-
+        
         if (BitwiseImmediate<32>::is_valid(rhs.value)) {
             assembler._and(dst_reg, lhs_reg, rhs.value);
         } else {

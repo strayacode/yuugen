@@ -30,8 +30,18 @@ void run_gba(char *path) {
     a_system.set_update_callback([](f32) {});
     b_system.set_update_callback([](f32) {});
 
-    a_system.select_cpu_backend(arm::BackendType::IRInterpreter, false);
-    b_system.select_cpu_backend(arm::BackendType::Jit, false);
+    arm::Config a_config;
+    a_config.block_size = 1;
+    a_config.backend_type = arm::BackendType::IRInterpreter;
+    a_config.optimisations = false;
+
+    arm::Config b_config;
+    b_config.block_size = 1;
+    b_config.backend_type = arm::BackendType::Jit;
+    b_config.optimisations = false;
+
+    a_system.configure_cpu_backend(a_config);
+    b_system.configure_cpu_backend(b_config);
 
     a_system.set_game_path(path);
     a_system.set_boot_mode(common::BootMode::Fast);
@@ -62,8 +72,18 @@ void run_nds(char *path) {
     a_system.set_update_callback([](f32) {});
     b_system.set_update_callback([](f32) {});
 
-    a_system.select_cpu_backend(arm::BackendType::IRInterpreter, false);
-    b_system.select_cpu_backend(arm::BackendType::Jit, false);
+    arm::Config a_config;
+    a_config.block_size = 1;
+    a_config.backend_type = arm::BackendType::IRInterpreter;
+    a_config.optimisations = false;
+
+    arm::Config b_config;
+    b_config.block_size = 1;
+    b_config.backend_type = arm::BackendType::Jit;
+    b_config.optimisations = false;
+
+    a_system.configure_cpu_backend(a_config);
+    b_system.configure_cpu_backend(b_config);
 
     a_system.set_game_path(path);
     a_system.set_boot_mode(common::BootMode::Fast);

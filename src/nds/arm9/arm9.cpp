@@ -20,16 +20,16 @@ void ARM9::run(int cycles) {
     cpu->run(cycles);
 }
 
-void ARM9::select_backend(arm::BackendType backend, bool optimise) {
-    switch (backend) {
+void ARM9::configure_cpu_backend(arm::Config config) {
+    switch (config.backend_type) {
     case arm::BackendType::Interpreter:
         cpu = std::make_unique<arm::Interpreter>(arm::Arch::ARMv5, memory, coprocessor);
         break;
     case arm::BackendType::IRInterpreter:
-        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv5, memory, coprocessor, arm::BackendType::IRInterpreter, optimise);
+        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv5, memory, coprocessor, config);
         break;
     case arm::BackendType::Jit:
-        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv5, memory, coprocessor, arm::BackendType::Jit, optimise);
+        cpu = std::make_unique<arm::Jit>(arm::Arch::ARMv5, memory, coprocessor, config);
         break;
     }
 }

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "arm/cpu.h"
+#include "arm/config.h"
 #include "arm/null_coprocessor.h"
 #include "nds/arm7/memory.h"
 #include "nds/hardware/irq.h"
@@ -16,7 +17,7 @@ public:
 
     void reset();
     void run(int cycles);
-    void select_backend(arm::BackendType backend, bool optimise);
+    void configure_cpu_backend(arm::Config config);
     void direct_boot();
     void firmware_boot();
     bool is_halted();

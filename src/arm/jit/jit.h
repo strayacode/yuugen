@@ -8,15 +8,15 @@
 #include "arm/coprocessor.h"
 #include "arm/decoder.h"
 #include "arm/instructions.h"
+#include "arm/config.h"
 #include "arm/jit/ir/optimiser.h"
-#include "arm/jit/config.h"
 #include "arm/jit/backend/backend.h"
 
 namespace arm {
 
 class Jit : public CPU {
 public:
-    Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, BackendType backend_type, bool optimise);
+    Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, Config config);
 
     void reset() override;
     void run(int cycles) override;
@@ -57,7 +57,7 @@ public:
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;
-    Config config;
+    int block_size;
     
 private:
     bool has_spsr(Mode mode);

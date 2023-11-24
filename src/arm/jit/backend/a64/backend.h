@@ -42,6 +42,8 @@ private:
     void compile_store_cpsr(IRStoreCPSR& opcode);
     void compile_load_spsr(IRLoadSPSR& opcode);
     void compile_store_spsr(IRStoreSPSR& opcode);
+    void compile_load_coprocessor(IRLoadCoprocessor& opcode);
+    void compile_store_coprocessor(IRStoreCoprocessor& opcode);
     void compile_bitwise_and(IRBitwiseAnd& opcode);
     void compile_bitwise_or(IRBitwiseOr& opcode);
     void compile_bitwise_not(IRBitwiseNot& opcode);
@@ -54,6 +56,7 @@ private:
     void compile_logical_shift_left(IRLogicalShiftLeft& opcode);
     void compile_logical_shift_right(IRLogicalShiftRight& opcode);
     void compile_arithmetic_shift_right(IRArithmeticShiftRight& opcode);
+    void compile_rotate_right(IRRotateRight& opcode);
     void compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogicalShiftLeft& opcode);
     void compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogicalShiftRight& opcode);
     void compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterArithmeticShiftRight& opcode);
