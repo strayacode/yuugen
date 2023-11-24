@@ -262,6 +262,11 @@ public:
     void ret();
     void ret(XReg rn);
 
+    void ror(WReg wd, WReg ws, u32 amount);
+    void ror(XReg xd, XReg xs, u32 amount);
+    void ror(WReg wd, WReg wn, WReg wm);
+    void ror(XReg xd, XReg xn, XReg xm);
+
     void smull(XReg xd, WReg wn, WReg wm);
 
     // pre/post index

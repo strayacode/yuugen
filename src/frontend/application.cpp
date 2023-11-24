@@ -311,7 +311,7 @@ void Application::render_settings_screen() {
     ImGui::Text("CPU Backend");
 
     const char* backends[] = { "Interpreter", "IR Interpreter", "Jit" };
-    static int backend_current = 0;
+    static int backend_current = static_cast<int>(backend_type);
     ImGui::Combo("", &backend_current, backends, IM_ARRAYSIZE(backends));
 
     ImGui::TextColored(light_grey, "Configures the type of CPU backend");

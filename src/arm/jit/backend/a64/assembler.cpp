@@ -348,6 +348,22 @@ void A64Assembler::ret(XReg rn) {
     emit(0x3597c0 << 10 | rn.id << 5);
 }
 
+void A64Assembler::ror(WReg wd, WReg ws, u32 amount) {
+    emit(0x9c << 21 | ws.id << 16 | amount << 10 | ws.id << 5 | wd.id);
+}
+
+void A64Assembler::ror(XReg xd, XReg xs, u32 amount) {
+    emit(0x49e << 21 | xs.id << 16 | amount << 10 | xs.id << 5 | xd.id);
+}
+
+void A64Assembler::ror(WReg wd, WReg wn, WReg wm) {
+    emit(0xd6 << 21 | wm.id << 16 | 0xb << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::ror(XReg xd, XReg xn, XReg xm) {
+    emit(0x4d6 << 21 | xm.id << 16 | 0xb << 10 | xn.id << 5 | xd.id);
+}
+
 void A64Assembler::smull(XReg xd, WReg wn, WReg wm) {
     emit(0x4d9 << 21 | wm.id << 16 | 0x1f << 10 | wn.id << 5 | xd.id);
 }

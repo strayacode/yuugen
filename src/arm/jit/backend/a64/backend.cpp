@@ -235,7 +235,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_barrel_shifter_arithmetic_shift_right(*opcode->as<IRBarrelShifterArithmeticShiftRight>());
         break;
     case IROpcodeType::BarrelShifterRotateRight:
-        logger.todo("handle BarrelShifterRotateRight");
+        compile_barrel_shifter_rotate_right(*opcode->as<IRBarrelShifterRotateRight>());
         break;
     case IROpcodeType::BarrelShifterRotateRightExtended:
         compile_barrel_shifter_rotate_right_extended(*opcode->as<IRBarrelShifterRotateRightExtended>());
@@ -652,6 +652,46 @@ void A64Backend::compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterAr
         assembler.link(label_finish2);
     } else {
         logger.todo("handle barrel shifter asr case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_barrel_shifter_rotate_right(IRBarrelShifterRotateRight& opcode) {
+    const bool src_is_constant = opcode.src.is_constant();
+    const bool amount_is_constant = opcode.amount.is_constant();
+    WReg result_reg = register_allocator.allocate(opcode.result_and_carry.first);
+    WReg carry_reg = register_allocator.allocate(opcode.result_and_carry.second);
+    WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
+
+    if (opcode.carry.is_constant()) {
+        logger.todo("carry in for barrel shifter rrx being constant was not expected");
+    }
+
+    if (!src_is_constant && !amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_variable();
+        WReg src_reg = register_allocator.get(src);
+        WReg amount_reg = register_allocator.get(amount);
+
+        Label label_else;
+        Label label_finish;
+
+        assembler.cmp(amount_reg, 0);
+        assembler.b(Condition::NE, label_else);
+
+        // amount == 0
+        assembler.mov(result_reg, src_reg);
+        assembler.mov(carry_reg, carry_in_reg);
+        assembler.b(label_finish);
+
+        // amount != 0
+        assembler.link(label_else);
+        assembler._and(amount_reg, amount_reg, 0x1f);
+        assembler.ror(result_reg, src_reg, amount_reg);
+        assembler.lsr(carry_reg, result_reg, 31);
+
+        assembler.link(label_finish);
+    } else {
+        logger.todo("handle barrel shifter ror case %s", opcode.to_string().c_str());
     }
 }
 

@@ -57,6 +57,7 @@ private:
     void compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogicalShiftLeft& opcode);
     void compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogicalShiftRight& opcode);
     void compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterArithmeticShiftRight& opcode);
+    void compile_barrel_shifter_rotate_right(IRBarrelShifterRotateRight& opcode);
     void compile_barrel_shifter_rotate_right_extended(IRBarrelShifterRotateRightExtended& opcode);
     void compile_compare(IRCompare& opcode);
     void compile_copy(IRCopy& opcode);
@@ -77,25 +78,6 @@ private:
 
     // we have w21, w22, w23, w24, w25, w26, w27 and w28 available for register allocation
     RegisterAllocator register_allocator;
-    
-    static constexpr std::array<u16, 16> condition_table = {
-        0xf0f0, // eq
-        0x0f0f, // ne
-        0xcccc, // cs
-        0x3333, // cc
-        0xff00, // mi
-        0x00ff, // pl
-        0xaaaa, // vs
-        0x5555, // vc
-        0x0c0c, // hi
-        0xf3f3, // ls
-        0xaa55, // ge
-        0x55aa, // lt
-        0x0a05, // gt
-        0xf5fa, // le
-        0xffff, // al
-        0x0000  // ne
-    };
 };
 
 } // namespace arm

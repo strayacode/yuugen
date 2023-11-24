@@ -189,6 +189,14 @@ int main() {
     TEST(0xd65f0080, ret(arm::x4))
     TEST(0xd65f0300, ret(arm::x24))
 
+    TEST(0x138f39e1, ror(arm::w1, arm::w15, 14))
+    TEST(0x1ad22e2c, ror(arm::w12, arm::w17, arm::w18))
+    TEST(0x1ad32f22, ror(arm::w2, arm::w25, arm::w19))
+    TEST(0x1ac92fb4, ror(arm::w20, arm::w29, arm::w9))
+    TEST(0x9ad62c41, ror(arm::x1, arm::x2, arm::x22))
+    TEST(0x9ac82ec8, ror(arm::x8, arm::x22, arm::x8))
+    TEST(0x9ad02caf, ror(arm::x15, arm::x5, arm::x16))
+
     TEST(0x9b247cb0, smull(arm::x16, arm::w5, arm::w4))
     TEST(0x9b217e14, smull(arm::x20, arm::w16, arm::w1))
     TEST(0x9b327d93, smull(arm::x19, arm::w12, arm::w18))
