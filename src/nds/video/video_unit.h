@@ -33,6 +33,8 @@ public:
     u16 read_vcount() { return vcount; }
     void write_vcount(u16 value, u32 mask);
     void write_powcnt1(u16 value, u32 mask);
+
+    u32 read_dispcapcnt() { return dispcapcnt.data; }
     void write_dispcapcnt(u32 value, u32 mask);
 
     u32* fetch_framebuffer(Screen screen);
@@ -68,6 +70,7 @@ public:
 private:
     void render_scanline_start();
     void render_scanline_end();
+    u16 rgb666_to_rgb555(u32 colour);
 
     union POWCNT1 {
         struct {
@@ -129,6 +132,9 @@ private:
 
     POWCNT1 powcnt1;
     u16 vcount;
+    bool display_capture{false};
+    static constexpr int display_capture_dimensions[4][2] = {{128, 128}, {256, 64}, {256, 128}, {256, 192}};
+
     DISPSTAT dispstat7;
     DISPSTAT dispstat9;
     DISPCAPCNT dispcapcnt;

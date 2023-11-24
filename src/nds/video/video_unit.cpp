@@ -20,6 +20,7 @@ void VideoUnit::reset() {
     dispstat9.data = 0;
     dispcapcnt.data = 0;
     vcount = 0;
+    display_capture = false;
 
     vram.reset();
     gpu.reset();
@@ -67,9 +68,6 @@ void VideoUnit::write_powcnt1(u16 value, u32 mask) {
 
 void VideoUnit::write_dispcapcnt(u32 value, u32 mask) {
     dispcapcnt.data = (dispcapcnt.data & ~mask) | (value & mask);
-    if (dispcapcnt.capture_enable) {
-        logger.warn("VideoUnit: handle display capture");
-    }
 }
 
 u32* VideoUnit::fetch_framebuffer(Screen screen) {
@@ -85,6 +83,47 @@ void VideoUnit::render_scanline_start() {
         ppu_a.render_scanline(vcount);
         ppu_b.render_scanline(vcount);
         system.dma9.trigger(DMA::Timing::HBlank);
+    }
+
+    if (vcount == 0 && dispcapcnt.capture_enable) {
+        display_capture = true;
+    }
+
+    if (display_capture) {
+        int width = display_capture_dimensions[dispcapcnt.capture_size][0];
+        int height = display_capture_dimensions[dispcapcnt.capture_size][1];
+        u32 base = 0x06800000 + (dispcapcnt.vram_write_block * 0x20000);
+        u32 write_offset = (dispcapcnt.vram_write_offset * 0x8000) + vcount * width * 2;
+
+        switch (dispcapcnt.capture_source) {
+        case 0: {
+            u32* line;
+
+            // source a
+            if (dispcapcnt.source_a) {
+                // capture 3d
+                line = gpu.fetch_framebuffer() + (vcount * 256);
+            } else {
+                // capture 2d
+                logger.todo("VideoUnit: capture 2d");
+            }
+
+            for (int i = 0; i < width; i++) {
+                vram.write<u16>(base + (write_offset & 0x1ffff), rgb666_to_rgb555(line[i]));
+                write_offset += 2;
+            }
+
+            break;
+        }
+        default:
+            logger.todo("VideoUnit: handle capture source %d", dispcapcnt.capture_source);
+        }
+
+        // TODO: see if dispcapcnt busy bit gets cleared at height or 192 scanline
+        if (vcount + 1 == height) {
+            dispcapcnt.capture_enable = false;
+            display_capture = false;
+        }
     }
 
     dispstat7.hblank = true;
@@ -157,6 +196,13 @@ void VideoUnit::render_scanline_end() {
     } else {
         dispstat9.lyc = false;
     }
+}
+
+u16 VideoUnit::rgb666_to_rgb555(u32 colour) {
+    u8 r = (colour & 0x3f) / 2;
+    u8 g = ((colour >> 6) & 0x3f) / 2;
+    u8 b = ((colour >> 12) & 0x3f) / 2;
+    return 0x8000 | (b << 10) | (g << 5) | r;
 }
 
 } // namespace nds

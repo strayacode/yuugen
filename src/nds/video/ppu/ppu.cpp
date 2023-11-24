@@ -200,7 +200,7 @@ void PPU::render_blank_screen(int line) {
 void PPU::render_graphics_display(int line) {
     if (dispcnt.enable_bg0) {
         if (dispcnt.bg0_3d || dispcnt.bg_mode == 6) {
-            const auto* framebuffer = gpu.get_framebuffer();
+            const auto* framebuffer = gpu.fetch_framebuffer();
             for (int i = 0; i < 256; i++) {
                 bg_layers[0][i] = framebuffer[(256 * line) + i];
             }

@@ -16,7 +16,7 @@ public:
     void reset() override;
     void render() override;
     
-    const u32* get_framebuffer() override { return framebuffer.data(); }
+    u32* fetch_framebuffer() override { return framebuffer.data(); }
 
     void submit_polygons(Polygon* polygons, int num_polygons, bool w_buffering) override;
 

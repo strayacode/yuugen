@@ -159,6 +159,11 @@ void GPU::write_fog_offset(u16 value, u32 mask) {
     fog_offset = (fog_offset & ~mask) | (value & mask);
 }
 
+void GPU::write_edge_colour(u32 addr, u16 value) {
+    const int index = (addr - 0x04000330) / 2;
+    edge_colour[index] = value;
+}
+
 void GPU::queue_command(u32 addr, u32 data) {
     u8 command = common::get_field<2, 7>(addr);
     queue_entry({command, data});

@@ -20,7 +20,7 @@ public:
     GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq, VRAMRegion& texture_data, VRAMRegion& texture_palette);
 
     void reset();
-    const u32* get_framebuffer() { return renderer->get_framebuffer(); };
+    u32* fetch_framebuffer() { return renderer->fetch_framebuffer(); };
 
     u32 read_disp3dcnt() const { return disp3dcnt.data; }
     void write_disp3dcnt(u32 value, u32 mask);
@@ -34,6 +34,7 @@ public:
     void write_clrimage_offset(u16 value, u32 mask);
     void write_fog_colour(u32 value, u32 mask);
     void write_fog_offset(u16 value, u32 mask);
+    void write_edge_colour(u32 addr, u16 value);
     void queue_command(u32 addr, u32 data);
     void do_swap_buffers();
     void render();
@@ -189,7 +190,7 @@ private:
     u16 clrimage_offset{0};
     u32 fog_colour{0};
     u16 fog_offset{0};
-    std::array<u8, 0x10> edge_colour;
+    std::array<u16, 8> edge_colour;
     std::array<u8, 0x20> fog_table;
     std::array<u8, 0x40> toon_table;
 
