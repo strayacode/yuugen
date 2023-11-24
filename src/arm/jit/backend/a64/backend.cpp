@@ -416,10 +416,18 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
             assembler.lsr(carry_reg, src_reg, 32 - amount.value);
             assembler._and(carry_reg, carry_reg, 0x1);
         }
-    } else if (!src_is_constant && !amount_is_constant) {
-        const auto src = opcode.src.as_variable();
+    } else if (!amount_is_constant) {
+        WReg src_reg;
+        if (src_is_constant) {
+            const auto src = opcode.src.as_constant();
+            src_reg = register_allocator.allocate_temporary();
+            assembler.mov(src_reg, src.value);
+        } else {
+            const auto src = opcode.src.as_variable();
+            src_reg = register_allocator.get(src);
+        }
+
         const auto amount = opcode.amount.as_variable();
-        WReg src_reg = register_allocator.get(src);
         WReg amount_reg = register_allocator.get(amount);
 
         Label label_ge32;
