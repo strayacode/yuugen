@@ -77,8 +77,8 @@ void SoftwareRenderer::render_polygon_scanline(Polygon& polygon, int y) {
     const auto right_vertex = polygon.vertices[right];
     const auto next_right_vertex = polygon.vertices[next_right];
 
-    left_slope.setup(*left_vertex, *next_left_vertex);
-    right_slope.setup(*right_vertex, *next_right_vertex);
+    Slope left_slope{*left_vertex, *next_left_vertex};
+    Slope right_slope{*right_vertex, *next_right_vertex};
 
     s32 span_start = left_slope.span_start(y);
     s32 span_end = right_slope.span_end(y);

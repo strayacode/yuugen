@@ -34,8 +34,6 @@ private:
 
     Interpolator<9> slope_interpolator;
     Interpolator<8> scanline_interpolator;
-    Slope left_slope;
-    Slope right_slope;
     GPU::DISP3DCNT& disp3dcnt;
     VRAMRegion& texture_data;
     VRAMRegion& texture_palette;
