@@ -105,7 +105,7 @@ void VideoUnit::render_scanline_start() {
                 line = gpu.fetch_framebuffer() + (vcount * 256);
             } else {
                 // capture 2d
-                logger.todo("VideoUnit: capture 2d");
+                LOG_TODO("VideoUnit: capture 2d");
             }
 
             for (int i = 0; i < width; i++) {
@@ -116,7 +116,7 @@ void VideoUnit::render_scanline_start() {
             break;
         }
         default:
-            logger.todo("VideoUnit: handle capture source %d", dispcapcnt.capture_source);
+            LOG_TODO("VideoUnit: handle capture source %d", dispcapcnt.capture_source);
         }
 
         // TODO: see if dispcapcnt busy bit gets cleared at height or 192 scanline

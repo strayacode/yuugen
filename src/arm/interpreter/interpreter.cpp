@@ -129,7 +129,7 @@ void Interpreter::set_spsr(Mode mode, StatusRegister value) {
 }
 
 void Interpreter::illegal_instruction() {
-    logger.error("Interpreter: illegal instruction %08x at pc = %08x", instruction, state.gpr[15]);
+    LOG_ERROR("Interpreter: illegal instruction %08x at pc = %08x", instruction, state.gpr[15]);
 }
 
 void Interpreter::arm_flush_pipeline() {
@@ -232,7 +232,7 @@ Bank Interpreter::get_bank_from_mode(Mode mode) {
     case Mode::UND:
         return Bank::UND;
     default:
-        logger.warn("Interpreter: mode %02x doesn't have a bank", static_cast<u8>(mode));
+        LOG_WARN("Interpreter: mode %02x doesn't have a bank", static_cast<u8>(mode));
         return Bank::USR;
     }
 }
@@ -307,7 +307,7 @@ void Interpreter::handle_interrupt() {
 }
 
 void Interpreter::undefined_exception() {
-    logger.warn("Interpreter: undefined exception fired for instruction %08x at %08x", instruction, state.gpr[15]);
+    LOG_WARN("Interpreter: undefined exception fired for instruction %08x at %08x", instruction, state.gpr[15]);
 
     state.spsr_banked[Bank::UND].data = state.cpsr.data;
     switch_mode(Mode::UND);
@@ -316,14 +316,6 @@ void Interpreter::undefined_exception() {
     state.gpr[14] = state.gpr[15] - 4;
     state.gpr[15] = coprocessor.get_exception_base() + 0x04;
     arm_flush_pipeline();
-}
-
-void Interpreter::log_state() {
-    for (int i = 0; i < 16; i++) {
-        logger.log("r%d: %08x ", i, get_gpr(static_cast<GPR>(i)));
-    }
-
-    logger.log("cpsr: %08x\n", get_cpsr().data);
 }
 
 } // namespace arm

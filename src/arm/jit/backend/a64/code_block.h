@@ -22,17 +22,17 @@ public:
 #endif
 
         if (code == nullptr || code == reinterpret_cast<void*>(-1)) {
-            logger.error("CodeBlock: error allocating");
+            LOG_ERROR("CodeBlock: error allocating");
         } else {
-            logger.debug("CodeBlock: successfully allocated");
+            LOG_DEBUG("CodeBlock: successfully allocated");
         }
     }
 
     ~CodeBlock() {
         if (munmap(code, size) == -1) {
-            logger.error("CodeBlock: error deallocating");
+            LOG_ERROR("CodeBlock: error deallocating");
         } else {
-            logger.debug("CodeBlock: successfully deallocated");
+            LOG_DEBUG("CodeBlock: successfully deallocated");
         }
     }
 

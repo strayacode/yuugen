@@ -57,12 +57,12 @@ void Cartridge::direct_boot() {
         system.arm7.get_memory().write<u8, Bus::System>(header.arm7_ram_address + i, *memory_mapped_file.get_pointer(header.arm7_offset + i));
     }
 
-    logger.debug("Cartridge: cartridge data transferred into memory");
+    LOG_DEBUG("cartridge data transferred into memory");
 }
 
 void Cartridge::firmware_boot() {
     if (memory_mapped_file.get_size() >= 0x8000) {
-        logger.todo("Cartridge: handle encryption in firmware boot");
+        LOG_TODO("handle encryption in firmware boot");
         // u64 encry_obj = 0x6A624F7972636E65;
 
         // memcpy(loader.GetPointer(0x4000), &encry_obj, 8);
@@ -147,7 +147,7 @@ u32 Cartridge::read_data() {
 
             if ((rom_position + transfer_count) >= memory_mapped_file.get_size()) {
                 // TODO: handle this case
-                // logger.warn("Cartridge: read data command exceeds rom size");
+                // LOG_WARN("read data command exceeds rom size");
                 return data;
             }
 
@@ -165,7 +165,7 @@ u32 Cartridge::read_data() {
             data = common::read<u32>(memory_mapped_file.get_pointer(rom_position + transfer_count));
             break;
         default:
-            logger.error("Cartridge: handle unknown cartridge command");
+            LOG_ERROR("handle unknown cartridge command");
         }
     }
 
@@ -204,15 +204,15 @@ void Cartridge::load_header() {
     memcpy(&header.arm7_ram_address, memory_mapped_file.get_pointer(0x38), 4);
     memcpy(&header.arm7_size, memory_mapped_file.get_pointer(0x3c), 4);
     memcpy(&header.icon_title_offset, memory_mapped_file.get_pointer(0x68), 4);
-    logger.debug("Cartridge: arm9 offset %08x", header.arm9_offset);
-    logger.debug("Cartridge: arm9 entrypoint %08x", header.arm9_entrypoint);
-    logger.debug("Cartridge: arm9 ram address %08x", header.arm9_ram_address);
-    logger.debug("Cartridge: arm9 size %08x", header.arm9_size);
-    logger.debug("Cartridge: arm7 offset %08x", header.arm7_offset);
-    logger.debug("Cartridge: arm7 entrypoint %08x", header.arm7_entrypoint);
-    logger.debug("Cartridge: arm7 ram address %08x", header.arm7_ram_address);
-    logger.debug("Cartridge: arm7 size %08x", header.arm7_size);
-    logger.debug("Cartridge: header data loaded");
+    LOG_DEBUG("arm9 offset %08x", header.arm9_offset);
+    LOG_DEBUG("arm9 entrypoint %08x", header.arm9_entrypoint);
+    LOG_DEBUG("arm9 ram address %08x", header.arm9_ram_address);
+    LOG_DEBUG("arm9 size %08x", header.arm9_size);
+    LOG_DEBUG("arm7 offset %08x", header.arm7_offset);
+    LOG_DEBUG("arm7 entrypoint %08x", header.arm7_entrypoint);
+    LOG_DEBUG("arm7 ram address %08x", header.arm7_ram_address);
+    LOG_DEBUG("arm7 size %08x", header.arm7_size);
+    LOG_DEBUG("header data loaded");
 }
 
 void Cartridge::load_backup(std::string path) {
@@ -227,7 +227,7 @@ void Cartridge::load_backup(std::string path) {
                 backup = std::make_unique<NoBackup>();
                 return;
             case 1:
-                logger.error("Cartridge: handle small eeprom");
+                LOG_ERROR("handle small eeprom");
                 return;
             case 2: case 3: case 4:
                 backup = std::make_unique<EEPROMBackup>(save_path, save_size);
@@ -236,7 +236,7 @@ void Cartridge::load_backup(std::string path) {
                 backup = std::make_unique<FlashBackup>(save_path, save_size);
                 return;
             default:
-                logger.error("Cartridge: handle save type %d", save_database[i].save_type);
+                LOG_ERROR("handle save type %d", save_database[i].save_type);
             }
         }
     }
@@ -257,7 +257,7 @@ void Cartridge::start_transfer() {
 
     command = common::bswap64(command_buffer);
     if (key1_encryption) {
-        logger.error("Cartridge: handle key1 encryption");
+        LOG_ERROR("handle key1 encryption");
     } else {
         process_decrypted_command();
     }
@@ -300,7 +300,7 @@ void Cartridge::process_decrypted_command() {
             key1_encryption = true;
             command_type = CommandType::None;
         } else {
-            logger.error("Cartridge: handle decrypted command: %016lx", command);
+            LOG_ERROR("handle decrypted command: %016lx", command);
         }
     }
 }

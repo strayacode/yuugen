@@ -48,7 +48,7 @@ void PPU::render_objects(int line) {
         y += half_height;
 
         if (mosaic) {
-            logger.warn("PPU: handle object mosaic");
+            LOG_WARN("handle object mosaic");
         }
 
         if (affine) {
@@ -79,7 +79,7 @@ void PPU::render_objects(int line) {
 
         if (mode == ObjectMode::ObjectWindow) {
             // TODO: handle object window
-            logger.warn("PPU: handle object window mode");
+            LOG_WARN("handle object window mode");
         }
 
         int local_y = line - y;
@@ -120,7 +120,7 @@ void PPU::render_objects(int line) {
                 if (dispcnt.bitmap_obj_mapping) {
                     colour = obj.read<u16>(((tile_number * (64 << dispcnt.bitmap_obj_1d_boundary)) + (transformed_y * width) + transformed_x) * 2);
                 } else {
-                    logger.error("PPU: handle 2d mapping bitmap");
+                    LOG_ERROR("handle 2d mapping bitmap");
                 }
 
                 if (!(colour & colour_transparent)) {

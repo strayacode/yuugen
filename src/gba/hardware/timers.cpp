@@ -79,7 +79,7 @@ void Timers::deactivate_channel(int id) {
     channel.active = false;
 
     if (channel.counter >= 0x10000) {
-        logger.error("Timers: handle counter greater than 16-bits");
+        LOG_ERROR("Timers: handle counter greater than 16-bits");
     }
 
     scheduler.cancel_event(&overflow_events[id]);

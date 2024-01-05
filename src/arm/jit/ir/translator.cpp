@@ -17,7 +17,7 @@ void Translator::translate() {
     auto& basic_block = ir.basic_block;
     auto location = basic_block.location;
 
-    // logger.print("Translator: translate basic block instruction size %d pc %08x", location.get_instruction_size(), location.get_address());
+    // LOG_INFO("Translator: translate basic block instruction size %d pc %08x", location.get_instruction_size(), location.get_address());
     
     for (int i = 0; i < jit.block_size; i++) {
         if (location.is_arm()) {
@@ -34,7 +34,7 @@ void Translator::translate() {
                 break;
             }
 
-            // logger.print("%s %08x %08x", disassembler.disassemble_arm(instruction).c_str(), instruction, basic_block.current_address);
+            // LOG_INFO("%s %08x %08x", disassembler.disassemble_arm(instruction).c_str(), instruction, basic_block.current_address);
             
             auto handler = decoder.get_arm_handler(instruction);
             auto status = (this->*handler)();
@@ -66,7 +66,7 @@ void Translator::translate() {
                 break;
             }
 
-            // logger.print("%s %08x %08x", disassembler.disassemble_thumb(instruction).c_str(), instruction, basic_block.current_address);
+            // LOG_INFO("%s %08x %08x", disassembler.disassemble_thumb(instruction).c_str(), instruction, basic_block.current_address);
             
             auto handler = decoder.get_thumb_handler(instruction);
             auto status = (this->*handler)();
@@ -91,7 +91,7 @@ void Translator::translate() {
 }
 
 Translator::BlockStatus Translator::illegal_instruction() {
-    logger.error("Translator: illegal instruction %08x at pc = %08x", instruction, jit.get_gpr(GPR::PC));
+    LOG_ERROR("Translator: illegal instruction %08x at pc = %08x", instruction, jit.get_gpr(GPR::PC));
     return BlockStatus::Break;
 }
 

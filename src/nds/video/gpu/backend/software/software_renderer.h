@@ -32,8 +32,6 @@ private:
     int num_polygons{0};
     bool w_buffering{false};
 
-    Interpolator<9> slope_interpolator;
-    Interpolator<8> scanline_interpolator;
     GPU::DISP3DCNT& disp3dcnt;
     VRAMRegion& texture_data;
     VRAMRegion& texture_palette;

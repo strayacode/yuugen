@@ -6,9 +6,9 @@
 
 void check_values(const char *testcase, u32 expected, u32 actual) {
     if (expected != actual) {
-        logger.error("%s expected: %08x got: %08x", testcase, expected, actual);
+        LOG_ERROR("%s expected: %08x got: %08x", testcase, expected, actual);
     } else {
-        logger.print("%s passed", testcase);
+        LOG_INFO("%s passed", testcase);
     }
 }
 

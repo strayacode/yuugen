@@ -6,7 +6,7 @@ namespace gba {
 
 void PPU::render_background(int id, int line) {
     if (bgcnt[id].mosaic) {
-        logger.warn("handle mosaic");
+        LOG_WARN("handle mosaic");
     }
 
     int y = (line + bgvofs[id]) % 512;

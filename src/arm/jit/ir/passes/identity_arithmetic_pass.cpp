@@ -25,7 +25,7 @@ void IdentityArithmeticPass::optimise(BasicBlock& basic_block) {
                 it++;
                 mark_modified();
             } else if (amount.is_constant()) {
-                logger.todo("handle constant amount that hasn't been handled %s", opcode_variant->to_string().c_str());
+                LOG_TODO("handle constant amount that hasn't been handled %s", opcode_variant->to_string().c_str());
             } else {
                 it++;
             }

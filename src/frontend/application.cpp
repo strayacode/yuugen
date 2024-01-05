@@ -11,7 +11,7 @@ Application::Application() {}
 
 bool Application::initialise() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) > 0) {
-        logger.warn("error initialising SDL!");
+        LOG_WARN("error initialising SDL!");
         return false;
     }
 
@@ -609,7 +609,7 @@ void Application::boot_game(const std::string& path) {
         auto& nds_system = reinterpret_cast<nds::System&>(*system);
         nds_system.configure_cpu_backend(config);
     } else {
-        logger.todo("unhandled game extension %s", extension.c_str());
+        LOG_TODO("unhandled game extension %s", extension.c_str());
     }
 
     switch_screen(ScreenType::Game);

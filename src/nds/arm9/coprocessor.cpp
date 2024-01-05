@@ -41,7 +41,7 @@ u32 ARM9Coprocessor::read(u32 cn, u32 cm, u32 cp) {
     case 0x060700:
         return 0;
     default:
-        logger.error("ARM9Coprocessor: handle register read c%d, c%d, c%d", cn, cm, cp);
+        LOG_ERROR("ARM9Coprocessor: handle register read c%d, c%d, c%d", cn, cm, cp);
     }
 
     return 0;
@@ -94,7 +94,7 @@ void ARM9Coprocessor::write(u32 cn, u32 cm, u32 cp, u32 value) {
         memory.itcm.config.limit = 512 << itcm_control.size;
         break;
     default:
-        logger.error("ARM9Coprocessor: handle register write c%d, c%d, c%d = %08x", cn, cm, cp, value);
+        LOG_ERROR("ARM9Coprocessor: handle register write c%d, c%d, c%d = %08x", cn, cm, cp, value);
     }
 }
 

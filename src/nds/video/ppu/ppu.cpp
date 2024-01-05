@@ -68,7 +68,7 @@ void PPU::render_scanline(int line) {
         render_vram_display(line);
         break;
     case 3:
-        logger.error("PPU: handle main memory display");
+        LOG_ERROR("PPU: handle main memory display");
         break;
     }
 
@@ -312,7 +312,7 @@ u8 PPU::calculate_enabled_layers(int x, int line) {
             enabled &= (winin >> 8) & 0xf;
         } else if (dispcnt.enable_objwin) {
             // TODO: handle object window
-            logger.warn("PPU: handle object window");
+            LOG_WARN("PPU: handle object window");
         } else {
             enabled &= winout & 0xf;  
         }

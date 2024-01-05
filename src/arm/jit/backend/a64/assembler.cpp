@@ -7,10 +7,10 @@ namespace arm {
 A64Assembler::A64Assembler(u32* code) : code(code), current_code(code), previous_code(code) {}
 
 void A64Assembler::dump() {
-    logger.print("buffer:");
+    LOG_INFO("buffer:");
     u32* curr = previous_code;
     while (curr != current_code) {
-        logger.print("%s", disassemble_a64_instruction(reinterpret_cast<u64>(curr), *curr).c_str());
+        LOG_INFO("%s", disassemble_a64_instruction(reinterpret_cast<u64>(curr), *curr).c_str());
         curr++;
     }
 }
@@ -48,7 +48,7 @@ void A64Assembler::link(Label& label) {
             break;
         }
         default:
-            logger.todo("handle instruction %08x", instruction);
+            LOG_TODO("handle instruction %08x", instruction);
         }
     }    
 }
@@ -457,7 +457,7 @@ void A64Assembler::umull(XReg xd, WReg wn, WReg wm) {
 }
 
 void A64Assembler::emit(u32 data) {
-    logger.print("%s", disassemble_a64_instruction(reinterpret_cast<u64>(current_code), data).c_str());
+    LOG_INFO("%s", disassemble_a64_instruction(reinterpret_cast<u64>(current_code), data).c_str());
     *current_code++ = data;
     num_instructions++;
 }

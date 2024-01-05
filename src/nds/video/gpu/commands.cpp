@@ -76,7 +76,7 @@ void GPU::set_viewport() {
     viewport.y1 = common::get_field<24, 8>(parameter);
 
     if (viewport.x0 > viewport.x1 || viewport.y0 > viewport.y1) {
-        logger.todo("GPU: handle invalid viewport arguments");
+        LOG_TODO("GPU: handle invalid viewport arguments");
     }
 }
 

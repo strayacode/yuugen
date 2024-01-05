@@ -53,7 +53,7 @@ Code A64Backend::get_code_at(Location location) {
 }
 
 Code A64Backend::compile(BasicBlock& basic_block) {
-    logger.print("compiling basic block at %08x...", basic_block.location.get_address());
+    LOG_INFO("compiling basic block at %08x...", basic_block.location.get_address());
     register_allocator.reset();
 
     // calculate the lifetimes of ir variables
@@ -62,19 +62,19 @@ Code A64Backend::compile(BasicBlock& basic_block) {
     JitFunction jit_fn = assembler.get_current_code<JitFunction>();
     code_block.unprotect();
 
-    logger.print("compiling prologue...");
+    LOG_INFO("compiling prologue...");
     compile_prologue();
 
     Label label_pass;
     Label label_fail;
 
-    logger.print("compiling condition check...");
+    LOG_INFO("compiling condition check...");
     compile_condition_check(basic_block, label_pass, label_fail);
     assembler.link(label_pass);
 
     if (basic_block.condition != Condition::NV) {
         for (auto& opcode : basic_block.opcodes) {
-            logger.print("compiling %s...", opcode->to_string().c_str());
+            LOG_INFO("compiling %s...", opcode->to_string().c_str());
             compile_ir_opcode(opcode);
             register_allocator.advance();
         }
@@ -82,11 +82,11 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     assembler.link(label_fail);
 
-    logger.print("compiling epilogue...");
+    LOG_INFO("compiling epilogue...");
     assembler.sub(cycles_left_reg, cycles_left_reg, static_cast<u64>(basic_block.cycles));
     compile_epilogue();
 
-    logger.print("");
+    LOG_INFO("");
     assembler.dump();
 
     code_block.protect();
@@ -250,7 +250,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_barrel_shifter_rotate_right_extended(*opcode->as<IRBarrelShifterRotateRightExtended>());
         break;
     case IROpcodeType::CountLeadingZeroes:
-        logger.todo("handle CountLeadingZeroes");
+        LOG_TODO("handle CountLeadingZeroes");
         break;
     case IROpcodeType::Compare:
         compile_compare(*opcode->as<IRCompare>());
@@ -400,7 +400,7 @@ void A64Backend::compile_logical_shift_left(IRLogicalShiftLeft& opcode) {
         WReg src_reg = register_allocator.get(src);
         assembler.lsl(dst_reg, src_reg, amount.value & 0x1f);
     } else {
-        logger.todo("handle lsl case");
+        LOG_TODO("handle lsl case");
     }
 }
 
@@ -418,7 +418,7 @@ void A64Backend::compile_logical_shift_right(IRLogicalShiftRight& opcode) {
         const u32 amount = opcode.amount.as_constant().value & 0x1f;
         assembler.lsr(dst_reg, src_reg, amount);
     } else {
-        logger.todo("handle lsr case %s", opcode.to_string().c_str());
+        LOG_TODO("handle lsr case %s", opcode.to_string().c_str());
     }
 }
 
@@ -442,7 +442,7 @@ void A64Backend::compile_arithmetic_shift_right(IRArithmeticShiftRight& opcode) 
         WReg amount_reg = register_allocator.get(amount);
         assembler.asr(dst_reg, src_reg, amount_reg);
     } else {
-        logger.todo("handle asr case %s", opcode.to_string().c_str());
+        LOG_TODO("handle asr case %s", opcode.to_string().c_str());
     }
 }
 
@@ -466,7 +466,7 @@ void A64Backend::compile_rotate_right(IRRotateRight& opcode) {
         WReg amount_reg = register_allocator.get(amount);
         assembler.ror(dst_reg, src_reg, amount_reg);
     } else {
-        logger.todo("handle ror case %s", opcode.to_string().c_str());
+        LOG_TODO("handle ror case %s", opcode.to_string().c_str());
     }
 }
 
@@ -478,7 +478,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
     WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
 
     if (opcode.carry.is_constant()) {
-        logger.todo("carry in for barrel shifter lsl being constant was not expected");
+        LOG_TODO("carry in for barrel shifter lsl being constant was not expected");
     }
 
     if (src_is_constant && amount_is_constant) {
@@ -499,7 +499,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
             assembler.mov(result_reg, src_reg);
             assembler.mov(carry_reg, carry_in_reg);
         } else if (amount.value >= 32) {
-            logger.todo("barrel shifter lsl handle amount >= 32");
+            LOG_TODO("barrel shifter lsl handle amount >= 32");
         } else {
             assembler.lsl(result_reg, src_reg, amount.value);
             assembler.lsr(carry_reg, src_reg, 32 - amount.value);
@@ -560,7 +560,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_left(IRBarrelShifterLogica
         assembler.link(label_finish1);
         assembler.link(label_finish2);
     } else {
-        logger.todo("handle barrel shifter lsl case %s", opcode.to_string().c_str());
+        LOG_TODO("handle barrel shifter lsl case %s", opcode.to_string().c_str());
     }
 }
 
@@ -572,7 +572,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
     WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
 
     if (opcode.carry.is_constant()) {
-        logger.todo("carry in for barrel shifter lsr being constant was not expected");
+        LOG_TODO("carry in for barrel shifter lsr being constant was not expected");
     }
 
     if (src_is_constant && amount_is_constant) {
@@ -594,7 +594,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
         }
 
         if (amount.value == 0) {
-            logger.todo("barrel shifter lsr handle amount == 0");
+            LOG_TODO("barrel shifter lsr handle amount == 0");
         } else if (amount.value >= 32) {
             assembler.mov(result_reg, 0);
             assembler.lsr(carry_reg, src_reg, 31);
@@ -654,7 +654,7 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
         assembler.link(label_finish1);
         assembler.link(label_finish2);
     } else {
-        logger.todo("handle barrel shifter lsr case %s", opcode.to_string().c_str());
+        LOG_TODO("handle barrel shifter lsr case %s", opcode.to_string().c_str());
     }
 }
 
@@ -666,7 +666,7 @@ void A64Backend::compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterAr
     WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
 
     if (opcode.carry.is_constant()) {
-        logger.todo("carry in for barrel shifter asr being constant was not expected");
+        LOG_TODO("carry in for barrel shifter asr being constant was not expected");
     }
 
     if (src_is_constant && amount_is_constant) {
@@ -740,7 +740,7 @@ void A64Backend::compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterAr
         assembler.link(label_finish1);
         assembler.link(label_finish2);
     } else {
-        logger.todo("handle barrel shifter asr case %s", opcode.to_string().c_str());
+        LOG_TODO("handle barrel shifter asr case %s", opcode.to_string().c_str());
     }
 }
 
@@ -752,7 +752,7 @@ void A64Backend::compile_barrel_shifter_rotate_right(IRBarrelShifterRotateRight&
     WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
 
     if (opcode.carry.is_constant()) {
-        logger.todo("carry in for barrel shifter rrx being constant was not expected");
+        LOG_TODO("carry in for barrel shifter rrx being constant was not expected");
     }
 
     if (!src_is_constant && !amount_is_constant) {
@@ -780,7 +780,7 @@ void A64Backend::compile_barrel_shifter_rotate_right(IRBarrelShifterRotateRight&
 
         assembler.link(label_finish);
     } else {
-        logger.todo("handle barrel shifter ror case %s", opcode.to_string().c_str());
+        LOG_TODO("handle barrel shifter ror case %s", opcode.to_string().c_str());
     }
 }
 
@@ -792,7 +792,7 @@ void A64Backend::compile_barrel_shifter_rotate_right_extended(IRBarrelShifterRot
     WReg carry_in_reg = register_allocator.get(opcode.carry.as_variable());
 
     if (opcode.carry.is_constant()) {
-        logger.todo("carry in for barrel shifter rrx being constant was not expected");
+        LOG_TODO("carry in for barrel shifter rrx being constant was not expected");
     }
 
     if (src_is_constant && amount_is_constant) {
@@ -820,7 +820,7 @@ void A64Backend::compile_barrel_shifter_rotate_right_extended(IRBarrelShifterRot
         assembler.lsr(tmp_value_shifted_reg, src_reg, 1);
         assembler.orr(result_reg, tmp_msb_reg, tmp_value_shifted_reg);
     } else {
-        logger.todo("handle barrel shifter rrx case %s", opcode.to_string().c_str());
+        LOG_TODO("handle barrel shifter rrx case %s", opcode.to_string().c_str());
     }
 }
 
@@ -1138,7 +1138,7 @@ void A64Backend::compile_compare(IRCompare& opcode) {
     WReg dst_reg = register_allocator.allocate(opcode.dst);
 
     if (lhs_is_constant && rhs_is_constant) {
-        logger.todo("handle when lhs and rhs are both constant");
+        LOG_TODO("handle when lhs and rhs are both constant");
     } else if (!lhs_is_constant && rhs_is_constant) {
         const auto lhs = opcode.lhs.as_variable();
         const auto rhs = opcode.rhs.as_constant();
@@ -1290,7 +1290,7 @@ void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
             assembler.mov(dst_reg, w0);
             break;
         case AccessType::Unaligned:
-            logger.todo("Jit: handle unaligned half read");
+            LOG_TODO("Jit: handle unaligned half read");
             break;
         }
         

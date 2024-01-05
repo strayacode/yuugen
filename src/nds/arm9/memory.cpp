@@ -58,7 +58,7 @@ u8 ARM9Memory::read_byte(u32 addr) {
         
         return 0xff;
     default:
-        logger.warn("ARM9Memory: handle 8-bit read %08x", addr);
+        LOG_WARN("ARM9Memory: handle 8-bit read %08x", addr);
     }
 
     return 0;
@@ -82,7 +82,7 @@ u16 ARM9Memory::read_half(u32 addr) {
         
         return 0xffff;
     default:
-        logger.warn("ARM9Memory: handle 16-bit read %08x", addr);
+        LOG_WARN("ARM9Memory: handle 16-bit read %08x", addr);
     }
 
     return 0;
@@ -108,7 +108,7 @@ u32 ARM9Memory::read_word(u32 addr) {
     case 0x0a:
         return 0;
     default:
-        logger.warn("ARM9Memory: handle 32-bit read %08x", addr);
+        LOG_WARN("ARM9Memory: handle 32-bit read %08x", addr);
     }
 
     return 0;
@@ -123,7 +123,7 @@ void ARM9Memory::write_byte(u32 addr, u8 value) {
         system.video_unit.vram.write<u8>(addr, value);
         break;
     default:
-        logger.warn("ARM9Memory: handle 8-bit write %08x = %02x", addr, value);
+        LOG_WARN("ARM9Memory: handle 8-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -142,7 +142,7 @@ void ARM9Memory::write_half(u32 addr, u16 value) {
         system.video_unit.write_oam<u16>(addr, value);
         break;
     default:
-        logger.warn("ARM9Memory: handle 16-bit write %08x = %02x", addr, value);
+        LOG_WARN("ARM9Memory: handle 16-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -164,7 +164,7 @@ void ARM9Memory::write_word(u32 addr, u32 value) {
         // ignore gba cart writes
         break;
     default:
-        logger.warn("ARM9Memory: handle 32-bit write %08x = %02x", addr, value);
+        LOG_WARN("ARM9Memory: handle 32-bit write %08x = %02x", addr, value);
     }
 }
 

@@ -162,7 +162,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_arith
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_count_leading_zeroes(std::unique_ptr<IROpcode>& opcode_variant) {
-    logger.warn("handle opcode count_leading_zeroes");
+    LOG_WARN("handle opcode count_leading_zeroes");
     auto& opcode = *opcode_variant->as<IRCountLeadingZeroes>();
     return std::nullopt;
 }
@@ -179,7 +179,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add(s
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add_long(std::unique_ptr<IROpcode>& opcode_variant) {
-    logger.warn("handle opcode add_long");
+    LOG_WARN("handle opcode add_long");
     auto& opcode = *opcode_variant->as<IRAddLong>();
     return std::nullopt;
 }
@@ -207,7 +207,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multi
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multiply_long(std::unique_ptr<IROpcode>& opcode_variant) {
-    logger.warn("handle opcode multiply_long");
+    LOG_WARN("handle opcode multiply_long");
     auto& opcode = *opcode_variant->as<IRMultiplyLong>();
     return std::nullopt;
 }

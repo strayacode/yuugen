@@ -41,7 +41,7 @@ void Input::handle_input(InputEvent event, bool pressed) {
         keyinput.r = !pressed;
         break;
     default:
-        logger.error("Input: handle event %d", static_cast<int>(event));
+        LOG_ERROR("Input: handle event %d", static_cast<int>(event));
     }
 }
 

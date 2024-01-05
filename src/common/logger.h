@@ -3,109 +3,66 @@
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
+#include <string_view>
 #include "common/string.h"
 
-#define RED "\x1B[31m"
-#define GREEN "\x1B[32m"
-#define YELLOW "\x1B[33m"
-#define WHITE "\x1B[37m"
-#define RESET "\x1B[0m"
+namespace common {
 
-class Logger {
-public:
-    template <typename... Args>
-    void debug(const char* pattern, Args... args) {
-        if constexpr (enable_logging) {
-            // set_text_colour(TextColour::Green);
-            std::printf("[DEBUG] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
-        }
-    }
-
-    template <typename... Args>
-    void info(const char* pattern, Args... args) {
-        // set_text_colour(TextColour::White);
-        std::printf("[INFO] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
-    }
-
-    template <typename... Args>
-    void warn(const char* pattern, Args... args) {
-        // set_text_colour(TextColour::Yellow);
-        std::printf("[WARN] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
-    }
-
-    template <typename... Args>
-    void error(const char* pattern, Args... args) {
-        // set_text_colour(TextColour::Red);
-        std::printf("[ERROR] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
-        std::exit(0);
-    }
-
-    template <typename... Args>
-    void todo(const char* pattern, Args... args) {
-        // set_text_colour(TextColour::Red);
-        std::printf("[TODO] %s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
-        std::exit(0);
-    }
-
-    template <typename... Args>
-    void print(const char* pattern, Args... args) {
-        if constexpr (enable_logging) {
-            // reset_colour();
-            std::printf("%s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
-        }
-    }
-
-    template <typename... Args>
-    void log(const char* pattern, Args... args) {
-        std::fprintf(fp, "%s", common::format(pattern, std::forward<Args>(args)...).c_str());
-    }
-
-private:
-    struct Time {
-        int hour;
-        int minute;
-        int second;
-    };
-
-    enum class TextColour {
-        Green,
-        Yellow,
-        Red,
-        White,
-    };
-
-    Time get_current_time() {
-        std::time_t time = std::time(nullptr);
-        std::tm* local_time = std::localtime(&time);
-        int hour = local_time->tm_hour;
-        int minute = local_time->tm_min;
-        int second = local_time->tm_sec;
-        return {hour, minute, second};
-    }
-
-    void set_text_colour(TextColour colour) {
-        switch (colour) {
-        case TextColour::Red:
-            std::printf("%s", RED);
-            break;
-        case TextColour::Yellow:
-            std::printf("%s", YELLOW);
-            break;
-        case TextColour::Green:
-            std::printf("%s", GREEN);
-            break;
-        case TextColour::White:
-            std::printf("%s", WHITE);
-        }
-    }
-
-    void reset_colour() {
-        std::printf("%s", RESET);
-    }
-
-    FILE* fp = fopen("yuugen.log", "w");
-
-    static constexpr bool enable_logging = false;
+enum class LogLevel {
+    Info,
+    Debug,
+    Warn,
+    Error,
+    Todo,
+    Log,
 };
 
-extern Logger logger;
+#define RED "\x1B[1;31m"
+#define GREEN "\x1B[0;32m"
+#define YELLOW "\x1B[1;33m"
+#define BLUE "\x1B[0;34m"
+#define WHITE "\x1B[0;37m"
+#define GREY "\x1B[0;37m"
+#define RESET "\x1B[0m"
+#define BOLD "\x1B[0m"
+
+inline const char* get_colour_from_level(LogLevel log_level) {
+    switch (log_level) {
+    case LogLevel::Info:
+        return GREY;
+    case LogLevel::Debug:
+        return GREEN;
+    case LogLevel::Warn:
+        return YELLOW;
+    case LogLevel::Error:
+        return RED;
+    case LogLevel::Todo:
+        return YELLOW;
+    case LogLevel::Log:
+        return RESET;    
+    }
+}
+
+constexpr const char* trim_source_path(std::string_view source) {
+    // only include everything beyond /src
+    const std::string_view match = "/src";
+    const auto index = source.rfind(match) == source.npos ? 0 : source.rfind(match) + match.size();
+    return source.data() + index;
+}
+
+template <typename... Args>
+void log_impl(LogLevel log_level, const char* source, int line, const char* function, const char* pattern, Args... args) {
+    printf("%s%s:%d @ %s: %s\n", get_colour_from_level(log_level), trim_source_path(source), line, function, common::format(pattern, std::forward<Args>(args)...).c_str());
+
+    if (log_level == LogLevel::Error || log_level == LogLevel::Todo) {
+        std::exit(0);
+    }
+}
+
+} // namespace common
+
+#define LOG_INFO(pattern, ...) common::log_impl(common::LogLevel::Info, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
+#define LOG_DEBUG(pattern, ...) common::log_impl(common::LogLevel::Debug, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
+#define LOG_WARN(pattern, ...) common::log_impl(common::LogLevel::Warn, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
+#define LOG_ERROR(pattern, ...) common::log_impl(common::LogLevel::Error, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
+#define LOG_TODO(pattern, ...) common::log_impl(common::LogLevel::Todo, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);

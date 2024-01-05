@@ -14,7 +14,7 @@ template <int N>
 struct Immediate {
     Immediate(u64 value) {
         if (!is_valid(value)) {
-            logger.error("Assembler: immediate %08x doesn't fit into %d bits", value, N);
+            LOG_ERROR("Assembler: immediate %08x doesn't fit into %d bits", value, N);
         }
 
         this->value = value;
@@ -39,7 +39,7 @@ struct BitwiseImmediate {
         }
 
         if (value == 0 || (~value) == 0) {
-            logger.todo("BitwiseImmediate: invalid immediate %016lx", value);
+            LOG_TODO("BitwiseImmediate: invalid immediate %016lx", value);
         }
 
         const int rotation = std::countr_zero(value & (value + 1));
@@ -49,7 +49,7 @@ struct BitwiseImmediate {
         const int ones = std::countr_one(normalised);
 
         if (std::rotr(value, element_size) != value) {
-            logger.todo("BitwiseImmediate: invalid immediate %016lx", value);
+            LOG_TODO("BitwiseImmediate: invalid immediate %016lx", value);
         }
 
         const int s = ((-element_size) << 1) | (ones - 1);
@@ -108,12 +108,12 @@ struct Immediate16 {
             shift++;
         }
 
-        logger.error("value %016lx can't be encoded in an Immediate16", value);
+        LOG_ERROR("value %016lx can't be encoded in an Immediate16", value);
     }
 
     Immediate16(u16 value, u32 shift) {
         if (shift % 16 != 0 || shift > 48) {
-            logger.error("Immediate16: invalid shift %d", shift);
+            LOG_ERROR("Immediate16: invalid shift %d", shift);
         }
 
         this->value = (shift << 12) | value;
@@ -136,7 +136,7 @@ struct AddSubImmediate {
         } else if ((value & 0xfff000) == value) {
             this->value = (1 << 12) | (value >> 12);
         } else {
-            logger.error("value %016lx can't be encoded in an AddSubImmediate", value);
+            LOG_ERROR("value %016lx can't be encoded in an AddSubImmediate", value);
         }
     }
 

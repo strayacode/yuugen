@@ -310,7 +310,7 @@ u8 PPU::calculate_enabled_layers(int x, int line) {
         } else if (dispcnt.enable_win1 && in_window_bounds(x, win1_x1, win1_x2) && in_window_bounds(line, win1_y1, win1_y2)) {
             enabled &= (winin >> 8) & 0xf;
         } else if (dispcnt.enable_objwin) {
-            // logger.warn("PPU: handle object window");
+            // LOG_WARN("PPU: handle object window");
         } else {
             enabled &= winout & 0xf;  
         }

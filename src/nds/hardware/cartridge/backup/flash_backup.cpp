@@ -47,7 +47,7 @@ u8 FlashBackup::transfer(u8 data, u32 write_count) {
             address |= data << ((3 - write_count) * 8);
         } else {
             if (address >= size) {
-                logger.error("FlashBackup: address is out of range");
+                LOG_ERROR("FlashBackup: address is out of range");
             }
 
             return backup[address++];
@@ -63,7 +63,7 @@ u8 FlashBackup::transfer(u8 data, u32 write_count) {
             address |= (data << ((3 - write_count) * 8));
         } else {
             if (address >= size) {
-                logger.error("FlashBackup: address is out of range");
+                LOG_ERROR("FlashBackup: address is out of range");
             }
 
             backup[address++] = data;
@@ -71,7 +71,7 @@ u8 FlashBackup::transfer(u8 data, u32 write_count) {
 
         break;
     default:
-        logger.todo("FlashBackup: handle command %02x", command);
+        LOG_TODO("FlashBackup: handle command %02x", command);
         break;
     }
 

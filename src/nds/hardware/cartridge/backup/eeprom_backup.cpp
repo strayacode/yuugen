@@ -44,7 +44,7 @@ u8 EEPROMBackup::transfer(u8 data, u32 write_count) {
             address |= data << ((size == 0x20000 ? 3 : 2 - write_count) * 8);
         } else {
             if (address >= size) {
-                logger.error("EEPROMBackup: address is out of range");
+                LOG_ERROR("EEPROMBackup: address is out of range");
             }
 
             backup[address] = data;
@@ -57,7 +57,7 @@ u8 EEPROMBackup::transfer(u8 data, u32 write_count) {
             address |= data << ((size == 0x20000 ? 3 : 2 - write_count) * 8);
         } else {
             if (address >= size) {
-                logger.error("EEPROMBackup: address is out of range");
+                LOG_ERROR("EEPROMBackup: address is out of range");
             }
 
             return backup[address++];
@@ -66,7 +66,7 @@ u8 EEPROMBackup::transfer(u8 data, u32 write_count) {
     case 0x05:
         return (write_in_progress ? 1 : 0) | (write_enable_latch ? (1 << 1) : 0);
     default:
-        logger.error("EEPROMBackup: handle command %02x", command);
+        LOG_ERROR("EEPROMBackup: handle command %02x", command);
     }
 
     return 0;

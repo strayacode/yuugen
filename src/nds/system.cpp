@@ -133,10 +133,10 @@ void System::write_haltcnt(u8 value) {
         arm7.get_cpu().update_halted(true);
         break;
     case 0x3:
-        logger.warn("System: handle sleep mode");
+        LOG_WARN("handle sleep mode");
         break;
     default:
-        logger.todo("System: unimplemented power down mode");
+        LOG_TODO("unimplemented power down mode");
     }
 }
 
@@ -155,7 +155,7 @@ void System::direct_boot() {
     arm7.direct_boot();
     arm9.direct_boot();
     spi.direct_boot();
-    logger.debug("System: direct booted successfully");
+    LOG_DEBUG("direct booted successfully");
 }
 
 void System::firmware_boot() {

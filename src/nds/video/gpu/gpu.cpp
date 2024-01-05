@@ -361,7 +361,7 @@ void GPU::execute_command() {
                 dequeue_entry();
             }
 
-            logger.warn("GPU: handle command %02x", command);
+            LOG_WARN("GPU: handle command %02x", command);
             break;
         }
 
@@ -414,7 +414,7 @@ void GPU::submit_vertex() {
 
     // TODO: here we should transform texture coordinates if vertex source is used
     if (current_polygon.texture_attributes.parameters.transformation_mode == 3) {
-        logger.todo("GPU: use vertex source");
+        LOG_TODO("GPU: use vertex source");
     }
 
     switch (polygon_type) {

@@ -27,13 +27,13 @@ Translator::BlockStatus Translator::arm_branch_exchange() {
 
 Translator::BlockStatus Translator::arm_count_leading_zeroes() {
     if (jit.arch == Arch::ARMv4) {
-        logger.todo("Translator: handle arm_count_leading_zeroes on armv4");
+        LOG_TODO("Translator: handle arm_count_leading_zeroes on armv4");
     }
 
     auto opcode = ARMCountLeadingZeroes::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("handle pc in arm_count_leading_zeroes");
+        LOG_TODO("handle pc in arm_count_leading_zeroes");
     }
 
     auto src = ir.load_gpr(opcode.rm);
@@ -57,7 +57,7 @@ Translator::BlockStatus Translator::arm_branch_link() {
 
 Translator::BlockStatus Translator::arm_branch_link_exchange() {
     if (jit.arch == Arch::ARMv4) {
-        logger.todo("Translator: arm_branch_link_exchange executed by arm7");
+        LOG_TODO("Translator: arm_branch_link_exchange executed by arm7");
     }
 
     auto opcode = ARMBranchLinkExchange::decode(instruction);
@@ -70,7 +70,7 @@ Translator::BlockStatus Translator::arm_branch_link_exchange() {
 
 Translator::BlockStatus Translator::arm_branch_link_exchange_register() {
     if (jit.arch == Arch::ARMv4) {
-        logger.todo("Translator: arm_branch_link_exchange_register executed by arm7");
+        LOG_TODO("Translator: arm_branch_link_exchange_register executed by arm7");
     }
 
     auto opcode = ARMBranchExchange::decode(instruction);
@@ -85,7 +85,7 @@ Translator::BlockStatus Translator::arm_single_data_swap() {
     auto opcode = ARMSingleDataSwap::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("pc write in arm_single_data_swap");
+        LOG_TODO("pc write in arm_single_data_swap");
     }
 
     auto address = ir.load_gpr(opcode.rn);
@@ -109,7 +109,7 @@ Translator::BlockStatus Translator::arm_multiply() {
     auto opcode = ARMMultiply::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("handle rd == 15 in arm_multiply");
+        LOG_TODO("handle rd == 15 in arm_multiply");
     }
 
     auto op1 = ir.load_gpr(opcode.rm);
@@ -133,7 +133,7 @@ Translator::BlockStatus Translator::arm_multiply() {
 }
 
 Translator::BlockStatus Translator::arm_saturating_add_subtract() {
-    logger.todo("Translator: handle arm_saturating_add_subtract");
+    LOG_TODO("Translator: handle arm_saturating_add_subtract");
     return BlockStatus::Break;
 }
 
@@ -165,7 +165,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
     auto opcode = ARMHalfwordDataTransfer::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("Translator: handle rd == 15 in arm_halfword_data_transfer");
+        LOG_TODO("Translator: handle rd == 15 in arm_halfword_data_transfer");
     }
 
     IRValue op2;
@@ -203,7 +203,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
                 ir.store_gpr(opcode.rd, dst);
             }
         } else if (jit.arch == Arch::ARMv5) {
-            logger.todo("Translator: handle strd");
+            LOG_TODO("Translator: handle strd");
         }
     } else if (opcode.half) {
         if (opcode.load) {
@@ -226,7 +226,7 @@ Translator::BlockStatus Translator::arm_halfword_data_transfer() {
             auto dst = ir.sign_extend_byte(ir.memory_read(address, AccessSize::Byte, AccessType::Aligned));
             ir.store_gpr(opcode.rd, dst);
         } else if (jit.arch == Arch::ARMv5) {
-            logger.todo("Translator: handle ldrd");
+            LOG_TODO("Translator: handle ldrd");
         }
     }
 
@@ -247,7 +247,7 @@ Translator::BlockStatus Translator::arm_status_load() {
     auto opcode = ARMStatusLoad::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("pc write in arm_status_load");
+        LOG_TODO("pc write in arm_status_load");
     }
 
     if (opcode.spsr) {
@@ -414,7 +414,7 @@ Translator::BlockStatus Translator::arm_block_data_transfer() {
     } 
 
     if (user_switch_mode && opcode.load && opcode.r15_in_rlist) {
-        logger.todo("Translator: handle user switch mode r15");
+        LOG_TODO("Translator: handle user switch mode r15");
     }
 
     if (opcode.load && opcode.r15_in_rlist) {
@@ -695,13 +695,13 @@ Translator::BlockStatus Translator::arm_coprocessor_register_transfer() {
 
     // TODO: handle this in a nicer way
     if (jit.arch == Arch::ARMv4 && opcode.cp == 14) {
-        logger.todo("Translator: mrc cp14 on arm7");
+        LOG_TODO("Translator: mrc cp14 on arm7");
     } else if ((jit.arch == Arch::ARMv4 && opcode.cp == 15) || (jit.arch == Arch::ARMv5 && opcode.cp == 14)) {
-        logger.todo("Translator: undefined exception arm_coprocessor_register_transfer");
+        LOG_TODO("Translator: undefined exception arm_coprocessor_register_transfer");
     }
 
     if (opcode.rd == 15) {
-        logger.error("Interpreter: handle rd == 15 in arm_coprocessor_register_transfer");
+        LOG_ERROR("Interpreter: handle rd == 15 in arm_coprocessor_register_transfer");
     }
 
     if (opcode.load) {
@@ -738,18 +738,18 @@ Translator::BlockStatus Translator::arm_software_interrupt() {
 }
 
 Translator::BlockStatus Translator::arm_signed_multiply_accumulate_long() {
-    logger.todo("Translator: handle arm_signed_multiply_accumulate_long");
+    LOG_TODO("Translator: handle arm_signed_multiply_accumulate_long");
     return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_signed_multiply_word() {
-    logger.todo("Translator: handle arm_signed_multiply_word");
+    LOG_TODO("Translator: handle arm_signed_multiply_word");
     return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::arm_signed_multiply() {
     if (jit.arch == Arch::ARMv4) {
-        logger.todo("Translator: handle armv4 arm_signed_multiply");
+        LOG_TODO("Translator: handle armv4 arm_signed_multiply");
     }
 
     auto opcode = ARMSignedMultiply::decode(instruction);
@@ -789,7 +789,7 @@ Translator::BlockStatus Translator::arm_signed_multiply() {
 }
 
 Translator::BlockStatus Translator::arm_breakpoint() {
-    logger.todo("Translator: handle arm_breakpoint");
+    LOG_TODO("Translator: handle arm_breakpoint");
     return BlockStatus::Break;
 }
 

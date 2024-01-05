@@ -91,7 +91,7 @@ u8 RTC::interpret_read_command(u8 value) {
         break;
     }
     default:
-        logger.error("RTC: handle read command %02x", type);
+        LOG_ERROR("RTC: handle read command %02x", type);
     }
 
     return value;
@@ -117,7 +117,7 @@ void RTC::interpret_write_command(u8 value) {
         // TODO: implement alarm time 2
         break;
     default:
-        logger.error("RTC: handle write command %02x", type);
+        LOG_ERROR("RTC: handle write command %02x", type);
     }
 }
 

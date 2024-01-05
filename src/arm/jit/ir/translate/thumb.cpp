@@ -19,7 +19,7 @@ Translator::BlockStatus Translator::thumb_alu_immediate() {
     }
     
     if (opcode.rd == 15) {
-        logger.todo("handle pc in thumb_alu_immediate");
+        LOG_TODO("handle pc in thumb_alu_immediate");
     }
 
     switch (opcode.opcode) {
@@ -71,7 +71,7 @@ Translator::BlockStatus Translator::thumb_branch_link_setup() {
 }
 
 Translator::BlockStatus Translator::thumb_branch_link_exchange_offset() {
-    logger.todo("Translator: handle thumb_branch_link_exchange_offset");
+    LOG_TODO("Translator: handle thumb_branch_link_exchange_offset");
     return BlockStatus::Continue;
 }
 
@@ -145,7 +145,7 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
     auto opcode = ThumbDataProcessingRegister::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("pc in thumb_data_processing_register");
+        LOG_TODO("pc in thumb_data_processing_register");
     }
 
     IRVariable result;
@@ -305,7 +305,7 @@ Translator::BlockStatus Translator::thumb_special_data_processing() {
 
 Translator::BlockStatus Translator::thumb_branch_link_exchange() {
     if (jit.arch == Arch::ARMv4) {
-        logger.todo("Translator: handle thumb_branch_link_exchange on armv4");
+        LOG_TODO("Translator: handle thumb_branch_link_exchange on armv4");
     }
 
     auto opcode = ThumbBranchLinkExchange::decode(instruction);
@@ -334,14 +334,14 @@ Translator::BlockStatus Translator::thumb_load_store_register_offset() {
         break;
     case ThumbLoadStoreRegisterOffset::Opcode::LDR:
         if (opcode.rd == 15) {
-            logger.todo("handle pc in thumb_load_store_register_offset");
+            LOG_TODO("handle pc in thumb_load_store_register_offset");
         }
 
         ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Word, AccessType::Unaligned));
         break;
     case ThumbLoadStoreRegisterOffset::Opcode::LDRB:
         if (opcode.rd == 15) {
-            logger.todo("handle pc in thumb_load_store_register_offset");
+            LOG_TODO("handle pc in thumb_load_store_register_offset");
         }
 
         ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Byte, AccessType::Aligned));
@@ -356,7 +356,7 @@ Translator::BlockStatus Translator::thumb_load_store_signed() {
     auto opcode = ThumbLoadStoreSigned::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("pc in thumb_load_store_signed");
+        LOG_TODO("pc in thumb_load_store_signed");
     }
 
     auto address = ir.add(ir.load_gpr(opcode.rn), ir.load_gpr(opcode.rm));
@@ -406,7 +406,7 @@ Translator::BlockStatus Translator::thumb_load_pc() {
     auto opcode = ThumbLoadPC::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("pc write in thumb_load_pc");
+        LOG_TODO("pc write in thumb_load_pc");
     }
 
     auto address = ir.add(ir.bitwise_and(ir.load_gpr(GPR::PC), ir.constant(~0x2)), ir.constant(opcode.imm));
@@ -420,7 +420,7 @@ Translator::BlockStatus Translator::thumb_load_store_sp_relative() {
     auto address = ir.add(ir.load_gpr(GPR::SP), ir.constant(opcode.imm << 2));
     if (opcode.load) {
         if (opcode.rd == 15) {
-            logger.todo("pc in thumb_load_store_sp_relative");
+            LOG_TODO("pc in thumb_load_store_sp_relative");
         }
 
         ir.store_gpr(opcode.rd, ir.memory_read(address, AccessSize::Word, AccessType::Unaligned));
@@ -436,7 +436,7 @@ Translator::BlockStatus Translator::thumb_load_store_halfword() {
     auto opcode = ThumbLoadStoreHalfword::decode(instruction);
 
     if (opcode.load && opcode.rd == 15) {
-        logger.todo("handle r15 in thumb_load_store_halfword");
+        LOG_TODO("handle r15 in thumb_load_store_halfword");
     }
 
     auto address = ir.add(ir.load_gpr(opcode.rn), ir.constant(opcode.imm << 1));
@@ -463,7 +463,7 @@ Translator::BlockStatus Translator::thumb_add_subtract() {
     auto opcode = ThumbAddSubtract::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("pc in thumb_add_subtract");
+        LOG_TODO("pc in thumb_add_subtract");
     }
 
     auto op1 = ir.load_gpr(opcode.rs);
@@ -495,7 +495,7 @@ Translator::BlockStatus Translator::thumb_shift_immediate() {
     auto opcode = ThumbShiftImmediate::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("handle r15 in thumb_shift_immediate");
+        LOG_TODO("handle r15 in thumb_shift_immediate");
     }
 
     auto src = ir.load_gpr(opcode.rs);
@@ -615,7 +615,7 @@ Translator::BlockStatus Translator::thumb_load_store_immediate() {
         break;
     case ThumbLoadStoreImmediate::Opcode::LDR:
         if (opcode.rd == 15) {
-            logger.todo("handle pc in thumb_load_store_immediate");
+            LOG_TODO("handle pc in thumb_load_store_immediate");
         }
 
         address = ir.add(address, ir.constant(opcode.imm << 2));
@@ -627,7 +627,7 @@ Translator::BlockStatus Translator::thumb_load_store_immediate() {
         break;
     case ThumbLoadStoreImmediate::Opcode::LDRB:
         if (opcode.rd == 15) {
-            logger.todo("handle pc in thumb_load_store_immediate");
+            LOG_TODO("handle pc in thumb_load_store_immediate");
         }
 
         address = ir.add(address, ir.constant(opcode.imm));
@@ -643,7 +643,7 @@ Translator::BlockStatus Translator::thumb_add_sp_pc() {
     auto opcode = ThumbAddSPPC::decode(instruction);
 
     if (opcode.rd == 15) {
-        logger.todo("handle pc in thumb_add_sp_pc");
+        LOG_TODO("handle pc in thumb_add_sp_pc");
     }
 
     if (opcode.sp) {

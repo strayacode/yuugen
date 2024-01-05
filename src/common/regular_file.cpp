@@ -7,7 +7,7 @@ namespace common {
 void RegularFile::load(const std::string& path) {
     std::ifstream file(path, std::ios::binary);
     if (!file) {
-        logger.error("RegularFile: %s not found", path.c_str());
+        LOG_ERROR("%s not found", path.c_str());
     }
 
     std::streampos pos;
@@ -16,7 +16,7 @@ void RegularFile::load(const std::string& path) {
     file.seekg(0, std::ios::beg);
     data.reserve(size);
     file.read(reinterpret_cast<char*>(data.data()), size);
-    logger.debug("RegularFile: %s loaded successfully with size %d bytes", path.c_str(), size);
+    LOG_DEBUG("%s loaded successfully with size %d bytes", path.c_str(), size);
 }
 
 u8* RegularFile::get_pointer(u32 offset) {

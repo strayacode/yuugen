@@ -53,7 +53,7 @@ u32 SPU::read_channel(u32 addr) {
     case 0x0:
         return channels[id].control.data;
     default:
-        logger.todo("SPU: unhandled register %02x", addr & 0xf);
+        LOG_TODO("unhandled register %02x", addr & 0xf);
     }
 
     return 0;
@@ -63,7 +63,7 @@ void SPU::write_sound_capture_control(int id, u8 value) {
     sound_capture_channels[id].control.data = value;
 
     if (sound_capture_channels[id].control.start) {
-        logger.warn("SPU: handle sound capture");
+        LOG_WARN("handle sound capture");
     }
 }
 
@@ -103,7 +103,7 @@ void SPU::write_channel(u32 addr, u32 value, u32 mask) {
         write_channel_length(id, value, mask);
         break;
     default:
-        logger.todo("SPU: unhandled register %02x", addr & 0xf);
+        LOG_TODO("unhandled register %02x", addr & 0xf);
     }
 }
 
@@ -172,7 +172,7 @@ void SPU::start_channel(int id) {
         channel.internal_source += 4;
         break;
     case AudioFormat::Noise:
-        logger.warn("SPU: handle noise playback");
+        LOG_WARN("handle noise playback");
     }
 }
 
@@ -203,7 +203,7 @@ void SPU::play_sample() {
             data = channel.adpcm_value;
             break;
         case AudioFormat::Noise:
-            logger.warn("SPU: handle noise playback");
+            LOG_WARN("handle noise playback");
         }
 
         // increment the timer
@@ -223,7 +223,7 @@ void SPU::play_sample() {
                 next_sample_adpcm(i);
                 break;
             case AudioFormat::Noise:
-                logger.warn("SPU: handle noise playback");
+                LOG_WARN("handle noise playback");
             }
 
             if (channel.internal_source == (channel.source + (channel.loopstart + channel.length) * 4)) {

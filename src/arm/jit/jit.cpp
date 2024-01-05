@@ -25,7 +25,7 @@ Jit::Jit(Arch arch, Memory& memory, Coprocessor& coprocessor, Config config) : a
         backend = std::make_unique<A64Backend>(*this);
         break;
     default:
-        logger.todo("Jit: unsupported jit backend");
+        LOG_TODO("Jit: unsupported jit backend");
     }
 
     if (config.optimisations) {

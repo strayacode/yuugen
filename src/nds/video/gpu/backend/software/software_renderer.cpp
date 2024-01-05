@@ -80,6 +80,9 @@ void SoftwareRenderer::render_polygon_scanline(Polygon& polygon, int y) {
     Slope left_slope{*left_vertex, *next_left_vertex};
     Slope right_slope{*right_vertex, *next_right_vertex};
 
+    Interpolator<9> slope_interpolator;
+    Interpolator<8> span_interpolator;
+
     s32 span_start = left_slope.span_start(y);
     s32 span_end = right_slope.span_end(y);
 
@@ -118,9 +121,9 @@ void SoftwareRenderer::render_polygon_scanline(Polygon& polygon, int y) {
             u32 depth = 0;
 
             if (w_buffering) {
-                depth = scanline_interpolator.interpolate(w0, w1, x, span_start, span_end, w0, w1);
+                depth = span_interpolator.interpolate(w0, w1, x, span_start, span_end, w0, w1);
             } else {
-                depth = scanline_interpolator.interpolate_linear(z0, z1, x, span_start, span_end);
+                depth = span_interpolator.interpolate_linear(z0, z1, x, span_start, span_end);
             }
 
             if (!depth_test(depth_buffer[addr], depth, polygon.polygon_attributes.depth_test_equal)) {
@@ -128,11 +131,11 @@ void SoftwareRenderer::render_polygon_scanline(Polygon& polygon, int y) {
             }
 
             // calculate colour value for scanline at x
-            Colour c = scanline_interpolator.interpolate_colour(c0, c1, x, span_start, span_end, w0, w1);
+            Colour c = span_interpolator.interpolate_colour(c0, c1, x, span_start, span_end, w0, w1);
 
             // calculate texture coords for scanline at x
-            s16 s = scanline_interpolator.interpolate(s0, s1, x, span_start, span_end, w0, w1);
-            s16 t = scanline_interpolator.interpolate(t0, t1, x, span_start, span_end, w0, w1);
+            s16 s = span_interpolator.interpolate(s0, s1, x, span_start, span_end, w0, w1);
+            s16 t = span_interpolator.interpolate(t0, t1, x, span_start, span_end, w0, w1);
 
             if (disp3dcnt.texture_mapping) {
                 framebuffer[addr] = decode_texture(s, t, polygon);

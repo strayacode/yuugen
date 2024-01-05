@@ -3,7 +3,7 @@
 namespace gba {
 
 void PPU::render_affine(int id) {
-    logger.warn("render_affine %d", id);
+    LOG_WARN("render_affine %d", id);
 }
 
 } // namespace gba

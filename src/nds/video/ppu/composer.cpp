@@ -71,8 +71,6 @@ void PPU::compose_pixel_with_special_effects(int x, int line) {
 
     // check if an object pixel can replace one of the background pixels
     // TODO: handle object window later
-    // TODO: if object is semi transparent, force it to be used as the alpha blending 1st target
-    // TODO: if object is semi transparent, we also force alpha blending no matter the bldcnt settings
     if (dispcnt.enable_obj && obj_buffer[x].colour != colour_transparent) {
         if (obj_buffer[x].priority <= priorities[0]) {
             targets[1] = targets[0];

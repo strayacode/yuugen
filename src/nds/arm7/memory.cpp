@@ -55,7 +55,7 @@ u8 ARM7Memory::read_byte(u32 addr) {
         
         return 0xff;
     default:
-        logger.warn("ARM7Memory: handle 8-bit read %08x", addr);
+        LOG_WARN("ARM7Memory: handle 8-bit read %08x", addr);
     }
 
     return 0;
@@ -75,7 +75,7 @@ u16 ARM7Memory::read_half(u32 addr) {
         
         return 0xffff;
     default:
-        logger.warn("ARM7Memory: handle 16-bit read %08x", addr);
+        LOG_WARN("ARM7Memory: handle 16-bit read %08x", addr);
     }
 
     return 0;
@@ -95,7 +95,7 @@ u32 ARM7Memory::read_word(u32 addr) {
         
         return 0xffffffff;
     default:
-        logger.warn("ARM7Memory: handle 32-bit read %08x", addr);
+        LOG_WARN("ARM7Memory: handle 32-bit read %08x", addr);
     }
 
     return 0;
@@ -110,7 +110,7 @@ void ARM7Memory::write_byte(u32 addr, u8 value) {
         system.video_unit.vram.arm7_vram.write<u8>(addr, value);
         break;
     default:
-        logger.warn("ARM7Memory: handle 8-bit write %08x = %02x", addr, value);
+        LOG_WARN("ARM7Memory: handle 8-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -123,7 +123,7 @@ void ARM7Memory::write_half(u32 addr, u16 value) {
         system.video_unit.vram.arm7_vram.write<u16>(addr, value);
         break;
     default:
-        logger.warn("ARM7Memory: handle 16-bit write %08x = %02x", addr, value);
+        LOG_WARN("ARM7Memory: handle 16-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -139,7 +139,7 @@ void ARM7Memory::write_word(u32 addr, u32 value) {
         // ignore gba cart writes
         break;
     default:
-        logger.warn("ARM7Memory: handle 32-bit write %08x = %02x", addr, value);
+        LOG_WARN("ARM7Memory: handle 32-bit write %08x = %02x", addr, value);
     }
 }
 

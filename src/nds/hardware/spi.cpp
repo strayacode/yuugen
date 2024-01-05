@@ -59,7 +59,7 @@ void SPI::transfer(u8 value) {
             touchscreen_transfer(value);
             break;
         case Device::Reserved:
-            logger.error("SPI: handle reserved transfer");
+            LOG_ERROR("handle reserved transfer");
             break;
         }
     }
@@ -77,7 +77,7 @@ void SPI::transfer(u8 value) {
 
 void SPI::firmware_transfer(u8 value) {
     if (spicnt.transfer_halfwords) {
-        logger.error("SPI: handle bugged 16-bit transfer");
+        LOG_ERROR("handle bugged 16-bit transfer");
     }
 
     switch (command) {
@@ -86,7 +86,7 @@ void SPI::firmware_transfer(u8 value) {
             address |= value << ((3 - write_count) * 8);
         } else {
             if (address >= 0x40000) {
-                logger.error("SPI: illegal firmware address");
+                LOG_ERROR("illegal firmware address");
             }
 
             spidata = *firmware.get_pointer(address);
@@ -98,7 +98,7 @@ void SPI::firmware_transfer(u8 value) {
         spidata = write_in_progress | (write_enable_latch << 1);
         break;
     default:
-        logger.error("SPI: unimplemented firmware command %02x", command);
+        LOG_ERROR("unimplemented firmware command %02x", command);
     }
 }
 
@@ -143,7 +143,7 @@ void SPI::load_calibration_points() {
     adc_y2 = common::read<u16>(firmware.get_pointer(user_settings_offset + 0x60));
     scr_x2 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x62));
     scr_y2 = common::read<u8>(firmware.get_pointer(user_settings_offset + 0x63));
-    logger.debug("SPI: touchscreen calibration points loaded successfully");
+    LOG_DEBUG("touchscreen calibration points loaded successfully");
 }
 
 } // namespace nds

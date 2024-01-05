@@ -18,7 +18,7 @@ class MemoryMappedFile {
 public:
     MemoryMappedFile() {
 #ifdef _WIN32
-        logger.error("yuugen hasn't been used/tested for windows yet");
+        LOG_ERROR("yuugen hasn't been used/tested for windows yet");
 #endif
     }
 
@@ -37,7 +37,7 @@ public:
 
     u8* get_pointer(u32 offset) {
         if (buffer == nullptr) {
-            logger.error("file is not mapped yet!");
+            LOG_ERROR("file is not mapped yet!");
         }
 
         return buffer + offset;

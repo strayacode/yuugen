@@ -200,7 +200,7 @@ void Interpreter::arm_saturating_add_subtract() {
     u32 rhs = state.gpr[opcode.rn];
 
     if (opcode.rd == 15) {
-        logger.todo("Interpreter: handle rd == 15 in arm_saturating_add_subtract");
+        LOG_TODO("Interpreter: handle rd == 15 in arm_saturating_add_subtract");
     }
 
     if (opcode.double_rhs) {
@@ -359,7 +359,7 @@ void Interpreter::arm_branch_link() {
 
 void Interpreter::arm_branch_link_exchange() {
     if (arch == Arch::ARMv4) {
-        logger.warn("Interpreter: arm_branch_link_exchange executed by arm7");
+        LOG_WARN("Interpreter: arm_branch_link_exchange executed by arm7");
         return;
     }
 
@@ -372,7 +372,7 @@ void Interpreter::arm_branch_link_exchange() {
 
 void Interpreter::arm_branch_link_exchange_register() {
     if (arch == Arch::ARMv4) {
-        logger.warn("Interpreter: arm_branch_link_exchange_register executed by arm7");
+        LOG_WARN("Interpreter: arm_branch_link_exchange_register executed by arm7");
         return;
     }
 
@@ -399,14 +399,14 @@ void Interpreter::arm_software_interrupt() {
 }
 
 void Interpreter::arm_breakpoint() {
-    logger.todo("Interpreter: implement arm_breakpoint");
+    LOG_TODO("Interpreter: implement arm_breakpoint");
 }
 
 void Interpreter::arm_halfword_data_transfer() {
     auto opcode = ARMHalfwordDataTransfer::decode(instruction);
     
     if (opcode.rd == 15) {
-        logger.error("Interpreter: handle rd == 15 in arm_halfword_data_transfer");
+        LOG_ERROR("Interpreter: handle rd == 15 in arm_halfword_data_transfer");
     }
 
     u32 op2 = 0;
@@ -437,7 +437,7 @@ void Interpreter::arm_halfword_data_transfer() {
             }
         } else if (arch == Arch::ARMv5) {
             if (opcode.rd & 0x1) {
-                logger.error("Interpreter: undefined strd exception");
+                LOG_ERROR("Interpreter: undefined strd exception");
             }
 
             write_word(addr, state.gpr[opcode.rd]);
@@ -454,7 +454,7 @@ void Interpreter::arm_halfword_data_transfer() {
             state.gpr[opcode.rd] = common::sign_extend<s32, 8>(read_byte(addr));
         } else if (arch == Arch::ARMv5) {
             if (opcode.rd & 0x1) {
-                logger.error("Interpreter: undefined ldrd exception");
+                LOG_ERROR("Interpreter: undefined ldrd exception");
             }
 
             state.gpr[opcode.rd] = read_word(addr);
@@ -612,7 +612,7 @@ void Interpreter::arm_block_data_transfer() {
     if (user_switch_mode) {
         switch_mode(old_mode);
         if (opcode.load && opcode.r15_in_rlist) {
-            logger.todo("Interpreter: handle loading into r15 in user mode");
+            LOG_TODO("Interpreter: handle loading into r15 in user mode");
         }
     }
 
@@ -688,7 +688,7 @@ void Interpreter::arm_coprocessor_register_transfer() {
 
     // TODO: handle this in a nicer way
     if (arch == Arch::ARMv4 && opcode.cp == 14) {
-        logger.warn("Interpreter: mrc cp14 on arm7");
+        LOG_WARN("Interpreter: mrc cp14 on arm7");
         return;
     } else if ((arch == Arch::ARMv4 && opcode.cp == 15) || (arch == Arch::ARMv5 && opcode.cp == 14)) {
         undefined_exception();
@@ -696,7 +696,7 @@ void Interpreter::arm_coprocessor_register_transfer() {
     }
 
     if (opcode.rd == 15) {
-        logger.error("Interpreter: handle rd == 15 in arm_coprocessor_register_transfer");
+        LOG_ERROR("Interpreter: handle rd == 15 in arm_coprocessor_register_transfer");
     }
 
     if (opcode.load) {

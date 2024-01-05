@@ -1,6 +1,6 @@
 add_library(common
     types.h
-    logger.h logger.cpp
+    logger.h
     bits.h
     ring_buffer.h
     memory_mapped_file.h

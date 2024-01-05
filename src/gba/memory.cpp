@@ -38,7 +38,7 @@ u8 Memory::read_byte(u32 addr) {
     case 0x07:
         return system.ppu.read_oam<u8>(addr);
     default:
-        logger.warn("Memory: handle 8-bit read %08x", addr);
+        LOG_WARN("Memory: handle 8-bit read %08x", addr);
     }
 
     return 0;
@@ -55,7 +55,7 @@ u16 Memory::read_half(u32 addr) {
     case 0x07:
         return system.ppu.read_oam<u16>(addr);
     default:
-        logger.warn("Memory: handle 16-bit read %08x", addr);
+        LOG_WARN("Memory: handle 16-bit read %08x", addr);
     }
 
     return 0;
@@ -72,7 +72,7 @@ u32 Memory::read_word(u32 addr) {
     case 0x07:
         return system.ppu.read_oam<u32>(addr);
     default:
-        logger.warn("Memory: handle 32-bit read %08x", addr);
+        LOG_WARN("Memory: handle 32-bit read %08x", addr);
     }
 
     return 0;
@@ -93,7 +93,7 @@ void Memory::write_byte(u32 addr, u8 value) {
         // 8-bit oam writes are ignored
         break;
     default:
-        logger.warn("Memory: handle 8-bit write %08x = %02x", addr, value);
+        LOG_WARN("Memory: handle 8-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -112,7 +112,7 @@ void Memory::write_half(u32 addr, u16 value) {
         system.ppu.write_oam<u16>(addr, value);
         break;
     default:
-        logger.warn("Memory: handle 16-bit write %08x = %02x", addr, value);
+        LOG_WARN("Memory: handle 16-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -131,7 +131,7 @@ void Memory::write_word(u32 addr, u32 value) {
         system.ppu.write_oam<u32>(addr, value);
         break;
     default:
-        logger.warn("Memory: handle 32-bit write %08x = %02x", addr, value);
+        LOG_WARN("Memory: handle 32-bit write %08x = %02x", addr, value);
     }
 }
 
@@ -144,7 +144,7 @@ void Memory::load_bios(const std::string& path) {
 void Memory::write_haltcnt(u8 value) {
     haltcnt = value & 0xc0;
     if ((haltcnt >> 7) & 0x1) {
-        logger.todo("haltcnt stop");
+        LOG_TODO("haltcnt stop");
     } else {
         system.cpu->update_halted(true);
     }
@@ -154,7 +154,7 @@ void Memory::write_waitcnt(u16 value, u32 mask) {
     waitcnt.data = (waitcnt.data & ~mask) | (value & mask);
 
     if (waitcnt.prefetch_buffer) {
-        logger.warn("Memory: handle prefetch buffer");
+        LOG_WARN("Memory: handle prefetch buffer");
     }
 }
 

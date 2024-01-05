@@ -55,7 +55,7 @@ void PPU::render_objects(int line) {
         y += half_height;
 
         if (mosaic) {
-            logger.error("PPU: handle object mosaic");
+            LOG_ERROR("PPU: handle object mosaic");
         }
 
         if (affine) {
@@ -85,11 +85,11 @@ void PPU::render_objects(int line) {
         }
 
         if (mode == ObjectMode::SemiTransparent) {
-            logger.warn("PPU: handle semi transparent objects");
+            LOG_WARN("PPU: handle semi transparent objects");
         }
 
         if (mode == ObjectMode::ObjectWindow) {
-            logger.error("PPU: handle object window mode");
+            LOG_ERROR("PPU: handle object window mode");
         }
 
         int local_y = line - y;
@@ -128,9 +128,9 @@ void PPU::render_objects(int line) {
 
             if (is_8bpp) {
                 if (dispcnt.obj_mapping) {
-                    logger.todo("handle 8bpp 1d mapping");
+                    LOG_TODO("handle 8bpp 1d mapping");
                 } else {
-                    logger.todo("handle 8bpp 2d mapping");
+                    LOG_TODO("handle 8bpp 2d mapping");
                 }
 
                 tile_addr += tile_x * 64;

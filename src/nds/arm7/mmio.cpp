@@ -115,7 +115,7 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x04000130):
         if constexpr (mask & 0xffff) value |= system.input.read_keyinput();
-        if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle keycnt read");
+        if constexpr (mask & 0xffff0000) LOG_ERROR("ARM7Memory: handle keycnt read");
         return value;
     case MMIO(0x04000134):
         if constexpr (mask & 0xffff) value |= system.read_rcnt();
@@ -144,7 +144,7 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
         return value;
     case MMIO(0x04000204):
         if constexpr (mask & 0xffff) value |= system.read_exmemstat();
-        if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle wifiwaitcnt reads");
+        if constexpr (mask & 0xffff0000) LOG_ERROR("ARM7Memory: handle wifiwaitcnt reads");
         return value;
     case MMIO(0x04000208):
         return system.arm7.get_irq().read_ime();
@@ -181,7 +181,7 @@ u32 ARM7Memory::mmio_read_word(u32 addr) {
             return 0;
         }
 
-        logger.warn("ARM7Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
+        LOG_WARN("ARM7Memory: unmapped mmio %d-bit read %08x", get_access_size(mask), addr + get_access_offset(mask));
         break;
     }
 
@@ -193,7 +193,7 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
     switch (MMIO(addr)) {
     case MMIO(0x04000004):
         if constexpr (mask & 0xffff) system.video_unit.write_dispstat(arm::Arch::ARMv4, value, mask);
-        if constexpr (mask & 0xffff0000) logger.error("ARM7Memory: handle vcount writes");
+        if constexpr (mask & 0xffff0000) LOG_ERROR("ARM7Memory: handle vcount writes");
         break;
     case MMIO(0x040000b0):
         system.dma7.write_source(0, value, mask);
@@ -350,7 +350,7 @@ void ARM7Memory::mmio_write_word(u32 addr, u32 value) {
             break;
         }
 
-        logger.warn("ARM7Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
+        LOG_WARN("ARM7Memory: unmapped mmio %d-bit write %08x = %08x", get_access_size(mask), addr + get_access_offset(mask), (value & mask) >> (get_access_offset(mask) * 8));
         break;
     }
 }

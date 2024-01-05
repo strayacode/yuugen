@@ -58,7 +58,7 @@ WReg RegisterAllocator::allocate(IRVariable variable) {
         }
     }
 
-    logger.todo("all registers are being used!");
+    LOG_TODO("all registers are being used!");
     return WReg{0xffffffff};
 }
 
@@ -73,14 +73,14 @@ WReg RegisterAllocator::allocate_temporary() {
         }
     }
 
-    logger.todo("all registers are being used!");
+    LOG_TODO("all registers are being used!");
     return WReg{0xffffffff};
 }
 
 WReg RegisterAllocator::get(IRVariable variable) {
     auto it = variable_map.find(variable.id);
     if (it == variable_map.end()) {
-        logger.todo("%s wasn't allocated when it should be", variable.to_string().c_str());
+        LOG_TODO("%s wasn't allocated when it should be", variable.to_string().c_str());
     }
 
     return allocation_order[it->second];

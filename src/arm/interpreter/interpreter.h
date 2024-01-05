@@ -131,8 +131,7 @@ private:
 
     void handle_interrupt();
     void undefined_exception();
-    void log_state();
-
+    
     Arch arch;
     Memory& memory;
     Coprocessor& coprocessor;

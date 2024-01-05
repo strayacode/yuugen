@@ -38,7 +38,7 @@ u16 SoftwareRenderer::decode_texture(s16 s, s16 t, Polygon& polygon) {
     u32 palette_base = polygon.texture_attributes.palette_base * 16;
 
     // if (parameters.colour0) {
-    //     logger.warn("SoftwareRenderer: colour0 of paletted textures is transparent");
+    //     LOG_WARN("SoftwareRenderer: colour0 of paletted textures is transparent");
     // }
 
     switch (parameters.texture_format) {

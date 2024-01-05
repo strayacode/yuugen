@@ -204,7 +204,7 @@ u64 IRInterpreter::resolve_pair(IRPair<IRValue>& pair) {
 
 void IRInterpreter::dump_variables() {
     for (u64 i = 0; i < variables.size(); i++) {
-        logger.debug("%%%d: %08x", i, variables[i]);
+        LOG_DEBUG("%%%d: %08x", i, variables[i]);
     }
 }
 
@@ -519,7 +519,7 @@ void IRInterpreter::handle_memory_read(IROpcodeVariant& opcode_variant) {
             assign_variable(opcode.dst, jit.read_half(addr));
             break;
         case AccessType::Unaligned:
-            logger.todo("IRInterpreter: handle unaligned half read");
+            LOG_TODO("IRInterpreter: handle unaligned half read");
             break;
         }
         

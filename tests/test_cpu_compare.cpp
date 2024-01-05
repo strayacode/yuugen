@@ -6,12 +6,12 @@
 void compare_states(arm::Arch arch, arm::CPU& a, arm::CPU& b) {
     for (int i = 0; i < 16; i++) {
         if (a.get_gpr(static_cast<arm::GPR>(i)) != b.get_gpr(static_cast<arm::GPR>(i))) {
-            logger.error("%s r%d mismatch at %08x: expected: %08x got: %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", i, a.get_gpr(arm::GPR::PC), a.get_gpr(static_cast<arm::GPR>(i)), b.get_gpr(static_cast<arm::GPR>(i)));
+            LOG_ERROR("%s r%d mismatch at %08x: expected: %08x got: %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", i, a.get_gpr(arm::GPR::PC), a.get_gpr(static_cast<arm::GPR>(i)), b.get_gpr(static_cast<arm::GPR>(i)));
         }
     }
 
     if (a.get_cpsr().data != b.get_cpsr().data) {
-        logger.error("%s cpsr mismatch at %08x: expected: %08x got: %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", b.get_gpr(arm::GPR::PC),  a.get_cpsr().data, b.get_cpsr().data);
+        LOG_ERROR("%s cpsr mismatch at %08x: expected: %08x got: %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", b.get_gpr(arm::GPR::PC),  a.get_cpsr().data, b.get_cpsr().data);
     }
 }
 
@@ -112,7 +112,7 @@ void run_nds(char *path) {
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        logger.todo("yuugen_tests: no game path was supplied");
+        LOG_TODO("yuugen_tests: no game path was supplied");
         return 1;
     }
 
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
     } else if (extension == "nds") {
         run_nds(argv[1]);
     } else {
-        logger.todo("unhandled game extension %s", extension.c_str());
+        LOG_TODO("unhandled game extension %s", extension.c_str());
     }
 
     return 0;
