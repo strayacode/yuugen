@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "common/logger.h"
 #include "nds/video/video_unit.h"
 #include "nds/system.h"
@@ -105,7 +106,7 @@ void VideoUnit::render_scanline_start() {
                 line = gpu.fetch_framebuffer() + (vcount * 256);
             } else {
                 // capture 2d
-                LOG_TODO("VideoUnit: capture 2d");
+                line = ppu_a.fetch_framebuffer() + (vcount * 256);
             }
 
             for (int i = 0; i < width; i++) {
@@ -115,8 +116,43 @@ void VideoUnit::render_scanline_start() {
 
             break;
         }
-        default:
-            LOG_TODO("VideoUnit: handle capture source %d", dispcapcnt.capture_source);
+        case 1:
+            LOG_TODO("handle source b video capture");
+        default: {
+            if (dispcapcnt.source_b) {
+                LOG_TODO("handle capture from main memory display fifo");
+            }
+
+            u32* line;
+
+            // source a
+            if (dispcapcnt.source_a) {
+                // capture 3d
+                line = gpu.fetch_framebuffer() + (vcount * 256);
+            } else {
+                // capture 2d
+                line = ppu_a.fetch_framebuffer() + (vcount * 256);
+            }
+
+            u32 read_offset = (dispcapcnt.vram_read_offset * 0x8000) + vcount * width * 2;
+            u8 eva = std::min<u8>(dispcapcnt.eva, 16);
+            u8 evb = std::min<u8>(dispcapcnt.evb, 16);
+            
+            for (int i = 0; i < width; i++) {
+                u16 first = rgb666_to_rgb555(line[i]);
+                u16 second = vram.read<u16>(base + (read_offset & 0x1ffff));
+
+                u8 r = std::min(((first & 0x1f) * eva + (second & 0x1f) * evb) / 16, 31);
+                u8 g = std::min((((first >> 5) & 0x1f) * eva + ((second >> 5) & 0x1f) * evb) / 16, 31);
+                u8 b = std::min((((first >> 10) & 0x1f) * eva + ((second >> 10) & 0x1f) * evb) / 16, 31);
+                u16 colour = 0x8000 | (b << 10) | (g << 5) | r;
+                vram.write<u16>(base + (write_offset & 0x1ffff), colour);
+                read_offset += 2;
+                write_offset += 2;
+            }
+
+            break;
+        }
         }
 
         // TODO: see if dispcapcnt busy bit gets cleared at height or 192 scanline
