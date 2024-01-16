@@ -60,10 +60,20 @@ u32 SPU::read_channel(u32 addr) {
 }
 
 void SPU::write_sound_capture_control(int id, u8 value) {
+    const auto old_control = sound_capture_channels[id].control;
     sound_capture_channels[id].control.data = value;
 
-    if (sound_capture_channels[id].control.start) {
-        LOG_WARN("handle sound capture");
+    if (!old_control.start && sound_capture_channels[id].control.start) {
+        sound_capture_channels[id].internal_source = sound_capture_channels[id].destination;
+        sound_capture_channels[id].internal_timer = channels[1 + (id * 2)].timer;
+
+        if (sound_capture_channels[id].control.channel_control) {
+            LOG_TODO("handle adding sound capture to regular channel");
+        }
+
+        if (sound_capture_channels[id].control.source_selection) {
+            LOG_TODO("handle using channel 0/2 for capture source");
+        }
     }
 }
 
@@ -286,6 +296,44 @@ void SPU::play_sample() {
 
         mixer[0] += panned_data[0];
         mixer[1] += panned_data[1];
+    }
+
+    for (int i = 0; i < 2; i++) {
+        auto& capture_channel = sound_capture_channels[i];
+        auto& channel = channels[1 + (i * 2)];
+        if (!capture_channel.control.start) {
+            continue;
+        }
+
+        // increment the timer
+        // each sample takes up 512 system cycles
+        capture_channel.internal_timer += 512;
+        while (capture_channel.internal_timer < 512) {
+            capture_channel.internal_timer += channel.timer;
+                
+            // get sample from mixer left/right clamped
+            s64 sample = std::clamp<s64>(mixer[i], -0x800000, 0x7fffff);
+
+            if (capture_channel.control.format) {
+                // pcm8
+                memory.write<u8, arm::Bus::System>(capture_channel.internal_source, sample >> 16);
+                capture_channel.internal_source++;
+            } else {
+                // pcm16
+                memory.write<u16, arm::Bus::System>(capture_channel.internal_source, sample >> 8);
+                capture_channel.internal_source += 2;
+            }
+        }
+
+        if (capture_channel.internal_source >= capture_channel.destination + (capture_channel.length * 4)) {
+            if (capture_channel.control.repeat) {
+                // one-shot
+                capture_channel.control.start = false;
+            } else {
+                // loop
+                capture_channel.internal_source = capture_channel.destination;
+            }
+        }
     }
 
     std::array<s64, 2> samples;

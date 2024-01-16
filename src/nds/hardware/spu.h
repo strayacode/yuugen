@@ -108,6 +108,8 @@ private:
         };
 
         Control control;
+        u32 internal_source;
+        u16 internal_timer;
         u32 destination;
         u32 length;
     };
