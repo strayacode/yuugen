@@ -581,12 +581,21 @@ void Application::handle_input_nds(SDL_Event& event) {
             nds_system.input.handle_input(nds::InputEvent::L, pressed);
             break;
         }
-    } else if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+    } else if (event.type == SDL_MOUSEMOTION) {
+        int x = ((event.motion.x - center_pos_x) / scaled_dimensions.x) * 256;
+        int y = ((event.motion.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
+
+        if ((x >= 0 && x < 256) && (y >= 0 && y < 192)) {
+            bool pressed = reinterpret_cast<SDL_MouseMotionEvent*>(&event)->state & SDL_BUTTON_LMASK;
+            nds_system.input.set_touch(pressed);
+            nds_system.input.set_point(x, y);
+        }
+    } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
         int x = ((event.button.x - center_pos_x) / scaled_dimensions.x) * 256;
         int y = ((event.button.y - scaled_dimensions.y) / scaled_dimensions.y) * 192;
         
         if ((x >= 0 && x < 256) && (y >= 0 && y < 192)) {
-            bool pressed = reinterpret_cast<SDL_MouseMotionEvent*>(&event)->state & SDL_BUTTON_LMASK;
+            bool pressed = event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT;
             nds_system.input.set_touch(pressed);
             nds_system.input.set_point(x, y);
         }
