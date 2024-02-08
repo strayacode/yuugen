@@ -86,7 +86,7 @@ u16 SoftwareRenderer::decode_texture(s16 s, s16 t, Polygon& polygon) {
         int texel_y = t & 0x3;
 
         // get the appropriate tile (each tile is 32 bits)
-        u32 row_address = address + ((tile_x * tile_size) + tile_y) * 4 + texel_y;
+        u32 row_address = address + ((tile_y * tile_size) + tile_x) * 4 + texel_y;
 
         // get palette index data from slot 1
         u32 slot_index = row_address >> 18;

@@ -97,6 +97,8 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         return system.video_unit.gpu.read_disp3dcnt();
     case MMIO(0x04000064):
         return system.video_unit.read_dispcapcnt();
+    case MMIO(0x0400006c):
+        return system.video_unit.ppu_a.read_master_bright();
     case MMIO(0x040000b0):
         return system.dma9.read_source(0);
     case MMIO(0x040000b8):
@@ -223,6 +225,8 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_b.read_winin();
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_b.read_winout() << 16;
         return value;
+    case MMIO(0x0400106c):
+        return system.video_unit.ppu_b.read_master_bright();
     case MMIO(0x04004000):
     case MMIO(0x04004004):
     case MMIO(0x04004008):

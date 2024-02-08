@@ -16,10 +16,11 @@ public:
     void reset();
     void render_scanline(int line);
 
-    u32 read_dispcnt() { return dispcnt.data; }
-    u16 read_bgcnt(int id) { return bgcnt[id].data; }
-    u16 read_winin() { return winin; }
-    u16 read_winout() { return winout; }
+    u32 read_dispcnt() const { return dispcnt.data; }
+    u16 read_bgcnt(int id) const { return bgcnt[id].data; }
+    u16 read_winin() const { return winin; }
+    u16 read_winout() const { return winout; }
+    u16 read_master_bright() const { return master_bright.data; }
 
     void write_dispcnt(u32 value, u32 mask);
 
