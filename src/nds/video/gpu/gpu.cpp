@@ -33,10 +33,10 @@ void GPU::reset() {
     gxfifo_write_count = 0;
     fifo.reset();
     pipe.reset();
-    busy = false;
+    gxstat.busy = false;
 
     geometry_command_event = scheduler.register_event("GeometryCommand", [this]() {
-        busy = false;
+        gxstat.busy = false;
         execute_command();
     });
 
@@ -170,18 +170,24 @@ void GPU::queue_command(u32 addr, u32 data) {
 }
 
 void GPU::do_swap_buffers() {
-    if (swap_buffers_requested) {
-        // normalise all the vertices
-        for (int i = 0; i < vertex_ram_size; i++) {
-            vertex_ram[current_buffer][i] = normalise_vertex(vertex_ram[current_buffer][i]);
-        }
-
-        renderer->submit_polygons(polygon_ram[current_buffer].data(), polygon_ram_size, w_buffering);
-        swap_buffers_requested = false;
-        current_buffer ^= 1;
-        vertex_ram_size = 0;
-        polygon_ram_size = 0;
+    if (!swap_buffers_requested) {
+        return;
     }
+
+    // normalise all the vertices
+    for (int i = 0; i < vertex_ram_size; i++) {
+        vertex_ram[current_buffer][i] = normalise_vertex(vertex_ram[current_buffer][i]);
+    }
+
+    renderer->submit_polygons(polygon_ram[current_buffer].data(), polygon_ram_size, w_buffering);
+    swap_buffers_requested = false;
+    current_buffer ^= 1;
+    vertex_ram_size = 0;
+    polygon_ram_size = 0;
+
+    // Since the geometry engine was halted until this point,
+    // schedule an event to unhalt command processing.
+    scheduler.add_event(1, &geometry_command_event);
 }
 
 void GPU::render() {
@@ -202,7 +208,7 @@ void GPU::queue_entry(Entry entry) {
     } else {
         while (fifo.is_full()) {
             // just run commands until the fifo isn't full
-            busy = false;
+            gxstat.busy = false;
             scheduler.cancel_event(&geometry_command_event);
             execute_command();
         }
@@ -243,7 +249,7 @@ GPU::Entry GPU::dequeue_entry() {
 
 void GPU::execute_command() {
     auto total_size = fifo.get_size() + pipe.get_size();
-    if (busy || (total_size == 0)) {
+    if (gxstat.busy || total_size == 0 || swap_buffers_requested) {
         return;
     }
 
@@ -365,7 +371,7 @@ void GPU::execute_command() {
             break;
         }
 
-        busy = true;
+        gxstat.busy = true;
         scheduler.add_event(1, &geometry_command_event);
     }
 }

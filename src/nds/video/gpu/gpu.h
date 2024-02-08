@@ -163,7 +163,6 @@ private:
     int gxfifo_write_count{0};
     common::RingBuffer<Entry, 256> fifo;
     common::RingBuffer<Entry, 4> pipe;
-    bool busy{false};
     
     common::EventType geometry_command_event;
     MatrixMode matrix_mode{MatrixMode::Projection};
