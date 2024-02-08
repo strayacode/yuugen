@@ -36,8 +36,7 @@ void GPU::reset() {
     gxstat.busy = false;
 
     geometry_command_event = scheduler.register_event("GeometryCommand", [this]() {
-        gxstat.busy = false;
-        execute_command();
+        process_and_validate_command();
     });
 
     matrix_mode = MatrixMode::Projection;
@@ -186,8 +185,8 @@ void GPU::do_swap_buffers() {
     polygon_ram_size = 0;
 
     // Since the geometry engine was halted until this point,
-    // schedule an event to unhalt command processing.
-    scheduler.add_event(1, &geometry_command_event);
+    // resume command processing.
+    process_and_validate_command();
 }
 
 void GPU::render() {
@@ -207,17 +206,19 @@ void GPU::queue_entry(Entry entry) {
         pipe.push(entry);
     } else {
         while (fifo.is_full()) {
-            // just run commands until the fifo isn't full
+            // Run commands until the fifo isn't full.
             gxstat.busy = false;
             scheduler.cancel_event(&geometry_command_event);
-            execute_command();
+            process_command();
         }
 
         fifo.push(entry);
         dma.set_gxfifo_half_empty(fifo.get_size() < 128);
     }
 
-    execute_command();
+    if (!gxstat.busy) {
+        process_and_validate_command();
+    }
 }
 
 GPU::Entry GPU::dequeue_entry() {
@@ -247,132 +248,146 @@ GPU::Entry GPU::dequeue_entry() {
     return entry;
 }
 
-void GPU::execute_command() {
-    auto total_size = fifo.get_size() + pipe.get_size();
-    if (gxstat.busy || total_size == 0 || swap_buffers_requested) {
+void GPU::process_and_validate_command() {
+    if (pipe.is_empty() || swap_buffers_requested) {
+        gxstat.busy = false;
         return;
     }
 
-    u8 command = pipe.get_front().command;
-    u8 parameter_count = parameter_table[command];
+    process_command();
+}
 
-    if (total_size >= parameter_count) {
-        switch (command) {
-        case 0x10:
-            set_matrix_mode();
-            break;
-        case 0x11:
-            push_current_matrix();
-            break;
-        case 0x12:
-            pop_current_matrix();
-            break;
-        case 0x13:
-            store_current_matrix();
-            break;
-        case 0x14:
-            restore_current_matrix();
-            break;
-        case 0x15:
-            load_unit_matrix();
-            break;
-        case 0x16:
-            load_4x4();
-            break;
-        case 0x17:
-            load_4x3();
-            break;
-        case 0x18:
-            multiply_4x4();
-            break;
-        case 0x19:
-            multiply_4x3();
-            break;
-        case 0x1a:
-            multiply_3x3();
-            break;
-        case 0x1b:
-            multiply_scale();
-            break;
-        case 0x1c:
-            multiply_translation();
-            break;
-        case 0x20:
-            set_vertex_colour();
-            break;
-        case 0x21:
-            set_normal_vector();
-            break;
-        case 0x22:
-            set_texture_coordinates();
-            break;
-        case 0x23:
-            add_vertex16();
-            break;
-        case 0x24:
-            add_vertex10();
-            break;
-        case 0x25:
-            set_vertex_xy();
-            break;
-        case 0x26:
-            set_vertex_xz();
-            break;
-        case 0x27:
-            set_vertex_yz();
-            break;
-        case 0x28:
-            set_relative_vertex_coordinates();
-            break;
-        case 0x29:
-            set_polygon_attributes();
-            break;
-        case 0x2a:
-            set_texture_parameters();
-            break;
-        case 0x2b:
-            set_texture_palette_address();
-            break;
-        case 0x30:
-            set_diffuse_ambient_reflect();
-            break;
-        case 0x31:
-            set_specular_reflect_emission();
-            break;
-        case 0x32:
-            set_light_vector();
-            break;
-        case 0x33:
-            set_light_colour();
-            break;
-        case 0x34:
-            set_shininess();
-            break;
-        case 0x40:
-            begin_vertex_list();
-            break;
-        case 0x41:
-            end_vertex_list();
-            break;
-        case 0x50:
-            swap_buffers();
-            break;
-        case 0x60:
-            set_viewport();
-            break;
-        default:
-            dequeue_entry();
+void GPU::process_command() {
+    const auto total_size = fifo.get_size() + pipe.get_size();
+    const auto command = pipe.get_front().command;
+    const auto parameter_count = parameter_table[command];
 
-            for (int i = 1; i < parameter_count; i++) {
-                dequeue_entry();
-            }
+    if (total_size < parameter_count) {
+        gxstat.busy = false;
+        return;
+    }
 
-            LOG_WARN("GPU: handle command %02x", command);
-            break;
-        }
+    execute_command(command);
 
+    if (!swap_buffers_requested) {
         gxstat.busy = true;
         scheduler.add_event(1, &geometry_command_event);
+    }
+}
+
+void GPU::execute_command(u8 command) {
+    switch (command) {
+    case 0x10:
+        set_matrix_mode();
+        break;
+    case 0x11:
+        push_current_matrix();
+        break;
+    case 0x12:
+        pop_current_matrix();
+        break;
+    case 0x13:
+        store_current_matrix();
+        break;
+    case 0x14:
+        restore_current_matrix();
+        break;
+    case 0x15:
+        load_unit_matrix();
+        break;
+    case 0x16:
+        load_4x4();
+        break;
+    case 0x17:
+        load_4x3();
+        break;
+    case 0x18:
+        multiply_4x4();
+        break;
+    case 0x19:
+        multiply_4x3();
+        break;
+    case 0x1a:
+        multiply_3x3();
+        break;
+    case 0x1b:
+        multiply_scale();
+        break;
+    case 0x1c:
+        multiply_translation();
+        break;
+    case 0x20:
+        set_vertex_colour();
+        break;
+    case 0x21:
+        set_normal_vector();
+        break;
+    case 0x22:
+        set_texture_coordinates();
+        break;
+    case 0x23:
+        add_vertex16();
+        break;
+    case 0x24:
+        add_vertex10();
+        break;
+    case 0x25:
+        set_vertex_xy();
+        break;
+    case 0x26:
+        set_vertex_xz();
+        break;
+    case 0x27:
+        set_vertex_yz();
+        break;
+    case 0x28:
+        set_relative_vertex_coordinates();
+        break;
+    case 0x29:
+        set_polygon_attributes();
+        break;
+    case 0x2a:
+        set_texture_parameters();
+        break;
+    case 0x2b:
+        set_texture_palette_address();
+        break;
+    case 0x30:
+        set_diffuse_ambient_reflect();
+        break;
+    case 0x31:
+        set_specular_reflect_emission();
+        break;
+    case 0x32:
+        set_light_vector();
+        break;
+    case 0x33:
+        set_light_colour();
+        break;
+    case 0x34:
+        set_shininess();
+        break;
+    case 0x40:
+        begin_vertex_list();
+        break;
+    case 0x41:
+        end_vertex_list();
+        break;
+    case 0x50:
+        swap_buffers();
+        break;
+    case 0x60:
+        set_viewport();
+        break;
+    default:
+        // dequeue_entry();
+
+        // for (int i = 1; i < parameter_count; i++) {
+        //     dequeue_entry();
+        // }
+
+        LOG_TODO("GPU: handle command %02x", command);
+        break;
     }
 }
 

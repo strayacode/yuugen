@@ -84,7 +84,9 @@ private:
     void check_gxfifo_irq();
     void queue_entry(Entry entry);
     Entry dequeue_entry();
-    void execute_command();
+    void process_and_validate_command();
+    void process_command();
+    void execute_command(u8 command);
 
     Matrix multiply_matrix_matrix(const Matrix& a, const Matrix& b);
     Vertex multiply_vertex_matrix(const Vertex& a, const Matrix& b);
