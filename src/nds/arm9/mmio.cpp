@@ -165,6 +165,12 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xff0000) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::C) << 16;
         if constexpr (mask & 0xff000000) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::D) << 24;
         return value;
+    case MMIO(0x04000244):
+        if constexpr (mask & 0xff) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::E);
+        if constexpr (mask & 0xff00) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::F) << 8;
+        if constexpr (mask & 0xff0000) value |= system.video_unit.vram.read_vramcnt(VRAM::Bank::G) << 16;
+        if constexpr (mask & 0xff000000) value |= system.read_wramcnt() << 24;
+        return value;
     case MMIO(0x04000280):
         return system.maths_unit.read_divcnt();
     case MMIO(0x04000290):

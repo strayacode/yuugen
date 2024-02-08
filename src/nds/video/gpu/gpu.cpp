@@ -6,7 +6,7 @@
 
 namespace nds {
 
-static constexpr std::array<int, 256> parameter_table = {{
+static constexpr std::array<u8, 256> parameter_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1, 0, 1, 1, 1, 0, 16, 12, 16, 12, 9, 3, 3, 0, 0, 0,
     1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
@@ -23,6 +23,89 @@ static constexpr std::array<int, 256> parameter_table = {{
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 }};
+
+const char* get_command_name(u8 command) {
+    switch (command) {
+    case 0x00:
+        return "nop";
+    case 0x10:
+        return "mtx_mode";
+    case 0x11:
+        return "mtx_push";
+    case 0x12:
+        return "mtx_pop";
+    case 0x13:
+        return "mtx_store";
+    case 0x14:
+        return "mtx_restore";
+    case 0x15:
+        return "mtx_identity";
+    case 0x16:
+        return "mtx_load_4x4";
+    case 0x17:
+        return "mtx_load_4x3";
+    case 0x18:
+        return "mtx_mult_4x4";
+    case 0x19:
+        return "mtx_mult_4x3";
+    case 0x1a:
+        return "mtx_mult_3x3";
+    case 0x1b:
+        return "mtx_scale";
+    case 0x1c:
+        return "mtx_trans";
+    case 0x20:
+        return "color";
+    case 0x21:
+        return "normal";
+    case 0x22:
+        return "texcoord";
+    case 0x23:
+        return "vtx_16";
+    case 0x24:
+        return "vtx_10";
+    case 0x25:
+        return "vtx_xy";
+    case 0x26:
+        return "vtx_xz";
+    case 0x27:
+        return "vtx_yz";
+    case 0x28:
+        return "vtx_diff";
+    case 0x29:
+        return "polygon_attr";
+    case 0x2a:
+        return "teximage_param";
+    case 0x2b:
+        return "pltt_base";
+    case 0x30:
+        return "dif_amb";
+    case 0x31:
+        return "spe_emi";
+    case 0x32:
+        return "light_vector";
+    case 0x33:
+        return "light_color";
+    case 0x34:
+        return "shininess";
+    case 0x40:
+        return "begin_vtxs";
+    case 0x41:
+        return "end_vtxs";
+    case 0x50:
+        return "swap_buffers";
+    case 0x60:
+        return "viewport";
+    case 0x70:
+        return "box_test";
+    case 0x71:
+        return "pos_test";
+    case 0x72:
+        return "vec_test";
+    default:
+        return "<unknown>";
+    }
+}
 
 GPU::GPU(common::Scheduler& scheduler, DMA& dma, IRQ& irq, VRAMRegion& texture_data, VRAMRegion& texture_palette) : scheduler(scheduler), dma(dma), irq(irq), texture_data(texture_data), texture_palette(texture_palette) {}
 
@@ -267,7 +350,7 @@ void GPU::process_command() {
         return;
     }
 
-    execute_command(command);
+    execute_command(command, parameter_count);
 
     if (!swap_buffers_requested) {
         gxstat.busy = true;
@@ -275,7 +358,7 @@ void GPU::process_command() {
     }
 }
 
-void GPU::execute_command(u8 command) {
+void GPU::execute_command(u8 command, u8 parameter_count) {
     switch (command) {
     case 0x10:
         set_matrix_mode();
@@ -380,13 +463,13 @@ void GPU::execute_command(u8 command) {
         set_viewport();
         break;
     default:
-        // dequeue_entry();
+        dequeue_entry();
 
-        // for (int i = 1; i < parameter_count; i++) {
-        //     dequeue_entry();
-        // }
+        for (int i = 1; i < parameter_count; i++) {
+            dequeue_entry();
+        }
 
-        LOG_TODO("GPU: handle command %02x", command);
+        LOG_WARN("handle command %02x with parameter count %d", command, parameter_count);
         break;
     }
 }

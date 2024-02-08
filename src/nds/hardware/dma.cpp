@@ -127,6 +127,7 @@ void DMA::transfer(int id) {
     }
 
     if (channel.control.timing == Timing::GXFIFO) {
+        LOG_WARN("do gxfifo dma");
         channel.internal_length -= gxfifo_transfers;
 
         // schedule another gxfifo dma if the gxfifo is still half empty
