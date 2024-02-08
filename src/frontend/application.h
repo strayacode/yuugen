@@ -73,6 +73,7 @@ private:
 
     void switch_screen(ScreenType screen_type);
     void switch_to_previous();
+    void update_title();
 
     bool demo_window{false};
     std::unique_ptr<common::System> system;

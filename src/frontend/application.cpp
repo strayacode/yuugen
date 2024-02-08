@@ -7,6 +7,17 @@
 #include "frontend/sdl_audio_device.h"
 #include "frontend/imgui_video_device.h"
 
+static const char* get_backend_type(arm::BackendType backend_type) {
+    switch (backend_type) {
+    case arm::BackendType::Interpreter:
+        return "Interpreter";
+    case arm::BackendType::IRInterpreter:
+        return "IR Interpreter";
+    case arm::BackendType::Jit:
+        return "Jit";
+    }
+}
+
 Application::Application() {}
 
 bool Application::initialise() {
@@ -140,8 +151,6 @@ void Application::render_nds() {
 
     top_screen.update_texture(framebuffers[0]);
     bottom_screen.update_texture(framebuffers[1]);
-
-    const u32 window_height = this->window_height - menubar_height - 2;
 
     const f64 scale_x = static_cast<f64>(window_width) / 256;
     const f64 scale_y = static_cast<f64>(window_height) / 384;
@@ -401,51 +410,12 @@ void Application::render() {
         case SystemType::None:
             break;
         }
-
-        ImGui::SetNextWindowPos(ImVec2(0, window_height - menubar_height - 2));
-        ImGui::SetNextWindowSize(ImVec2(window_width, menubar_height + 2));
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(6.0f, 3.0f));
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.180f, 0.180f, 0.180f, 1.000f));
-        
-        ImGui::Begin("StatusBar", nullptr,
-                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
-                            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
-                            ImGuiWindowFlags_NoBringToFrontOnFocus);
-
-        switch (config.backend_type) {
-        case arm::BackendType::Interpreter:
-            ImGui::Text("CPU: Interpreter");
-            break;
-        case arm::BackendType::IRInterpreter:
-            ImGui::Text("CPU: IR Interpreter");
-            break;
-        case arm::BackendType::Jit:
-            ImGui::Text("CPU: Jit");
-            break;
-        }
-
-        ImGui::SameLine();
-        ImGui::Text("|");
-        ImGui::SameLine();
-
-        if (system->get_state() != common::System::State::Paused) {
-            if (fps == 0.0f) {
-                ImGui::Text("0.00 FPS");
-            } else {
-                ImGui::Text("%s", common::format("%.2f FPS (%.2f ms)", fps, 1000.0f / fps).c_str());
-            }
-        } else {
-            ImGui::Text("Paused");
-        }
-
-        // Reset style colors
-        ImGui::PopStyleColor();
-
-        ImGui::End();
-        ImGui::PopStyleVar();
         
         break;
+    }
+
+    if (system) {
+        update_title();
     }
 
     if (demo_window) {
@@ -665,4 +635,18 @@ void Application::switch_screen(ScreenType screen_type) {
 
 void Application::switch_to_previous() {
     screen_type = previous_screen_type;
+}
+
+void Application::update_title() {
+    if (system->get_state() != common::System::State::Paused) {
+        if (fps == 0.0f) {
+            auto title = common::format("yuugen | %s | 0.00 FPS", get_backend_type(config.backend_type));
+            SDL_SetWindowTitle(window, title.c_str());
+        } else {
+            auto title = common::format("yuugen | %s | %.2f FPS", get_backend_type(config.backend_type), fps);
+            SDL_SetWindowTitle(window, title.c_str());
+        }
+    } else {
+        SDL_SetWindowTitle(window, "yuugen");
+    }
 }
