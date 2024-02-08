@@ -214,6 +214,19 @@ void Application::render_menubar() {
             } else {
                 ImGui::MenuItem("Enable Framelimiter", nullptr, false, false);
             }
+
+            if (ImGui::MenuItem("Restart", nullptr, false, system != nullptr)) {
+                system->set_state(common::System::State::Idle);
+                switch_screen(ScreenType::Game);
+
+                if (system_type == SystemType::NDS) {
+                    config = new_config;
+                    auto& nds_system = reinterpret_cast<nds::System&>(*system);
+                    nds_system.configure_cpu_backend(config);
+                }
+
+                system->set_state(common::System::State::Running);
+            }
             
             if (system) {
                 if (system->is_running()) {
