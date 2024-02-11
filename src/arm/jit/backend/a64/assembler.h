@@ -166,7 +166,7 @@ enum class Shift : u32 {
 
 class A64Assembler {
 public:
-    A64Assembler(u32* code);
+    A64Assembler(u32* code, int size);
 
     void dump();
     void link(Label& label);
@@ -198,6 +198,9 @@ public:
     
     void cbnz(WReg wt, Label& label);
     void cbnz(XReg xt, Label& label);
+
+    void clz(WReg wd, WReg wn);
+    void clz(XReg xd, XReg xn);
 
     void cmp(WReg wn, WReg wm, Shift shift = Shift::LSL, u32 amount = 0);
     void cmp(XReg xn, XReg xm, Shift shift = Shift::LSL, u32 amount = 0);
@@ -308,6 +311,7 @@ private:
     void emit(u32 data);
 
     u32* code{nullptr};
+    int size{0};
     u32* current_code{nullptr};
     u32* previous_code{nullptr};
     int num_instructions{0};

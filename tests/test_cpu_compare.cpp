@@ -3,7 +3,7 @@
 #include "gba/system.h"
 #include "nds/system.h"
 
-void compare_states(arm::Arch arch, arm::CPU& a, arm::CPU& b) {
+void compare_states(arm::Arch arch, arm::CPU& a, arm::Memory& a_memory, arm::CPU& b, arm::Memory& b_memory) {
     for (int i = 0; i < 16; i++) {
         if (a.get_gpr(static_cast<arm::GPR>(i)) != b.get_gpr(static_cast<arm::GPR>(i))) {
             LOG_ERROR("%s r%d mismatch at %08x: expected: %08x got: %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", i, a.get_gpr(arm::GPR::PC), a.get_gpr(static_cast<arm::GPR>(i)), b.get_gpr(static_cast<arm::GPR>(i)));
@@ -15,11 +15,11 @@ void compare_states(arm::Arch arch, arm::CPU& a, arm::CPU& b) {
     }
 }
 
-void run_and_compare_cpus(arm::CPU& a, arm::CPU& b, int cycles) {
+void run_and_compare_cpus(arm::CPU& a, arm::Memory& a_memory, arm::CPU& b, arm::Memory& b_memory, int cycles) {
     for (int i = 0; i < cycles; i++) {
         a.run(1);
         b.run(1);
-        compare_states(a.get_arch(), a, b);
+        compare_states(a.get_arch(), a, a_memory, b, b_memory);
     }
 }
 
@@ -55,7 +55,7 @@ void run_gba(char *path) {
     auto& b_cpu = b_system.cpu;
 
     while (true) {
-        run_and_compare_cpus(*a_cpu, *b_cpu, 1);
+        run_and_compare_cpus(*a_cpu, a_system.memory, *b_cpu, b_system.memory, 1);
 
         a_system.scheduler.tick(1);
         a_system.scheduler.run();
@@ -74,7 +74,7 @@ void run_nds(char *path) {
 
     arm::Config a_config;
     a_config.block_size = 1;
-    a_config.backend_type = arm::BackendType::Interpreter;
+    a_config.backend_type = arm::BackendType::IRInterpreter;
     a_config.optimisations = false;
 
     arm::Config b_config;
@@ -99,8 +99,8 @@ void run_nds(char *path) {
     auto& b_arm9 = b_system.arm9;
 
     while (true) {
-        run_and_compare_cpus(a_arm9.get_cpu(), b_arm9.get_cpu(), 2);
-        run_and_compare_cpus(a_arm7.get_cpu(), b_arm7.get_cpu(), 1);
+        run_and_compare_cpus(a_arm9.get_cpu(), a_arm9.get_memory(), b_arm9.get_cpu(), b_arm9.get_memory(), 2);
+        run_and_compare_cpus(a_arm7.get_cpu(), a_arm7.get_memory(), b_arm7.get_cpu(), b_arm7.get_memory(), 1);
 
         a_system.scheduler.tick(1);
         a_system.scheduler.run();

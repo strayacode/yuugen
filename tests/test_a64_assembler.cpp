@@ -14,7 +14,7 @@ void check_values(const char *testcase, u32 expected, u32 actual) {
 
 int main() {
     arm::CodeBlock code_block{4096};
-    arm::A64Assembler assembler{code_block.get_code()};
+    arm::A64Assembler assembler{code_block.get_code(), 4096};
 
     code_block.unprotect();
 
@@ -65,6 +65,13 @@ int main() {
     TEST(0x956ab105, bl(95077396))
     TEST(0xd63f0160, blr(arm::x11))
     TEST(0xd63f0220, blr(arm::x17))
+
+    TEST(0x5ac01274, clz(arm::w20, arm::w19))
+    TEST(0x5ac010fc, clz(arm::w28, arm::w7))
+    TEST(0x5ac01106, clz(arm::w6, arm::w8))
+    TEST(0xdac0105e, clz(arm::x30, arm::x2))
+    TEST(0xdac013c3, clz(arm::x3, arm::x30))
+    TEST(0xdac010f9, clz(arm::x25, arm::x7))
 
     TEST(0xeb4b65bf, cmp(arm::x13, arm::x11, arm::Shift::LSR, 25))
     TEST(0xeb06373f, cmp(arm::x25, arm::x6, arm::Shift::LSL, 13))

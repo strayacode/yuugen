@@ -17,7 +17,7 @@ std::string disassemble_a64_instruction(u64 pc, u32 instruction) {
 
     char buffer[160];
     u64 inst_size = LLVMDisasmInstruction(llvm_ctx, reinterpret_cast<u8*>(&instruction), sizeof(instruction), pc, buffer, sizeof(buffer));
-    result = inst_size > 0 ? common::format("    %016lx %08x %s", pc, instruction, buffer) : "<invalid>";
+    result = inst_size > 0 ? common::format("  %016lx %08x %s", pc, instruction, buffer) : "<invalid>";
 
     LLVMDisasmDispose(llvm_ctx);
     return result;

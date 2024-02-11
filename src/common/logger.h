@@ -61,7 +61,7 @@ void log_impl(LogLevel log_level, const char* source, int line, const char* func
 
 } // namespace common
 
-#define LOG_INFO(pattern, ...) common::log_impl(common::LogLevel::Info, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
+#define LOG_INFO(pattern, ...) printf(GREY pattern "\n", ##__VA_ARGS__);
 #define LOG_DEBUG(pattern, ...) common::log_impl(common::LogLevel::Debug, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
 #define LOG_WARN(pattern, ...) common::log_impl(common::LogLevel::Warn, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
 #define LOG_ERROR(pattern, ...) common::log_impl(common::LogLevel::Error, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);

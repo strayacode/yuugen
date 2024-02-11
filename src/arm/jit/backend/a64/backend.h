@@ -62,6 +62,7 @@ private:
     void compile_barrel_shifter_arithmetic_shift_right(IRBarrelShifterArithmeticShiftRight& opcode);
     void compile_barrel_shifter_rotate_right(IRBarrelShifterRotateRight& opcode);
     void compile_barrel_shifter_rotate_right_extended(IRBarrelShifterRotateRightExtended& opcode);
+    void compile_count_leading_zeroes(IRCountLeadingZeroes& opcode);
     void compile_compare(IRCompare& opcode);
     void compile_copy(IRCopy& opcode);
     void compile_get_bit(IRGetBit& opcode);

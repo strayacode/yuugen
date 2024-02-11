@@ -16,12 +16,9 @@ struct BasicBlock {
     BasicBlock(Location location) : location(location), current_address(location.get_address()) {}
 
     void dump() {
-        LOG_INFO("basic block location: %016lx address: %08x arm: %d mode: %02x condition: %02x", location, location.get_address(), location.is_arm(), static_cast<u8>(location.get_mode()), condition);
-        LOG_INFO("cycles: %d", cycles);
-        LOG_INFO("number of instructions: %d", num_instructions);
-        LOG_INFO("number of ir opcodes: %ld", opcodes.size());
+        LOG_INFO("block[%08x][%s][%02x] IR:", location.get_address(), location.is_arm() ? "a" : "t", static_cast<u8>(location.get_mode()));
         for (auto& opcode : opcodes) {
-            LOG_INFO("%s", opcode->to_string().c_str());
+            LOG_INFO("  %s", opcode->to_string().c_str());
         }
     }
 

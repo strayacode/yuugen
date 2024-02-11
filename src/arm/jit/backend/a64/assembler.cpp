@@ -4,10 +4,10 @@
 
 namespace arm {
 
-A64Assembler::A64Assembler(u32* code) : code(code), current_code(code), previous_code(code) {}
+A64Assembler::A64Assembler(u32* code, int size) : code(code), size(size), current_code(code), previous_code(code) {}
 
 void A64Assembler::dump() {
-    LOG_INFO("buffer:");
+    LOG_INFO("Machine Code:");
     u32* curr = previous_code;
     while (curr != current_code) {
         LOG_INFO("%s", disassemble_a64_instruction(reinterpret_cast<u64>(curr), *curr).c_str());
@@ -149,6 +149,14 @@ void A64Assembler::cbnz(WReg wt, Label& label) {
 void A64Assembler::cbnz(XReg xt, Label& label) {
     label.instruction = current_code;
     emit(0xb5 << 24 | xt.id);
+}
+
+void A64Assembler::clz(WReg wd, WReg wn) {
+    emit(0x16b004 << 10 | wn.id << 5 | wd.id);
+}
+
+void A64Assembler::clz(XReg xd, XReg xn) {
+    emit(0x36b004 << 10 | xn.id << 5 | xd.id);
 }
 
 void A64Assembler::cmp(WReg wn, WReg wm, Shift shift, u32 amount) {
@@ -460,6 +468,10 @@ void A64Assembler::emit(u32 data) {
     LOG_INFO("%s", disassemble_a64_instruction(reinterpret_cast<u64>(current_code), data).c_str());
     *current_code++ = data;
     num_instructions++;
+
+    if (num_instructions * 4 >= size) {
+        LOG_ERROR("code cache is full");
+    }
 }
 
 } // namespace arm

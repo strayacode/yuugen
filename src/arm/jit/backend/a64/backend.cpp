@@ -5,7 +5,7 @@
 
 namespace arm {
 
-A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code()), jit(jit) {}
+A64Backend::A64Backend(Jit& jit) : code_block(CODE_CACHE_SIZE), assembler(code_block.get_code(), CODE_CACHE_SIZE), jit(jit) {}
 
 // TODO: put memory stuff in separate file
 u8 read_byte(Jit* jit, u32 addr) {
@@ -53,7 +53,7 @@ Code A64Backend::get_code_at(Location location) {
 }
 
 Code A64Backend::compile(BasicBlock& basic_block) {
-    LOG_INFO("compiling basic block at %08x...", basic_block.location.get_address());
+    LOG_INFO("block[%08x][%s][%02x] output:", basic_block.location.get_address(), basic_block.location.is_arm() ? "a" : "t", static_cast<u8>(basic_block.location.get_mode()));
     register_allocator.reset();
 
     // calculate the lifetimes of ir variables
@@ -62,19 +62,18 @@ Code A64Backend::compile(BasicBlock& basic_block) {
     JitFunction jit_fn = assembler.get_current_code<JitFunction>();
     code_block.unprotect();
 
-    LOG_INFO("compiling prologue...");
+    LOG_INFO("prologue:");
     compile_prologue();
 
     Label label_pass;
     Label label_fail;
 
-    LOG_INFO("compiling condition check...");
     compile_condition_check(basic_block, label_pass, label_fail);
     assembler.link(label_pass);
 
     if (basic_block.condition != Condition::NV) {
         for (auto& opcode : basic_block.opcodes) {
-            LOG_INFO("compiling %s...", opcode->to_string().c_str());
+            LOG_INFO("%s:", opcode->to_string().c_str());
             compile_ir_opcode(opcode);
             register_allocator.advance();
         }
@@ -82,13 +81,12 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     assembler.link(label_fail);
 
-    LOG_INFO("compiling epilogue...");
+    LOG_INFO("epilogue:");
     assembler.sub(cycles_left_reg, cycles_left_reg, static_cast<u64>(basic_block.cycles));
     compile_epilogue();
 
     LOG_INFO("");
-    assembler.dump();
-
+    
     code_block.protect();
     code_cache.set(basic_block.location, jit_fn);
     return reinterpret_cast<void*>(jit_fn);
@@ -148,6 +146,7 @@ void A64Backend::compile_epilogue() {
 
 void A64Backend::compile_condition_check(BasicBlock& basic_block, Label& label_pass, Label& label_fail) {
     if (basic_block.condition != Condition::AL && basic_block.condition != Condition::NV) {
+        LOG_INFO("condition_check:");
         WReg tmp_reg = register_allocator.allocate_temporary();
         assembler.ldr(tmp_reg, jit_reg, jit.get_offset_to_cpsr());
         assembler._and(tmp_reg, tmp_reg, 0xf0000000);
@@ -250,7 +249,7 @@ void A64Backend::compile_ir_opcode(std::unique_ptr<IROpcode>& opcode) {
         compile_barrel_shifter_rotate_right_extended(*opcode->as<IRBarrelShifterRotateRightExtended>());
         break;
     case IROpcodeType::CountLeadingZeroes:
-        LOG_TODO("handle CountLeadingZeroes");
+        compile_count_leading_zeroes(*opcode->as<IRCountLeadingZeroes>());
         break;
     case IROpcodeType::Compare:
         compile_compare(*opcode->as<IRCompare>());
@@ -594,7 +593,8 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
         }
 
         if (amount.value == 0) {
-            LOG_TODO("barrel shifter lsr handle amount == 0");
+            assembler.mov(result_reg, src_reg);
+            assembler.mov(carry_reg, carry_in_reg);
         } else if (amount.value >= 32) {
             assembler.mov(result_reg, 0);
             assembler.lsr(carry_reg, src_reg, 31);
@@ -649,6 +649,55 @@ void A64Backend::compile_barrel_shifter_logical_shift_right(IRBarrelShifterLogic
         assembler.sub(amount_reg, amount_reg, 1);
 
         assembler.lsr(carry_reg, src_reg, amount_reg);
+        assembler._and(carry_reg, carry_reg, 0x1);
+
+        assembler.link(label_finish1);
+        assembler.link(label_finish2);
+    } else if (src_is_constant && !amount_is_constant) {
+        const auto src = opcode.src.as_constant();
+        const auto amount = opcode.amount.as_variable();
+        WReg amount_reg = register_allocator.get(amount);
+
+        Label label_ge32;
+        Label label_else;
+        Label label_finish1;
+        Label label_finish2;
+
+        assembler.cmp(amount_reg, 0);
+        assembler.b(Condition::NE, label_ge32);
+
+        // if amount == 0
+        if (opcode.imm) {
+            assembler.mov(amount_reg, 32);
+            assembler.b(label_ge32);
+        } else {
+            assembler.mov(result_reg, src.value);
+            assembler.mov(carry_reg, carry_in_reg);
+            assembler.b(label_finish1);
+        }
+
+        assembler.link(label_ge32);
+        assembler.cmp(amount_reg, 31);
+        assembler.b(Condition::LE, label_else);
+
+        // if amount >= 32
+        assembler.mov(result_reg, 0);
+        assembler.cmp(amount_reg, 32);
+        assembler.cset(carry_reg, Condition::EQ);
+
+        assembler._and(carry_reg, carry_reg, src.value >> 31);
+        assembler.b(label_finish2);
+
+        // amount > 0 && amount < 32
+        assembler.link(label_else);
+
+        WReg tmp_src_reg = register_allocator.allocate_temporary();
+        assembler.mov(tmp_src_reg, src.value);
+        assembler.lsr(result_reg, tmp_src_reg, amount_reg);
+
+        assembler.sub(amount_reg, amount_reg, 1);
+
+        assembler.lsr(carry_reg, tmp_src_reg, amount_reg);
         assembler._and(carry_reg, carry_reg, 0x1);
 
         assembler.link(label_finish1);
@@ -821,6 +870,16 @@ void A64Backend::compile_barrel_shifter_rotate_right_extended(IRBarrelShifterRot
         assembler.orr(result_reg, tmp_msb_reg, tmp_value_shifted_reg);
     } else {
         LOG_TODO("handle barrel shifter rrx case %s", opcode.to_string().c_str());
+    }
+}
+
+void A64Backend::compile_count_leading_zeroes(IRCountLeadingZeroes& opcode) {
+    if (opcode.src.is_constant()) {
+        LOG_TODO("handle constant src");
+    } else {
+        WReg dst_reg = register_allocator.allocate(opcode.dst);
+        WReg src_reg = register_allocator.get(opcode.src.as_variable());
+        assembler.clz(dst_reg, src_reg);
     }
 }
 
