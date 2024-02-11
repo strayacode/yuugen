@@ -18,14 +18,14 @@ void RTC::write_rtc(u8 value) {
     auto old_rtc = rtc;
     rtc.data = value;
 
-    if (!old_rtc.select && rtc.select) {
+    if (rtc.select) {
         if (old_rtc.clock && !rtc.clock) {
             if (write_count < 8) {
                 command |= (rtc.data & 0x1) << write_count;
             } else if (rtc.data_io_direction) {
                 interpret_write_command(rtc.data);
             } else {
-                rtc.data = (rtc.data & ~0x1) | (old_rtc.data & 0x1);
+                rtc.data &= ~0x1;
                 rtc.data = interpret_read_command(rtc.data);
             }
 

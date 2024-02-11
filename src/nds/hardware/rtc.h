@@ -1,15 +1,17 @@
 #pragma once
 
 #include <array>
+#include "common/logger.h"
 #include "common/types.h"
 
 namespace nds {
 
 class RTC {
 public:
+public:
     void reset();
 
-    u8 read_rtc() { return rtc.data; }
+    u8 read_rtc() const { return rtc.data; }
     void write_rtc(u8 value);
 
 private:

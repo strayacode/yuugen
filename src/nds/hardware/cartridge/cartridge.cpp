@@ -287,7 +287,6 @@ void Cartridge::process_decrypted_command() {
     if (cartridge_inserted) {
         if ((command & 0xff00000000ffffff) == 0xb700000000000000) {
             rom_position = common::get_field<24, 32>(command);
-            LOG_WARN("set rom position to %d %016lx", rom_position, command);
             command_type = CommandType::ReadData;
         } else if (command == 0xb800000000000000) {
             command_type = CommandType::GetThirdId;  
