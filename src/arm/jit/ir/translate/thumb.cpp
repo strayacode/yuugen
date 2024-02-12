@@ -71,8 +71,16 @@ Translator::BlockStatus Translator::thumb_branch_link_setup() {
 }
 
 Translator::BlockStatus Translator::thumb_branch_link_exchange_offset() {
-    LOG_TODO("Translator: handle thumb_branch_link_exchange_offset");
-    return BlockStatus::Continue;
+    if (jit.arch == Arch::ARMv4) {
+        LOG_TODO("handle for armv4");
+    }
+
+    auto opcode = ThumbBranchLinkExchangeOffset::decode(instruction);
+    auto address = ir.add(ir.load_gpr(GPR::LR), ir.constant(opcode.offset));
+    ir.store_flag(Flag::T, ir.constant(false));
+    ir.branch_exchange(address, ExchangeType::ThumbBit);
+    ir.link();
+    return BlockStatus::Break;
 }
 
 Translator::BlockStatus Translator::thumb_branch() {
