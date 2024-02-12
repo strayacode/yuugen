@@ -50,6 +50,7 @@ struct IRConstant {
 struct IRValue {
     IRValue() : type(IRValueType::None) {}
     IRValue(bool value) : type(IRValueType::Constant), constant(IRConstant{value}) {}
+    IRValue(u8 value) : type(IRValueType::Constant), constant(IRConstant{value}) {}
     IRValue(u32 value) : type(IRValueType::Constant), constant(IRConstant{value}) {}
     IRValue(IRVariable variable) : type(IRValueType::Variable), variable(variable) {}
     IRValue(IRConstant constant) : type(IRValueType::Constant), constant(constant) {}
@@ -115,23 +116,32 @@ struct TypedValue : public IRValue {
     explicit TypedValue(IRValue value) : IRValue(value) {}
 
     explicit TypedValue(bool value) : IRValue(value) {
-        static_assert(TypedValue::is_same_type<T, Type::U1>());
+        static_assert(TypedValue::is_equal<T, Type::U1>());
+    }
+
+    explicit TypedValue(u8 value) : IRValue(value) {
+        static_assert(TypedValue::is_equal<T, Type::U8>());
     }
 
     explicit TypedValue(u32 value) : IRValue(value) {
-        static_assert(TypedValue::is_same_type<T, Type::U32>());
+        static_assert(TypedValue::is_equal<T, Type::U32>());
     }
 
     explicit TypedValue(IRVariable variable) : IRValue(variable) {}
 
     template <Type A, Type B>
-    static constexpr bool is_same_type() {
+    static constexpr bool is_equal() {
         return A == B;
     }
 
     template <Type A, Type B>
     static constexpr bool is_larger() {
         return A > B;
+    }
+
+    template <Type A, Type B>
+    static constexpr bool is_smaller() {
+        return A < B;
     }
 };
 
