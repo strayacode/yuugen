@@ -37,10 +37,48 @@ std::string Disassembler::thumb_branch(u32 instruction) {
 
 std::string Disassembler::thumb_push_pop(u32 instruction) {
     const auto opcode = ThumbPushPop::decode(instruction);
+    std::string rlist = "";
+    bool first = true;
     if (opcode.pop) {
-        return "handle pop";
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                if (first) {
+                    first = false;
+                    rlist += "{";
+                } else {
+                    rlist += ", ";
+                }
+
+                rlist += register_names[i];
+            }
+        }
+
+        if (opcode.pclr) {
+            rlist += ", pc";
+        }
+
+        rlist += "}";
+        return common::format("pop %s", rlist.c_str());
     } else {
-        return "handle push";
+        for (int i = 0; i < 8; i++) {
+            if (opcode.rlist & (1 << i)) {
+                if (first) {
+                    first = false;
+                    rlist += "{";
+                } else {
+                    rlist += ", ";
+                }
+
+                rlist += register_names[i];
+            }
+        }
+
+        if (opcode.pclr) {
+            rlist += ", lr";
+        }
+
+        rlist += "}";
+        return common::format("push %s", rlist.c_str());
     }
 }
 
@@ -98,7 +136,8 @@ std::string Disassembler::thumb_add_subtract(u32 instruction) {
 }
 
 std::string Disassembler::thumb_shift_immediate(u32 instruction) {
-    return "handle thumb_shift_immediate";
+    auto opcode = ThumbShiftImmediate::decode(instruction);
+    return common::format("%ss %s, %s, #0x%02x", shift_types[static_cast<int>(opcode.shift_type)], register_names[opcode.rd], register_names[opcode.rs], opcode.amount);
 }
 
 std::string Disassembler::thumb_software_interrupt(u32 instruction) {

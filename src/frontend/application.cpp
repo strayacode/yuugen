@@ -57,7 +57,7 @@ bool Application::initialise() {
     games_list.initialise();
 
     config.block_size = 32;
-    config.backend_type = arm::BackendType::Interpreter;
+    config.backend_type = arm::BackendType::IRInterpreter;
     config.optimisations = true;
     new_config = config;
 

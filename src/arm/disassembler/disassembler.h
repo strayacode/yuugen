@@ -74,7 +74,7 @@ public:
 private:
     Decoder<Disassembler> decoder;
 
-    std::array<const char*, 16> register_names = {
+    static constexpr std::array<const char*, 16> register_names = {
         "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",
         "r8", "r9", "r10", "r11", "r12", "sp", "lr", "pc"
     }; 
@@ -82,7 +82,14 @@ private:
     static constexpr std::array<const char*, 16> condition_names = {
         "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
         "hi", "ls", "ge", "lt", "gt", "le", "", "nv"
-    }; 
+    };
+
+    static constexpr std::array<const char*, 4> shift_types = {
+        "lsl",
+        "lsr",
+        "asr",
+        "ror"
+    };
 };
 
 } // namespace arm
