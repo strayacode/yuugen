@@ -35,6 +35,9 @@ public:
     void write_fog_colour(u32 value, u32 mask);
     void write_fog_offset(u16 value, u32 mask);
     void write_edge_colour(u32 addr, u16 value);
+    void write_fog_table(u32 addr, u32 value, u32 mask);
+    void write_toon_table(u32 addr, u16 value);
+    void write_alpha_test_ref(u8 value);
     void queue_command(u32 addr, u32 data);
     void do_swap_buffers();
     void render();
@@ -192,8 +195,9 @@ private:
     u32 fog_colour{0};
     u16 fog_offset{0};
     std::array<u16, 8> edge_colour;
-    std::array<u8, 0x20> fog_table;
-    std::array<u8, 0x40> toon_table;
+    std::array<u32, 8> fog_table;
+    std::array<u16, 32> toon_table;
+    u8 alpha_test_ref{0};
 
     Vertex current_vertex;
     Polygon current_polygon;

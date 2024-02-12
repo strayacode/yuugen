@@ -148,6 +148,7 @@ void GPU::reset() {
     edge_colour.fill(0);
     fog_table.fill(0);
     toon_table.fill(0);
+    alpha_test_ref = 0;
 
     viewport.x0 = 0;
     viewport.y0 = 0;
@@ -242,8 +243,22 @@ void GPU::write_fog_offset(u16 value, u32 mask) {
 }
 
 void GPU::write_edge_colour(u32 addr, u16 value) {
-    const int index = (addr - 0x04000330) / 2;
+    const auto index = (addr >> 1) & 0x7;
     edge_colour[index] = value;
+}
+
+void GPU::write_fog_table(u32 addr, u32 value, u32 mask) {
+    const auto index = (addr >> 2) & 0x7;
+    fog_table[index] = (fog_table[index] & ~mask) | (value & mask);
+}
+
+void GPU::write_toon_table(u32 addr, u16 value) {
+    const auto index = (addr >> 1) & 0x1f;
+    toon_table[index] = value;
+}
+
+void GPU::write_alpha_test_ref(u8 value) {
+    alpha_test_ref = value;
 }
 
 void GPU::queue_command(u32 addr, u32 data) {

@@ -20,6 +20,8 @@ public:
     u16 read_bgcnt(int id) const { return bgcnt[id].data; }
     u16 read_winin() const { return winin; }
     u16 read_winout() const { return winout; }
+    u16 read_bldcnt() const { return bldcnt.data; }
+    u16 read_bldalpha() const { return bldalpha.data; }
     u16 read_master_bright() const { return master_bright.data; }
 
     void write_dispcnt(u32 value, u32 mask);

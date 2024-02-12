@@ -93,6 +93,10 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_winin();
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_a.read_winout() << 16;
         return value;
+    case MMIO(0x04000050):
+        if constexpr (mask & 0xffff) value |= system.video_unit.ppu_a.read_bldcnt();
+        if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_a.read_bldalpha() << 16;
+        return value;
     case MMIO(0x04000060):
         return system.video_unit.gpu.read_disp3dcnt();
     case MMIO(0x04000064):
@@ -224,6 +228,10 @@ u32 ARM9Memory::mmio_read_word(u32 addr) {
     case MMIO(0x04001048):
         if constexpr (mask & 0xffff) value |= system.video_unit.ppu_b.read_winin();
         if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_b.read_winout() << 16;
+        return value;
+    case MMIO(0x04001050):
+        if constexpr (mask & 0xffff) value |= system.video_unit.ppu_b.read_bldcnt();
+        if constexpr (mask & 0xffff0000) value |= system.video_unit.ppu_b.read_bldalpha() << 16;
         return value;
     case MMIO(0x0400106c):
         return system.video_unit.ppu_b.read_master_bright();
@@ -484,6 +492,9 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         if constexpr (mask & 0xffff) system.video_unit.gpu.write_edge_colour(addr, value);
         if constexpr (mask & 0xffff0000) system.video_unit.gpu.write_edge_colour(addr + 2, value >> 16);
         break;
+    case MMIO(0x04000340):
+        if constexpr (mask & 0xff) system.video_unit.gpu.write_alpha_test_ref(value);
+        break;
     case MMIO(0x04000350):
         system.video_unit.gpu.write_clear_colour(value, mask);
         break;
@@ -496,6 +507,13 @@ void ARM9Memory::mmio_write_word(u32 addr, u32 value) {
         break;
     case MMIO(0x0400035c):
         system.video_unit.gpu.write_fog_offset(value, mask);
+        break;
+    case MMIO(0x04000360) ... MMIO(0x0400037c):
+        system.video_unit.gpu.write_fog_table(addr, value, mask);
+        break;
+    case MMIO(0x04000380) ... MMIO(0x040003bc):
+        if constexpr (mask & 0xffff) system.video_unit.gpu.write_toon_table(addr, value);
+        if constexpr (mask & 0xffff0000) system.video_unit.gpu.write_toon_table(addr + 2, value >> 16);
         break;
     case MMIO(0x04000400) ... MMIO(0x0400043c):
         system.video_unit.gpu.write_gxfifo(value);
