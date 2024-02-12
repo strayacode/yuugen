@@ -292,7 +292,7 @@ void IREmitter::branch_exchange(TypedValue<Type::U32> address, ExchangeType exch
 
     switch (exchange_type) {
     case ExchangeType::Bit0:
-        thumb = get_bit(address, imm8(1));
+        thumb = get_bit(address, imm8(0));
         store_flag(Flag::T, thumb);
         break;
     case ExchangeType::ThumbBit:
