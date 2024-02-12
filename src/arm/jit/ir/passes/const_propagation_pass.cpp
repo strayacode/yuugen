@@ -239,7 +239,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_copy(
         return std::nullopt;
     }
 
-    const auto& dst = opcode.src.as_variable();
+    const auto& dst = opcode.dst.as_variable();
     const auto& src = opcode.src.as_constant();
     return FoldResult{src.value, dst.id};
 }

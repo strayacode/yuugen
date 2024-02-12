@@ -88,6 +88,7 @@ public:
 
     TypedValue<Type::U1> truncate1(TypedValue<Type::U32> value);
     TypedValue<Type::U8> truncate_byte(TypedValue<Type::U32> value);
+    TypedValue<Type::U16> truncate_half(TypedValue<Type::U32> value);
 
     TypedValue<Type::U1> imm1(bool value);
     TypedValue<Type::U8> imm8(u8 value);

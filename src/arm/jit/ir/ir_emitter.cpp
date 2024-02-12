@@ -332,6 +332,10 @@ TypedValue<Type::U8> IREmitter::truncate_byte(TypedValue<Type::U32> value) {
     return TypedValue<Type::U8>{bitwise_and(value, imm32(0xff))};
 }
 
+TypedValue<Type::U16> IREmitter::truncate_half(TypedValue<Type::U32> value) {
+    return TypedValue<Type::U16>{bitwise_and(value, imm32(0xffff))};
+}
+
 TypedValue<Type::U1> IREmitter::imm1(bool value) {
     return TypedValue<Type::U1>(value);
 }

@@ -58,7 +58,7 @@ bool Application::initialise() {
 
     config.block_size = 32;
     config.backend_type = arm::BackendType::Jit;
-    config.optimisations = false;
+    config.optimisations = true;
     new_config = config;
 
     audio_device = std::make_shared<SDLAudioDevice>();
