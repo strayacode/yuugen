@@ -52,7 +52,8 @@ constexpr const char* trim_source_path(std::string_view source) {
 
 template <typename... Args>
 void log_impl(LogLevel log_level, const char* source, int line, const char* function, const char* pattern, Args... args) {
-    printf("%s%s:%d @ %s: %s\n", get_colour_from_level(log_level), trim_source_path(source), line, function, common::format(pattern, std::forward<Args>(args)...).c_str());
+    printf("%s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
+    // printf("%s%s:%d @ %s: %s\n", get_colour_from_level(log_level), trim_source_path(source), line, function, common::format(pattern, std::forward<Args>(args)...).c_str());
 
     if (log_level == LogLevel::Error || log_level == LogLevel::Todo) {
         std::exit(0);
@@ -61,7 +62,7 @@ void log_impl(LogLevel log_level, const char* source, int line, const char* func
 
 } // namespace common
 
-#define LOG_INFO(pattern, ...) printf(GREY pattern "\n", ##__VA_ARGS__);
+#define LOG_INFO(pattern, ...) common::log_impl(common::LogLevel::Info, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
 #define LOG_DEBUG(pattern, ...) common::log_impl(common::LogLevel::Debug, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
 #define LOG_WARN(pattern, ...) common::log_impl(common::LogLevel::Warn, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);
 #define LOG_ERROR(pattern, ...) common::log_impl(common::LogLevel::Error, __FILE__, __LINE__, __FUNCTION__, pattern, ##__VA_ARGS__);

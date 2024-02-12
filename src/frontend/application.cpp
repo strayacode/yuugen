@@ -56,9 +56,9 @@ bool Application::initialise() {
 
     games_list.initialise();
 
-    config.block_size = 32;
-    config.backend_type = arm::BackendType::IRInterpreter;
-    config.optimisations = true;
+    config.block_size = 1;
+    config.backend_type = arm::BackendType::Jit;
+    config.optimisations = false;
     new_config = config;
 
     audio_device = std::make_shared<SDLAudioDevice>();

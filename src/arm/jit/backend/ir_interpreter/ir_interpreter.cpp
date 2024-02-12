@@ -28,8 +28,12 @@ Code IRInterpreter::compile(BasicBlock& basic_block)  {
     compiled_block.num_instructions = basic_block.num_instructions;
     compiled_block.condition = basic_block.condition;
     compiled_block.location = basic_block.location;
-    
+
     for (auto& opcode : basic_block.opcodes) {
+        if (basic_block.location.get_address() == 0x0000229a) {
+            LOG_WARN("compile %s for bad block", opcode->to_string().c_str());
+        }
+
         compiled_block.instructions.push_back(compile_ir_opcode(opcode));
     }
 

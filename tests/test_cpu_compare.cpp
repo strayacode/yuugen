@@ -6,6 +6,8 @@
 void compare_states(arm::Arch arch, arm::CPU& a, arm::Memory& a_memory, arm::CPU& b, arm::Memory& b_memory) {
     for (int i = 0; i < 16; i++) {
         if (a.get_gpr(static_cast<arm::GPR>(i)) != b.get_gpr(static_cast<arm::GPR>(i))) {
+            LOG_WARN("pc %08x cpsr t %d", a.state.gpr[15], a.state.cpsr.t);
+            LOG_WARN("r1 %08x", a.state.gpr[1]);
             LOG_ERROR("%s r%d mismatch at %08x: expected: %08x got: %08x", arch == arm::Arch::ARMv5 ? "arm9" : "arm7", i, a.get_gpr(arm::GPR::PC), a.get_gpr(static_cast<arm::GPR>(i)), b.get_gpr(static_cast<arm::GPR>(i)));
         }
     }
@@ -85,12 +87,12 @@ void run_nds(char *path) {
     a_system.configure_cpu_backend(a_config);
     b_system.configure_cpu_backend(b_config);
 
-    a_system.set_game_path(path);
-    a_system.set_boot_mode(common::BootMode::Fast);
+    a_system.set_game_path("");
+    a_system.set_boot_mode(common::BootMode::Regular);
     a_system.reset();
 
-    b_system.set_game_path(path);
-    b_system.set_boot_mode(common::BootMode::Fast);
+    b_system.set_game_path("");
+    b_system.set_boot_mode(common::BootMode::Regular);
     b_system.reset();
 
     auto& a_arm7 = a_system.arm7;
