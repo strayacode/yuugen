@@ -758,7 +758,7 @@ struct IRMemoryWrite : IROpcode {
     IRMemoryWrite(IRValue addr, IRValue src, AccessSize access_size) : IROpcode(IROpcodeType::MemoryWrite), addr(addr), src(src), access_size(access_size) {}
 
     std::string to_string() override {
-        return common::format("write %s, %s", addr.to_string().c_str(), src.to_string().c_str());
+        return common::format("write_%s %s, %s", access_size_to_string(access_size).c_str(), addr.to_string().c_str(), src.to_string().c_str());
     }
 
     std::vector<IRValue*> get_parameters() override {

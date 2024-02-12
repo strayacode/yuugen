@@ -1,3 +1,4 @@
+#include <cassert>
 #include "common/logger.h"
 #include "arm/jit/ir/opcodes.h"
 #include "arm/jit/ir/ir_emitter.h"
@@ -16,11 +17,11 @@ IRPair<IRVariable> IREmitter::create_pair() {
     return IRPair{create_variable(), create_variable()};
 }
 
-IRVariable IREmitter::load_gpr(GPR gpr) {
+TypedValue<Type::U32> IREmitter::load_gpr(GPR gpr) {
     auto dst = create_variable();
     GuestRegister src{gpr, basic_block.location.get_mode()};
     push<IRLoadGPR>(dst, src);
-    return dst;
+    return TypedValue<Type::U32>{dst};
 }
 
 IRVariable IREmitter::load_gpr(GPR gpr, Mode mode) {
@@ -97,10 +98,10 @@ IRVariable IREmitter::bitwise_not(IRValue src) {
     return dst;
 }
 
-IRVariable IREmitter::bitwise_exclusive_or(IRValue lhs, IRValue rhs) {
+TypedValue<Type::U32> IREmitter::bitwise_exclusive_or(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs) {
     auto dst = create_variable();
-    push<IRBitwiseExclusiveOr>(dst, lhs, rhs);
-    return dst;
+    push<IRBitwiseExclusiveOr>(dst, lhs.value, rhs.value);
+    return TypedValue<Type::U32>(dst);
 }
 
 IRVariable IREmitter::add(IRValue lhs, IRValue rhs) {
@@ -119,6 +120,11 @@ IRVariable IREmitter::subtract(IRValue lhs, IRValue rhs) {
     auto dst = create_variable();
     push<IRSubtract>(dst, lhs, rhs);
     return dst;
+}
+
+TypedValue<Type::U32> IREmitter::subtract_with_carry(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U1> carry) {
+    const auto flipped = bitwise_exclusive_or(extend32(carry), imm32(1));
+    return subtract(subtract(lhs, rhs));
 }
 
 IRVariable IREmitter::multiply(IRValue lhs, IRValue rhs) {
@@ -203,7 +209,7 @@ IRVariable IREmitter::count_leading_zeroes(IRValue src) {
     return dst;
 }
 
-IRVariable IREmitter::load_flag(Flag flag) {
+TypedValue<Type::U1> IREmitter::load_flag(Flag flag) {
     auto cpsr = load_cpsr();
     return get_bit(cpsr, constant(flag));
 }
@@ -224,17 +230,17 @@ void IREmitter::store_nz_long(IRPair<IRVariable> value) {
     store_flag(Flag::Z, bitwise_and(compare(value.first, constant(0), CompareType::Equal), compare(value.second, constant(0), CompareType::Equal)));
 }
 
-void IREmitter::store_add_cv(IRValue lhs, IRValue rhs, IRValue result) {
+void IREmitter::store_add_cv(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U32> result) {
     store_flag(Flag::C, compare(result, lhs, CompareType::LessThan));
     store_flag(Flag::V, add_overflow(lhs, rhs, result));
 }
 
-void IREmitter::store_sub_cv(IRValue lhs, IRValue rhs, IRValue result) {
+void IREmitter::store_sub_cv(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U32> result) {
     store_flag(Flag::C, compare(lhs, rhs, CompareType::GreaterEqual));
     store_flag(Flag::V, sub_overflow(lhs, rhs, result));
 }
 
-void IREmitter::store_adc_cv(IRValue lhs, IRValue rhs, IRValue result) {
+void IREmitter::store_adc_cv(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U32> result) {
     auto carry = load_flag(Flag::C);
     auto a = bitwise_and(compare(lhs, result, CompareType::Equal), carry);
     auto b = compare(lhs, result, CompareType::GreaterThan);
@@ -243,7 +249,7 @@ void IREmitter::store_adc_cv(IRValue lhs, IRValue rhs, IRValue result) {
     store_flag(Flag::V, add_overflow(lhs, rhs, result));
 }
 
-void IREmitter::store_sbc_cv(IRValue lhs, IRValue rhs, IRValue result) {
+void IREmitter::store_sbc_cv(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U32> result) {
     auto carry = load_flag(Flag::C);
     auto a = bitwise_and(compare(lhs, rhs, CompareType::Equal), carry);
     auto b = compare(lhs, rhs, CompareType::GreaterThan);
@@ -252,13 +258,13 @@ void IREmitter::store_sbc_cv(IRValue lhs, IRValue rhs, IRValue result) {
     store_flag(Flag::V, sub_overflow(lhs, rhs, result));
 }
 
-IRVariable IREmitter::add_overflow(IRValue lhs, IRValue rhs, IRValue result) {
+IRVariable IREmitter::add_overflow(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U32> result) {
     auto a = bitwise_not(bitwise_exclusive_or(lhs, rhs));
     auto b = bitwise_exclusive_or(rhs, result);
     return logical_shift_right(bitwise_and(a, b), constant(31));
 }
 
-IRVariable IREmitter::sub_overflow(IRValue lhs, IRValue rhs, IRValue result) {
+IRVariable IREmitter::sub_overflow(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U32> result) {
     auto a = bitwise_exclusive_or(lhs, rhs);
     auto b = bitwise_exclusive_or(lhs, result);
     return logical_shift_right(bitwise_and(a, b), constant(31));
@@ -312,6 +318,14 @@ IRVariable IREmitter::set_bit(IRValue src, IRValue value, IRValue bit) {
     auto dst = create_variable();
     push<IRSetBit>(dst, src, value, bit);
     return dst;
+}
+
+TypedValue<Type::U1> IREmitter::imm1(bool value) {
+    return TypedValue<Type::U1>(value);
+}
+
+TypedValue<Type::U32> IREmitter::imm32(u32 value) {
+    return TypedValue<Type::U32>(value);
 }
 
 IRConstant IREmitter::constant(u32 value) {

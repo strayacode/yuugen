@@ -1,11 +1,20 @@
 #pragma once
 
+#include <type_traits>
 #include "common/types.h"
 #include "common/string.h"
 #include "arm/cpu.h"
 #include "arm/state.h"
 
 namespace arm {
+
+enum class Type : u8 {
+    U1 = 1 << 0,
+    U8 = 1 << 1,
+    U16 = 1 << 2,
+    U32 = 1 << 3,
+    U64 = 1 << 4,
+};
 
 enum class IRValueType {
     Variable,
@@ -35,11 +44,13 @@ struct IRConstant {
         return common::format("0x%08x", value);
     }
 
-    u32 value;
+    u32 value{0};
 };
 
 struct IRValue {
     IRValue() : type(IRValueType::None) {}
+    IRValue(bool value) : type(IRValueType::Constant), constant(IRConstant{value}) {}
+    IRValue(u32 value) : type(IRValueType::Constant), constant(IRConstant{value}) {}
     IRValue(IRVariable variable) : type(IRValueType::Variable), variable(variable) {}
     IRValue(IRConstant constant) : type(IRValueType::Constant), constant(constant) {}
 
@@ -95,6 +106,33 @@ struct IRValue {
         IRVariable variable;
         IRConstant constant;
     };
+};
+
+template <Type T>
+struct TypedValue : public IRValue {
+    TypedValue() : IRValue() {}
+
+    explicit TypedValue(IRValue value) : IRValue(value) {}
+
+    explicit TypedValue(bool value) : IRValue(value) {
+        static_assert(TypedValue::is_same_type<T, Type::U1>());
+    }
+
+    explicit TypedValue(u32 value) : IRValue(value) {
+        static_assert(TypedValue::is_same_type<T, Type::U32>());
+    }
+
+    explicit TypedValue(IRVariable variable) : IRValue(variable) {}
+
+    template <Type A, Type B>
+    static constexpr bool is_same_type() {
+        return A == B;
+    }
+
+    template <Type A, Type B>
+    static constexpr bool is_larger() {
+        return A > B;
+    }
 };
 
 struct GuestRegister {

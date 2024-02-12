@@ -499,7 +499,7 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
 
 Translator::BlockStatus Translator::arm_data_processing() {
     auto opcode = ARMDataProcessing::decode(instruction);
-    IRValue op2;
+    TypedValue<Type::U32> op2;
     auto early_advance_pc = false;
 
     bool is_comparison_opcode = opcode.opcode == ARMDataProcessing::Opcode::TST ||
@@ -518,10 +518,10 @@ Translator::BlockStatus Translator::arm_data_processing() {
     bool update_flags = opcode.set_flags && (opcode.rd != GPR::PC || is_comparison_opcode);
 
     if (opcode.imm) {
-        op2 = ir.constant(opcode.rhs.imm.rotated);
+        op2 = ir.imm32(opcode.rhs.imm.rotated);
 
         if (set_carry && opcode.rhs.imm.shift != 0) {
-            ir.store_flag(Flag::C, ir.constant(opcode.rhs.imm.rotated >> 31));
+            ir.store_flag(Flag::C, ir.imm1(opcode.rhs.imm.rotated >> 31));
         }
     } else {
         IRValue amount;
@@ -541,8 +541,8 @@ Translator::BlockStatus Translator::arm_data_processing() {
         }
     }
 
-    IRValue op1;
-    IRVariable result;
+    TypedValue<Type::U32> op1;
+    TypedValue<Type::U32> result;
 
     if (uses_op1) {
         op1 = ir.load_gpr(opcode.rn);
@@ -596,7 +596,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
 
         break;
     case ARMDataProcessing::Opcode::SBC:
-        result = ir.subtract(ir.subtract(op1, op2), ir.bitwise_exclusive_or(ir.load_flag(Flag::C), ir.constant(1)));
+        result = ir.subtract_with_carry(op1, op2, ir.load_flag(Flag::C));
         if (update_flags) {
             ir.store_nz(result);
             ir.store_sbc_cv(op1, op2, result);
@@ -604,7 +604,7 @@ Translator::BlockStatus Translator::arm_data_processing() {
 
         break;
     case ARMDataProcessing::Opcode::RSC:
-        result = ir.subtract(ir.subtract(op2, op1), ir.bitwise_exclusive_or(ir.load_flag(Flag::C), ir.constant(1)));
+        result = ir.subtract_with_carry(op2, op1, ir.load_flag(Flag::C));
         if (update_flags) {
             ir.store_nz(result);
             ir.store_sbc_cv(op2, op1, result);

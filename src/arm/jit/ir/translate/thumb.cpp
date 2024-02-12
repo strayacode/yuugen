@@ -156,8 +156,8 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
         LOG_TODO("pc in thumb_data_processing_register");
     }
 
-    IRVariable result;
-    IRValue op1;
+    TypedValue<Type::U32> result;
+    TypedValue<Type::U32> op1;
     auto op2 = ir.load_gpr(opcode.rs);
 
     bool uses_op1 = opcode.opcode != ThumbDataProcessingRegister::Opcode::NEG && opcode.opcode != ThumbDataProcessingRegister::Opcode::MVN;
@@ -204,7 +204,7 @@ Translator::BlockStatus Translator::thumb_data_processing_register() {
         ir.store_adc_cv(op1, op2, result);
         break;
     case ThumbDataProcessingRegister::Opcode::SBC:
-        result = ir.subtract(ir.subtract(op1, op2), ir.bitwise_exclusive_or(ir.load_flag(Flag::C), ir.constant(1)));
+        result = ir.subtract_with_carry(op1, op2, ir.load_flag(Flag::C));
         ir.store_nz(result);
         ir.store_sbc_cv(op1, op2, result);
         break;
