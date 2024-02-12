@@ -119,7 +119,7 @@ struct IROpcode {
     virtual ~IROpcode() = default;
     virtual std::string to_string() = 0;
     virtual std::vector<IRValue*> get_parameters() = 0;
-    virtual std::vector<IRVariable*> get_destinations() = 0;
+    virtual std::vector<IRValue*> get_destinations() = 0;
 
     IROpcodeType get_type() {
         return type;
@@ -134,7 +134,7 @@ struct IROpcode {
 };
 
 struct IRLoadGPR : IROpcode {
-    IRLoadGPR(IRVariable dst, GuestRegister src) : IROpcode(IROpcodeType::LoadGPR), dst(dst), src(src) {}
+    IRLoadGPR(IRValue dst, GuestRegister src) : IROpcode(IROpcodeType::LoadGPR), dst(dst), src(src) {}
 
     std::string to_string() override {
         return common::format("%s = load_gpr %s", dst.to_string().c_str(), src.to_string().c_str());
@@ -144,11 +144,11 @@ struct IRLoadGPR : IROpcode {
         return {};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     GuestRegister src;
 };
 
@@ -163,7 +163,7 @@ struct IRStoreGPR : IROpcode {
         return {&src};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {};
     }
 
@@ -172,7 +172,7 @@ struct IRStoreGPR : IROpcode {
 };
 
 struct IRLoadCPSR : IROpcode {
-    IRLoadCPSR(IRVariable dst) : IROpcode(IROpcodeType::LoadCPSR), dst(dst) {}
+    IRLoadCPSR(IRValue dst) : IROpcode(IROpcodeType::LoadCPSR), dst(dst) {}
 
     std::string to_string() override {
         return common::format("%s = load_cpsr", dst.to_string().c_str());
@@ -182,11 +182,11 @@ struct IRLoadCPSR : IROpcode {
         return {};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
 };
 
 struct IRStoreCPSR : IROpcode {
@@ -200,7 +200,7 @@ struct IRStoreCPSR : IROpcode {
         return {&src};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {};
     }
 
@@ -208,7 +208,7 @@ struct IRStoreCPSR : IROpcode {
 };
 
 struct IRLoadSPSR : IROpcode {
-    IRLoadSPSR(IRVariable dst, Mode mode) : IROpcode(IROpcodeType::LoadSPSR), dst(dst), mode(mode) {}
+    IRLoadSPSR(IRValue dst, Mode mode) : IROpcode(IROpcodeType::LoadSPSR), dst(dst), mode(mode) {}
 
     std::string to_string() override {
         return common::format("%s = load_spsr", dst.to_string().c_str());
@@ -218,11 +218,11 @@ struct IRLoadSPSR : IROpcode {
         return {};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     Mode mode;
 };
 
@@ -237,7 +237,7 @@ struct IRStoreSPSR : IROpcode {
         return {&src};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {};
     }
 
@@ -246,7 +246,7 @@ struct IRStoreSPSR : IROpcode {
 };
 
 struct IRLoadCoprocessor : IROpcode {
-    IRLoadCoprocessor(IRVariable dst, u32 cn, u32 cm, u32 cp) : IROpcode(IROpcodeType::LoadCoprocessor), dst(dst), cn(cn), cm(cm), cp(cp) {}
+    IRLoadCoprocessor(IRValue dst, u32 cn, u32 cm, u32 cp) : IROpcode(IROpcodeType::LoadCoprocessor), dst(dst), cn(cn), cm(cm), cp(cp) {}
 
     std::string to_string() override {
         return common::format("%s = load_coprocessor c%d, c%d, c%d", dst.to_string().c_str(), cn, cm, cp);
@@ -256,11 +256,11 @@ struct IRLoadCoprocessor : IROpcode {
         return {};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     u32 cn;
     u32 cm;
     u32 cp;
@@ -277,7 +277,7 @@ struct IRStoreCoprocessor : IROpcode {
         return {&src};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {};
     }
 
@@ -288,7 +288,7 @@ struct IRStoreCoprocessor : IROpcode {
 };
 
 struct IRBitwiseAnd : IROpcode {
-    IRBitwiseAnd(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseAnd), dst(dst), lhs(lhs), rhs(rhs) {}
+    IRBitwiseAnd(IRValue dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseAnd), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
         return common::format("%s = and %s, %s", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -298,17 +298,17 @@ struct IRBitwiseAnd : IROpcode {
         return {&lhs, &rhs};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue lhs;
     IRValue rhs;
 };
 
 struct IRBitwiseOr : IROpcode {
-    IRBitwiseOr(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseOr), dst(dst), lhs(lhs), rhs(rhs) {}
+    IRBitwiseOr(IRValue dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseOr), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
         return common::format("%s = or %s, %s", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -318,17 +318,17 @@ struct IRBitwiseOr : IROpcode {
         return {&lhs, &rhs};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue lhs;
     IRValue rhs;
 };
 
 struct IRBitwiseNot : IROpcode {
-    IRBitwiseNot(IRVariable dst, IRValue src) : IROpcode(IROpcodeType::BitwiseNot), dst(dst), src(src) {}
+    IRBitwiseNot(IRValue dst, IRValue src) : IROpcode(IROpcodeType::BitwiseNot), dst(dst), src(src) {}
 
     std::string to_string() override {
         return common::format("%s = not %s", dst.to_string().c_str(), src.to_string().c_str());
@@ -338,16 +338,16 @@ struct IRBitwiseNot : IROpcode {
         return {&src};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
 };
 
 struct IRBitwiseExclusiveOr : IROpcode {
-    IRBitwiseExclusiveOr(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseExclusiveOr), dst(dst), lhs(lhs), rhs(rhs) {}
+    IRBitwiseExclusiveOr(IRValue dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::BitwiseExclusiveOr), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
         return common::format("%s = xor %s, %s", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -357,17 +357,17 @@ struct IRBitwiseExclusiveOr : IROpcode {
         return {&lhs, &rhs};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue lhs;
     IRValue rhs;
 };
 
 struct IRLogicalShiftLeft : IROpcode {
-    IRLogicalShiftLeft(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::LogicalShiftLeft), dst(dst), src(src), amount(amount) {}
+    IRLogicalShiftLeft(IRValue dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::LogicalShiftLeft), dst(dst), src(src), amount(amount) {}
 
     std::string to_string() override {
         return common::format("%s = lsl %s, %s", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
@@ -377,17 +377,17 @@ struct IRLogicalShiftLeft : IROpcode {
         return {&src, &amount};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
     IRValue amount;
 };
 
 struct IRLogicalShiftRight : IROpcode {
-    IRLogicalShiftRight(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::LogicalShiftRight), dst(dst), src(src), amount(amount) {}
+    IRLogicalShiftRight(IRValue dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::LogicalShiftRight), dst(dst), src(src), amount(amount) {}
 
     std::string to_string() override {
         return common::format("%s = lsr %s, %s", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
@@ -397,17 +397,17 @@ struct IRLogicalShiftRight : IROpcode {
         return {&src, &amount};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
     IRValue amount;
 };
 
 struct IRArithmeticShiftRight : IROpcode {
-    IRArithmeticShiftRight(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::ArithmeticShiftRight), dst(dst), src(src), amount(amount) {}
+    IRArithmeticShiftRight(IRValue dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::ArithmeticShiftRight), dst(dst), src(src), amount(amount) {}
 
     std::string to_string() override {
         return common::format("%s = asr %s, %s", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
@@ -417,17 +417,17 @@ struct IRArithmeticShiftRight : IROpcode {
         return {&src, &amount};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
     IRValue amount;
 };
 
 struct IRRotateRight : IROpcode {
-    IRRotateRight(IRVariable dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::RotateRight), dst(dst), src(src), amount(amount) {}
+    IRRotateRight(IRValue dst, IRValue src, IRValue amount) : IROpcode(IROpcodeType::RotateRight), dst(dst), src(src), amount(amount) {}
 
     std::string to_string() override {
         return common::format("%s = ror %s, %s", dst.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str());
@@ -437,17 +437,17 @@ struct IRRotateRight : IROpcode {
         return {&src, &amount};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
     IRValue amount;
 };
 
 struct IRBarrelShifterLogicalShiftLeft : IROpcode {
-    IRBarrelShifterLogicalShiftLeft(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftLeft), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
+    IRBarrelShifterLogicalShiftLeft(IRPair result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftLeft), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
 
     std::string to_string() override {
         return common::format("%s = barrel_shifter_lsl %s, %s, %s", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str(), carry.to_string().c_str());
@@ -457,18 +457,18 @@ struct IRBarrelShifterLogicalShiftLeft : IROpcode {
         return {&src, &amount, &carry};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&result_and_carry.first, &result_and_carry.second};
     }
 
-    IRPair<IRVariable> result_and_carry;
+    IRPair result_and_carry;
     IRValue src;
     IRValue amount;
     IRValue carry;
 };
 
 struct IRBarrelShifterLogicalShiftRight : IROpcode {
-    IRBarrelShifterLogicalShiftRight(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry, bool imm) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry), imm(imm) {}
+    IRBarrelShifterLogicalShiftRight(IRPair result_and_carry, IRValue src, IRValue amount, IRValue carry, bool imm) : IROpcode(IROpcodeType::BarrelShifterLogicalShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry), imm(imm) {}
 
     std::string to_string() override {
         return common::format("%s = barrel_shifter_lsr %s, %s, %s", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str(), carry.to_string().c_str());
@@ -478,11 +478,11 @@ struct IRBarrelShifterLogicalShiftRight : IROpcode {
         return {&src, &amount, &carry};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&result_and_carry.first, &result_and_carry.second};
     }
 
-    IRPair<IRVariable> result_and_carry;
+    IRPair result_and_carry;
     IRValue src;
     IRValue amount;
     IRValue carry;
@@ -490,7 +490,7 @@ struct IRBarrelShifterLogicalShiftRight : IROpcode {
 };
 
 struct IRBarrelShifterArithmeticShiftRight : IROpcode {
-    IRBarrelShifterArithmeticShiftRight(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry, bool imm) : IROpcode(IROpcodeType::BarrelShifterArithmeticShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry), imm(imm) {}
+    IRBarrelShifterArithmeticShiftRight(IRPair result_and_carry, IRValue src, IRValue amount, IRValue carry, bool imm) : IROpcode(IROpcodeType::BarrelShifterArithmeticShiftRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry), imm(imm) {}
 
     std::string to_string() override {
         return common::format("%s = barrel_shifter_asr %s, %s, %s", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str(), carry.to_string().c_str());
@@ -500,11 +500,11 @@ struct IRBarrelShifterArithmeticShiftRight : IROpcode {
         return {&src, &amount, &carry};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&result_and_carry.first, &result_and_carry.second};
     }
 
-    IRPair<IRVariable> result_and_carry;
+    IRPair result_and_carry;
     IRValue src;
     IRValue amount;
     IRValue carry;
@@ -512,7 +512,7 @@ struct IRBarrelShifterArithmeticShiftRight : IROpcode {
 };
 
 struct IRBarrelShifterRotateRight : IROpcode {
-    IRBarrelShifterRotateRight(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterRotateRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
+    IRBarrelShifterRotateRight(IRPair result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterRotateRight), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
 
     std::string to_string() override {
         return common::format("%s = barrel_shifter_ror %s, %s, %s", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str(), carry.to_string().c_str());
@@ -522,18 +522,18 @@ struct IRBarrelShifterRotateRight : IROpcode {
         return {&src, &amount, &carry};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&result_and_carry.first, &result_and_carry.second};
     }
 
-    IRPair<IRVariable> result_and_carry;
+    IRPair result_and_carry;
     IRValue src;
     IRValue amount;
     IRValue carry;
 };
 
 struct IRBarrelShifterRotateRightExtended : IROpcode {
-    IRBarrelShifterRotateRightExtended(IRPair<IRVariable> result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterRotateRightExtended), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
+    IRBarrelShifterRotateRightExtended(IRPair result_and_carry, IRValue src, IRValue amount, IRValue carry) : IROpcode(IROpcodeType::BarrelShifterRotateRightExtended), result_and_carry(result_and_carry), src(src), amount(amount), carry(carry) {}
 
     std::string to_string() override {
         return common::format("%s = barrel_shifter_rrx %s, %s, %s", result_and_carry.to_string().c_str(), src.to_string().c_str(), amount.to_string().c_str(), carry.to_string().c_str());
@@ -543,18 +543,18 @@ struct IRBarrelShifterRotateRightExtended : IROpcode {
         return {&src, &amount, &carry};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&result_and_carry.first, &result_and_carry.second};
     }
 
-    IRPair<IRVariable> result_and_carry;
+    IRPair result_and_carry;
     IRValue src;
     IRValue amount;
     IRValue carry;
 };
 
 struct IRCountLeadingZeroes : IROpcode {
-    IRCountLeadingZeroes(IRVariable dst, IRValue src) : IROpcode(IROpcodeType::CountLeadingZeroes), dst(dst), src(src) {}
+    IRCountLeadingZeroes(IRValue dst, IRValue src) : IROpcode(IROpcodeType::CountLeadingZeroes), dst(dst), src(src) {}
 
     std::string to_string() override {
         return common::format("%s = clz %s", dst.to_string().c_str(), src.to_string().c_str());
@@ -564,16 +564,16 @@ struct IRCountLeadingZeroes : IROpcode {
         return {&src};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
 };
 
 struct IRAdd : IROpcode {
-    IRAdd(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Add), dst(dst), lhs(lhs), rhs(rhs) {}
+    IRAdd(IRValue dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Add), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
         return common::format("%s = add %s, %s", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -583,17 +583,17 @@ struct IRAdd : IROpcode {
         return {&lhs, &rhs};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue lhs;
     IRValue rhs;
 };
 
 struct IRAddLong : IROpcode {
-    IRAddLong(IRPair<IRVariable> dst, IRPair<IRValue> lhs, IRPair<IRValue> rhs) : IROpcode(IROpcodeType::AddLong), dst(dst), lhs(lhs), rhs(rhs) {}
+    IRAddLong(IRPair dst, IRPair lhs, IRPair rhs) : IROpcode(IROpcodeType::AddLong), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
         return common::format("%s = add_long %s, %s", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -603,17 +603,17 @@ struct IRAddLong : IROpcode {
         return {&lhs.first, &lhs.second, &rhs.first, &rhs.second};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst.first, &dst.second};
     }
 
-    IRPair<IRVariable> dst;
-    IRPair<IRValue> lhs;
-    IRPair<IRValue> rhs;
+    IRPair dst;
+    IRPair lhs;
+    IRPair rhs;
 };
 
 struct IRSubtract : IROpcode {
-    IRSubtract(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Subtract), dst(dst), lhs(lhs), rhs(rhs) {}
+    IRSubtract(IRValue dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Subtract), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
         return common::format("%s = subtract %s, %s", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -623,17 +623,17 @@ struct IRSubtract : IROpcode {
         return {&lhs, &rhs};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue lhs;
     IRValue rhs;
 };
 
 struct IRMultiply : IROpcode {
-    IRMultiply(IRVariable dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Multiply), dst(dst), lhs(lhs), rhs(rhs) {}
+    IRMultiply(IRValue dst, IRValue lhs, IRValue rhs) : IROpcode(IROpcodeType::Multiply), dst(dst), lhs(lhs), rhs(rhs) {}
 
     std::string to_string() override {
         return common::format("%s = multiply %s, %s", dst.to_string().c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -643,17 +643,17 @@ struct IRMultiply : IROpcode {
         return {&lhs, &rhs};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue lhs;
     IRValue rhs;
 };
 
 struct IRMultiplyLong : IROpcode {
-    IRMultiplyLong(IRPair<IRVariable> dst, IRValue lhs, IRValue rhs, bool is_signed) : IROpcode(IROpcodeType::MultiplyLong), dst(dst), lhs(lhs), rhs(rhs), is_signed(is_signed) {}
+    IRMultiplyLong(IRPair dst, IRValue lhs, IRValue rhs, bool is_signed) : IROpcode(IROpcodeType::MultiplyLong), dst(dst), lhs(lhs), rhs(rhs), is_signed(is_signed) {}
 
     std::string to_string() override {
         return common::format("%s = multiply_long%s %s, %s", dst.to_string().c_str(), is_signed ? "_signed" : "", lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -663,18 +663,18 @@ struct IRMultiplyLong : IROpcode {
         return {&lhs, &rhs};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst.first, &dst.second};
     }
 
-    IRPair<IRVariable> dst;
+    IRPair dst;
     IRValue lhs;
     IRValue rhs;
     bool is_signed;
 };
 
 struct IRCompare : IROpcode {
-    IRCompare(IRVariable dst, IRValue lhs, IRValue rhs, CompareType compare_type) : IROpcode(IROpcodeType::Compare), dst(dst), lhs(lhs), rhs(rhs), compare_type(compare_type) {}
+    IRCompare(IRValue dst, IRValue lhs, IRValue rhs, CompareType compare_type) : IROpcode(IROpcodeType::Compare), dst(dst), lhs(lhs), rhs(rhs), compare_type(compare_type) {}
 
     std::string to_string() override {
         return common::format("%s = compare_%s %s, %s", dst.to_string().c_str(), compare_type_to_string(compare_type).c_str(), lhs.to_string().c_str(), rhs.to_string().c_str());
@@ -684,18 +684,18 @@ struct IRCompare : IROpcode {
         return {&lhs, &rhs};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue lhs;
     IRValue rhs;
     CompareType compare_type;
 };
 
 struct IRCopy : IROpcode {
-    IRCopy(IRVariable dst, IRValue src) : IROpcode(IROpcodeType::Copy), dst(dst), src(src) {}
+    IRCopy(IRValue dst, IRValue src) : IROpcode(IROpcodeType::Copy), dst(dst), src(src) {}
 
     std::string to_string() override {
         return common::format("%s = copy %s", dst.to_string().c_str(), src.to_string().c_str());
@@ -705,16 +705,16 @@ struct IRCopy : IROpcode {
         return {&src};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
 };
 
 struct IRGetBit : IROpcode {
-    IRGetBit(IRVariable dst, IRValue src, IRValue bit) : IROpcode(IROpcodeType::GetBit), dst(dst), src(src), bit(bit) {}
+    IRGetBit(IRValue dst, IRValue src, IRValue bit) : IROpcode(IROpcodeType::GetBit), dst(dst), src(src), bit(bit) {}
 
     std::string to_string() override {
         return common::format("%s = get_bit %s, %s", dst.to_string().c_str(), src.to_string().c_str(), bit.to_string().c_str());
@@ -724,17 +724,17 @@ struct IRGetBit : IROpcode {
         return {&src, &bit};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
     IRValue bit;
 };
 
 struct IRSetBit : IROpcode {
-    IRSetBit(IRVariable dst, IRValue src, IRValue value, IRValue bit) : IROpcode(IROpcodeType::SetBit), dst(dst), src(src), value(value), bit(bit) {}
+    IRSetBit(IRValue dst, IRValue src, IRValue value, IRValue bit) : IROpcode(IROpcodeType::SetBit), dst(dst), src(src), value(value), bit(bit) {}
 
     std::string to_string() override {
         return common::format("%s = set_bit %s, %s, %s", dst.to_string().c_str(), src.to_string().c_str(), value.to_string().c_str(), bit.to_string().c_str());
@@ -744,11 +744,11 @@ struct IRSetBit : IROpcode {
         return {&src, &value, &bit};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue src;
     IRValue value;
     IRValue bit;
@@ -765,7 +765,7 @@ struct IRMemoryWrite : IROpcode {
         return {&addr, &src};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {};
     }
 
@@ -775,7 +775,7 @@ struct IRMemoryWrite : IROpcode {
 };
 
 struct IRMemoryRead : IROpcode {
-    IRMemoryRead(IRVariable dst, IRValue addr, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryRead), dst(dst), addr(addr), access_size(access_size), access_type(access_type) {}
+    IRMemoryRead(IRValue dst, IRValue addr, AccessSize access_size, AccessType access_type) : IROpcode(IROpcodeType::MemoryRead), dst(dst), addr(addr), access_size(access_size), access_type(access_type) {}
 
     std::string to_string() override {
         return common::format("%s = read_%s_%s %s", dst.to_string().c_str(), access_size_to_string(access_size).c_str(), access_type_to_string(access_type).c_str(), addr.to_string().c_str());
@@ -785,11 +785,11 @@ struct IRMemoryRead : IROpcode {
         return {&addr};
     }
 
-    std::vector<IRVariable*> get_destinations() override {
+    std::vector<IRValue*> get_destinations() override {
         return {&dst};
     }
 
-    IRVariable dst;
+    IRValue dst;
     IRValue addr;
     AccessSize access_size;
     AccessType access_type;

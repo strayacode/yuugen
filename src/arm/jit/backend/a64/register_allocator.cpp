@@ -47,13 +47,13 @@ void RegisterAllocator::advance() {
     current_index++;
 }
 
-WReg RegisterAllocator::allocate(IRVariable variable) {
+WReg RegisterAllocator::allocate(IRValue variable) {
     for (int i = 0; i < 16; i++) {
         if (!allocated_registers.test(i)) {
             WReg reg = allocation_order[i];
 
             allocated_registers.set(i);
-            variable_map.insert({variable.id, i});
+            variable_map.insert({variable.as_variable().id, i});
             return reg;
         }
     }
@@ -77,10 +77,10 @@ WReg RegisterAllocator::allocate_temporary() {
     return WReg{0xffffffff};
 }
 
-WReg RegisterAllocator::get(IRVariable variable) {
-    auto it = variable_map.find(variable.id);
+WReg RegisterAllocator::get(IRValue variable) {
+    auto it = variable_map.find(variable.as_variable().id);
     if (it == variable_map.end()) {
-        LOG_TODO("%s wasn't allocated when it should be", variable.to_string().c_str());
+        LOG_TODO("%s wasn't allocated when it should be", variable.as_variable().to_string().c_str());
     }
 
     return allocation_order[it->second];

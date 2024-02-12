@@ -15,7 +15,7 @@ void DeadCopyEliminationPass::optimise(BasicBlock& basic_block) {
             if (copy_opcode.src.is_variable()) {
                 auto& src_variable = copy_opcode.src.as_variable();
                 for (auto& use : uses) {
-                    if (use->id == copy_opcode.dst.id) {
+                    if (use->id == copy_opcode.dst.as_variable().id) {
                         use->id = src_variable.id;
                     }
                 }

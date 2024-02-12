@@ -93,7 +93,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwi
 
     const auto& lhs = opcode.lhs.as_constant();
     const auto& rhs = opcode.rhs.as_constant();
-    return FoldResult{lhs.value & rhs.value, opcode.dst.id};
+    return FoldResult{lhs.value & rhs.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwise_or(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -104,7 +104,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwi
 
     const auto& lhs = opcode.lhs.as_constant();
     const auto& rhs = opcode.rhs.as_constant();
-    return FoldResult{lhs.value | rhs.value, opcode.dst.id};
+    return FoldResult{lhs.value | rhs.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwise_not(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -114,7 +114,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwi
     }
 
     const auto& src = opcode.src.as_constant();
-    return FoldResult{~src.value, opcode.dst.id};
+    return FoldResult{~src.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwise_exclusive_or(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -125,7 +125,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_bitwi
 
     const auto& lhs = opcode.lhs.as_constant();
     const auto& rhs = opcode.rhs.as_constant();
-    return FoldResult{lhs.value ^ rhs.value, opcode.dst.id};
+    return FoldResult{lhs.value ^ rhs.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_logical_shift_left(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -136,7 +136,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_logic
 
     const auto& src = opcode.src.as_constant();
     const auto& amount = opcode.amount.as_constant();
-    return FoldResult{src.value << amount.value, opcode.dst.id};
+    return FoldResult{src.value << amount.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_logical_shift_right(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -147,7 +147,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_logic
 
     const auto& src = opcode.src.as_constant();
     const auto& amount = opcode.amount.as_constant();
-    return FoldResult{src.value >> amount.value, opcode.dst.id};
+    return FoldResult{src.value >> amount.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_arithmetic_shift_right(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -158,7 +158,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_arith
 
     const auto& src = opcode.src.as_constant();
     const auto& amount = opcode.amount.as_constant();
-    return FoldResult{static_cast<u32>(static_cast<s32>(src.value) >> amount.value), opcode.dst.id};
+    return FoldResult{static_cast<u32>(static_cast<s32>(src.value) >> amount.value), opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_count_leading_zeroes(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -175,7 +175,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add(s
 
     const auto& lhs = opcode.lhs.as_constant();
     const auto& rhs = opcode.rhs.as_constant();
-    return FoldResult{lhs.value + rhs.value, opcode.dst.id};
+    return FoldResult{lhs.value + rhs.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add_long(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -192,7 +192,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_subtr
 
     const auto& lhs = opcode.lhs.as_constant();
     const auto& rhs = opcode.rhs.as_constant();
-    return FoldResult{lhs.value - rhs.value, opcode.dst.id};
+    return FoldResult{lhs.value - rhs.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multiply(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -203,7 +203,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multi
 
     const auto& lhs = opcode.lhs.as_constant();
     const auto& rhs = opcode.rhs.as_constant();
-    return FoldResult{lhs.value * rhs.value, opcode.dst.id};
+    return FoldResult{lhs.value * rhs.value, opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multiply_long(std::unique_ptr<IROpcode>& opcode_variant) {
@@ -214,6 +214,7 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_multi
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_compare(std::unique_ptr<IROpcode>& opcode_variant) {
     auto& opcode = *opcode_variant->as<IRCompare>();
+    const auto& dst = opcode.dst.as_variable();
     if (!opcode.lhs.is_constant() || !opcode.rhs.is_constant()) {
         return std::nullopt;
     }
@@ -222,13 +223,13 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_compa
     const auto& rhs = opcode.rhs.as_constant();
     switch (opcode.compare_type) {
     case CompareType::Equal:
-        return FoldResult{lhs.value == rhs.value, opcode.dst.id};
+        return FoldResult{lhs.value == rhs.value, dst.id};
     case CompareType::LessThan:
-        return FoldResult{lhs.value < rhs.value, opcode.dst.id};
+        return FoldResult{lhs.value < rhs.value, dst.id};
     case CompareType::GreaterEqual:
-        return FoldResult{lhs.value >= rhs.value, opcode.dst.id};
+        return FoldResult{lhs.value >= rhs.value, dst.id};
     case CompareType::GreaterThan:
-        return FoldResult{lhs.value > rhs.value, opcode.dst.id};
+        return FoldResult{lhs.value > rhs.value, dst.id};
     }
 }
 
@@ -238,8 +239,9 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_copy(
         return std::nullopt;
     }
 
+    const auto& dst = opcode.src.as_variable();
     const auto& src = opcode.src.as_constant();
-    return FoldResult{src.value, opcode.dst.id};
+    return FoldResult{src.value, dst.id};
 }
 
 } // namespace arm

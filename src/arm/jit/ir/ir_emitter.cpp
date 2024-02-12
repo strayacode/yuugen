@@ -13,8 +13,8 @@ IRVariable IREmitter::create_variable() {
     return variable;
 }
 
-IRPair<IRVariable> IREmitter::create_pair() {
-    return IRPair{create_variable(), create_variable()};
+IRPair IREmitter::create_pair() {
+    return IRPair{TypedValue<Type::U32>{create_variable()}, TypedValue<Type::U32>{create_variable()}};
 }
 
 TypedValue<Type::U32> IREmitter::load_gpr(GPR gpr) {
@@ -100,7 +100,7 @@ TypedValue<Type::U32> IREmitter::bitwise_not(TypedValue<Type::U32> src) {
 
 TypedValue<Type::U32> IREmitter::bitwise_exclusive_or(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs) {
     auto dst = create_variable();
-    push<IRBitwiseExclusiveOr>(dst, lhs.value, rhs.value);
+    push<IRBitwiseExclusiveOr>(dst, lhs, rhs);
     return TypedValue<Type::U32>(dst);
 }
 
@@ -110,7 +110,7 @@ TypedValue<Type::U32> IREmitter::add(TypedValue<Type::U32> lhs, TypedValue<Type:
     return TypedValue<Type::U32>{dst};
 }
 
-IRPair<IRVariable> IREmitter::add_long(IRPair<IRValue> lhs, IRPair<IRValue> rhs) {
+IRPair IREmitter::add_long(IRPair lhs, IRPair rhs) {
     auto dst = create_pair();
     push<IRAddLong>(dst, lhs, rhs);
     return dst;
@@ -124,7 +124,7 @@ TypedValue<Type::U32> IREmitter::subtract(TypedValue<Type::U32> lhs, TypedValue<
 
 TypedValue<Type::U32> IREmitter::subtract_with_carry(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U1> carry) {
     const auto flipped = bitwise_exclusive_or(extend32(carry), imm32(1));
-    return subtract(subtract(lhs, rhs));
+    return subtract(subtract(lhs, rhs), flipped);
 }
 
 TypedValue<Type::U32> IREmitter::multiply(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs) {
@@ -133,7 +133,7 @@ TypedValue<Type::U32> IREmitter::multiply(TypedValue<Type::U32> lhs, TypedValue<
     return TypedValue<Type::U32>{dst};
 }
 
-IRPair<IRVariable> IREmitter::multiply_long(IRValue lhs, IRValue rhs, bool is_signed) {
+IRPair IREmitter::multiply_long(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, bool is_signed) {
     auto dst = create_pair();
     push<IRMultiplyLong>(dst, lhs, rhs, is_signed);
     return dst;
@@ -163,55 +163,55 @@ TypedValue<Type::U32> IREmitter::rotate_right(TypedValue<Type::U32> src, TypedVa
     return TypedValue<Type::U32>{dst};
 }
 
-IRPair<IRVariable> IREmitter::barrel_shifter_logical_shift_left(IRValue src, IRValue amount) {
+IRPair IREmitter::barrel_shifter_logical_shift_left(TypedValue<Type::U32> src, TypedValue<Type::U8> amount) {
     auto result_and_carry = create_pair();
     push<IRBarrelShifterLogicalShiftLeft>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
-IRPair<IRVariable> IREmitter::barrel_shifter_logical_shift_right(IRValue src, IRValue amount) {
+IRPair IREmitter::barrel_shifter_logical_shift_right(TypedValue<Type::U32> src, TypedValue<Type::U8> amount) {
     auto result_and_carry = create_pair();
     push<IRBarrelShifterLogicalShiftRight>(result_and_carry, src, amount, load_flag(Flag::C), amount.is_constant());
     return result_and_carry;
 }
 
-IRPair<IRVariable> IREmitter::barrel_shifter_arithmetic_shift_right(IRValue src, IRValue amount) {
+IRPair IREmitter::barrel_shifter_arithmetic_shift_right(TypedValue<Type::U32> src, TypedValue<Type::U8> amount) {
     auto result_and_carry = create_pair();
     push<IRBarrelShifterArithmeticShiftRight>(result_and_carry, src, amount, load_flag(Flag::C), amount.is_constant());
     return result_and_carry;
 }
 
-IRPair<IRVariable> IREmitter::barrel_shifter_rotate_right(IRValue src, TypedValue<Type::U8> amount) {
+IRPair IREmitter::barrel_shifter_rotate_right(TypedValue<Type::U32> src, TypedValue<Type::U8> amount) {
     auto result_and_carry = create_pair();
     push<IRBarrelShifterRotateRight>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
-IRPair<IRVariable> IREmitter::barrel_shifter_rotate_right_extended(IRValue src, TypedValue<Type::U8> amount) {
+IRPair IREmitter::barrel_shifter_rotate_right_extended(TypedValue<Type::U32> src, TypedValue<Type::U8> amount) {
     auto result_and_carry = create_pair();
     push<IRBarrelShifterRotateRightExtended>(result_and_carry, src, amount, load_flag(Flag::C));
     return result_and_carry;
 }
 
-IRVariable IREmitter::sign_extend_byte(IRValue src) {
-    auto shifted_left = logical_shift_left(src, constant(24));
-    return arithmetic_shift_right(shifted_left, constant(24));
+TypedValue<Type::U32> IREmitter::sign_extend_byte(TypedValue<Type::U32> src) {
+    auto shifted_left = logical_shift_left(src, imm8(24));
+    return arithmetic_shift_right(shifted_left, imm8(24));
 }
 
-IRVariable IREmitter::sign_extend_half(IRValue src) {
-    auto shifted_left = logical_shift_left(src, constant(16));
-    return arithmetic_shift_right(shifted_left, constant(16));
+TypedValue<Type::U32> IREmitter::sign_extend_half(TypedValue<Type::U32> src) {
+    auto shifted_left = logical_shift_left(src, imm8(16));
+    return arithmetic_shift_right(shifted_left, imm8(16));
 }
 
-IRVariable IREmitter::count_leading_zeroes(IRValue src) {
+TypedValue<Type::U32> IREmitter::count_leading_zeroes(TypedValue<Type::U32> src) {
     auto dst = create_variable();
     push<IRCountLeadingZeroes>(dst, src);
-    return dst;
+    return TypedValue<Type::U32>{dst};
 }
 
 TypedValue<Type::U1> IREmitter::load_flag(Flag flag) {
     auto cpsr = load_cpsr();
-    return get_bit(cpsr, constant(flag));
+    return get_bit(cpsr, imm8(flag));
 }
 
 void IREmitter::store_flag(Flag flag, TypedValue<Type::U1> value) {
@@ -225,9 +225,9 @@ void IREmitter::store_nz(TypedValue<Type::U32> value) {
     store_flag(Flag::Z, compare(value, imm32(0), CompareType::Equal));
 }
 
-void IREmitter::store_nz_long(IRPair<TypedValue<Type::U32>> value) {
-    store_flag(Flag::N, get_bit(value.first, imm8(31)));
-    store_flag(Flag::Z, truncate1(bitwise_and(extend32(compare(value.first, imm32(0), CompareType::Equal)), extend32(compare(value.second, imm32(0), CompareType::Equal)))));
+void IREmitter::store_nz_long(IRPair value) {
+    store_flag(Flag::N, get_bit(TypedValue<Type::U32>{value.first}, imm8(31)));
+    store_flag(Flag::Z, truncate1(bitwise_and(extend32(compare(TypedValue<Type::U32>{value.first}, imm32(0), CompareType::Equal)), extend32(compare(TypedValue<Type::U32>{value.second}, imm32(0), CompareType::Equal)))));
 }
 
 void IREmitter::store_add_cv(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U32> result) {
@@ -314,10 +314,10 @@ TypedValue<Type::U1> IREmitter::get_bit(TypedValue<Type::U32> src, TypedValue<Ty
     return TypedValue<Type::U1>{dst};
 }
 
-TypedValue<Type::U1> IREmitter::set_bit(TypedValue<Type::U32> src, TypedValue<Type::U1> value, TypedValue<Type::U8> bit) {
+TypedValue<Type::U32> IREmitter::set_bit(TypedValue<Type::U32> src, TypedValue<Type::U1> value, TypedValue<Type::U8> bit) {
     auto dst = create_variable();
     push<IRSetBit>(dst, src, value, bit);
-    return TypedValue<Type::U1>{dst};
+    return TypedValue<Type::U32>{dst};
 }
 
 TypedValue<Type::U1> IREmitter::imm1(bool value) {
@@ -332,11 +332,11 @@ TypedValue<Type::U32> IREmitter::imm32(u32 value) {
     return TypedValue<Type::U32>(value);
 }
 
-IRPair<IRValue> IREmitter::pair(IRValue first, IRValue second) {
+IRPair IREmitter::pair(TypedValue<Type::U32> first, TypedValue<Type::U32> second) {
     return IRPair{first, second};
 }
 
-IRPair<IRVariable> IREmitter::barrel_shifter(IRValue value, ShiftType shift_type, IRValue amount) {
+IRPair IREmitter::barrel_shifter(TypedValue<Type::U32> value, ShiftType shift_type, TypedValue<Type::U8> amount) {
     switch (shift_type) {
     case ShiftType::LSL:
         return barrel_shifter_logical_shift_left(value, amount);
@@ -390,10 +390,10 @@ void IREmitter::memory_write_word(TypedValue<Type::U32> addr, TypedValue<Type::U
     push<IRMemoryWrite>(addr, src, AccessSize::Word);
 }
 
-IRVariable IREmitter::memory_read(IRValue addr, AccessSize access_size, AccessType access_type) {
+TypedValue<Type::U32> IREmitter::memory_read(TypedValue<Type::U32> addr, AccessSize access_size, AccessType access_type) {
     auto dst = create_variable();
     push<IRMemoryRead>(dst, addr, access_size, access_type);
-    return dst;
+    return TypedValue<Type::U32>{dst};
 }
 
 } // namespace arm

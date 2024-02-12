@@ -172,33 +172,33 @@ IRInterpreter::CompiledInstruction IRInterpreter::compile_ir_opcode(std::unique_
     }
 }
 
-u32& IRInterpreter::get(IRVariable& variable) {
-    assert(variables.size() > variable.id);
-    return variables[variable.id];
+u32& IRInterpreter::get(IRValue& variable) {
+    assert(variables.size() > variable.as_variable().id);
+    return variables[variable.as_variable().id];
 }
 
-u32& IRInterpreter::get_or_allocate(IRVariable& variable) {
-    if (variables.size() <= variable.id) {
-        variables.resize(variable.id + 1);
+u32& IRInterpreter::get_or_allocate(IRValue& variable) {
+    if (variables.size() <= variable.as_variable().id) {
+        variables.resize(variable.as_variable().id + 1);
     }
 
-    return variables[variable.id];
+    return variables[variable.as_variable().id];
 }
 
-void IRInterpreter::assign_variable(IRVariable& variable, u32 value) {
+void IRInterpreter::assign_variable(IRValue& variable, u32 value) {
     auto& allocated_variable = get_or_allocate(variable);
     allocated_variable = value;
 }
 
 u32 IRInterpreter::resolve_value(IRValue& value) {
     if (value.is_variable()) {
-        return get(value.as_variable());
+        return get(value);
     } else {
         return value.as_constant().value;
     }
 }
 
-u64 IRInterpreter::resolve_pair(IRPair<IRValue>& pair) {
+u64 IRInterpreter::resolve_pair(IRPair& pair) {
     return (static_cast<u64>(resolve_value(pair.first)) << 32) | static_cast<u64>(resolve_value(pair.second));
 }
 
