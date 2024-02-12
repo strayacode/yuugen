@@ -513,197 +513,196 @@ Translator::BlockStatus Translator::arm_single_data_transfer() {
 }
 
 Translator::BlockStatus Translator::arm_data_processing() {
-    LOG_TODO("");
-    // auto opcode = ARMDataProcessing::decode(instruction);
-    // TypedValue<Type::U32> op2;
-    // auto early_advance_pc = false;
+    auto opcode = ARMDataProcessing::decode(instruction);
+    TypedValue<Type::U32> op2;
+    auto early_advance_pc = false;
 
-    // bool is_comparison_opcode = opcode.opcode == ARMDataProcessing::Opcode::TST ||
-    //     opcode.opcode == ARMDataProcessing::Opcode::TEQ ||
-    //     opcode.opcode == ARMDataProcessing::Opcode::CMP ||
-    //     opcode.opcode == ARMDataProcessing::Opcode::CMN;
+    bool is_comparison_opcode = opcode.opcode == ARMDataProcessing::Opcode::TST ||
+        opcode.opcode == ARMDataProcessing::Opcode::TEQ ||
+        opcode.opcode == ARMDataProcessing::Opcode::CMP ||
+        opcode.opcode == ARMDataProcessing::Opcode::CMN;
 
-    // bool carry_used_in_opcode = opcode.opcode == ARMDataProcessing::Opcode::ADC ||
-    //     opcode.opcode == ARMDataProcessing::Opcode::SBC ||
-    //     opcode.opcode == ARMDataProcessing::Opcode::RSC;
+    bool carry_used_in_opcode = opcode.opcode == ARMDataProcessing::Opcode::ADC ||
+        opcode.opcode == ARMDataProcessing::Opcode::SBC ||
+        opcode.opcode == ARMDataProcessing::Opcode::RSC;
 
-    // bool uses_op1 = opcode.opcode != ARMDataProcessing::Opcode::MOV &&
-    //     opcode.opcode != ARMDataProcessing::Opcode::MVN;
+    bool uses_op1 = opcode.opcode != ARMDataProcessing::Opcode::MOV &&
+        opcode.opcode != ARMDataProcessing::Opcode::MVN;
 
-    // bool set_carry = opcode.set_flags && !carry_used_in_opcode;
-    // bool update_flags = opcode.set_flags && (opcode.rd != GPR::PC || is_comparison_opcode);
+    bool set_carry = opcode.set_flags && !carry_used_in_opcode;
+    bool update_flags = opcode.set_flags && (opcode.rd != GPR::PC || is_comparison_opcode);
 
-    // if (opcode.imm) {
-    //     op2 = ir.imm32(opcode.rhs.imm.rotated);
+    if (opcode.imm) {
+        op2 = ir.imm32(opcode.rhs.imm.rotated);
 
-    //     if (set_carry && opcode.rhs.imm.shift != 0) {
-    //         ir.store_flag(Flag::C, ir.imm1(opcode.rhs.imm.rotated >> 31));
-    //     }
-    // } else {
-    //     IRValue amount;
-    //     if (opcode.rhs.reg.imm) {
-    //         amount = ir.constant(opcode.rhs.reg.amount.imm);
-    //     } else {
-    //         amount = ir.bitwise_and(ir.load_gpr(opcode.rhs.reg.amount.rs), ir.constant(0xff));
-    //         ir.advance_pc();
-    //         early_advance_pc = true;
-    //     }
+        if (set_carry && opcode.rhs.imm.shift != 0) {
+            ir.store_flag(Flag::C, ir.imm1(opcode.rhs.imm.rotated >> 31));
+        }
+    } else {
+        TypedValue<Type::U8> amount;
+        if (opcode.rhs.reg.imm) {
+            amount = ir.imm8(opcode.rhs.reg.amount.imm);
+        } else {
+            amount = ir.truncate_byte(ir.load_gpr(opcode.rhs.reg.amount.rs));
+            ir.advance_pc();
+            early_advance_pc = true;
+        }
 
-    //     auto src = ir.load_gpr(opcode.rhs.reg.rm);
-    //     auto pair = ir.barrel_shifter(src, opcode.rhs.reg.shift_type, amount);
-    //     op2 = pair.first;
-    //     if (set_carry) {
-    //         ir.store_flag(Flag::C, pair.second);
-    //     }
-    // }
+        auto src = ir.load_gpr(opcode.rhs.reg.rm);
+        auto pair = ir.barrel_shifter(src, opcode.rhs.reg.shift_type, amount);
+        op2 = TypedValue<Type::U32>{pair.first};
+        if (set_carry) {
+            ir.store_flag(Flag::C, TypedValue<Type::U1>{pair.second});
+        }
+    }
 
-    // TypedValue<Type::U32> op1;
-    // TypedValue<Type::U32> result;
+    TypedValue<Type::U32> op1;
+    TypedValue<Type::U32> result;
 
-    // if (uses_op1) {
-    //     op1 = ir.load_gpr(opcode.rn);
-    // }
+    if (uses_op1) {
+        op1 = ir.load_gpr(opcode.rn);
+    }
 
-    // switch (opcode.opcode) {
-    // case ARMDataProcessing::Opcode::AND:
-    //     result = ir.bitwise_and(op1, op2);
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //     }
+    switch (opcode.opcode) {
+    case ARMDataProcessing::Opcode::AND:
+        result = ir.bitwise_and(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
         
-    //     break;
-    // case ARMDataProcessing::Opcode::EOR:
-    //     result = ir.bitwise_exclusive_or(op1, op2);
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::EOR:
+        result = ir.bitwise_exclusive_or(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
         
-    //     break;
-    // case ARMDataProcessing::Opcode::SUB:
-    //     result = ir.subtract(op1, op2);
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //         ir.store_sub_cv(op1, op2, result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::SUB:
+        result = ir.subtract(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_sub_cv(op1, op2, result);
+        }
         
-    //     break;
-    // case ARMDataProcessing::Opcode::RSB:
-    //     result = ir.subtract(op2, op1);
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //         ir.store_sub_cv(op2, op1, result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::RSB:
+        result = ir.subtract(op2, op1);
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_sub_cv(op2, op1, result);
+        }
         
-    //     break;
-    // case ARMDataProcessing::Opcode::ADD:
-    //     result = ir.add(op1, op2);
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //         ir.store_add_cv(op1, op2, result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::ADD:
+        result = ir.add(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_add_cv(op1, op2, result);
+        }
         
-    //     break;
-    // case ARMDataProcessing::Opcode::ADC:
-    //     result = ir.add(ir.add(op1, op2), ir.load_flag(Flag::C));
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //         ir.store_adc_cv(op1, op2, result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::ADC:
+        result = ir.add_with_carry(op1, op2, ir.load_flag(Flag::C));
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_adc_cv(op1, op2, result);
+        }
 
-    //     break;
-    // case ARMDataProcessing::Opcode::SBC:
-    //     result = ir.subtract_with_carry(op1, op2, ir.load_flag(Flag::C));
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //         ir.store_sbc_cv(op1, op2, result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::SBC:
+        result = ir.subtract_with_carry(op1, op2, ir.load_flag(Flag::C));
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_sbc_cv(op1, op2, result);
+        }
 
-    //     break;
-    // case ARMDataProcessing::Opcode::RSC:
-    //     result = ir.subtract_with_carry(op2, op1, ir.load_flag(Flag::C));
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //         ir.store_sbc_cv(op2, op1, result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::RSC:
+        result = ir.subtract_with_carry(op2, op1, ir.load_flag(Flag::C));
+        if (update_flags) {
+            ir.store_nz(result);
+            ir.store_sbc_cv(op2, op1, result);
+        }
 
-    //     break;
-    // case ARMDataProcessing::Opcode::TST: {
-    //     auto result = ir.bitwise_and(op1, op2);
-    //     ir.store_nz(result);
-    //     break;
-    // }
-    // case ARMDataProcessing::Opcode::TEQ: {
-    //     auto result = ir.bitwise_exclusive_or(op1, op2);
-    //     ir.store_nz(result);
-    //     break;
-    // }
-    // case ARMDataProcessing::Opcode::CMP: {
-    //     auto result = ir.subtract(op1, op2);
-    //     ir.store_nz(result);
-    //     ir.store_sub_cv(op1, op2, result);
-    //     break;
-    // }
-    // case ARMDataProcessing::Opcode::CMN: {
-    //     auto result = ir.add(op1, op2);
-    //     ir.store_nz(result);
-    //     ir.store_add_cv(op1, op2, result);
-    //     break;
-    // }
-    // case ARMDataProcessing::Opcode::ORR:
-    //     result = ir.bitwise_or(op1, op2);
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::TST: {
+        auto result = ir.bitwise_and(op1, op2);
+        ir.store_nz(result);
+        break;
+    }
+    case ARMDataProcessing::Opcode::TEQ: {
+        auto result = ir.bitwise_exclusive_or(op1, op2);
+        ir.store_nz(result);
+        break;
+    }
+    case ARMDataProcessing::Opcode::CMP: {
+        auto result = ir.subtract(op1, op2);
+        ir.store_nz(result);
+        ir.store_sub_cv(op1, op2, result);
+        break;
+    }
+    case ARMDataProcessing::Opcode::CMN: {
+        auto result = ir.add(op1, op2);
+        ir.store_nz(result);
+        ir.store_add_cv(op1, op2, result);
+        break;
+    }
+    case ARMDataProcessing::Opcode::ORR:
+        result = ir.bitwise_or(op1, op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
         
-    //     break;
-    // case ARMDataProcessing::Opcode::MOV:
-    //     result = ir.copy(op2);
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::MOV:
+        result = ir.copy(op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
 
-    //     break;
-    // case ARMDataProcessing::Opcode::BIC:
-    //     result = ir.bitwise_and(op1, ir.bitwise_not(op2));
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::BIC:
+        result = ir.bitwise_and(op1, ir.bitwise_not(op2));
+        if (update_flags) {
+            ir.store_nz(result);
+        }
         
-    //     break;
-    // case ARMDataProcessing::Opcode::MVN:
-    //     result = ir.bitwise_not(op2);
-    //     if (update_flags) {
-    //         ir.store_nz(result);
-    //     }
+        break;
+    case ARMDataProcessing::Opcode::MVN:
+        result = ir.bitwise_not(op2);
+        if (update_flags) {
+            ir.store_nz(result);
+        }
 
-    //     break;
-    // }
+        break;
+    }
 
-    // if (result.is_assigned()) {
-    //     ir.store_gpr(opcode.rd, result);
-    // }
+    if (result.is_assigned()) {
+        ir.store_gpr(opcode.rd, result);
+    }
 
-    // if (opcode.rd == 15 && opcode.set_flags) {
-    //     ir.copy_spsr_to_cpsr();
-    // }
+    if (opcode.rd == 15 && opcode.set_flags) {
+        ir.copy_spsr_to_cpsr();
+    }
 
-    // if (opcode.rd == 15 && !is_comparison_opcode) {
-    //     if (opcode.set_flags) {
-    //         ir.branch_exchange(result, ExchangeType::ThumbBit);
-    //     } else {
-    //         ir.flush_pipeline();
-    //     }
+    if (opcode.rd == 15 && !is_comparison_opcode) {
+        if (opcode.set_flags) {
+            ir.branch_exchange(result, ExchangeType::ThumbBit);
+        } else {
+            ir.flush_pipeline();
+        }
 
-    //     return BlockStatus::Break;
-    // } else if (!early_advance_pc) {
-    //     ir.advance_pc();
-    // }
+        return BlockStatus::Break;
+    } else if (!early_advance_pc) {
+        ir.advance_pc();
+    }
 
-    // if (opcode.set_flags) {
-    //     return BlockStatus::FlagsChanged;
-    // }
+    if (opcode.set_flags) {
+        return BlockStatus::FlagsChanged;
+    }
 
-    // return BlockStatus::Continue;
+    return BlockStatus::Continue;
 }
 
 Translator::BlockStatus Translator::arm_coprocessor_register_transfer() {

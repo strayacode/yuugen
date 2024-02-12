@@ -110,6 +110,10 @@ TypedValue<Type::U32> IREmitter::add(TypedValue<Type::U32> lhs, TypedValue<Type:
     return TypedValue<Type::U32>{dst};
 }
 
+TypedValue<Type::U32> IREmitter::add_with_carry(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U1> carry) {
+    return add(add(lhs, rhs), extend32(carry));
+}
+
 IRPair IREmitter::add_long(IRPair lhs, IRPair rhs) {
     auto dst = create_pair();
     push<IRAddLong>(dst, lhs, rhs);
@@ -318,6 +322,14 @@ TypedValue<Type::U32> IREmitter::set_bit(TypedValue<Type::U32> src, TypedValue<T
     auto dst = create_variable();
     push<IRSetBit>(dst, src, value, bit);
     return TypedValue<Type::U32>{dst};
+}
+
+TypedValue<Type::U1> IREmitter::truncate1(TypedValue<Type::U32> value) {
+    return TypedValue<Type::U1>{bitwise_and(value, imm32(1))};
+}
+
+TypedValue<Type::U8> IREmitter::truncate_byte(TypedValue<Type::U32> value) {
+    return TypedValue<Type::U8>{bitwise_and(value, imm32(0xff))};
 }
 
 TypedValue<Type::U1> IREmitter::imm1(bool value) {

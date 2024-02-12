@@ -38,6 +38,7 @@ public:
 
     // arithmetic opcodes
     TypedValue<Type::U32> add(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs);
+    TypedValue<Type::U32> add_with_carry(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U1> carry);
     IRPair add_long(IRPair lhs, IRPair rhs);
     TypedValue<Type::U32> subtract(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs);
     TypedValue<Type::U32> subtract_with_carry(TypedValue<Type::U32> lhs, TypedValue<Type::U32> rhs, TypedValue<Type::U1> carry);
@@ -85,17 +86,8 @@ public:
         return TypedValue<Type::U32>{value};
     }
 
-    template <Type T>
-    TypedValue<Type::U1> truncate1(TypedValue<T> value) {
-        static_assert(TypedValue<Type::U1>::is_smaller<Type::U1, T>());
-        return TypedValue<Type::U1>{value};
-    }
-
-    template <Type T>
-    TypedValue<Type::U8> truncate_byte(TypedValue<T> value) {
-        static_assert(TypedValue<Type::U8>::is_smaller<Type::U8, T>());
-        return TypedValue<Type::U8>{value};
-    }
+    TypedValue<Type::U1> truncate1(TypedValue<Type::U32> value);
+    TypedValue<Type::U8> truncate_byte(TypedValue<Type::U32> value);
 
     TypedValue<Type::U1> imm1(bool value);
     TypedValue<Type::U8> imm8(u8 value);
