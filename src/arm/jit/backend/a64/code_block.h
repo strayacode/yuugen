@@ -16,9 +16,9 @@ namespace arm {
 
 class CodeBlock {
 public:
-    CodeBlock(int size) : size(size) {
+    CodeBlock(u64 capacity) : capacity(capacity) {
 #if defined(PLATFORM_OSX)
-        code = reinterpret_cast<u32*>(mmap(nullptr, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE | MAP_JIT, -1, 0));
+        code = reinterpret_cast<u32*>(mmap(nullptr, capacity, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE | MAP_JIT, -1, 0));
 #endif
 
         if (code == nullptr || code == reinterpret_cast<void*>(-1)) {
@@ -29,7 +29,7 @@ public:
     }
 
     ~CodeBlock() {
-        if (munmap(code, size) == -1) {
+        if (munmap(code, capacity) == -1) {
             LOG_ERROR("CodeBlock: error deallocating");
         } else {
             LOG_DEBUG("CodeBlock: successfully deallocated");
@@ -45,7 +45,18 @@ public:
     void protect() {
 #if defined(PLATFORM_OSX)
         pthread_jit_write_protect_np(true);
-        sys_icache_invalidate(code, size);
+#endif
+    }
+
+    void invalidate(u32* start, u64 size) {
+#if defined(PLATFORM_OSX)
+        sys_icache_invalidate(start, size);
+#endif
+    }
+
+    void invalidate_all() {
+#if defined(PLATFORM_OSX)
+        sys_icache_invalidate(code, capacity);
 #endif
     }
 
@@ -53,7 +64,7 @@ public:
 
 private:
     u32* code;
-    int size;
+    u64 capacity;
 };
 
 } // namespace arm

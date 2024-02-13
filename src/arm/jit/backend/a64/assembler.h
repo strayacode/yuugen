@@ -166,8 +166,9 @@ enum class Shift : u32 {
 
 class A64Assembler {
 public:
-    A64Assembler(u32* code, int size);
+    A64Assembler(u32* code, u64 capacity);
 
+    void reset();
     void dump();
     void link(Label& label);
     void invoke_function(void* address);
@@ -306,15 +307,17 @@ public:
 
     u32* get_code() { return code; }
     int get_num_instructions() const { return num_instructions; }
+    u64 get_current_block_size() const { return current_block_size; }
 
 private:
     void emit(u32 data);
 
     u32* code{nullptr};
-    int size{0};
+    u64 capacity{0};
     u32* current_code{nullptr};
     u32* previous_code{nullptr};
-    int num_instructions{0};
+    u64 current_block_size{0};
+    u64 num_instructions{0};
 };
 
 } // namespace
