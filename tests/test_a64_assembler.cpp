@@ -264,6 +264,7 @@ int main() {
     TEST(0x9ba27fd0, umull(arm::x16, arm::w30, arm::w2))
 
     code_block.protect();
+    code_block.invalidate_all();
 
     return 0;
 }
