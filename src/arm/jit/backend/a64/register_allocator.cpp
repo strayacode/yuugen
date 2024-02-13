@@ -18,10 +18,24 @@ void RegisterAllocator::record_lifetimes(BasicBlock& basic_block) {
 
     while (it != end) {
         auto& opcode = *it;
+
+        // Record the last use of any variables.
         auto parameters = opcode->get_parameters();
         for (auto& parameter : parameters) {
             if (parameter->is_variable()) {
                 const u32 id = parameter->as_variable().id;
+                if (!lifetime_map.contains(id)) {
+                    lifetime_map[id] = index;
+                }
+            }
+        }
+
+        // If the above didn't record the lifetime, then use
+        // the destination as the last use
+        auto destinations = opcode->get_destinations();
+        for (auto& destination : destinations) {
+            if (destination->is_variable()) {
+                const u32 id = destination->as_variable().id;
                 if (!lifetime_map.contains(id)) {
                     lifetime_map[id] = index;
                 }
@@ -43,7 +57,6 @@ void RegisterAllocator::advance() {
     }
 
     free_temporaries();
-    
     current_index++;
 }
 
