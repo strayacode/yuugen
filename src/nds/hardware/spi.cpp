@@ -34,7 +34,6 @@ void SPI::write_spicnt(u16 value, u32 mask) {
 }
 
 void SPI::write_spidata(u8 value) {
-    LOG_WARN("spidata write %02x", value);
     if (spicnt.enable) {
         transfer(value);
     } else {

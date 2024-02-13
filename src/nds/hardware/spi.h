@@ -16,10 +16,7 @@ public:
     void direct_boot();
 
     u16 read_spicnt() const { return spicnt.data; }
-    u8 read_spidata() const { 
-        LOG_WARN("read spidata %02x", spidata);
-        return spidata;
-    }
+    u8 read_spidata() const { return spidata; }
 
     void write_spicnt(u16 value, u32 mask);
     void write_spidata(u8 value);

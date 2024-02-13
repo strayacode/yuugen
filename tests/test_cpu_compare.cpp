@@ -43,12 +43,12 @@ void run_gba(char *path) {
     a_system.configure_cpu_backend(a_config);
     b_system.configure_cpu_backend(b_config);
 
-    a_system.set_game_path(path);
-    a_system.set_boot_mode(common::BootMode::Fast);
+    a_system.set_game_path("");
+    a_system.set_boot_mode(common::BootMode::Regular);
     a_system.reset();
 
-    b_system.set_game_path(path);
-    b_system.set_boot_mode(common::BootMode::Fast);
+    b_system.set_game_path("");
+    b_system.set_boot_mode(common::BootMode::Regular);
     b_system.reset();
 
     auto& a_cpu = a_system.cpu;
