@@ -25,9 +25,9 @@ inline int bit_count(T value) {
 }
 
 template <typename T>
-inline int countl_zeroes(T value) {
-    const int n = num_bits<T>();
-    int count = 0;
+inline u32 countl_zeroes(T value) {
+    const u32 n = num_bits<T>();
+    u32 count = 0;
     
     while (value != 0) {
         value >>= 1;

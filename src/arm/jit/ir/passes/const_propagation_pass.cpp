@@ -1,4 +1,5 @@
 #include "common/logger.h"
+#include "common/bits.h"
 #include "arm/jit/ir/passes/const_propagation_pass.h"
 
 namespace arm {
@@ -162,9 +163,13 @@ std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_arith
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_count_leading_zeroes(std::unique_ptr<IROpcode>& opcode_variant) {
-    LOG_WARN("handle opcode count_leading_zeroes");
     auto& opcode = *opcode_variant->as<IRCountLeadingZeroes>();
-    return std::nullopt;
+    if (!opcode.src.is_constant()) {
+        return std::nullopt;
+    }
+
+    const auto& src = opcode.src.as_constant();
+    return FoldResult{common::countl_zeroes(src.value), opcode.dst.as_variable().id};
 }
 
 std::optional<ConstPropagationPass::FoldResult> ConstPropagationPass::fold_add(std::unique_ptr<IROpcode>& opcode_variant) {
