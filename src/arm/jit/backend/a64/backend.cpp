@@ -55,6 +55,7 @@ Code A64Backend::get_code_at(Location location) {
 Code A64Backend::compile(BasicBlock& basic_block) {
     // LOG_INFO("block[%08x][%s][%02x] output:", basic_block.location.get_address(), basic_block.location.is_arm() ? "a" : "t", static_cast<u8>(basic_block.location.get_mode()));
     register_allocator.reset();
+    assembler.reset();
 
     // calculate the lifetimes of ir variables
     register_allocator.record_lifetimes(basic_block);
@@ -86,8 +87,9 @@ Code A64Backend::compile(BasicBlock& basic_block) {
     compile_epilogue();
 
     // LOG_INFO("");
-    
+
     code_block.protect();
+    code_block.invalidate(reinterpret_cast<u32*>(jit_fn), assembler.get_current_block_size());
     code_cache.set(basic_block.location, jit_fn);
     return reinterpret_cast<void*>(jit_fn);
 }

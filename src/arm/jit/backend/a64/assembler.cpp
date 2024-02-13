@@ -4,7 +4,11 @@
 
 namespace arm {
 
-A64Assembler::A64Assembler(u32* code, int size) : code(code), size(size), current_code(code), previous_code(code) {}
+A64Assembler::A64Assembler(u32* code, u64 capacity) : code(code), capacity(capacity), current_code(code), previous_code(code) {}
+
+void A64Assembler::reset() {
+    current_block_size = 0;
+}
 
 void A64Assembler::dump() {
     LOG_INFO("Machine Code:");
@@ -468,8 +472,9 @@ void A64Assembler::emit(u32 data) {
     // LOG_INFO("%s", disassemble_a64_instruction(reinterpret_cast<u64>(current_code), data).c_str());
     *current_code++ = data;
     num_instructions++;
+    current_block_size += 4;
 
-    if (num_instructions * 4 >= size) {
+    if (num_instructions * 4 >= capacity) {
         LOG_ERROR("code cache is full");
     }
 }
