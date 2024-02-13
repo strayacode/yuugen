@@ -16,7 +16,7 @@ void DeadCodeEliminationPass::optimise(BasicBlock& basic_block) {
         bool erase_opcode = false;
         for (auto& destination : destinations) {
             // remove the opcode if its destination isn't used anywhere
-            if (!uses.contains(destination->id)) {
+            if (!uses.contains(destination->as_variable().id)) {
                 erase_opcode = true;
             } else {
                 erase_opcode = false;

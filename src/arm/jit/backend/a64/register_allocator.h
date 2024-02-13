@@ -15,13 +15,13 @@ public:
     void advance();
 
     // allocates a register for an ir variable
-    WReg allocate(IRVariable variable);
+    WReg allocate(IRValue variable);
 
     // allocates a register for temporary use
     WReg allocate_temporary();
 
     // gets the register corresponding to an already allocated ir variable
-    WReg get(IRVariable variable);
+    WReg get(IRValue variable);
     
     // frees all temporary registers
     void free_temporaries();

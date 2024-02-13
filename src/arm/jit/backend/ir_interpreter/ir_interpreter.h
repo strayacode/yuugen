@@ -88,11 +88,11 @@ private:
 
     CompiledInstruction compile_ir_opcode(std::unique_ptr<IROpcode>& opcode);
 
-    u32& get(IRVariable& variable);
-    u32& get_or_allocate(IRVariable& variable);
-    void assign_variable(IRVariable& variable, u32 value);
+    u32& get(IRValue& variable);
+    u32& get_or_allocate(IRValue& variable);
+    void assign_variable(IRValue& variable, u32 value);
     u32 resolve_value(IRValue& value);
-    u64 resolve_pair(IRPair<IRValue>& pair);
+    u64 resolve_pair(IRPair& pair);
     void dump_variables();
 
     // state opcodes

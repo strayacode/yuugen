@@ -53,7 +53,7 @@ Code A64Backend::get_code_at(Location location) {
 }
 
 Code A64Backend::compile(BasicBlock& basic_block) {
-    LOG_INFO("block[%08x][%s][%02x] output:", basic_block.location.get_address(), basic_block.location.is_arm() ? "a" : "t", static_cast<u8>(basic_block.location.get_mode()));
+    // LOG_INFO("block[%08x][%s][%02x] output:", basic_block.location.get_address(), basic_block.location.is_arm() ? "a" : "t", static_cast<u8>(basic_block.location.get_mode()));
     register_allocator.reset();
 
     // calculate the lifetimes of ir variables
@@ -62,7 +62,7 @@ Code A64Backend::compile(BasicBlock& basic_block) {
     JitFunction jit_fn = assembler.get_current_code<JitFunction>();
     code_block.unprotect();
 
-    LOG_INFO("prologue:");
+    // LOG_INFO("prologue:");
     compile_prologue();
 
     Label label_pass;
@@ -73,7 +73,7 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     if (basic_block.condition != Condition::NV) {
         for (auto& opcode : basic_block.opcodes) {
-            LOG_INFO("%s:", opcode->to_string().c_str());
+            // LOG_INFO("%s:", opcode->to_string().c_str());
             compile_ir_opcode(opcode);
             register_allocator.advance();
         }
@@ -81,11 +81,11 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     assembler.link(label_fail);
 
-    LOG_INFO("epilogue:");
+    // LOG_INFO("epilogue:");
     assembler.sub(cycles_left_reg, cycles_left_reg, static_cast<u64>(basic_block.cycles));
     compile_epilogue();
 
-    LOG_INFO("");
+    // LOG_INFO("");
     
     code_block.protect();
     code_cache.set(basic_block.location, jit_fn);
@@ -146,7 +146,7 @@ void A64Backend::compile_epilogue() {
 
 void A64Backend::compile_condition_check(BasicBlock& basic_block, Label& label_pass, Label& label_fail) {
     if (basic_block.condition != Condition::AL && basic_block.condition != Condition::NV) {
-        LOG_INFO("condition_check:");
+        // LOG_INFO("condition_check:");
         WReg tmp_reg = register_allocator.allocate_temporary();
         assembler.ldr(tmp_reg, jit_reg, jit.get_offset_to_cpsr());
         assembler._and(tmp_reg, tmp_reg, 0xf0000000);
@@ -828,6 +828,18 @@ void A64Backend::compile_barrel_shifter_rotate_right(IRBarrelShifterRotateRight&
         assembler.lsr(carry_reg, result_reg, 31);
 
         assembler.link(label_finish);
+    } else if (!src_is_constant && amount_is_constant) {
+        const auto src = opcode.src.as_variable();
+        const auto amount = opcode.amount.as_constant();
+        WReg src_reg = register_allocator.get(src);
+
+        if (amount.value == 0) {
+            assembler.mov(result_reg, src_reg);
+            assembler.mov(carry_reg, carry_in_reg);
+        } else {
+            assembler.ror(result_reg, src_reg, amount.value & 0x1f);
+            assembler.lsr(carry_reg, result_reg, 31);
+        }
     } else {
         LOG_TODO("handle barrel shifter ror case %s", opcode.to_string().c_str());
     }

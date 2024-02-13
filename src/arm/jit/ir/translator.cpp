@@ -17,7 +17,7 @@ void Translator::translate() {
     auto& basic_block = ir.basic_block;
     auto location = basic_block.location;
 
-    LOG_INFO("block[%08x][%s][%02x] input:", location.get_address(), location.is_arm() ? "a" : "t", static_cast<u8>(location.get_mode()));
+    // LOG_INFO("block[%08x][%s][%02x] input:", location.get_address(), location.is_arm() ? "a" : "t", static_cast<u8>(location.get_mode()));
 
     for (int i = 0; i < jit.block_size; i++) {
         if (location.is_arm()) {
@@ -34,7 +34,7 @@ void Translator::translate() {
                 break;
             }
 
-            LOG_INFO("  %s %08x %08x", disassembler.disassemble_arm(instruction).c_str(), instruction, basic_block.current_address);
+            // LOG_INFO("  %s %08x %08x", disassembler.disassemble_arm(instruction).c_str(), instruction, basic_block.current_address);
             
             auto handler = decoder.get_arm_handler(instruction);
             auto status = (this->*handler)();
@@ -66,7 +66,7 @@ void Translator::translate() {
                 break;
             }
 
-            LOG_INFO("  %s %08x %08x", disassembler.disassemble_thumb(instruction).c_str(), instruction, basic_block.current_address);
+            // LOG_INFO("  %s %08x %08x", disassembler.disassemble_thumb(instruction).c_str(), instruction, basic_block.current_address);
             
             auto handler = decoder.get_thumb_handler(instruction);
             auto status = (this->*handler)();
@@ -88,6 +88,8 @@ void Translator::translate() {
 
         basic_block.advance();
     }
+
+    // basic_block.dump();
 }
 
 Translator::BlockStatus Translator::illegal_instruction() {

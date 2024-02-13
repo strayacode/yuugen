@@ -24,6 +24,13 @@ void IdentityArithmeticPass::optimise(BasicBlock& basic_block) {
                 it = basic_block.opcodes.insert(it, std::make_unique<IRGetBit>(opcode.result_and_carry.second, opcode.src, IRConstant{32 - amount.as_constant().value}));
                 it++;
                 mark_modified();
+            } else if (amount.is_equal(32)) {
+                opcode_variant = std::make_unique<IRCopy>(opcode.result_and_carry.first, IRConstant{0});
+                it++;
+
+                it = basic_block.opcodes.insert(it, std::make_unique<IRGetBit>(opcode.result_and_carry.second, opcode.src, IRConstant{0}));
+                it++;
+                mark_modified();
             } else if (amount.is_constant()) {
                 LOG_TODO("handle constant amount that hasn't been handled %s", opcode_variant->to_string().c_str());
             } else {
