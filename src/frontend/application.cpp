@@ -253,6 +253,8 @@ void Application::render_menubar() {
                     switch_screen(ScreenType::Settings);
                 }
             }
+
+            ImGui::MenuItem("CPU Debugger", nullptr, &show_cpu_debugger_window);
             
             ImGui::EndMenu();
         }
@@ -362,6 +364,12 @@ void Application::render_settings_screen() {
     end_fullscreen_window();
 }
 
+void Application::render_cpu_debugger_window() {
+    ImGui::Begin("CPU Debugger");
+
+    ImGui::End();
+}
+
 void Application::setup_style() {
     ImGui::GetStyle().WindowBorderSize = 1.0f;
     ImGui::GetStyle().PopupBorderSize = 0.0f;
@@ -437,6 +445,10 @@ void Application::render() {
 
     if (demo_window) {
         ImGui::ShowDemoWindow();
+    }
+
+    if (show_cpu_debugger_window) {
+        render_cpu_debugger_window();
     }
 
     ImGui::Render();

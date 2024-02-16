@@ -58,6 +58,7 @@ private:
     void render_menubar();
     void render_library_screen();
     void render_settings_screen();
+    void render_cpu_debugger_window();
 
     void handle_input_gba(SDL_Event& event);
     void handle_input_nds(SDL_Event& event);
@@ -104,4 +105,5 @@ private:
     arm::Config new_config;
 
     // TODO: create an SDLInputDevice to abstract away input
+    bool show_cpu_debugger_window{false};
 };
