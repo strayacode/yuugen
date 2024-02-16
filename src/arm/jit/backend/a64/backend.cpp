@@ -53,7 +53,6 @@ Code A64Backend::get_code_at(Location location) {
 }
 
 Code A64Backend::compile(BasicBlock& basic_block) {
-    // LOG_INFO("block[%08x][%s][%02x] output:", basic_block.location.get_address(), basic_block.location.is_arm() ? "a" : "t", static_cast<u8>(basic_block.location.get_mode()));
     register_allocator.reset();
     assembler.reset();
 
@@ -63,7 +62,6 @@ Code A64Backend::compile(BasicBlock& basic_block) {
     JitFunction jit_fn = assembler.get_current_code<JitFunction>();
     code_block.unprotect();
 
-    // LOG_INFO("prologue:");
     compile_prologue();
 
     Label label_pass;
@@ -74,7 +72,6 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     if (basic_block.condition != Condition::NV) {
         for (auto& opcode : basic_block.opcodes) {
-            // LOG_INFO("%s:", opcode->to_string().c_str());
             compile_ir_opcode(opcode);
             register_allocator.advance();
         }
@@ -82,15 +79,16 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     assembler.link(label_fail);
 
-    // LOG_INFO("epilogue:");
     assembler.sub(cycles_left_reg, cycles_left_reg, static_cast<u64>(basic_block.cycles));
     compile_epilogue();
-
-    // LOG_INFO("");
 
     code_block.protect();
     code_block.invalidate(reinterpret_cast<u32*>(jit_fn), assembler.get_current_block_size());
     code_cache.set(basic_block.location, jit_fn);
+
+    LOG_INFO("block[%08x][%s][%02x] ir -> a64 assembly | %ld instructions produced:", basic_block.location.get_address(), basic_block.location.is_arm() ? "a" : "t", static_cast<u8>(basic_block.location.get_mode()), assembler.get_current_block_size() / 4);
+    assembler.dump();
+
     return reinterpret_cast<void*>(jit_fn);
 }
 
@@ -148,7 +146,6 @@ void A64Backend::compile_epilogue() {
 
 void A64Backend::compile_condition_check(BasicBlock& basic_block, Label& label_pass, Label& label_fail) {
     if (basic_block.condition != Condition::AL && basic_block.condition != Condition::NV) {
-        // LOG_INFO("condition_check:");
         WReg tmp_reg = register_allocator.allocate_temporary();
         assembler.ldr(tmp_reg, jit_reg, jit.get_offset_to_cpsr());
         assembler._and(tmp_reg, tmp_reg, 0xf0000000);
@@ -806,7 +803,16 @@ void A64Backend::compile_barrel_shifter_rotate_right(IRBarrelShifterRotateRight&
         LOG_TODO("carry in for barrel shifter rrx being constant was not expected");
     }
 
-    if (!src_is_constant && !amount_is_constant) {
+    if (src_is_constant && amount_is_constant) {
+        auto [result, carry] = ror(opcode.src.as_constant().value, opcode.amount.as_constant().value);
+        assembler.mov(result_reg, result);
+
+        if (carry) {
+            assembler.mov(carry_reg, static_cast<u32>(*carry));
+        } else {
+            assembler.mov(carry_reg, carry_in_reg);
+        }
+    } else if (!src_is_constant && !amount_is_constant) {
         const auto src = opcode.src.as_variable();
         const auto amount = opcode.amount.as_variable();
         WReg src_reg = register_allocator.get(src);
@@ -1354,13 +1360,11 @@ void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
     switch (opcode.access_size) {
     case AccessSize::Byte:
         assembler.invoke_function(reinterpret_cast<void*>(read_byte));
-        assembler.mov(dst_reg, w0);
         break;
     case AccessSize::Half:
         switch (opcode.access_type) {
         case AccessType::Aligned:
             assembler.invoke_function(reinterpret_cast<void*>(read_half));
-            assembler.mov(dst_reg, w0);
             break;
         case AccessType::Unaligned:
             LOG_TODO("Jit: handle unaligned half read");
@@ -1371,10 +1375,8 @@ void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
     case AccessSize::Word:
         if (opcode.access_type == AccessType::Unaligned) {
             assembler.invoke_function(reinterpret_cast<void*>(read_word_rotate));
-            assembler.mov(dst_reg, w0);
         } else {
             assembler.invoke_function(reinterpret_cast<void*>(read_word));
-            assembler.mov(dst_reg, w0);
         }
 
         break;
@@ -1382,6 +1384,9 @@ void A64Backend::compile_memory_read(IRMemoryRead& opcode) {
 
     // restore volatile registers
     pop_volatile_registers();
+
+    // store the return value into the destination register
+    assembler.mov(dst_reg, w0);
 }
 
 void A64Backend::compile_memory_write(IRMemoryWrite& opcode) {

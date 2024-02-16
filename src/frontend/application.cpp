@@ -56,9 +56,9 @@ bool Application::initialise() {
 
     games_list.initialise();
 
-    config.block_size = 16;
+    config.block_size = 32;
     config.backend_type = arm::BackendType::Jit;
-    config.optimisations = false;
+    config.optimisations = true;
     new_config = config;
 
     audio_device = std::make_shared<SDLAudioDevice>();
@@ -223,6 +223,10 @@ void Application::render_menubar() {
                     config = new_config;
                     auto& nds_system = reinterpret_cast<nds::System&>(*system);
                     nds_system.configure_cpu_backend(config);
+                } else if (system_type == SystemType::GBA) {
+                    config = new_config;
+                    auto& gba_system = reinterpret_cast<gba::System&>(*system);
+                    gba_system.configure_cpu_backend(config);
                 }
 
                 system->set_state(common::System::State::Running);
@@ -591,10 +595,13 @@ void Application::boot_game(const std::string& path) {
         system = std::make_unique<gba::System>();
         system_type = SystemType::GBA;
         config = new_config;
+
+        // TODO: fix this mess
+        auto& gba_system = reinterpret_cast<gba::System&>(*system);
+        gba_system.configure_cpu_backend(config);
     } else if (extension == "nds") {
         system = std::make_unique<nds::System>();
         system_type = SystemType::NDS;
-
         config = new_config;
 
         // TODO: fix this mess

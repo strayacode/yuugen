@@ -73,14 +73,14 @@ void run_nds(char *path) {
     b_system.set_update_callback([](f32) {});
 
     arm::Config a_config;
-    a_config.block_size = 1;
-    a_config.backend_type = arm::BackendType::Interpreter;
-    a_config.optimisations = false;
+    a_config.block_size = 32;
+    a_config.backend_type = arm::BackendType::IRInterpreter;
+    a_config.optimisations = true;
 
     arm::Config b_config;
-    b_config.block_size = 1;
-    b_config.backend_type = arm::BackendType::IRInterpreter;
-    b_config.optimisations = false;
+    b_config.block_size = 32;
+    b_config.backend_type = arm::BackendType::Jit;
+    b_config.optimisations = true;
 
     a_system.configure_cpu_backend(a_config);
     b_system.configure_cpu_backend(b_config);

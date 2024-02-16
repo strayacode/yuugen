@@ -52,10 +52,14 @@ constexpr const char* trim_source_path(std::string_view source) {
 
 template <typename... Args>
 void log_impl(LogLevel log_level, const char* source, int line, const char* function, const char* pattern, Args... args) {
-    printf("%s%s:%d @ %s: %s\n", get_colour_from_level(log_level), trim_source_path(source), line, function, common::format(pattern, std::forward<Args>(args)...).c_str());
+    if (log_level == LogLevel::Info) {
+        printf("%s\n", common::format(pattern, std::forward<Args>(args)...).c_str());
+    } else {
+        printf("%s%s:%d @ %s: %s\n" RESET, get_colour_from_level(log_level), trim_source_path(source), line, function, common::format(pattern, std::forward<Args>(args)...).c_str());
 
-    if (log_level == LogLevel::Error || log_level == LogLevel::Todo) {
-        std::exit(0);
+        if (log_level == LogLevel::Error || log_level == LogLevel::Todo) {
+            std::exit(0);
+        }
     }
 }
 

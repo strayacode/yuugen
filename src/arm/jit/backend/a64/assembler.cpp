@@ -11,7 +11,6 @@ void A64Assembler::reset() {
 }
 
 void A64Assembler::dump() {
-    LOG_INFO("Machine Code:");
     u32* curr = previous_code;
     while (curr != current_code) {
         LOG_INFO("%s", disassemble_a64_instruction(reinterpret_cast<u64>(curr), *curr).c_str());
@@ -469,7 +468,6 @@ void A64Assembler::umull(XReg xd, WReg wn, WReg wm) {
 }
 
 void A64Assembler::emit(u32 data) {
-    // LOG_INFO("%s", disassemble_a64_instruction(reinterpret_cast<u64>(current_code), data).c_str());
     *current_code++ = data;
     num_instructions++;
     current_block_size += 4;
