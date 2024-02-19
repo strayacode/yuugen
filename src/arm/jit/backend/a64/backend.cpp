@@ -79,14 +79,23 @@ Code A64Backend::compile(BasicBlock& basic_block) {
 
     assembler.link(label_fail);
 
-    assembler.sub(cycles_left_reg, cycles_left_reg, static_cast<u64>(basic_block.cycles));
+    // store the cycles left into w0
+    assembler.sub(w0, cycles_left_reg, static_cast<u64>(basic_block.cycles));
     compile_epilogue();
 
     code_block.protect();
     code_block.invalidate(reinterpret_cast<u32*>(jit_fn), assembler.get_current_block_size());
     code_cache.set(basic_block.location, jit_fn);
 
-    LOG_INFO("block[%08x][%s][%02x] ir -> a64 assembly | %ld instructions produced:", basic_block.location.get_address(), basic_block.location.is_arm() ? "a" : "t", static_cast<u8>(basic_block.location.get_mode()), assembler.get_current_block_size() / 4);
+    LOG_INFO(
+        "block[%08x][%s][%02x] ir -> a64 assembly | %ld instructions emitted | entry at %p:",
+        basic_block.location.get_address(),
+        basic_block.location.is_arm() ? "a" : "t",
+        static_cast<u8>(basic_block.location.get_mode()),
+        assembler.get_current_block_size() / 4,
+        reinterpret_cast<u32*>(jit_fn)
+    );
+
     assembler.dump();
 
     return reinterpret_cast<void*>(jit_fn);
@@ -130,9 +139,6 @@ void A64Backend::compile_prologue() {
 }
 
 void A64Backend::compile_epilogue() {
-    // store the cycles left into w0
-    assembler.mov(w0, cycles_left_reg);
-
     // restore non-volatile registers from the stack
     assembler.ldp(x29, x30, sp, 80);
     assembler.ldp(x27, x28, sp, 64);

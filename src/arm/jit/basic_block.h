@@ -16,7 +16,7 @@ struct BasicBlock {
     BasicBlock(Location location) : location(location), current_address(location.get_address()) {}
 
     void dump() {
-        LOG_INFO("block[%08x][%s][%02x] IR:", location.get_address(), location.is_arm() ? "a" : "t", static_cast<u8>(location.get_mode()));
+        LOG_INFO("block[%08x][%s][%02x] guest code -> ir | %d instructions emitted:", location.get_address(), location.is_arm() ? "a" : "t", static_cast<u8>(location.get_mode()), num_instructions);
         for (auto& opcode : opcodes) {
             LOG_INFO("  %s", opcode->to_string().c_str());
         }
